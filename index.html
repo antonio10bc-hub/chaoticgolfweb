@@ -418,22 +418,44 @@
     animation: ctaBlink .8s ease-in-out infinite;
   }
   @keyframes ctaBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(1.09); } }
+  /* historia: aviso de fin de turno (sin cartas o +5 s sin jugar) */
+  #endTurnBtn.ctaEndTurn {
+    outline: 4px solid var(--mustard); outline-offset: 2px;
+    animation: ctaBlink .8s ease-in-out infinite;
+  }
+
+  /* bocadillo de tutorial del modo historia (choque / búnker / portal) */
+  #storyTip {
+    position: fixed; top: 12vh; left: 50%; transform: translateX(-50%) scale(.9);
+    z-index: 70; max-width: min(420px, 86vw);
+    background: #fffdf4; color: var(--ink);
+    font-size: 17px; font-weight: 800; text-align: center;
+    padding: 12px 20px; border-radius: 18px; border: 3px solid var(--ink);
+    box-shadow: 0 6px 0 rgba(0,0,0,.25);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  }
+  #storyTip::after { /* piquito del bocadillo */
+    content: ''; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+    border: 8px solid transparent; border-top: 8px solid var(--ink);
+  }
+  #storyTip.visible { opacity: 1; transform: translateX(-50%) scale(1); }
 
   /* ---- pantallas: menú principal / testing tool ---- */
   #gameScreen { display: none; }
   #menuScreen {
     position: relative; min-height: 100vh; overflow: hidden;
-    display: flex; flex-direction: column; align-items: center;
-    background: #16294e; /* cielo azul oscuro, color plano */
+    display: flex; flex-direction: column; align-items: flex-start;
+    background: #93bfe6; /* cielo azul clarito, color plano */
   }
   #menuScene {
     position: absolute; inset: 0; width: 100%; height: 100%;
     z-index: 0; pointer-events: none;
   }
   .mContent {
-    position: relative; z-index: 1; width: 100%;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 8vh 20px 40px;
+    position: relative; z-index: 1;
+    width: min(46%, 520px); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0 20px;
   }
   .mTitle {
     text-align: center; transform: rotate(-4deg);
@@ -441,7 +463,7 @@
     color: var(--mustard); user-select: none;
     -webkit-text-stroke: 2px var(--ink);
     text-shadow: 5px 6px 0 var(--ink);
-    margin-bottom: 7vh;
+    margin-bottom: 6vh;
     animation: titleBob 3.6s ease-in-out infinite;
   }
   @keyframes titleBob {
@@ -452,8 +474,8 @@
   .mTitle .l2 { display: block; font-size: clamp(58px, 10vw, 112px); letter-spacing: 6px; }
   .mBtn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: min(340px, 82vw); margin: 9px auto;
-    padding: 16px 22px; font-size: 21px; font-weight: 800; border-radius: 16px;
+    width: min(360px, 100%); margin: 10px 0;
+    padding: 20px 26px; font-size: 24px; font-weight: 800; border-radius: 16px;
   }
   .mBtn.play {
     background: var(--warn); color: var(--gold);
@@ -580,8 +602,15 @@
     color: var(--mustard); -webkit-text-stroke: 2px var(--ink); text-shadow: 4px 5px 0 var(--ink);
     font-size: clamp(34px, 6vw, 64px); letter-spacing: 4px; margin-bottom: 5vh; user-select: none;
   }
-  #lvlGrid { display: flex; flex-wrap: wrap; gap: 14px;
-    justify-content: center; width: min(640px, 90vw); margin-bottom: 30px; }
+  #lvlGrid { display: flex; flex-direction: column; gap: 26px;
+    align-items: center; width: min(680px, 92vw); margin-bottom: 30px; }
+  .lvlSection { width: 100%; background: rgba(255,253,244,.5); border-radius: 18px; padding: 14px 18px 18px; }
+  .lvlSection h3 {
+    margin: 0 0 12px; font-size: 15px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--ink-soft); text-align: center;
+    border-bottom: 2px solid rgba(90,80,60,.18); padding-bottom: 8px;
+  }
+  .lvlRow { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
   .lvlBtn { width: 92px; height: 92px; border-radius: 18px; background: var(--panel); color: var(--ink);
     font-size: 32px; font-weight: 900; box-shadow: 0 6px 0 #d8cbae; position: relative;
     animation: lvlIn .38s cubic-bezier(.3,1.35,.5,1) backwards;
@@ -950,7 +979,7 @@
     .cell.selectable, .cell.selectable-out,
     #jaque.visible, #winOverlay.visible .box, .piece.glide .cardOnCell,
     .hand.turnPulse, #boardArea.zoomPulse, #boardArea.zoomShake,
-    .card.ctaJaque, .jaqueCtaTag,
+    .card.ctaJaque, .jaqueCtaTag, #endTurnBtn.ctaEndTurn,
     #pieces.idle .piece .cardOnCell, #traj .line, .piece.rewindFx .cardOnCell { animation: none !important; }
     #gameScreen, #editorScreen, #storyScreen, .lvlBtn, .card.dealIn { animation-duration: .01s !important; }
   }
@@ -958,7 +987,7 @@
 </head>
 <body>
 <div id="menuScreen">
-  <svg id="menuScene" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMax slice">
+  <svg id="menuScene" viewBox="0 0 1000 640" preserveAspectRatio="xMaxYMax slice">
     <!-- nubes -->
     <g fill="#ffffff" opacity=".8" class="mClouds">
       <ellipse cx="150" cy="80" rx="62" ry="22"/><ellipse cx="205" cy="70" rx="44" ry="17"/>
@@ -970,34 +999,31 @@
     <path d="M0,410 Q300,340 620,400 T1000,380 L1000,640 L0,640 Z" fill="#7bbf6f"/>
     <!-- calle clara hacia el green -->
     <path d="M380,640 Q450,480 520,452 Q590,480 660,640 Z" fill="#93cf82" opacity=".9"/>
-    <!-- lago -->
-    <ellipse cx="205" cy="510" rx="150" ry="52" fill="#8fd4e8" stroke="#6db6cc" stroke-width="6"/>
-    <ellipse cx="150" cy="498" rx="26" ry="7" fill="#ffffff" opacity=".5" class="mShine"/>
+    <!-- lago (a la derecha, zona libre de botones) -->
+    <ellipse cx="850" cy="545" rx="115" ry="40" fill="#8fd4e8" stroke="#6db6cc" stroke-width="6"/>
+    <ellipse cx="810" cy="535" rx="24" ry="6" fill="#ffffff" opacity=".5" class="mShine"/>
     <!-- bunkers de arena -->
     <ellipse cx="720" cy="478" rx="92" ry="28" fill="#f2d891" stroke="#dcbd6d" stroke-width="5"/>
-    <ellipse cx="868" cy="560" rx="64" ry="22" fill="#f2d891" stroke="#dcbd6d" stroke-width="5"/>
+    <ellipse cx="630" cy="580" rx="60" ry="20" fill="#f2d891" stroke="#dcbd6d" stroke-width="5"/>
     <!-- green con bandera -->
     <ellipse cx="520" cy="442" rx="118" ry="38" fill="#b8e3a4"/>
     <ellipse cx="548" cy="450" rx="15" ry="6" fill="#22383b"/>
     <rect x="545" y="366" width="5" height="84" rx="2" fill="#efe9da"/>
     <path d="M550,368 L602,382 L550,398 Z" fill="#d95f5f" class="mFlag"/>
-    <!-- árbol -->
-    <rect x="92" y="368" width="11" height="36" rx="4" fill="#8a6a3a"/>
+    <!-- árbol (a la derecha) -->
+    <rect x="940" y="368" width="11" height="36" rx="4" fill="#8a6a3a"/>
     <g class="mTree">
-      <circle cx="97" cy="350" r="27" fill="#5e9e54"/>
-      <circle cx="74" cy="364" r="18" fill="#6fae62"/>
-      <circle cx="121" cy="364" r="18" fill="#6fae62"/>
+      <circle cx="945" cy="350" r="27" fill="#5e9e54"/>
+      <circle cx="922" cy="364" r="18" fill="#6fae62"/>
+      <circle cx="969" cy="364" r="18" fill="#6fae62"/>
     </g>
     <!-- pelota -->
     <circle cx="466" cy="486" r="7" fill="#ffffff" class="mBallMenu"/>
   </svg>
   <div class="mContent">
     <div class="mTitle"><span class="l1">Chaotic</span><span class="l2">Golf</span></div>
-    <button class="mBtn story" onclick="openStory()">📖 Modo Historia</button>
-    <div id="multiRow">
-      <button class="mBtn multi" onclick="openPveSetup()">🤖 PVE · Vs máquina</button>
-      <button class="mBtn multi locked" disabled title="Próximamente">🔒 PVP · En línea</button>
-    </div>
+    <button class="mBtn story" onclick="openStory()">Modo Historia</button>
+    <button class="mBtn multi" onclick="openPveSetup()">Partida Rápida</button>
   </div>
   <button id="testToolBtn" class="cornerBtn" style="left:92px" onclick="openTestingTool()" title="Testing Tool">🔧 testing tool</button>
   <button id="editorBtn" class="cornerBtn" style="left:214px" onclick="openEditor()" title="Creador de Niveles">🏗️ creador de niveles</button>
@@ -1028,6 +1054,7 @@
 </div>
 
 <div id="gameScreen">
+<div id="storyTip"></div>
 <div id="app">
   <div id="main">
     <div id="boardWrap">
@@ -1912,6 +1939,7 @@ function moveBallRaw(ball, dirKey, steps) {
       const other = S.tiles.find(t => t.type==='portal' && t !== here);
       if (other) {
         log(`Pelota ${jb(ball)} atraviesa el portal`);
+        storyTip('portal');
         anim({t:'move', p:pid, x:nx, y:ny});
         anim({t:'teleport', p:pid, x:other.x, y:other.y});
         nx = other.x+dx; ny = other.y+dy;
@@ -1931,6 +1959,7 @@ function moveBallRaw(ball, dirKey, steps) {
       ball.x = cx; ball.y = cy;
       anim({t:'impact', p:pid, dir:dirKey, target:'b'+hit.player});
       log(`Colisión: pelota ${jb(ball)} golpea a pelota ${jb(hit)} y le transfiere ${remaining} movimiento(s)`);
+      storyTip('hit');
       moveBallTransfer(hit, dirKey, remaining);
       return;
     }
@@ -1939,6 +1968,7 @@ function moveBallRaw(ball, dirKey, steps) {
     const t = tileAt(cx,cy);
     if (t?.type === 'bunker' && remaining > 0) {
       log(`Pelota ${jb(ball)} cae en el búnker; pierde ${remaining} movimiento(s)`);
+      storyTip('bunker');
       remaining = 0;
     }
   }
@@ -1949,6 +1979,11 @@ function moveBallRaw(ball, dirKey, steps) {
 
 // registra una victoria; si ya había JAQUE en curso, se suma al empate
 function registerWin(pl) {
+  const wb = S.balls.find(b => b.player === pl);
+  if (wb && wb.decoy) { // pelota de obstáculo: no gana; se queda en el hoyo y desaparece para siempre
+    log(`Pelota ${jb(wb)} desaparece del tablero`);
+    return;
+  }
   if (S.winner === null) {
     S.winner = pl; S.winners = [pl];
   } else if (!S.winners.includes(pl)) {
@@ -1962,6 +1997,7 @@ function finishMoveChecks(ball) {
   const pid = 'b' + ball.player;
   if (tileAt(ball.x,ball.y)?.type === 'bunker') {
     log(`Pelota ${jb(ball)} queda en el búnker`);
+    storyTip('bunker');
     anim({t:'settle', p:pid});
   }
   if (isHole(ball.x,ball.y)) {
@@ -1986,7 +2022,12 @@ function moveBallTransfer(ball, dirKey, steps) {
 function resetBallToSpawn(ball) {
   let x = ball.spawnX, y = ball.spawnY;
   if (!ballAt(x,y) || ballAt(x,y) === ball) { ball.x=x; ball.y=y; return; }
-  // spawn ocupado: buscar la casilla libre más cercana en la misma fila
+  // spawn ocupado: primero una casilla vacía adyacente
+  for (const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]]) {
+    const nx = x+dx, ny = y+dy;
+    if (inBoard(nx,ny) && !ballAt(nx,ny) && !tileAt(nx,ny) && !isHole(nx,ny)) { ball.x=nx; ball.y=ny; return; }
+  }
+  // si no hay adyacente libre: la casilla libre más cercana en la misma fila
   for (let d = 1; d < S.cols; d++) {
     for (const nx of [x-d, x+d]) {
       if (inBoard(nx,y) && !ballAt(nx,y) && !tileAt(nx,y) && !isHole(nx,y)) { ball.x=nx; ball.y=y; return; }
@@ -2137,6 +2178,7 @@ function consumeCard(p, idx) {
 }
 
 function afterPlay() {
+  lastPlayAt = Date.now();
   // regla general: si al resolver una carta una pelota y el hoyo comparten casilla,
   // sea cual sea el motivo (p. ej. quedarse parada en el hoyo tras una colisión),
   // la pelota entra y hace JAQUE
@@ -2375,6 +2417,7 @@ function serpentStep(dirKey) {
     anim({t:'impact', p:pid, dir:dirKey, target:'b'+hit.player});
     pd.stepsLeft--;
     log(`Colisión: pelota ${jb(ball)} golpea a pelota ${jb(hit)} y le transfiere 1 movimiento; a pelota ${jb(ball)} le quedan ${pd.stepsLeft}`);
+    storyTip('hit');
     moveBallTransfer(hit, dirKey, 1);
     if (pd.stepsLeft === 0) return endSerpent();
     render();
@@ -2428,6 +2471,7 @@ function restoreBoardSnap(snap) {
 
 /* ---------- turno ---------- */
 function endTurn() {
+  lastPlayAt = Date.now();
   if (S.winner !== null || pending || godMode || animating) return;
   pushHistory();
   log(`${jp(S.turn)} termina su turno y roba hasta 2 cartas`);
@@ -2435,6 +2479,7 @@ function endTurn() {
 }
 
 function startDiscard() {
+  lastPlayAt = Date.now();
   if (S.winner !== null || pending || godMode || animating) return;
   if (S.playedThisTurn > 0) { toast('Ya has jugado cartas este turno: no puedes descartar'); return; }
   pending = { kind:'discard', p: S.turn, selected: [] };
@@ -3093,6 +3138,76 @@ function defaultLevel(cols = 7, rows = 9, par = 5) {
   };
 }
 
+// ---------- niveles integrados del modo historia (NO editables desde el creador) ----------
+// mazo base de historia: palos y mover hoyo (negros); el resto a 0
+function storyDeck(extra) {
+  const c = {};
+  for (const k of Object.keys(CARD_DEFS)) c[k] = 0;
+  c.palo1 = 6; c.palo2 = 6; c.palo3 = 6;
+  c.hoyoUp = 2; c.hoyoDown = 2; c.hoyoLeft = 2; c.hoyoRight = 2;
+  return Object.assign(c, extra || {});
+}
+// columna central de PAR: Par N junto al hoyo, bajando hasta Par 1
+function storyPar(cols, holeY, par) {
+  const cx = Math.floor(cols / 2), cells = [];
+  for (let i = 0; i < par; i++) cells.push({ x: cx, y: holeY + 1 + i, n: par - i });
+  return cells;
+}
+const STORY_LEVELS = [
+  { // Nivel 1: primeros pasos (5x5)
+    cols: 5, rows: 5, hole: { x: 0, y: 0 }, ball: { x: 3, y: 4 },
+    parCells: storyPar(5, 0, 3), tiles: [], deckCounts: storyDeck(),
+  },
+  { // Nivel 2: 6 pelotas de obstáculo (vuelven a su sitio si caen del tablero)
+    cols: 5, rows: 6, hole: { x: 2, y: 0 }, ball: { x: 2, y: 5 },
+    parCells: storyPar(5, 0, 4), tiles: [], deckCounts: storyDeck(),
+    extraBalls: [{x:0,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:3},{x:0,y:4},{x:4,y:4}], // una en la columna central (3-4)
+  },
+  { // Nivel 3: 4 búnkeres entre pelota y hoyo (al menos 1 en la columna central)
+    cols: 5, rows: 6, hole: { x: 2, y: 0 }, ball: { x: 2, y: 5 },
+    parCells: storyPar(5, 0, 4),
+    tiles: [{type:'bunker',x:2,y:2},{type:'bunker',x:1,y:1},{type:'bunker',x:0,y:3},{type:'bunker',x:4,y:4}],
+    deckCounts: storyDeck({ bunker: 2 }),
+  },
+  { // Nivel 4: portales
+    cols: 7, rows: 7, hole: { x: 3, y: 0 }, ball: { x: 3, y: 6 },
+    parCells: storyPar(7, 0, 5),
+    tiles: [{type:'portal',x:3,y:5},{type:'portal',x:1,y:2}],
+    deckCounts: storyDeck(),
+  },
+];
+// bocadillos de tutorial por nivel (índice de historia) y evento
+const STORY_TIPS = {
+  1: { hit: '¡Cuidado con chocarte!' },
+  2: { bunker: '¡Resta 1 al palo que uses!' },
+};
+let tipShown = {}; // bocadillos ya mostrados en la partida actual
+let lastPlayAt = 0; // última carta jugada (para el aviso de fin de turno)
+// en los niveles integrados de historia, el botón de fin de turno pide atención
+// cuando no quedan cartas en la mano o llevas más de 5 s sin jugar una
+function updateEndTurnHint() {
+  const b = document.getElementById('endTurnBtn');
+  if (!b) return;
+  const on = !!(S && appMode === 'story' && currentLevelIndex !== null
+    && currentLevelIndex < STORY_LEVELS.length && S.winner === null && !pending
+    && S.hands[0] && (S.hands[0].length === 0 || Date.now() - lastPlayAt > 5000));
+  b.classList.toggle('ctaEndTurn', on);
+}
+setInterval(updateEndTurnHint, 500);
+function storyTip(key) {
+  if (appMode !== 'story') return;
+  const text = STORY_TIPS[currentLevelIndex]?.[key];
+  if (!text || tipShown[key]) return;
+  tipShown[key] = true;
+  const el = document.getElementById('storyTip');
+  el.textContent = text;
+  el.classList.add('visible');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('visible'), 2800);
+}
+// nivel de historia por índice global: primero los integrados, luego los del creador
+function storyLevelAt(i) { return i < STORY_LEVELS.length ? STORY_LEVELS[i] : loadLevels()[i - STORY_LEVELS.length]; }
+
 // arranca una partida a partir de un nivel guardado (1 jugador)
 function newGameFromLevel(level) {
   const L = clone(level);
@@ -3109,6 +3224,11 @@ function newGameFromLevel(level) {
     lastSnap: null, lastCardLabel: null, lastCardKey: null,
     log: [],
   };
+  // pelotas de obstáculo del nivel (señuelos): no juegan turnos y si caen del
+  // tablero o entran en el hoyo vuelven a su posición inicial
+  if (L.extraBalls) for (const eb of L.extraBalls) {
+    S.balls.push({ player: S.balls.length, x: eb.x, y: eb.y, spawnX: eb.x, spawnY: eb.y, holed: false, decoy: true });
+  }
   initMarks = S.balls.map(b => ({ x:b.x, y:b.y, player:b.player })); // marcas de salida fijas
   for (const [k, n] of Object.entries(L.deckCounts)) { if (CARD_DEFS[k]) for (let i = 0; i < n; i++) S.deck.push(k); }
   shuffle(S.deck);
@@ -3122,6 +3242,9 @@ function newGameFromLevel(level) {
 
 function startLevel(level, mode, idx = null) {
   appMode = mode; currentLevelIndex = idx;
+  tipShown = {}; // bocadillos de tutorial: se reinician en cada nivel
+  lastPlayAt = Date.now();
+  document.getElementById('storyTip').classList.remove('visible');
   newGameFromLevel(level);
   updateMenuBtn();
   showScreen('game');
@@ -3174,7 +3297,7 @@ const PVE_COLORS = () => [...PLAYER_COLORS, '#e8833a']; // los 7 primeros: sin e
 // color visible de un jugador (en PVE cada quien elige/asigna color)
 function pColor(p) { return (S && S.colorMap) ? S.colorMap[p] : PLAYER_COLORS[p % PLAYER_COLORS.length]; }
 
-// el botón Multijugador se convierte en PVE + PVP (PVP aún bloqueado)
+// Partida Rápida: configuración de la partida contra la máquina
 function openPveSetup() { buildPveSetup(); showScreen('pve'); }
 
 function buildPveSetup() {
@@ -4047,28 +4170,32 @@ function edValidate() {
 /* ---------- modo historia ---------- */
 function openStory() {
   winOverlay.classList.remove('visible');
-  const levels = loadLevels();
   const prog = loadProgress();
+  const userLevels = loadLevels();
   const grid = document.getElementById('lvlGrid');
-  grid.innerHTML = levels.length
-    ? levels.map((L, i) =>
-        `<button class="lvlBtn ${prog[i] ? 'done' : ''}" style="animation-delay:${i * 55}ms" onclick="playStoryLevel(${i})">${i+1}${prog[i] ? '<span class="check">✔</span>' : ''}</button>`).join('')
-    : '<div class="noLevels">Aún no hay niveles.<br>Créalos en el Creador de Niveles.</div>';
+  const btn = (i) =>
+    `<button class="lvlBtn ${prog[i] ? 'done' : ''}" style="animation-delay:${i * 55}ms" onclick="playStoryLevel(${i})">${i+1}${prog[i] ? '<span class="check">✔</span>' : ''}</button>`;
+  // dos apartados bien diferenciados: niveles integrados primero, los del creador después
+  grid.innerHTML =
+    `<div class="lvlSection"><h3>Niveles de historia</h3><div class="lvlRow">${STORY_LEVELS.map((_, i) => btn(i)).join('')}</div></div>` +
+    `<div class="lvlSection"><h3>Tus niveles</h3><div class="lvlRow">${userLevels.length
+      ? userLevels.map((_, j) => btn(STORY_LEVELS.length + j)).join('')
+      : '<div class="noLevels">Aún no has creado niveles.<br>Hazlo en el Creador de Niveles.</div>'}</div></div>`;
   showScreen('story');
 }
 function playStoryLevel(i) {
-  const L = loadLevels()[i];
+  const L = storyLevelAt(i);
   if (L) startLevel(L, 'story', i);
 }
 function replayLevel() {
   winOverlay.classList.remove('visible');
   if (appMode === 'test') startLevel(ED.level, 'test');
-  else if (appMode === 'story') startLevel(loadLevels()[currentLevelIndex], 'story', currentLevelIndex);
+  else if (appMode === 'story') startLevel(storyLevelAt(currentLevelIndex), 'story', currentLevelIndex);
   else newGame();
 }
 function nextLevel() {
   const i = currentLevelIndex + 1;
-  const L = loadLevels()[i];
+  const L = storyLevelAt(i);
   if (L) { winOverlay.classList.remove('visible'); startLevel(L, 'story', i); }
 }
 function backToEditor() {
@@ -4115,8 +4242,9 @@ menuBtn.onclick = () => {
   else if (appMode === 'story') openStory();
   else showScreen('menu');
 };
-resetBtn.onclick = () => { // empezar la partida de cero (misma configuración)
+resetBtn.onclick = () => { // empezar de cero: el nivel actual (historia/prueba) o la partida en curso
   if (appMode === 'pve' && lastPveCfg) { pveCfg = { ...lastPveCfg }; startPveMatch(); }
+  else if (appMode === 'story' || appMode === 'test') replayLevel();
   else newGame();
   toast('Partida reiniciada');
 };
@@ -4156,9 +4284,10 @@ edDelete.onclick = () => {
   levels.splice(slot, 1);
   saveLevels(levels);
   const prog = loadProgress(), np = {};
+  const si = STORY_LEVELS.length + slot; // índice de historia del slot borrado (los integrados no se tocan)
   for (const [k, v] of Object.entries(prog)) {
     const i = parseInt(k);
-    if (i < slot) np[i] = v; else if (i > slot) np[i-1] = v;
+    if (i < si) np[i] = v; else if (i > si) np[i-1] = v;
   }
   saveProgress(np);
   refreshEdSlots(0);
