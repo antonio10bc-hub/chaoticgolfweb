@@ -1,0 +1,38 @@
+/* Panel de debug / testing tool */
+/* ---- Debug ---- */
+#debugBtn {
+  position: fixed; bottom: 8px; right: 8px; opacity: .25; z-index: 60;
+  background: none; color: var(--ink-soft); box-shadow: none;
+  font-family: ui-monospace, monospace; font-size: 11px; padding: 4px 6px;
+}
+#debugBtn:hover { opacity: 1; background: none; }
+#debugPanel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 280px;
+  background: var(--panel); border-left: 1px solid #e8e1d2; padding: 14px;
+  overflow: auto; display: none; z-index: 50;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px;
+  box-shadow: -4px 0 16px rgba(120,100,60,.1);
+}
+#debugPanel.visible { display: block; }
+#debugPanel h2 { font-size: 13px; letter-spacing: 3px; margin-bottom: 10px; }
+#debugPanel h4 {
+  margin: 14px 0 6px; font-size: 10px; color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  border-bottom: 1px solid #eee7d8; padding-bottom: 3px;
+}
+.drow { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; gap: 8px; }
+.drow label { flex: 1; }
+#dbgDeck .drow, #edDeck .drow { border-radius: 6px; padding: 3px 6px; margin: 3px 0; }
+#dbgDeck .drow.black, #edDeck .drow.black { background: #4a4e69; color: #fff; }
+#dbgDeck .drow.orange, #edDeck .drow.orange { background: #ffaa5e; color: #5c3a10; }
+#debugPanel input[type=number] {
+  width: 54px; background: #f6f1e6; color: var(--ink); border: 1px solid #e0d8c6;
+  border-radius: 6px; padding: 2px 6px; font-family: inherit; font-size: 12px; text-align: right;
+}
+#debugPanel select {
+  width: 150px; background: #f6f1e6; color: var(--ink); border: 1px solid #e0d8c6;
+  border-radius: 6px; padding: 3px 4px; font-family: inherit; font-size: 12px;
+}
+.dbtn { display: block; width: 100%; margin: 5px 0; border-radius: 8px; font-size: 12px; padding: 6px; font-family: inherit; }
+#godHint { color: #b8860b; display: none; font-size: 11px; line-height: 1.4; padding: 4px 0; }
+#dbgState { font-size: 11px; color: var(--ink-soft); line-height: 1.5; word-wrap: break-word; }

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "Pelotas de obstáculo",
+  "cols": 5,
+  "rows": 6,
+  "hole": { "x": 2, "y": 0 },
+  "ball": { "x": 2, "y": 5 },
+  "parCells": [
+    { "x": 2, "y": 1, "n": 4 },
+    { "x": 2, "y": 2, "n": 3 },
+    { "x": 2, "y": 3, "n": 2 },
+    { "x": 2, "y": 4, "n": 1 }
+  ],
+  "tiles": [],
+  "deckCounts": { "palo1": 6, "palo2": 6, "palo3": 6, "dedo": 0, "hoyoUp": 2, "hoyoDown": 2, "hoyoLeft": 2, "hoyoRight": 2, "bunker": 0, "portal": 0, "oPalo1": 0, "oHoyoUp": 0, "oHoyoDown": 0, "oHoyoLeft": 0, "oHoyoRight": 0, "no": 0 },
+  "extraBalls": [
+    { "x": 0, "y": 1 },
+    { "x": 4, "y": 1 },
+    { "x": 1, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 0, "y": 4 },
+    { "x": 4, "y": 4 }
+  ],
+  "tips": { "hit": "story.tips.hit" }
+}

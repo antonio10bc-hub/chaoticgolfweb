@@ -1,0 +1,86 @@
+/* Paleta, reset, botones y layout general */
+:root {
+  --cell-w: 52px;
+  --cell-h: 73px;
+  --ink: #152b1c;          /* verde muy oscuro (texto) */
+  --ink-soft: #5c7c66;
+  --cream: #1d4730;        /* fondo verde golf oscuro */
+  --panel: #f7f0dc;        /* crema */
+  --grass: #a3da94;
+  --grass-fair: #cbebab;
+  --felt: #cde5bf;
+  --accent: #1f6b41;       /* botones verde profundo */
+  --accent-dark: #124a2c;
+  --warn: #b8554c;         /* granate */
+  --warn-dark: #853a33;
+  --gold: #ffd06b;         /* texto dorado de botones */
+  --mustard: #f4ae3c;
+  --hl: #ffab2e;
+  --sel: #1e8a46;          /* selección de casillas y trayectoria */
+  --sel-bright: #45c06e;
+  --sel-deep: #14532d;
+
+  /* -- assets: colores de componentes (editar aquí re-tematiza piezas y casillas) -- */
+  --tile-hole-bg: #2c5c46;
+  --tile-hole-circ: #14161a;
+  --tile-hole-ring: #c2d2bd;
+  --tile-bunker-bg: #f6e0a8;
+  --tile-bunker-ink: #8a6a2a;
+  --tile-portal-bg: #d9d4cb;
+  --tile-portal-ink: #57544e;
+  --cell-sand: #e6cb8d;
+  --cell-cement: #cfccc4;
+  --card-black-ink: #3a3d54;
+  --card-orange-ink: #c06f10;
+  --card-orange-border: #f59a3c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Avenir Next", "Avenir", "Trebuchet MS", "Segoe UI", -apple-system, sans-serif;
+  background: var(--cream); /* color plano, sin degradados */
+  color: var(--ink);
+  min-height: 100vh;
+}
+#app { display: flex; gap: 14px; padding: 14px; align-items: flex-start; }
+#main { flex: 1; min-width: 0; }
+
+/* ---- Barra superior ---- */
+#topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--panel); border-radius: 16px; padding: 10px 16px; margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,.7);
+  box-shadow: 0 4px 14px rgba(120,100,60,.14);
+}
+#turnInfo {
+  position: absolute; top: 10px; left: 14px; z-index: 8;
+  font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;
+  background: rgba(16,42,26,.55); color: #eaf5ec;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(2px);
+  pointer-events: none; text-shadow: 0 1px 1px rgba(0,0,0,.3);
+}
+#turnInfo .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; box-shadow: inset 0 -2px 0 rgba(0,0,0,.12); }
+button {
+  background: var(--accent); /* plano */
+  color: var(--gold); border: none; border-radius: 12px;
+  padding: 7px 16px; font-size: 13px; font-weight: 800; cursor: pointer;
+  font-family: inherit; letter-spacing: .3px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.18);
+  box-shadow: 0 4px 0 var(--accent-dark);
+  transition: filter .12s, transform .08s, box-shadow .08s;
+}
+button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-dark); }
+button:disabled { opacity: .35; cursor: default; transform: none; }
+button.danger { background: var(--warn); color: var(--gold);
+  box-shadow: 0 4px 0 var(--warn-dark); }
+button.danger:active { box-shadow: 0 1px 0 var(--warn-dark); }
+/* descartar: naranja con letras verdes (inverso del verde/dorado de fin de turno) */
+#discardBtn {
+  background: #e0952f;
+  color: #14532d; text-shadow: 0 1px 0 rgba(255,255,255,.4);
+  box-shadow: 0 4px 0 #a86a1d;
+}
+#discardBtn:active { box-shadow: 0 1px 0 #a86a1d; }
+#deckInfo { font-size: 12px; color: var(--ink-soft); margin-left: auto; }

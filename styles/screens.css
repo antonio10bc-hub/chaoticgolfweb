@@ -1,0 +1,136 @@
+/* Pantallas: menú, configuración PVE, modo historia */
+/* ---- pantallas: menú principal / testing tool ---- */
+#gameScreen { display: none; }
+#menuScreen {
+  position: relative; min-height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column; align-items: flex-start;
+  background: #93bfe6; /* cielo azul clarito, color plano */
+}
+#menuScene {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+.mContent {
+  position: relative; z-index: 1;
+  width: min(46%, 520px); min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 20px;
+}
+.mTitle {
+  text-align: center; transform: rotate(-4deg);
+  font-weight: 900; text-transform: uppercase; line-height: .92;
+  color: var(--mustard); user-select: none;
+  -webkit-text-stroke: 2px var(--ink);
+  text-shadow: 5px 6px 0 var(--ink);
+  margin-bottom: 6vh;
+  animation: titleBob 3.6s ease-in-out infinite;
+}
+@keyframes titleBob {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50%      { transform: rotate(-3.1deg) translateY(-7px); }
+}
+.mTitle .l1 { display: block; font-size: clamp(38px, 6.5vw, 72px); letter-spacing: 4px; }
+.mTitle .l2 { display: block; font-size: clamp(58px, 10vw, 112px); letter-spacing: 6px; }
+.mBtn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: min(360px, 100%); margin: 10px 0;
+  padding: 20px 26px; font-size: 24px; font-weight: 800; border-radius: 16px;
+}
+.mBtn.story { background: var(--accent); color: var(--gold); box-shadow: 0 6px 0 var(--accent-dark), 0 12px 20px rgba(0,0,0,.18); }
+.mBtn.story:active { box-shadow: 0 2px 0 var(--accent-dark); }
+.mBtn.multi { background: #3c6e8f; color: #eaf4f9; box-shadow: 0 6px 0 #2a526d, 0 12px 20px rgba(0,0,0,.18); }
+.mBtn.multi:active { box-shadow: 0 2px 0 #2a526d; }
+/* accesos pequeños de la esquina inferior izquierda (junto al sonido) */
+.cornerBtn {
+  position: fixed; bottom: 10px; z-index: 65;
+  width: auto; height: 38px; padding: 0 12px; gap: 5px; border-radius: 10px;
+  background: var(--panel); color: var(--ink); font-size: 12px; font-weight: 800; text-shadow: none;
+  box-shadow: 0 3px 0 #d8cbae, 0 6px 12px rgba(46,74,78,.18);
+  display: inline-flex; align-items: center; justify-content: center;
+  white-space: nowrap;
+}
+.cornerBtn:active { box-shadow: 0 1px 0 #d8cbae; }
+/* insignia del slot actual, esquina superior izquierda del creador de niveles */
+#edSlotBadge {
+  position: fixed; top: 10px; left: 12px; z-index: 66;
+  font-size: 12px; font-weight: 800; letter-spacing: .02em;
+  background: var(--panel); color: var(--ink);
+  padding: 6px 12px; border-radius: 999px;
+  box-shadow: 0 3px 0 #d8cbae, 0 6px 12px rgba(46,74,78,.18);
+  pointer-events: none;
+}
+
+/* ---- pantalla de configuración PVE (fondo blanco, sin tablero) ---- */
+#pveScreen {
+  display: none; min-height: 100vh; background: #ffffff;
+  align-items: center; justify-content: center; padding: 20px;
+}
+#pveCard {
+  background: #fff; border: 2px solid #e6e2d8; border-radius: 20px;
+  padding: 26px 30px; width: min(430px, 92vw);
+  box-shadow: 0 10px 30px rgba(40,60,45,.1);
+}
+#pveCard h2 { font-size: 22px; letter-spacing: 1px; margin-bottom: 4px; color: var(--ink); }
+#pveCard .sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; }
+#pveCard h4 {
+  margin: 16px 0 8px; font-size: 11px; color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: 1.5px;
+}
+.pveOpts { display: flex; gap: 8px; flex-wrap: wrap; }
+.pveOpt {
+  background: #f2f0ea; color: var(--ink); border: 2px solid transparent;
+  border-radius: 12px; padding: 9px 14px; font-size: 13px; font-weight: 800;
+  box-shadow: none; text-shadow: none;
+}
+.pveOpt:hover { filter: brightness(.97); transform: none; }
+.pveOpt.sel { border-color: var(--sel-deep); background: #e3f2e7; color: var(--sel-deep); }
+.pveColor {
+  width: 42px; height: 42px; padding: 0; border-radius: 50%;
+  border: 3px solid transparent; box-shadow: inset 0 -4px 0 rgba(0,0,0,.15);
+}
+.pveColor:hover { transform: scale(1.06); filter: none; }
+.pveColor.sel { border-color: var(--ink); transform: scale(1.1); }
+#pvePlay {
+  width: 100%; margin-top: 22px; padding: 14px; font-size: 17px;
+  background: var(--accent); color: var(--gold); box-shadow: 0 5px 0 var(--accent-dark);
+}
+#pvePlay:active { box-shadow: 0 1px 0 var(--accent-dark); }
+#pveBack { width: 100%; margin-top: 10px; background: #eceadf; color: var(--ink);
+  text-shadow: none; box-shadow: 0 4px 0 #cfc8b2; }
+#pveBack:active { box-shadow: 0 1px 0 #cfc8b2; }
+/* mano única centrada en PVE */
+#hands.pveSolo { justify-content: center; }
+#hands.pveSolo .hand { min-width: 240px; }
+
+/* ---- modo historia: cuadrícula de niveles ---- */
+#storyScreen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 7vh 20px 40px; }
+.sTitle {
+  text-align: center; transform: rotate(-3deg); font-weight: 900; text-transform: uppercase;
+  color: var(--mustard); -webkit-text-stroke: 2px var(--ink); text-shadow: 4px 5px 0 var(--ink);
+  font-size: clamp(34px, 6vw, 64px); letter-spacing: 4px; margin-bottom: 5vh; user-select: none;
+}
+#lvlGrid { display: flex; flex-direction: column; gap: 26px;
+  align-items: center; width: min(680px, 92vw); margin-bottom: 30px; }
+.lvlSection { width: 100%; background: rgba(255,253,244,.5); border-radius: 18px; padding: 14px 18px 18px; }
+.lvlSection h3 {
+  margin: 0 0 12px; font-size: 15px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--ink-soft); text-align: center;
+  border-bottom: 2px solid rgba(90,80,60,.18); padding-bottom: 8px;
+}
+.lvlRow { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.lvlBtn { width: 92px; height: 92px; border-radius: 18px; background: var(--panel); color: var(--ink);
+  font-size: 32px; font-weight: 900; box-shadow: 0 6px 0 #d8cbae; position: relative;
+  animation: lvlIn .38s cubic-bezier(.3,1.35,.5,1) backwards;
+  transition: transform .13s cubic-bezier(.3,1.3,.5,1), filter .13s, box-shadow .13s; }
+@keyframes lvlIn {
+  from { transform: translateY(18px) scale(.7); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.lvlBtn:hover { filter: brightness(1.05); transform: translateY(-3px) scale(1.05); }
+.lvlBtn:active { box-shadow: 0 2px 0 #d8cbae; }
+.lvlBtn.done { background: var(--accent); color: var(--gold); box-shadow: 0 6px 0 var(--accent-dark); }
+.lvlBtn.done:active { box-shadow: 0 2px 0 var(--accent-dark); }
+.lvlBtn .check { position: absolute; top: 5px; right: 9px; font-size: 15px;
+  animation: checkPop .45s cubic-bezier(.3,1.6,.5,1) backwards; }
+@keyframes checkPop { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+.noLevels { background: var(--panel); border-radius: 14px; padding: 18px 24px; font-size: 15px; font-weight: 600; grid-column: 1 / -1; text-align: center; }

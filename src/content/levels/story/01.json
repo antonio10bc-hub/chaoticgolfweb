@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "name": "Primeros pasos",
+  "cols": 5,
+  "rows": 5,
+  "hole": { "x": 0, "y": 0 },
+  "ball": { "x": 3, "y": 4 },
+  "parCells": [
+    { "x": 2, "y": 1, "n": 3 },
+    { "x": 2, "y": 2, "n": 2 },
+    { "x": 2, "y": 3, "n": 1 }
+  ],
+  "tiles": [],
+  "deckCounts": { "palo1": 6, "palo2": 6, "palo3": 6, "dedo": 0, "hoyoUp": 2, "hoyoDown": 2, "hoyoLeft": 2, "hoyoRight": 2, "bunker": 0, "portal": 0, "oPalo1": 0, "oHoyoUp": 0, "oHoyoDown": 0, "oHoyoLeft": 0, "oHoyoRight": 0, "no": 0 }
+}

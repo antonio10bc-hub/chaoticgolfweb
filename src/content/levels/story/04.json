@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "name": "Portales",
+  "cols": 7,
+  "rows": 7,
+  "hole": { "x": 3, "y": 0 },
+  "ball": { "x": 3, "y": 6 },
+  "parCells": [
+    { "x": 3, "y": 1, "n": 5 },
+    { "x": 3, "y": 2, "n": 4 },
+    { "x": 3, "y": 3, "n": 3 },
+    { "x": 3, "y": 4, "n": 2 },
+    { "x": 3, "y": 5, "n": 1 }
+  ],
+  "tiles": [
+    { "type": "portal", "x": 3, "y": 5 },
+    { "type": "portal", "x": 1, "y": 2 }
+  ],
+  "deckCounts": { "palo1": 6, "palo2": 6, "palo3": 6, "dedo": 0, "hoyoUp": 2, "hoyoDown": 2, "hoyoLeft": 2, "hoyoRight": 2, "bunker": 0, "portal": 0, "oPalo1": 0, "oHoyoUp": 0, "oHoyoDown": 0, "oHoyoLeft": 0, "oHoyoRight": 0, "no": 0 }
+}
