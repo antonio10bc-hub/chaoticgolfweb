@@ -1,36 +1,33 @@
-/* Creador de niveles */
-/* ---- creador de niveles ---- */
-#editorScreen { display: none; padding: 14px; padding-top: 50px; /* hueco para la insignia de slot */ }
+/* Creador de niveles: paneles crema densos, tablero de césped a franjas */
+#editorScreen { display: none; min-height: 100vh; padding: 14px; padding-top: 52px; /* hueco para la insignia de slot */
+  background-image: var(--grain), repeating-linear-gradient(135deg, var(--grass-dark) 0 90px, var(--grass-mid) 90px 180px); }
 #edLayout { display: flex; gap: 14px; align-items: flex-start; }
 #edMain { flex: 1; min-width: 0; }
-#edBoardWrap { background: var(--felt); border-radius: 20px; padding: 16px; max-height: 92vh; overflow: auto;
-  box-shadow: inset 0 2px 8px rgba(90,120,70,.15); }
-#edBoard { display: grid; gap: 4px; width: max-content; margin: 0 auto; }
+#edBoardWrap { background-image: var(--grain); background-color: var(--cream); border-radius: 18px; padding: 10px; max-height: 92vh; overflow: auto;
+  box-shadow: 12px 12px 0 rgba(20,40,20,.22), var(--shadow-soft); }
+#edBoard { display: grid; gap: 3px; padding: 3px; width: max-content; margin: 0 auto; border-radius: 8px; background: #3F7440; }
 #edBoard .cell { cursor: pointer; }
-#edBoard .cell:hover { outline: 2px solid var(--hl); }
+#edBoard .cell:hover { background-color: rgba(163,193,115,.55); box-shadow: inset 0 0 0 1.5px var(--cream); }
 #edPanel, #edPanelL {
-  width: 300px; flex-shrink: 0; background: var(--panel); border-radius: 16px; padding: 14px;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px;
-  max-height: 92vh; overflow: auto; box-shadow: 0 3px 12px rgba(120,100,60,.08); color: var(--ink);
+  width: 300px; flex-shrink: 0; border-radius: 18px; padding: 16px;
+  background-image: var(--grain); background-color: var(--cream);
+  font-size: 12.5px; max-height: 92vh; overflow: auto; color: var(--ink);
+  box-shadow: var(--shadow-soft);
 }
 #edPanelL { width: 260px; } /* columna general, pegada a la izquierda */
-#edPanel h2, #edPanelL h2 { font-size: 13px; letter-spacing: 3px; margin-bottom: 10px; }
+#edPanel h2, #edPanelL h2 { font-size: 22px; font-weight: 500; letter-spacing: -.03em; text-transform: lowercase; margin-bottom: 8px; }
 #edPanel h4, #edPanelL h4 {
-  margin: 14px 0 6px; font-size: 10px; color: var(--ink-soft);
-  text-transform: uppercase; letter-spacing: 1.5px;
-  border-bottom: 1px solid #eee7d8; padding-bottom: 3px;
+  margin: 16px 0 7px; font-size: 10px; font-weight: 500; color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: .16em;
+  border-bottom: 1px solid var(--cream-line); padding-bottom: 5px;
 }
-#edPanel input[type=number], #edPanelL input[type=number] {
-  width: 54px; background: #f6f1e6; color: var(--ink); border: 1px solid #e0d8c6;
-  border-radius: 6px; padding: 2px 6px; font-family: inherit; font-size: 12px; text-align: right;
+#edPanel input[type=number], #edPanelL input[type=number], #edPanel select, #edPanelL select {
+  background: #fff; color: var(--ink); border: 1px solid var(--cream-line);
+  border-radius: 999px; padding: 3px 10px; font-size: 12.5px;
 }
-#edPanel select, #edPanelL select {
-  width: 150px; background: #f6f1e6; color: var(--ink); border: 1px solid #e0d8c6;
-  border-radius: 6px; padding: 3px 4px; font-family: inherit; font-size: 12px;
-}
+#edPanel input[type=number], #edPanelL input[type=number] { width: 64px; text-align: right; }
+#edPanel select, #edPanelL select { width: 150px; }
 #edTools { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-.edTool { padding: 6px 10px; border-radius: 8px; background: #efe6d0; color: var(--ink);
-  font-weight: 700; font-size: 12px; box-shadow: none; border: 2px solid transparent; }
-.edTool:hover { filter: none; background: #fff; }
-.edTool.active { border-color: var(--accent); background: #fff; }
-#edInfo { margin-top: 10px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+.edTool { padding: 5px 12px; font-size: 12.5px; }
+.edTool.active { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+#edInfo { margin-top: 10px; color: var(--ink-soft); font-size: 11.5px; line-height: 1.55; }

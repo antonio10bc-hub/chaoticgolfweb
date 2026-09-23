@@ -8,6 +8,8 @@ function palo(n) {
     icon: '<span class="ico ico-palo"></span>',
     art: 'icon.palo',
     stroke: true,
+    face: { art: 'palo', value: String(n) },
+    blockedReason: 'reason.paloTrap',
     canPlay(game, p) { return !(n <= 1 && game.inTrap(game.ownBall(p))); },
     play(game, p, idx) {
       const ball = game.ownBall(p);

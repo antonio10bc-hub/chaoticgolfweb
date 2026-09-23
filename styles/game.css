@@ -1,0 +1,289 @@
+/* Pantalla de partida: barra · asientos | tablero | pilas · bandeja de la mano */
+#gameScreen { display: none; }
+#game {
+  position: relative;
+  height: 100vh; height: 100dvh;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  background-image: var(--grain), repeating-linear-gradient(135deg, var(--grass-dark) 0 90px, var(--grass-mid) 90px 180px);
+  overflow: hidden;
+}
+#game > :not(#gameDecor) { position: relative; z-index: 1; }
+/* búnkeres y árboles decorativos en los márgenes (sin tapar la UI) */
+#gameDecor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+#gameDecor svg { position: absolute; }
+#gameDecor .dBunker.a { width: 300px; left: -90px; top: 22%; transform: rotate(-18deg); opacity: .95; }
+#gameDecor .dBunker.b { width: 260px; right: -80px; bottom: 26%; transform: rotate(160deg); opacity: .95; }
+#gameDecor .dTree.a { width: 160px; left: -40px; bottom: 8%; }
+#gameDecor .dTree.b { width: 130px; right: -30px; top: 6%; }
+#gameDecor .dTree.c { width: 100px; right: 40px; top: 18%; opacity: .9; }
+
+/* ---------- avatar de jugador (bola plana de su color) ---------- */
+.avatar {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--pc, #888);
+  color: #fff; font-weight: 600; font-size: 12.5px; letter-spacing: .02em;
+  text-shadow: 0 1px 1px rgba(0,0,0,.25);
+  box-shadow: 3px 3px 0 var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1), inset 3px 3px 0 rgba(255,255,255,.18);
+}
+.avatar.xs { width: 22px; height: 22px; font-size: 9px; box-shadow: 2px 2px 0 var(--shadow); }
+
+/* ---------- barra superior ---------- */
+#gameBar {
+  z-index: 30;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  padding: 14px 18px 10px;
+}
+.barSide { display: flex; gap: 8px; align-items: center; }
+.barSide.right { justify-content: flex-end; padding-right: 92px; } /* hueco para los botones de sonido */
+#turnPill {
+  --pc: #888;
+  display: flex; align-items: center; gap: 12px;
+  padding: 5px 16px 5px 5px; border-radius: 999px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink);
+  border: 1.5px solid transparent;
+  box-shadow: var(--shadow-soft);
+  transition: border-color .25s, box-shadow .25s;
+}
+#turnPill .avatar { width: 32px; height: 32px; font-size: 11.5px; }
+.tpText { display: flex; flex-direction: column; line-height: 1.1; min-width: 120px; }
+.tpText b { font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; }
+.tpText small { font-size: 11px; color: var(--ink-soft); font-weight: 400; display: flex; align-items: center; gap: 2px; }
+#turnPill.mine { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,135,58,.22), var(--shadow-soft); }
+.pips { display: flex; gap: 4px; padding-left: 10px; border-left: 1px solid var(--cream-line); }
+.pips i { width: 10px; height: 14px; border-radius: 2.5px; border: 1px solid var(--ink-line); transition: background-color .25s; }
+.pips i.on { background: var(--ink); border-color: var(--ink); }
+
+/* ---------- mesa ---------- */
+#table {
+  display: grid; grid-template-columns: minmax(180px, 236px) minmax(0, 1fr) minmax(150px, 200px);
+  gap: 16px; padding: 4px 18px 10px; min-height: 0;
+}
+#table.noSeats { grid-template-columns: minmax(150px, 200px) minmax(0, 1fr) minmax(150px, 200px); }
+#table.noSeats #seats { visibility: hidden; }
+#boardCol { position: relative; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#boardWrap {
+  position: relative; max-width: 100%; max-height: 100%; overflow: auto;
+  padding: 10px; border-radius: 18px;
+  background-image: var(--grain); background-color: var(--cream);
+  box-shadow: 14px 14px 0 rgba(20,40,20,.22), var(--shadow-soft);
+}
+
+/* ---------- asientos (rivales) ---------- */
+#seats { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; overflow: auto; padding: 6px 6px 6px 14px; }
+.seat {
+  --pc: #888;
+  position: relative; display: flex; align-items: center; gap: 11px;
+  padding: 11px 13px; border-radius: 16px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink);
+  border: 1.5px solid transparent;
+  box-shadow: var(--shadow-soft);
+  opacity: .82;
+  transition: opacity .25s var(--ease-out), border-color .25s, transform .25s var(--ease-out);
+}
+.seat.active { opacity: 1; border-color: var(--pc); transform: translateX(4px); }
+.seat.active::before { /* marcador de turno */
+  content: ''; position: absolute; left: -13px; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); transform: translateY(-50%); box-shadow: 0 0 0 3px rgba(232,135,58,.3);
+}
+.seat.thinking .avatar { animation: breatheAv 1.4s ease-in-out infinite; }
+@keyframes breatheAv { 50% { transform: scale(1.06); } }
+.seat.cta { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,135,58,.22), var(--shadow-soft); }
+.seat.won { opacity: 1; border-color: var(--accent); }
+.seatBody { min-width: 0; flex: 1; }
+.seatName { font-weight: 600; font-size: 14px; line-height: 1.1; display: flex; align-items: center; gap: 6px; letter-spacing: -.01em; }
+.botTag { font-size: 9.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+  padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ink-line); color: var(--ink-soft); }
+.seatStatus { font-size: 11.5px; font-weight: 400; color: var(--ink-soft); display: flex; align-items: center; gap: 2px; margin: 2px 0 6px; }
+.seat.active .seatStatus, .seat.cta .seatStatus { color: var(--accent-deep); font-weight: 500; }
+.seatCards { display: flex; gap: 4px; flex-wrap: wrap; min-height: 34px; }
+.noCards { font-size: 11px; color: var(--ink-soft); align-self: center; }
+.turnPulse { animation: turnGlow .3s var(--ease-out); }
+@keyframes turnGlow { from { transform: translateX(0) scale(.97); } }
+
+/* puntos de "pensando…" */
+.thinkDots { display: inline-flex; gap: 3px; margin-left: 5px; align-items: center; }
+.thinkDots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .3; animation: thinkB 1.2s infinite; }
+.thinkDots i:nth-child(2) { animation-delay: .2s; }
+.thinkDots i:nth-child(3) { animation-delay: .4s; }
+@keyframes thinkB { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+
+/* ---------- pilas (mazo / descartes / última jugada) ---------- */
+#piles { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; min-height: 0; }
+.pile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--cream); }
+#deckPile { cursor: pointer; }
+.pileStack { position: relative; width: 62px; height: 87px; }
+.pileStack > i {
+  position: absolute; inset: 0; border-radius: 9px;
+  background: var(--card-back); border: 3px solid var(--cream);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+.pileStack > i:nth-child(1) { transform: translate(-4px, 3px) rotate(-5deg); }
+.pileStack > i:nth-child(2) { transform: translate(3px, 1px) rotate(4deg); }
+#deckPile:hover .pileStack > i:nth-child(3) { transform: translateY(-4px); transition: transform .2s var(--ease-out); }
+#deckPile.empty .pileStack > i { opacity: .25; }
+#discardTop { display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+#discardTop.empty { border: 1.5px dashed rgba(241,241,220,.6); }
+#discardTop .card.mini { --cw: 62px; transform: rotate(-4deg); }
+#discardTop .card.mini .cardName { display: block; font-size: 7.5px; }
+.pileLbl { font-size: 12px; font-weight: 400; letter-spacing: .02em; }
+.pileLbl b { display: inline-block; min-width: 24px; padding: 1px 7px; margin-left: 2px; border-radius: 999px; border: 1px solid rgba(241,241,220,.55); font-weight: 500; }
+#lastPlay { min-height: 58px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--cream); text-align: center; }
+#lastPlay small { font-size: 10px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; opacity: .75; }
+.lastRow { display: flex; align-items: center; gap: 7px; background: rgba(36,36,36,.35); padding: 4px 12px 4px 4px; border-radius: 999px; font-size: 12.5px; }
+.lastRow b { font-weight: 500; }
+
+/* ---------- bandeja de la mano ---------- */
+#dock { --pc: #888; position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center; padding: 0 18px 14px; }
+#actionBar { min-height: 44px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 8px; width: 100%; }
+.hint {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  padding: 6px 8px 6px 7px; border-radius: 999px;
+  background: rgba(36,36,36,.82); color: var(--cream); font-size: 14px; font-weight: 400;
+  box-shadow: 0 8px 24px rgba(20,40,20,.25);
+  backdrop-filter: blur(4px);
+  animation: hintIn .25s var(--ease-out);
+}
+.hint .hintText { padding-right: 6px; }
+.hint.act { box-shadow: 0 0 0 1.5px var(--accent), 0 8px 24px rgba(20,40,20,.25); }
+.hint.discard { box-shadow: 0 0 0 1.5px var(--accent-deep), 0 8px 24px rgba(20,40,20,.25); }
+.hint.passive { opacity: .9; }
+.hint.idle { background: rgba(36,36,36,.55); box-shadow: none; font-size: 13px; padding: 6px 16px; }
+.hintBtns { display: flex; gap: 6px; }
+.hint button { --b-fg: var(--cream); --b-line: rgba(241,241,220,.5); }
+.hint button:hover { background-color: rgba(241,241,220,.14); }
+.hint .btn-light { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream); }
+.hint .btn-light:hover { background-color: #fff; }
+.hint .btn-secondary { --b-bg: var(--accent); --b-fg: var(--ink); --b-line: var(--accent); }
+.hintBtns .stepBtn { min-width: 38px; font-size: 14px; font-weight: 600; }
+.hintWho { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--pc); color: #fff; font-size: 9.5px; font-weight: 600; }
+@keyframes hintIn { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+#dockRow {
+  width: min(1080px, 100%);
+  display: grid; grid-template-columns: 190px minmax(0, 1fr) auto; align-items: center; gap: 18px;
+  padding: 12px 18px 14px; border-radius: 20px;
+  background-image: var(--grain); background-color: var(--cream);
+  border: 1.5px solid transparent;
+  box-shadow: var(--shadow-soft), 10px 10px 0 rgba(20,40,20,.18);
+  transition: border-color .25s var(--ease-out), box-shadow .25s;
+}
+#dock.myTurn #dockRow { border-color: var(--accent); }
+#dock.cta #dockRow { border-color: var(--accent-deep); box-shadow: 0 0 0 4px rgba(217,96,58,.2), var(--shadow-soft); }
+#dockOwner { display: flex; align-items: center; gap: 11px; min-width: 0; }
+#dockOwner .avatar { width: 42px; height: 42px; font-size: 14px; }
+.ownerTxt { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.ownerTxt b { font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.ownerTxt small { font-size: 12px; color: var(--ink-soft); }
+#dock.myTurn .ownerTxt small { color: var(--accent-deep); font-weight: 500; }
+#hands { display: flex; gap: 12px; justify-content: center; align-items: flex-end; min-height: 130px; padding-top: 8px; }
+#hands.swap .card { animation: swapIn .25s var(--ease-out) backwards; }
+#hands.swap .card:nth-child(2) { animation-delay: .04s; } #hands.swap .card:nth-child(3) { animation-delay: .08s; }
+@keyframes swapIn { from { transform: translateY(14px); opacity: 0; } }
+#dock.waiting #hands .card:not(.orange):not(.back) { opacity: .85; }
+.emptyHand { font-size: 13px; color: var(--ink-soft); }
+#turnActions { display: flex; gap: 10px; align-items: center; }
+#turnActions button { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+#turnActions button small { font-size: .7em; font-weight: 400; opacity: .75; letter-spacing: .02em; }
+#endTurnBtn { min-width: 170px; }
+#endTurnBtn.cta, #endTurnBtn.ctaEndTurn { box-shadow: 0 0 0 4px rgba(232,135,58,.45), 0 6px 16px rgba(20,40,20,.2); animation: endPulse 1.6s ease-in-out infinite; }
+@keyframes endPulse { 50% { box-shadow: 0 0 0 7px rgba(232,135,58,.25), 0 6px 16px rgba(20,40,20,.2); } }
+
+/* ---------- tablero: claridad de la jugada ---------- */
+.piece .turnMark { display: none; }
+.piece.isTurn .turnMark { /* marcador minimalista de turno, en naranja */
+  display: block; position: absolute; left: 50%; top: -9px; z-index: 6;
+  width: 12px; height: 12px; margin-left: -6px; border-radius: 50% 50% 50% 0;
+  background: var(--accent); transform: rotate(-45deg);
+  box-shadow: -2px 2px 0 var(--shadow);
+  animation: markBob 1.6s ease-in-out infinite;
+}
+.piece.isTurn .turnMark::after { content: ''; position: absolute; inset: 3.5px; border-radius: 50%; background: var(--cream); }
+@keyframes markBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+.piece.isSel .circ { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--accent), 4px 4px 0 5px var(--shadow); }
+.piece.acting { z-index: 7; }
+
+/* ---------- JAQUE ---------- */
+#jaque {
+  position: absolute; left: 50%; bottom: calc(100% - 46px); transform: translateX(-50%); z-index: 25;
+  display: none; align-items: center; gap: 14px;
+  padding: 10px 12px 10px 14px; border-radius: 16px; min-width: min(480px, 92%);
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink);
+  border: 1.5px solid var(--accent-deep);
+  box-shadow: 0 0 0 4px rgba(217,96,58,.18), var(--shadow-soft);
+}
+#jaque.visible { display: flex; animation: jaqueIn .28s var(--ease-out); }
+@keyframes jaqueIn { from { transform: translate(-50%, 8px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+.jqBadge {
+  font-size: 15px; font-weight: 600; letter-spacing: .08em; padding: 7px 12px; border-radius: 999px;
+  background: var(--accent-deep); color: var(--cream);
+}
+.jqText { flex: 1; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.jqText b { font-size: 15px; font-weight: 600; }
+.jqText small { font-size: 12px; color: var(--ink-soft); }
+.jqTimer { height: 3px; border-radius: 999px; background: var(--cream-line); margin-top: 7px; overflow: hidden; }
+.jqTimer i { display: block; height: 100%; background: var(--accent-deep); border-radius: inherit; transform-origin: left; animation: jqTime linear forwards; }
+@keyframes jqTime { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+#jaque button { white-space: nowrap; }
+
+/* ---------- banner de cambio de turno ---------- */
+#turnBanner {
+  --pc: #888;
+  position: fixed; top: 34%; left: 50%; z-index: 65; pointer-events: none;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 26px 10px 10px; border-radius: 999px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink);
+  box-shadow: 0 0 0 1.5px var(--pc), var(--shadow-soft), 10px 10px 0 rgba(20,40,20,.2);
+  transform: translate(-50%, -50%); opacity: 0;
+}
+#turnBanner .avatar { width: 44px; height: 44px; font-size: 15px; }
+#turnBanner b { font-size: 26px; font-weight: 500; letter-spacing: -.02em; }
+#turnBanner.show { animation: bannerIn 1.05s var(--ease-out) forwards; }
+@keyframes bannerIn {
+  0%   { transform: translate(-50%, -40%); opacity: 0; }
+  20%  { transform: translate(-50%, -50%); opacity: 1; }
+  78%  { transform: translate(-50%, -50%); opacity: 1; }
+  100% { transform: translate(-50%, -58%); opacity: 0; }
+}
+
+/* ---------- pantallas medianas / móvil ---------- */
+@media (max-width: 1060px) {
+  #table { grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) minmax(110px, 150px); gap: 10px; }
+  #dockRow { grid-template-columns: minmax(0, 1fr) auto; }
+  #dockOwner { display: none; }
+}
+@media (max-width: 760px) {
+  #gameBar { grid-template-columns: auto 1fr auto; padding: 8px 10px 6px; gap: 8px; }
+  #gameBar .lbl { display: none; }
+  .barSide.right { padding-right: 44px; }
+  .barSide { gap: 5px; }
+  #gameBar button { white-space: nowrap; padding: 6px 10px; }
+  #turnPill { justify-self: center; padding-right: 10px; gap: 8px; }
+  #turnPill .avatar { width: 28px; height: 28px; font-size: 10.5px; }
+  .tpText { min-width: 0; } .tpText b { font-size: 14px; white-space: nowrap; } .tpText small { display: none; }
+  .pips { padding-left: 7px; }
+  #table, #table.noSeats { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); padding: 0 8px 6px; gap: 6px; }
+  #seats { flex-direction: row; overflow-x: auto; justify-content: flex-start; padding: 4px 2px 8px; }
+  #table.noSeats #seats { display: none; }
+  .seat { flex: 0 0 auto; padding: 6px 10px 6px 6px; gap: 7px; }
+  .seat.active { transform: none; }
+  .seat.active::before { display: none; }
+  .seat .avatar { width: 28px; height: 28px; font-size: 10.5px; }
+  .seatCards .card.mini { --cw: 24px; }
+  .seatStatus { margin-bottom: 3px; }
+  #piles { display: none; }
+  #gameDecor { display: none; }
+  #boardWrap { box-shadow: 8px 8px 0 rgba(20,40,20,.22), var(--shadow-soft); padding: 7px; }
+  #dock { padding: 0 8px 8px; }
+  #actionBar { min-height: 36px; margin-bottom: 6px; }
+  .hint { font-size: 12.5px; border-radius: 16px; }
+  #dockRow { grid-template-columns: 1fr; gap: 8px; padding: 10px; border-radius: 18px; box-shadow: var(--shadow-soft); }
+  #hands { min-height: 104px; gap: 8px; }
+  #hands .card { --cw: 74px; }
+  #turnActions { justify-content: stretch; }
+  #turnActions button { flex: 1; }
+  #endTurnBtn { min-width: 0; }
+  #jaque { flex-wrap: wrap; bottom: calc(100% - 40px); }
+  #turnBanner b { font-size: 20px; }
+}

@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <link rel="stylesheet" href="styles/base.css">
 <link rel="stylesheet" href="styles/board.css">
+<link rel="stylesheet" href="styles/game.css">
 <link rel="stylesheet" href="styles/hands.css">
 <link rel="stylesheet" href="styles/hud.css">
 <link rel="stylesheet" href="styles/debug.css">
@@ -24,47 +25,113 @@
 <body>
 <noscript><p style="padding:20px;color:#fff">Chaotic Golf necesita JavaScript.</p></noscript>
 
+<svg id="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <!-- césped segado: franjas diagonales -->
+    <pattern id="mow" width="120" height="120" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+      <rect width="60" height="120" fill="#4F8A4B"/><rect x="60" width="60" height="120" fill="#5C9854"/>
+    </pattern>
+    <pattern id="mowGreen" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+      <rect width="23" height="46" fill="#8DB05F"/><rect x="23" width="23" height="46" fill="#94B665"/>
+    </pattern>
+    <!-- grano fino (4–8 %) -->
+    <filter id="grainF" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <clipPath id="greenClip"><path d="M548 128c126-18 262 58 290 186 26 122-54 256-190 286-150 34-296-40-318-178-20-128 78-276 218-294z"/></clipPath>
+  </defs>
+
+  <!-- ilustración aérea del hoyo (menú, fondos) -->
+  <symbol id="aerial" viewBox="0 0 1000 700">
+    <rect width="1000" height="700" fill="url(#mow)"/>
+    <!-- zonas de rough más oscuras -->
+    <path d="M0 520c80-30 160 0 210 60 40 50 40 90 30 120H0z" fill="#467F43" opacity=".55"/>
+    <path d="M820 0c20 60 90 90 180 80V0z" fill="#467F43" opacity=".55"/>
+    <!-- collar del green -->
+    <path d="M548 108c140-20 290 62 318 206 28 134-60 282-210 314-166 36-326-44-350-196-22-142 86-304 242-324z" fill="#79A456"/>
+    <!-- green segado -->
+    <g clip-path="url(#greenClip)"><rect width="1000" height="700" fill="url(#mowGreen)"/></g>
+    <!-- búnker arriba a la izquierda (con collar) -->
+    <path d="M60 -20c120 0 230 40 250 130 22 96-20 160-80 150-70-12-60-90-120-120-60-30-130 10-150-60-16-56 20-100 100-100z" fill="#6FA052"/>
+    <path d="M78 -6c104 4 196 40 212 116 18 80-14 134-62 126-54-10-50-76-102-104-56-30-116 6-132-50-12-44 16-90 84-88z" fill="#ECE6CC"/>
+    <path d="M96 10c86 6 164 36 176 98 6 34-2 60-16 76 4-50-16-96-80-128-50-26-104-2-122-40 4-10 16-10 42-6z" fill="#F6F2E0"/>
+    <!-- búnker abajo a la izquierda -->
+    <path d="M40 640c-10-90 50-160 150-170 110-12 200 40 214 110 12 70-60 120-180 128-110 8-178-8-184-68z" fill="#6FA052"/>
+    <path d="M62 632c-6-74 46-132 132-140 96-10 172 32 182 90 10 58-52 96-154 104-92 6-154-4-160-54z" fill="#ECE6CC"/>
+    <path d="M86 604c10-50 52-86 118-90 72-4 128 22 144 60-50-24-110-30-170-18-44 8-74 26-92 48z" fill="#F6F2E0"/>
+    <!-- búnker junto al green -->
+    <path d="M318 468c30-40 94-44 126-6 28 34 4 78-50 82-54 4-104-36-76-76z" fill="#6FA052"/>
+    <path d="M330 470c26-30 78-32 104-2 22 26 2 60-42 62-44 2-84-28-62-60z" fill="#ECE6CC"/>
+    <!-- árboles vistos desde arriba, con sombra larga -->
+    <g>
+      <ellipse cx="930" cy="560" rx="70" ry="40" fill="rgba(20,40,20,.28)" transform="rotate(35 930 560) translate(38 30)"/>
+      <circle cx="930" cy="560" r="58" fill="#3E7240"/><circle cx="914" cy="544" r="34" fill="#4A8248"/>
+      <ellipse cx="870" cy="660" rx="50" ry="30" fill="rgba(20,40,20,.28)" transform="rotate(35 870 660) translate(30 24)"/>
+      <circle cx="866" cy="660" r="40" fill="#3E7240"/><circle cx="855" cy="648" r="22" fill="#4A8248"/>
+      <ellipse cx="740" cy="30" rx="54" ry="30" fill="rgba(20,40,20,.28)" transform="rotate(35 740 30) translate(32 24)"/>
+      <circle cx="740" cy="30" r="44" fill="#3E7240"/><circle cx="728" cy="18" r="24" fill="#4A8248"/>
+    </g>
+    <!-- bandera con sombra larga -->
+    <path d="M636 262 L738 346" stroke="rgba(20,40,20,.3)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M738 346 l30 -4 l-14 28 z" fill="rgba(20,40,20,.3)"/>
+    <ellipse cx="636" cy="264" rx="15" ry="10" fill="#242424"/>
+    <path d="M636 264 V150" stroke="#F1F1DC" stroke-width="6" stroke-linecap="round"/>
+    <path d="M639 152 L690 170 L639 190 Z" fill="#E8873A"/>
+    <!-- bola -->
+    <circle cx="566" cy="360" r="9" fill="rgba(20,40,20,.3)" transform="translate(6 6)"/>
+    <circle cx="566" cy="360" r="9" fill="#fff"/>
+    <!-- grano -->
+    <rect width="1000" height="700" filter="url(#grainF)" opacity=".07"/>
+  </symbol>
+
+  <!-- iconos de línea fina (24×24, trazo currentColor) -->
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M19 12H6M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v3.8h3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4zM16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 20v-6M5 10V4M12 20v-8M12 8V4M19 20v-4M19 12V4M2.5 14h5M9.5 8h5M16.5 16h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5a4 4 0 0 0-2-2zM16 4l-2 2 4 4 2-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM17 14v6M14 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 21V3.5M6 4h11l-2.5 4L17 12H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3 3 0 0 0 3.5 4M16 6h3.5a3 3 0 0 1-3.5 4M12 13v4M8.5 20h7M10 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5.5l10-2V16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 12V6.5a1.5 1.5 0 0 1 3 0V11M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.5 0-4-1.2-5.2-3.2L4 13.5a1.4 1.4 0 0 1 2.3-1.6L8 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-club" viewBox="0 0 24 24"><path d="M17 3 9.5 17M9.5 17l-4 .5a1.8 1.8 0 0 0 .3 3.3l4.6-.3.4-2.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16.5" cy="19" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-hole" viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="7" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 18V4l6 2.5-6 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-burst" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-spiral" viewBox="0 0 24 24"><path d="M12 12a1.5 1.5 0 1 1 1.5 1.5A3.5 3.5 0 1 1 17 10a6 6 0 1 1-6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M11 7 5 12l6 5zM19 7l-6 5 6 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sand" viewBox="0 0 24 24"><path d="M3 17c2-4 5.5-6 9-6s7 2 9 6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div id="scene" aria-hidden="true">
+<svg id="menuScene" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#aerial"/></svg>
+</div>
+
 <div id="menuScreen">
-  <svg id="menuScene" viewBox="0 0 1000 640" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
-    <!-- nubes -->
-    <g fill="#ffffff" opacity=".8" class="mClouds">
-      <ellipse cx="150" cy="80" rx="62" ry="22"/><ellipse cx="205" cy="70" rx="44" ry="17"/>
-      <ellipse cx="830" cy="120" rx="70" ry="24"/><ellipse cx="775" cy="110" rx="46" ry="18"/>
-      <ellipse cx="500" cy="50" rx="50" ry="16"/>
-    </g>
-    <!-- colinas del campo -->
-    <path d="M0,330 Q250,250 520,310 T1000,290 L1000,640 L0,640 Z" fill="#8fcb84"/>
-    <path d="M0,410 Q300,340 620,400 T1000,380 L1000,640 L0,640 Z" fill="#7bbf6f"/>
-    <!-- calle clara hacia el green -->
-    <path d="M380,640 Q450,480 520,452 Q590,480 660,640 Z" fill="#93cf82" opacity=".9"/>
-    <!-- lago (a la derecha, zona libre de botones) -->
-    <ellipse cx="850" cy="545" rx="115" ry="40" fill="#8fd4e8" stroke="#6db6cc" stroke-width="6"/>
-    <ellipse cx="810" cy="535" rx="24" ry="6" fill="#ffffff" opacity=".5" class="mShine"/>
-    <!-- bunkers de arena -->
-    <ellipse cx="720" cy="478" rx="92" ry="28" fill="#f2d891" stroke="#dcbd6d" stroke-width="5"/>
-    <ellipse cx="630" cy="580" rx="60" ry="20" fill="#f2d891" stroke="#dcbd6d" stroke-width="5"/>
-    <!-- green con bandera -->
-    <ellipse cx="520" cy="442" rx="118" ry="38" fill="#b8e3a4"/>
-    <ellipse cx="548" cy="450" rx="15" ry="6" fill="#22383b"/>
-    <rect x="545" y="366" width="5" height="84" rx="2" fill="#efe9da"/>
-    <path d="M550,368 L602,382 L550,398 Z" fill="#d95f5f" class="mFlag"/>
-    <!-- árbol (a la derecha) -->
-    <rect x="940" y="368" width="11" height="36" rx="4" fill="#8a6a3a"/>
-    <g class="mTree">
-      <circle cx="945" cy="350" r="27" fill="#5e9e54"/>
-      <circle cx="922" cy="364" r="18" fill="#6fae62"/>
-      <circle cx="969" cy="364" r="18" fill="#6fae62"/>
-    </g>
-    <!-- pelota -->
-    <circle cx="466" cy="486" r="7" fill="#ffffff" class="mBallMenu"/>
-  </svg>
+ <div class="mFrame">
   <main class="mContent">
-    <h1 class="mTitle"><span class="l1">Chaotic</span><span class="l2">Golf</span></h1>
-    <button id="storyBtn" class="mBtn story" data-i18n="menu.story">Modo Historia</button>
-    <button id="pveBtn" class="mBtn multi" data-i18n="menu.pve">Partida Rápida</button>
+    <h1 class="mTitle"><span class="l1"><span class="c-accent">C</span>haotic</span> <span class="l2"><span class="c-navy">G</span>o<span class="c-grass">l</span>f</span></h1>
+    <div class="mActions">
+    <button id="storyBtn" class="mBtn story"><span data-i18n="menu.story">Modo Historia</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+    <button id="pveBtn" class="mBtn multi"><span data-i18n="menu.pve">Partida Rápida</span><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></button>
+    </div>
+    <p class="mTag" data-i18n="menu.tag">Golf de cartas. Caótico. Con JAQUE.</p>
   </main>
-  <button id="testToolBtn" class="cornerBtn" style="left:92px" data-i18n-title="menu.testToolTitle" data-i18n="menu.testTool">🔧 testing tool</button>
-  <button id="editorBtn" class="cornerBtn" style="left:214px" data-i18n-title="menu.editorTitle" data-i18n="menu.editor">🏗️ creador de niveles</button>
+  <div class="mArt" aria-hidden="true"><svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice"><use href="#aerial"/></svg></div>
+ </div>
+  <nav class="mBottom">
+  <button id="testToolBtn" class="cornerBtn" data-i18n-title="menu.testToolTitle"><svg class="i" aria-hidden="true"><use href="#i-wrench"/></svg><span data-i18n="menu.testTool">testing tool</span></button>
+  <button id="editorBtn" class="cornerBtn" data-i18n-title="menu.editorTitle"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.editor">creador de niveles</span></button>
+  </nav>
 </div>
 
 <div id="pveScreen">
@@ -75,49 +142,86 @@
     <div class="pveOpts" id="pveColors"></div>
     <h4 data-i18n="pve.size">Tamaño del tablero</h4>
     <div class="pveOpts" id="pveSizes">
-      <button class="pveOpt" data-size="s" data-i18n="pve.sizeS">Pequeño · 5×5</button>
-      <button class="pveOpt sel" data-size="m" data-i18n="pve.sizeM">Mediano · 7×9</button>
-      <button class="pveOpt" data-size="l" data-i18n="pve.sizeL">Grande · 9×11</button>
+      <button class="pveOpt size" data-size="s"><span class="optGrid s" aria-hidden="true"></span><b data-i18n="pve.sizeSName">Pequeño</b><small>5×5</small></button>
+      <button class="pveOpt size sel" data-size="m"><span class="optGrid m" aria-hidden="true"></span><b data-i18n="pve.sizeMName">Mediano</b><small>7×9</small></button>
+      <button class="pveOpt size" data-size="l"><span class="optGrid l" aria-hidden="true"></span><b data-i18n="pve.sizeLName">Grande</b><small>9×11</small></button>
     </div>
     <h4 data-i18n="pve.opps">Contrincantes (máquina)</h4>
     <div class="pveOpts" id="pveOpps">
-      <button class="pveOpt" data-n="1">1</button>
-      <button class="pveOpt sel" data-n="2">2</button>
-      <button class="pveOpt" data-n="3">3</button>
-      <button class="pveOpt" data-n="4">4</button>
+      <button class="pveOpt opp" data-n="1"><span class="optBots" aria-hidden="true"><i></i></span><b>1</b></button>
+      <button class="pveOpt opp sel" data-n="2"><span class="optBots" aria-hidden="true"><i></i><i></i></span><b>2</b></button>
+      <button class="pveOpt opp" data-n="3"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
+      <button class="pveOpt opp" data-n="4"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
     </div>
-    <button id="pvePlay" data-i18n="pve.play">⛳ Jugar</button>
-    <button id="pveBack" data-i18n="pve.back">← Volver al menú</button>
+    <button id="pvePlay" class="btn-primary btn-lg"><span data-i18n="pve.play">Jugar</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+    <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver al menú</button>
   </div>
 </div>
 
 <div id="gameScreen">
 <div id="storyTip" role="status" aria-live="polite"></div>
-<div id="app">
-  <div id="main">
-    <div id="boardWrap">
-      <span id="turnInfo" aria-live="polite"></span>
-      <div id="boardArea">
-        <div id="board" role="grid" data-i18n-aria="a11y.board"></div>
-        <div id="pieces" aria-hidden="true"></div>
-        <div id="boardFlash" aria-hidden="true"></div>
-        <div id="rewindTag" aria-hidden="true">⏪ REWIND</div>
-      </div>
-      <div id="overlays">
-        <div id="jaque" role="alert"></div>
-      </div>
-    </div>
-    <div id="topbar">
-      <button id="endTurnBtn" data-i18n="game.endTurn">Fin de turno (robar)</button>
-      <button id="discardBtn" data-i18n="game.discard">Descartar y robar</button>
-      <span id="lastCard" data-i18n-title="game.lastCardTitle" title="Última carta jugada"></span>
-      <span id="deckWrap"><span id="deckInfo" role="button" tabindex="0" data-i18n-title="game.deckTitle" title="Click para ver qué queda en el mazo"></span><div id="deckPop"></div></span>
-      <button id="resetBtn" data-i18n-title="game.resetTitle" data-i18n="game.reset">↺ Reiniciar</button>
-      <button id="menuBtn" class="danger" data-i18n="nav.toMenu">← Menú</button>
-    </div>
-    <div id="hands"></div>
+<div id="game">
+  <div id="gameDecor" aria-hidden="true">
+    <svg class="dBunker a" viewBox="0 0 300 220"><path d="M20 120C10 50 80 8 160 12c90 4 130 60 120 110-10 56-80 90-150 84C60 200 26 170 20 120z" fill="#6FA052"/><path d="M40 118c-6-56 50-90 118-86 74 4 106 50 98 90-8 44-66 70-124 64-54-6-88-30-92-68z" fill="#ECE6CC"/><path d="M60 100c10-36 50-56 100-54 50 2 80 26 88 56-40-26-120-30-188-2z" fill="#F6F2E0"/></svg>
+    <svg class="dBunker b" viewBox="0 0 300 220"><path d="M20 120C10 50 80 8 160 12c90 4 130 60 120 110-10 56-80 90-150 84C60 200 26 170 20 120z" fill="#6FA052"/><path d="M40 118c-6-56 50-90 118-86 74 4 106 50 98 90-8 44-66 70-124 64-54-6-88-30-92-68z" fill="#ECE6CC"/><path d="M60 100c10-36 50-56 100-54 50 2 80 26 88 56-40-26-120-30-188-2z" fill="#F6F2E0"/></svg>
+    <svg class="dTree a" viewBox="0 0 200 200"><ellipse cx="120" cy="120" rx="70" ry="40" fill="rgba(20,40,20,.28)" transform="rotate(35 120 120)"/><circle cx="84" cy="84" r="58" fill="#3E7240"/><circle cx="68" cy="68" r="32" fill="#4A8248"/></svg>
+    <svg class="dTree b" viewBox="0 0 200 200"><ellipse cx="120" cy="120" rx="70" ry="40" fill="rgba(20,40,20,.28)" transform="rotate(35 120 120)"/><circle cx="84" cy="84" r="58" fill="#3E7240"/><circle cx="68" cy="68" r="32" fill="#4A8248"/></svg>
+    <svg class="dTree c" viewBox="0 0 200 200"><ellipse cx="120" cy="120" rx="70" ry="40" fill="rgba(20,40,20,.28)" transform="rotate(35 120 120)"/><circle cx="84" cy="84" r="58" fill="#3E7240"/><circle cx="68" cy="68" r="32" fill="#4A8248"/></svg>
   </div>
+  <!-- barra superior: navegación discreta a la izquierda, de quién es el turno en el centro -->
+  <header id="gameBar">
+    <div class="barSide">
+      <button id="menuBtn" class="btn-ghost btn-sm btn-icon" data-i18n="nav.toMenu">← Menú</button>
+      <button id="resetBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="game.resetTitle" title="Empezar la partida de cero"><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg><span class="lbl" data-i18n="game.resetShort">Reiniciar</span></button>
+    </div>
+    <div id="turnPill" aria-live="polite"></div>
+    <div class="barSide right">
+      <button id="logTab" class="btn-ghost btn-sm btn-icon" data-i18n-title="game.logTitle" title="Historial de jugadas" aria-controls="logPanel"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg><span class="lbl" data-i18n="game.log">Historial</span></button>
+    </div>
+  </header>
+
+  <div id="table">
+    <aside id="seats" aria-label="Jugadores"></aside>
+    <div id="boardCol">
+      <div id="boardWrap">
+        <div id="boardArea">
+          <div id="board" role="grid" data-i18n-aria="a11y.board"></div>
+          <div id="pieces" aria-hidden="true"></div>
+          <div id="boardFlash" aria-hidden="true"></div>
+          <div id="rewindTag" aria-hidden="true"><svg class="i"><use href="#i-rewind"/></svg> REWIND</div>
+        </div>
+      </div>
+    </div>
+    <aside id="piles">
+      <div id="deckPile" class="pile" role="button" tabindex="0" data-i18n-title="game.deckTitle" title="Click para ver qué queda en el mazo">
+        <div class="pileStack" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="pileLbl"><span data-i18n="game.deck">Mazo</span> <b id="deckCount">0</b></div>
+        <div id="deckPop"></div>
+      </div>
+      <div id="discardPile" class="pile">
+        <div id="discardTop" class="pileStack empty" aria-hidden="true"></div>
+        <div class="pileLbl"><span data-i18n="game.discards">Descartes</span> <b id="discardCount">0</b></div>
+      </div>
+      <div id="lastPlay" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <!-- dock: tu mano y las acciones de turno, siempre a mano -->
+  <section id="dock">
+    <div id="jaque" role="alert"></div>
+    <div id="actionBar" role="status" aria-live="polite"></div>
+    <div id="dockRow">
+      <div id="dockOwner"></div>
+      <div id="hands"></div>
+      <div id="turnActions">
+        <button id="discardBtn" class="btn-secondary"><span data-i18n="game.discard">Descartar</span><small data-i18n="game.discardSub">y robar</small></button>
+        <button id="endTurnBtn" class="btn-accent btn-lg"><span data-i18n="game.endTurn">Terminar turno</span><small data-i18n="game.endTurnSub">roba hasta 2</small></button>
+      </div>
+    </div>
+  </section>
 </div>
+<div id="cardTip" role="tooltip" aria-hidden="true"></div>
+<div id="playShow" aria-hidden="true"></div>
 </div><!-- /gameScreen -->
 
 <div id="editorScreen">
@@ -159,20 +263,21 @@
 </div>
 
 <div id="storyScreen">
+  <div class="screenTop"><button id="storyBack" class="btn-light btn-sm" data-i18n="nav.toMenu">← Menú</button></div>
   <h1 class="sTitle" data-i18n="story.title">Modo Historia</h1>
+  <p class="sSub" data-i18n="story.sub">Aprende a jugar hoyo a hoyo</p>
   <div id="lvlGrid"></div>
-  <button id="storyBack" class="danger" data-i18n="nav.toMenu">← Menú</button>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="turnBanner" aria-hidden="true"></div>
-<button id="sfxBtn" data-i18n-title="sound.toggleTitle" title="Sonido: activar / silenciar">🔊</button>
-<button id="sndCfgBtn" data-i18n-title="sound.settingsTitle" title="Ajustes de sonido" aria-controls="sndPanel" aria-expanded="false">🎚</button>
+<button id="sfxBtn" data-i18n-title="sound.toggleTitle" title="Sonido: activar / silenciar"><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg></button>
+<button id="sndCfgBtn" data-i18n-title="sound.settingsTitle" title="Ajustes de sonido" aria-controls="sndPanel" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
 <div id="sndPanel">
-  <label><span data-i18n="sound.sfx">🔊 SFX</span> <input type="range" id="sfxVol" min="0" max="100" value="45"></label>
-  <label><span data-i18n="sound.music">🎵 Música</span> <input type="range" id="musVol" min="0" max="100" value="55"></label>
+  <label><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg><span data-i18n="sound.sfx">SFX</span> <input type="range" id="sfxVol" min="0" max="100" value="45"></label>
+  <label><svg class="i" aria-hidden="true"><use href="#i-music"/></svg><span data-i18n="sound.music">Música</span> <input type="range" id="musVol" min="0" max="100" value="55"></label>
   <label class="mus"><input type="checkbox" id="musOn" checked> <span data-i18n="sound.musicOn">Música ambiental</span></label>
-  <label class="mus" data-i18n-title="sound.peekTitle"><input type="checkbox" id="peekHands"> <span data-i18n="sound.peek">👁 Ver cartas rivales</span></label>
+  <label class="mus" data-i18n-title="sound.peekTitle"><input type="checkbox" id="peekHands"> <svg class="i" aria-hidden="true"><use href="#i-eye"/></svg><span data-i18n="sound.peek">Ver cartas rivales</span></label>
 </div>
 
 <button id="debugBtn" title="debug" aria-controls="debugPanel" aria-expanded="false">dbg</button>
@@ -204,16 +309,17 @@
 </div>
 
 <div id="winOverlay" role="dialog" aria-modal="true" aria-labelledby="winMsg"><div class="box">
+  <div class="winIcon" id="winIcon" aria-hidden="true"><svg class="i"><use href="#i-trophy"/></svg></div>
   <div class="msg" id="winMsg"></div>
   <div id="winChips"></div>
   <div id="winStats"></div>
   <div id="winBtns" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap"></div>
 </div></div>
 
-<div id="logPanel" style="display:none">
-  <button id="logTab" data-i18n-title="game.logTitle" title="Historial de jugadas" aria-controls="logBody">📜</button>
-  <div id="logBody"><h4 data-i18n="game.log">Historial</h4><div id="logList" role="log"></div></div>
-</div>
+<aside id="logPanel" aria-labelledby="logTitle">
+  <div id="logHead"><h4 id="logTitle" data-i18n="game.log">Historial</h4><button id="logClose" class="btn-ghost btn-sm btn-icon" data-i18n-aria="common.close" aria-label="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+  <div id="logList" role="log"></div>
+</aside>
 
 <dialog id="dialog"></dialog>
 </body>

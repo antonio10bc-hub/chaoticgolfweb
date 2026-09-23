@@ -1,14 +1,6 @@
-/* Tablero: casillas, piezas, losetas y arte bitmap */
-/* ---- Tablero ---- */
-#boardWrap {
-  position: relative;
-  overflow: auto; max-height: 62vh; background: var(--felt); /* plano */
-  border-radius: 20px; padding: 16px; margin-bottom: 10px;
-  border: 1px solid rgba(255,255,255,.5);
-  box-shadow: 0 8px 22px rgba(10,40,22,.3);
-}
+/* Tablero: una parcela de campo vista desde arriba (césped segado, green, búnkeres, portales) */
 #boardArea { position: relative; width: max-content; margin: 0 auto; }
-#board { display: grid; gap: 4px; }
+#board { display: grid; gap: 3px; border-radius: 8px; padding: 3px; background: #3F7440; /* junta entre casillas */ }
 
 /* capa de piezas móviles (pelotas y hoyo) sobre la cuadrícula */
 #pieces { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
@@ -18,96 +10,96 @@
   display: flex; align-items: center; justify-content: center;
   will-change: transform;
 }
-.piece .cardOnCell { transition: transform .12s ease; }
-.hitFlash { box-shadow: 0 0 0 5px rgba(255,255,255,.95), 0 2px 4px rgba(80,70,50,.22) !important; }
-.tilePop { animation: tilePop .38s cubic-bezier(.3,1.45,.5,1); }
-@keyframes tilePop {
-  0%   { transform: translateY(-46%) scale(.62); opacity: 0; }
-  55%  { transform: translateY(3%)  scale(1.07,.88); opacity: 1; }
-  78%  { transform: translateY(-2%) scale(.96,1.05); }
-  100% { transform: translateY(0)   scale(1); }
-}
+.piece .cardOnCell { transition: transform .15s var(--ease-out); }
+.hitFlash { box-shadow: 0 0 0 4px rgba(241,241,220,.95) !important; border-radius: 50%; }
+.tilePop { animation: tilePop .3s var(--ease-out); }
+@keyframes tilePop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
 .cell {
   width: var(--cell-w); height: var(--cell-h);
-  background-color: var(--grass); border-radius: calc(var(--cell-w) * 0.16);
-  background-image:
-    repeating-linear-gradient(100deg, rgba(255,255,255,.055) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(62deg, rgba(60,110,45,.055) 0 1px, transparent 1px 9px);
+  border-radius: 5px;
+  /* casillas alternas en bandas diagonales de segado + grano */
+  background-image: var(--grain); background-color: var(--grass-dark);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   position: relative; user-select: none;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  transition: background-color .2s var(--ease-out), box-shadow .2s;
 }
-.cell.par { background-color: var(--grass-fair); }
-.cell.cement { background-color: var(--cell-cement); background-image: none; box-shadow: inset 0 2px 4px rgba(0,0,0,.12); }
-.cell.sand { background-color: var(--cell-sand); background-image: none; }
+/* columna de PAR: franja más clara, como marcas pintadas en el césped */
+.cell.mowB { background-color: var(--grass-mid); }
+.cell.par { background-color: #6FA052; }
+.cell.cement { background-color: #486E62; }
+.cell.sand { background-color: #7FA95A; }
 .cell .parLabel {
-  position: absolute; top: 3px; left: 0; right: 0; text-align: center;
-  font-size: calc(var(--cell-w) * 0.17); font-weight: 800; color: #6d9d5c; letter-spacing: .5px;
+  position: absolute; top: 5px; left: 0; right: 0; text-align: center;
+  font-size: calc(var(--cell-w) * 0.16); font-weight: 500; letter-spacing: .12em;
+  color: rgba(241,241,220,.72);
 }
-.cell.selectable { outline: 2px solid rgba(20,83,45,.5); outline-offset: -2px; cursor: pointer; z-index: 2;
-  box-shadow: inset 0 0 0 2px rgba(69,192,110,.16);
-  animation: selPulse 1.6s ease-in-out infinite; transition: transform .1s ease-out; }
-@keyframes selPulse {
-  0%, 100% { outline-color: rgba(20,83,45,.4); }
-  50%      { outline-color: rgba(69,192,110,.7); }
-}
-.cell.selectable:hover { outline-color: rgba(15,107,52,.9); animation: none;
-  box-shadow: inset 0 0 0 2px rgba(69,192,110,.35); transform: scale(1.03); }
-.cell.selectable-out { outline: 2px dashed rgba(184,85,76,.55); outline-offset: -2px; cursor: pointer; z-index: 2;
-  box-shadow: inset 0 0 0 2px rgba(184,85,76,.12);
-  animation: selOutPulse 1.6s ease-in-out infinite; transition: transform .1s ease-out; }
-@keyframes selOutPulse {
-  0%, 100% { outline-color: rgba(184,85,76,.4); }
-  50%      { outline-color: rgba(255,157,146,.7); }
-}
-.cell.selectable-out:hover { outline-color: rgba(217,85,74,.85); animation: none;
-  box-shadow: inset 0 0 0 2px rgba(184,85,76,.25); transform: scale(1.03); }
-/* marca sutil de casilla inicial (centrada): si la pelota cae del tablero, vuelve aquí */
+/* casillas válidas: green claro */
+.cell.selectable { background-color: #93B566; cursor: pointer; z-index: 2;
+  box-shadow: inset 0 0 0 1.5px rgba(241,241,220,.55);
+  animation: selPulse 1.8s ease-in-out infinite; }
+@keyframes selPulse { 0%, 100% { background-color: #93B566; } 50% { background-color: var(--green-light); } }
+.cell.selectable:hover { background-color: var(--green-light); animation: none; box-shadow: inset 0 0 0 2px var(--cream); }
+.cell.selectable-out { cursor: pointer; z-index: 2;
+  background-color: rgba(217,96,58,.22); box-shadow: inset 0 0 0 1.5px rgba(217,96,58,.7);
+  background-image: repeating-linear-gradient(135deg, rgba(241,241,220,.18) 0 4px, transparent 4px 9px);
+  animation: selOutPulse 1.8s ease-in-out infinite; }
+@keyframes selOutPulse { 50% { box-shadow: inset 0 0 0 2px rgba(217,96,58,.95); } }
+.cell.selectable-out:hover { background-color: rgba(217,96,58,.38); animation: none; }
+
+/* salidas: tees crema con el anillo del color del jugador */
 .spawnMark {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
   width: 9px; height: 9px; border-radius: 50%;
-  opacity: .5; box-shadow: 0 0 0 1.5px rgba(255,255,255,.65), 0 1px 2px rgba(0,0,0,.18);
+  background: var(--cream); opacity: .85;
+  box-shadow: 0 0 0 2px var(--pc, var(--cream-line)), 2px 2px 0 2px var(--shadow);
   z-index: 1;
 }
 .spawnMark.holeMark {
-  width: 11px; height: 11px; background: transparent;
-  box-shadow: inset 0 0 0 2.5px rgba(32,48,29,.55), 0 0 0 1.5px rgba(255,255,255,.4);
+  width: 12px; height: 12px; background: transparent; opacity: .7;
+  box-shadow: inset 0 0 0 2px rgba(241,241,220,.8);
 }
 
+/* piezas y losetas sobre la casilla */
 .cardOnCell {
-  width: calc(var(--cell-w) - 7px); height: calc(var(--cell-h) - 7px);
-  border-radius: calc(var(--cell-w) * 0.13);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  width: calc(var(--cell-w) - 6px); height: calc(var(--cell-h) - 6px);
+  border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-size: calc(var(--cell-w) * 0.38);
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(80,70,50,.22);
+  position: relative;
 }
-.cardOnCell .sub { font-size: calc(var(--cell-w) * 0.16); font-weight: 800; margin-top: 2px; letter-spacing: .5px; }
-.tile-hole {
-  background: var(--tile-hole-bg);
-  width: var(--cell-w); height: var(--cell-h); /* la carta del hoyo ocupa toda la casilla */
+.cardOnCell .sub {
+  position: absolute; bottom: 5%; left: 0; right: 0; text-align: center;
+  font-size: calc(var(--cell-w) * 0.13); font-weight: 500; letter-spacing: .12em; color: rgba(36,36,36,.55);
 }
-.tile-hole .circ { width: 66%; aspect-ratio: 1; border-radius: 50%; background: var(--tile-hole-circ); border: 3px solid var(--tile-hole-ring); }
-.tile-bunker { background: var(--tile-bunker-bg); color: var(--tile-bunker-ink); }
-.tile-portal {
-  background: var(--tile-portal-bg); color: var(--tile-portal-ink); /* plano */
-}
+.tilePic, .holeSvg { width: 100%; height: 100%; display: block; overflow: visible; }
+/* hoyo: green circular con agujero y bandera (SVG en art.js) */
+.tile-hole { width: var(--cell-w); height: var(--cell-h); background: transparent; }
+.tile-bunker { background: transparent; }
+.tile-portal { background: transparent; }
+.tile-portal .sub { color: rgba(241,241,220,.75); }
+/* pelotas: círculos planos de su color con sombra corta diagonal */
+.tile-ball { background: transparent; }
 .tile-ball .circ {
-  width: 72%; aspect-ratio: 1; border-radius: 50%;
-  box-shadow: inset 0 -3px 0 rgba(0,0,0,.15);
+  width: 60%; aspect-ratio: 1; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 800; font-size: calc(var(--cell-w) * 0.26);
-  letter-spacing: .5px;
+  color: #fff; font-weight: 600; font-size: calc(var(--cell-w) * 0.2); letter-spacing: .02em;
+  box-shadow: 4px 4px 0 var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1), inset 3px 3px 0 rgba(255,255,255,.18);
+  text-shadow: 0 1px 1px rgba(0,0,0,.25);
 }
-.badge { position: absolute; bottom: 2px; right: 3px; font-size: calc(var(--cell-w) * 0.25); z-index: 6; }
+.badge {
+  position: absolute; bottom: 3px; right: 3px; z-index: 6;
+  width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--sand); color: var(--ink); font-size: 11px;
+}
 
-/* ---- arte bitmap (assets/art/*.png); si no existe el PNG se usa el fallback emoji/CSS ---- */
+/* ---- arte bitmap (assets/art/*.png); si no existe el PNG se usa el fallback SVG ---- */
 .card .cardArt { width: 62%; height: auto; }
 .artCard { padding: 0; overflow: hidden; position: relative; }
 .artCard img.fill { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
 .ballTag {
   position: absolute; bottom: 3px; right: 3px; z-index: 2;
-  font-size: calc(var(--cell-w) * 0.17); font-weight: 800; color: #fff;
-  border-radius: 6px; padding: 0 4px; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  font-size: calc(var(--cell-w) * 0.17); font-weight: 600; color: #fff;
+  border-radius: 6px; padding: 0 4px;
 }

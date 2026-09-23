@@ -67,7 +67,7 @@ try {
 
   console.log('modo historia');
   await click('#storyBtn'); await sleep(500); await shot('02-historia');
-  await click('.lvlBtn[data-level="0"]'); await sleep(400); await shot('03-nivel1');
+  await click('.lvlCard[data-level="0"]'); await sleep(400); await shot('03-nivel1');
   for (let i = 0; i < 80; i++) {
     const s = await state();
     if (s.winner !== null && !s.jaque) break;

@@ -20,6 +20,9 @@ export function showWin() {
   else if (mode === 'pve' && S.winners.includes(S.human)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
   $('winMsg').textContent = msg;
+  const lost = mode === 'pve' && !S.winners.includes(S.human);
+  $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
+  $('winOverlay').classList.toggle('lost', lost);
 
   // colores del ganador bien visibles: fichas de color + acento de la caja
   const box = $('winOverlay').querySelector('.box');
@@ -32,20 +35,21 @@ export function showWin() {
       `<span class="winChip" style="background:${pColor(i)}">${t('player.name', { n: i + 1 })}</span>`).join('');
     const wc = pColor(S.winners[0]);
     box.style.borderColor = wc;
-    box.style.boxShadow = `0 0 0 6px ${wc}55, 0 14px 44px rgba(20,50,30,.45)`;
+    box.style.boxShadow = ''; // borde fino del color del ganador; la sombra la pone el CSS
   }
   // resumen post-partida: estadísticas contadas durante la partida (decorativo)
   const st = stats;
   $('winStats').innerHTML = st ? [
-    ['⛳', st.golpes, t('win.stats.strokes')],
-    ['🕳️', st.hundidas, t('win.stats.sunk')],
-    ['💥', st.colisiones, t('win.stats.collisions')],
-    ['🌀', st.portales, t('win.stats.portals')],
-    ['💨', st.caidas, t('win.stats.falls')],
-  ].map(([i, v, l]) => `<div class="st"><b>${i} ${v}</b>${l}</div>`).join('') : '';
+    ['i-club', st.golpes, t('win.stats.strokes')],
+    ['i-hole', st.hundidas, t('win.stats.sunk')],
+    ['i-burst', st.colisiones, t('win.stats.collisions')],
+    ['i-spiral', st.portales, t('win.stats.portals')],
+    ['i-out', st.caidas, t('win.stats.falls')],
+  ].map(([i, v, l]) => `<div class="st"><svg class="i" aria-hidden="true"><use href="#${i}"/></svg><b>${v}</b>${l}</div>`).join('') : '';
 
   // botones y progreso según el modo
-  const btn = (act, label, danger) => `<button data-act="${act}"${danger ? ' class="danger"' : ''}>${label}</button>`;
+  // kind: 'main' (acción principal, grande) | 'alt' (secundaria)
+  const btn = (act, label, kind = 'alt') => `<button data-act="${act}" class="${kind === 'main' ? 'btn-primary btn-lg' : 'btn-light'}">${label}</button>`;
   let btns;
   if (mode === 'story') {
     if (app.levelIndex !== null) {
@@ -54,13 +58,13 @@ export function showWin() {
       saveProgress(prog);
     }
     const hasNext = app.levelIndex !== null && !!screens.storyLevelAt(app.levelIndex + 1);
-    btns = btn('replay', t('win.replay')) + (hasNext ? btn('next', t('win.next')) : '') + btn('levels', t('win.levels'), true);
+    btns = (hasNext ? btn('next', t('win.next'), 'main') + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), 'main')) + btn('levels', t('win.levels'));
   } else if (mode === 'test') {
-    btns = btn('replay', t('win.retry')) + btn('editor', t('win.backToEditor'), true);
+    btns = btn('replay', t('win.retry'), 'main') + btn('editor', t('win.backToEditor'));
   } else if (mode === 'pve') {
-    btns = btn('pve', t('win.newGame')) + btn('menu', t('win.menu'), true);
+    btns = btn('pve', t('win.newGame'), 'main') + btn('menu', t('win.menu'));
   } else {
-    btns = btn('free', t('win.newGame'));
+    btns = btn('free', t('win.newGame'), 'main');
   }
   $('winBtns').innerHTML = btns;
   $('winOverlay').classList.add('visible');

@@ -8,9 +8,12 @@
 //   stroke: true si cuenta como "golpe" en las estadísticas,
 //   staysOnBoard: true si al jugarse se queda en la mesa (no va a descartes),
 //   dir / dist (cartas de hoyo),
+//   face: { art, value, dir? } ilustración de la carta (src/ui/card-art.js) y valor de la esquina
 //   canPlay(game, p) -> bool   reglas propias además de las generales (opcional)
+//   blockedReason: clave i18n  qué decirle al jugador cuando canPlay devuelve false
 //   play(game, p, idx)         efecto al pulsarla: resuelve o abre una acción pendiente
-// El nombre visible sale de i18n: cards.<id>.name / cards.<id>.short
+// El nombre visible sale de i18n: cards.<id>.name / cards.<id>.short, y la
+// explicación de qué hace (tooltip) de cards.<id>.desc
 import { t } from '../../i18n/index.js';
 import { palo1, palo2, palo3 } from './palo.js';
 import dedo from './dedo.js';

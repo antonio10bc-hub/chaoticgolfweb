@@ -8,6 +8,7 @@ function placeTile(type) {
     staysOnBoard: true, // no entra en descartes (el rebarajado nunca duplica cartas en mesa)
     icon: `<span class="ico ico-${type}"></span>`,
     art: 'icon.' + type,
+    face: { art: type },
     play(game, p, idx) {
       game.setPending({ kind: 'placeTile', p, idx, tileType: type });
     },

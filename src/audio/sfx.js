@@ -77,6 +77,10 @@ export function sfx(name) {
       tone(659, 659, .9, 'sine', .16, .08); tone(698, 698, .9, 'sine', .14, .16);
       break;
     case 'rewind': tone(700, 220, .1, 'triangle', .4); tone(220, 760, .13, 'triangle', .4, .08); break;
+    case 'whoosh': noiseHit(.16, 900, .22, 'bandpass', 0, .8); tone(420, 620, .08, 'sine', .12, .05); break; // carta al aire
+    case 'deal':   noiseHit(.04, 2400, .16, 'highpass'); tone(1200, 900, .03, 'triangle', .08); break;    // carta robada
+    case 'click':  tone(660, 520, .035, 'triangle', .14); break;                           // botón de interfaz
+    case 'select': tone(560, 840, .06, 'triangle', .22); break;                          // carta elegida
     case 'win':    [523, 659, 784, 1047].forEach((f, i) => tone(f, f, .16, 'triangle', .5, i * .09)); break;
   }
 }

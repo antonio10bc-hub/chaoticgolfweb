@@ -5,7 +5,7 @@
 import { app } from './app.js';
 import { $, $$, restartClass } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
-import { fitCells } from './geometry.js';
+import { fitCellsTo } from './geometry.js';
 import { renderBoard, ensurePieces, syncPieces, clearPieces, markPlaced } from './board.js';
 import { renderHands, resetDealAnim } from './hands.js';
 import { playQueue } from './animations.js';
@@ -13,7 +13,8 @@ import * as hud from './hud.js';
 import { showWin, hideWin } from './win.js';
 import { renderDebugState, updateGodHint } from './debug.js';
 import { aiKick, aiStop } from './ai-driver.js';
-import { fxRevealCard, fxCloneCard, fxBadCard, fxRewind, fxZoomShake } from '../fx/effects.js';
+import { fxPlayCard, fxDiscardCard, fxBadCard, fxRewind, fxZoomShake } from '../fx/effects.js';
+import { blockedReason } from './reasons.js';
 import { sfx } from '../audio/sfx.js';
 import { JUICE } from '../fx/juice.js';
 import { pColor } from '../art.js';
@@ -45,7 +46,12 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
   game.takeEvents();
 }
 
-export const fitBoard = () => fitCells(app.game.S.cols, app.game.S.rows, 'boardWrap', 320, 0.62);
+// el tablero ocupa el hueco real que le deja la columna central (entre asientos, pilas, barra y dock)
+export function fitBoard() {
+  const col = $('boardCol'), S = app.game.S;
+  const w = col?.clientWidth || window.innerWidth - 360, h = col?.clientHeight || window.innerHeight * .6;
+  fitCellsTo(S.cols, S.rows, w - 32, h - 32);
+}
 
 /* ---------- dispatch ---------- */
 function dispatch(fn) {
@@ -63,18 +69,21 @@ function dispatch(fn) {
       case 'card': {
         sfx('card');
         app.lastActor = ev.p;
-        if (app.mode === 'pve' && ev.p !== g.S.human) fxRevealCard(ev.p, ev.idx, ev.key); // la IA desvela la carta que usa
+        // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
+        fxPlayCard(ev.p, ev.idx, ev.key, { fast: app.mode === 'pve' && ev.p === g.S.human });
         if (CARDS[ev.key]?.stroke) stats.golpes++;
         break;
       }
       case 'discard':
-        for (const c of ev.cards) {
-          if (app.mode === 'pve' && ev.p !== g.S.human) fxRevealCard(ev.p, c.idx, c.key);
-          else fxCloneCard(ev.p, c.idx, 'discard');
-        }
+        for (const c of ev.cards) fxDiscardCard(ev.p, c.idx, c.key);
         sfx('card');
         break;
-      case 'badCard': fxBadCard(ev.p, ev.idx); sfx('bad'); break;   // carta no jugable: shake sutil
+      case 'badCard': { // carta no jugable: shake sutil + por qué
+        fxBadCard(ev.p, ev.idx); sfx('bad');
+        const why = blockedReason(g, ev.p, g.S.hands[ev.p][ev.idx]);
+        if (why) hud.toast(why, 'warn');
+        break;
+      }
       case 'tilePlaced': markPlaced(ev.x, ev.y); break;
       case 'rewind': hideWin(); fxRewind(); break;                  // flash de "rebobinado"
       case 'undo': hideWin(); break;
@@ -97,7 +106,10 @@ function dispatch(fn) {
 /* ---------- acciones (interfaz e IA) ---------- */
 export function clickCard(p, idx) {
   if (app.animating) return false;
-  return dispatch(g => g.clickCard(p, idx));
+  const before = app.game.pending;
+  const ok = dispatch(g => g.clickCard(p, idx));
+  if (ok && app.game.pending && app.game.pending !== before) sfx('select'); // carta elegida: toca decidir
+  return ok;
 }
 export function clickCell(x, y) {
   if (app.animating) return false;
@@ -169,13 +181,22 @@ export function renderJaque() {
   const el = $('jaque'), S = app.game.S;
   // no anunciar el JAQUE hasta que termine la animación de la jugada
   if (!S.jaque || S.winner === null || app.animating || app.animQueue.length) {
-    el.classList.remove('visible'); el.innerHTML = ''; jaqueShown = false; return;
+    el.classList.remove('visible'); el.innerHTML = ''; el._html = ''; jaqueShown = false; return;
   }
+  // mientras alguien resuelve su naranja, manda la instrucción de la barra de acción
+  if (app.game.pending) { el.classList.remove('visible'); return; }
   el.classList.add('visible');
   if (!jaqueShown) { jaqueShown = true; fxZoomShake(); sfx('jaque'); sfx('tension'); } // entrada dramática + sting
   const names = S.winners.map(i => t('player.name', { n: i + 1 })).join(t('common.and'));
   const msg = S.winners.length > 1 ? t('jaque.tie', { names }) : t('jaque.one', { names });
-  el.innerHTML = `${msg} ${t('jaque.lastChance')} <button data-act="confirmWin">${t('jaque.nobody')}</button>`;
+  el.style.setProperty('--pc', pColor(S.winners[0]));
+  // cuenta atrás de la ventana de reacción (la fija el orquestador de la IA en PVE)
+  const jt = app.jaqueTimer;
+  const timer = jt ? `<div class="jqTimer"><i style="animation-duration:${jt.ms}ms;animation-delay:-${Date.now() - jt.at}ms"></i></div>` : '';
+  const html = `<div class="jqBadge">${t('jaque.title')}</div>` +
+    `<div class="jqText"><b>${msg}</b><small>${t('jaque.lastChance')}</small>${timer}</div>` +
+    `<button class="btn-light btn-sm" data-act="confirmWin">${t('jaque.nobody')}</button>`;
+  if (el._html !== html || !jt) { el.innerHTML = html; el._html = html; }
 }
 
 // cambio de turno: banner breve + pulso del panel activo (decorativo)
@@ -188,9 +209,10 @@ function turnCheck() {
   if (first) return; // sin banner en el primer render de la partida
   const b = $('turnBanner');
   const mine = app.mode === 'pve' && S.turn === S.human;
-  b.innerHTML = `<span class="dot" style="background:${pColor(S.turn)}"></span> ${mine ? t('turn.yoursBanner') : t('turn.ofBanner', { n: S.turn + 1 })}`;
+  b.style.setProperty('--pc', pColor(S.turn));
+  b.innerHTML = `<span class="avatar">J${S.turn + 1}</span><b>${mine ? t('turn.yoursBanner') : t('turn.ofBanner', { n: S.turn + 1 })}</b>`;
   b.style.animationDuration = JUICE.turnBannerMs + 'ms';
   restartClass(b, 'show');
-  restartClass($$('#hands .hand')[S.turn], 'turnPulse');
+  restartClass(document.querySelector(`.seat[data-player="${S.turn}"]`) || $('dock'), 'turnPulse');
   sfx('turn');
 }

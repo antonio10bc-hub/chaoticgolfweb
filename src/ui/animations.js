@@ -5,7 +5,8 @@ import { app } from './app.js';
 import { $, wait } from './dom.js';
 import { pieceEl, syncPieces } from './board.js';
 import { setPos, cellCenterPx, pieceCenterPx } from './geometry.js';
-import { DIRS, PLAYER_COLORS } from '../engine/game.js';
+import { DIRS } from '../engine/game.js';
+import { pColor } from '../art.js';
 import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, CONFETTI_C } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
 import { fxShake, fxZoomPulse, fxComboText, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
@@ -19,7 +20,10 @@ export async function playQueue(onDone) {
   const piecesEl = $('pieces');
   if (piecesEl) piecesEl.classList.remove('idle');
   const q = app.animQueue; app.animQueue = [];
-  for (const ev of q) { try { await playEvent(ev); } catch (e) { console.warn('animación', ev, e); } }
+  for (const ev of q) {
+    pieceEl(ev.p)?.classList.add('acting'); // la pieza que se mueve se destaca mientras actúa
+    try { await playEvent(ev); } catch (e) { console.warn('animación', ev, e); }
+  }
   app.animating = false;
   syncPieces();
   fxTrailShow(); // estela fantasma del camino recorrido
@@ -33,7 +37,7 @@ async function playEvent(ev) {
   const inner = el.firstChild;
   const isHole = ev.p === 'hole';
   const pid = isHole ? -1 : +ev.p.slice(1);
-  const trailCol = pid < 0 ? '#2c5c46' : PLAYER_COLORS[pid % PLAYER_COLORS.length];
+  const trailCol = pid < 0 ? '#2c5c46' : pColor(pid);
   switch (ev.t) {
     case 'move': {    // deslizamiento con easing, squash & stretch, sombra y estela
       const ms = isHole ? JUICE.move.holeMs : JUICE.move.ms;

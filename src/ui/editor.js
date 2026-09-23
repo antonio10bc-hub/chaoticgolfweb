@@ -70,7 +70,7 @@ export function edRender() {
   let html = '';
   for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) {
     const par = pAt(x, y), tile = tAt(x, y);
-    let cls = 'cell', inner = '';
+    let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), inner = ''; // mowB: banda de segado (decorativo)
     if (par) { cls += ' par'; inner = ASSETS.parLabelHTML(par.n); }
     if (tile) { cls += ' ' + TILES[tile.type].cellClass; inner += ASSETS.tileHTML(tile.type); }
     if (L.hole.x === x && L.hole.y === y) inner += ASSETS.holeHTML();

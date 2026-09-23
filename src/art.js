@@ -58,10 +58,18 @@ export function pColor(p) {
   return (S && S.colorMap) ? S.colorMap[p] : PLAYER_COLORS[p % PLAYER_COLORS.length];
 }
 
+// hoyo visto desde arriba: green circular con agujero, bandera naranja y su sombra larga a 45°
+const HOLE_SVG = `<svg class="holeSvg" viewBox="0 0 100 140" aria-hidden="true">` +
+  `<circle cx="50" cy="72" r="47" fill="#79A456"/><circle cx="50" cy="72" r="42" fill="#8DB05F"/>` +
+  `<path d="M46 84 L80 112" stroke="rgba(20,40,20,.3)" stroke-width="4" stroke-linecap="round"/>` +
+  `<ellipse cx="46" cy="84" rx="10" ry="7" fill="#242424"/>` +
+  `<path d="M46 84 V36" stroke="#F1F1DC" stroke-width="3.4" stroke-linecap="round"/>` +
+  `<path d="M47.5 37 L72 45 L47.5 54 Z" fill="#E8873A"/></svg>`;
+
 export const ASSETS = {
   holeHTML: () => ART['tile.hole']
     ? `<div class="cardOnCell tile-hole artCard"><img class="fill" src="${ART['tile.hole']}" alt=""></div>`
-    : `<div class="cardOnCell tile-hole"><div class="circ"></div></div>`,
+    : `<div class="cardOnCell tile-hole">${HOLE_SVG}</div>`,
   ballHTML: pl => ART['ball.' + (pl + 1)]
     ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">J${pl + 1}</div></div>`
     : `<div class="cardOnCell tile-ball"><div class="circ" style="background:${pColor(pl)}">J${pl + 1}</div></div>`,
@@ -69,9 +77,9 @@ export const ASSETS = {
     const d = tileDef(type);
     return ART[d.tileArt]
       ? `<div class="cardOnCell artCard${extra}"><img class="fill" src="${ART[d.tileArt]}" alt=""></div>`
-      : `<div class="cardOnCell ${d.tileClass}${extra}">${d.emoji}<div class="sub">${t(`tiles.${type}.label`)}</div></div>`;
+      : `<div class="cardOnCell ${d.tileClass}${extra}">${d.pic}<div class="sub">${t(`tiles.${type}.label`)}</div></div>`;
   },
-  trapBadgeHTML: () => `<div class="badge">⛱️</div>`,
+  trapBadgeHTML: () => `<div class="badge"><svg class="i" aria-hidden="true"><use href="#i-sand"/></svg></div>`,
   parLabelHTML: n => `<div class="parLabel">PAR ${n}</div>`,
   handCardHTML: def => {
     const url = def.art && ART[def.art];

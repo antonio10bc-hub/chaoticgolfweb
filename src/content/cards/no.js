@@ -7,6 +7,8 @@ export default {
   copies: 2,
   icon: '<span class="ico ico-no"></span>',
   art: 'icon.no',
+  face: { art: 'no' },
+  blockedReason: 'reason.noLast',
   canPlay(game) { return !!game.S.lastSnap; },
   play(game, p, idx) {
     const S = game.S;

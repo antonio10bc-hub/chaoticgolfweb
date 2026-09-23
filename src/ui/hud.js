@@ -1,47 +1,84 @@
-// HUD de la partida: barra superior, historial, última carta, mazo, avisos y bocadillos.
+// HUD de la partida: píldora de turno, pilas (mazo / descartes / última jugada),
+// botones de turno, historial, avisos y bocadillos de tutorial.
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
 import { pColor } from '../art.js';
+import { cardArtHTML, cardFaceHTML } from './card-art.js';
+import { dockOwner, hasPlayable, isBotSeat } from './hands.js';
 import { t } from '../i18n/index.js';
+
+const set = (el, html) => { if (el._html !== html) { el.innerHTML = html; el._html = html; } };
 
 export function renderTopbar() {
   const g = app.game, S = g.S;
-  const mine = app.mode === 'pve' && S.turn === S.human;
-  $('turnInfo').innerHTML = `<span class="dot" style="background:${pColor(S.turn)}"></span> ` +
-    `${mine ? t('turn.yours') : t('turn.of', { n: S.turn + 1 })} · ${t('turn.blacks', { n: S.blackPlayed })}`;
-  $('deckInfo').textContent = t('hud.deck', { deck: S.deck.length, discard: S.discard.length });
+  // --- de quién es el turno ---
+  const p = S.turn, col = pColor(p);
+  const mine = app.mode === 'pve' ? p === S.human : !isBotSeat(p);
+  const pill = $('turnPill');
+  pill.style.setProperty('--pc', col);
+  pill.classList.toggle('mine', mine && app.mode === 'pve');
+  pill.classList.toggle('bot', isBotSeat(p));
+  const title = S.winner !== null && !S.jaque ? t('turn.over')
+    : (app.mode === 'pve' && mine) || S.nPlayers === 1 ? t('turn.yours') : t('turn.of', { n: p + 1 });
+  const sub = isBotSeat(p) && app.ai.thinkingOf === p ? t('turn.thinking') : t('turn.blacksLeft');
+  const left = Math.max(0, 2 - S.blackPlayed);
+  const pips = `<span class="pips" aria-label="${esc(t('turn.blacksAria', { n: left }))}">` +
+    [0, 1].map(i => `<i class="${i < left ? 'on' : ''}"></i>`).join('') + `</span>`;
+  set(pill, `<span class="avatar">J${p + 1}</span><span class="tpText"><b>${esc(title)}</b>` +
+    `<small>${esc(sub)}${isBotSeat(p) && app.ai.thinkingOf === p ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : ''}</small></span>${pips}`);
+
+  // --- botones de turno ---
+  const owner = dockOwner(g);
   const notMine = app.mode === 'pve' && S.turn !== S.human; // en PVE los botones solo en tu turno
   const blocked = S.winner !== null || !!g.pending || g.godMode || notMine;
-  $('endTurnBtn').disabled = blocked;
-  $('discardBtn').disabled = blocked || S.playedThisTurn > 0;
+  const end = $('endTurnBtn'), disc = $('discardBtn');
+  end.disabled = blocked;
+  disc.disabled = blocked || S.playedThisTurn > 0;
+  disc.title = S.playedThisTurn > 0 ? t('notice.cantDiscard') : t('game.discardTitle');
+  end.title = t('game.endTurnTitle');
+  // nada más que hacer: el botón de terminar turno pide atención
+  end.classList.toggle('cta', !blocked && owner === S.turn && !hasPlayable(g, owner));
+  renderPiles();
 }
 
-// historial plegable, última carta jugada y conteo del mazo por tipo
-export function renderHud() {
+function renderPiles() {
   const S = app.game.S;
-  $('logList').innerHTML = S.log.slice(0, 40).map(s => `<div>${esc(s)}</div>`).join('');
-  const lc = $('lastCard');
+  $('deckCount').textContent = S.deck.length;
+  $('discardCount').textContent = S.discard.length;
+  $('deckPile').classList.toggle('empty', !S.deck.length);
+  const top = S.discard[S.discard.length - 1];
+  const dt = $('discardTop');
+  dt.classList.toggle('empty', !top);
+  set(dt, top ? `<div class="card mini ${CARDS[top].color}">${cardFaceHTML(CARDS[top])}</div>` : '');
+  // última carta jugada (con quién la jugó)
+  const lp = $('lastPlay');
   if (S.lastCardKey) {
     const def = CARDS[S.lastCardKey];
-    lc.className = def.color === 'orange' ? 'org' : '';
-    lc.innerHTML = `${def.icon}<span>${t('hud.lastCard', { card: esc(S.lastCardLabel) })}</span>`;
-  } else lc.innerHTML = '';
+    const who = app.lastActor != null ? `<span class="avatar xs" style="--pc:${pColor(app.lastActor)}">J${app.lastActor + 1}</span>` : '';
+    set(lp, `<small>${t('hud.lastPlay')}</small><div class="lastRow">${who}<span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(S.lastCardLabel)}</b></div>`);
+  } else set(lp, '');
+}
+
+// historial, popover del mazo
+export function renderHud() {
+  const S = app.game.S;
+  set($('logList'), S.log.slice(0, 60).map(s => `<div>${esc(s)}</div>`).join(''));
   const counts = {};
   S.deck.forEach(k => counts[k] = (counts[k] || 0) + 1);
-  $('deckPop').innerHTML = Object.keys(CARDS).filter(k => counts[k]).map(k => {
+  set($('deckPop'), `<h5>${t('hud.deckLeft')}</h5>` + (Object.keys(CARDS).filter(k => counts[k]).map(k => {
     const def = CARDS[k];
-    return `<div class="row ${def.color === 'orange' ? 'org' : ''}">${def.icon}<span>${def.short || def.name}</span><span class="n">×${counts[k]}</span></div>`;
-  }).join('') || `<div class="row">${t('hud.deckEmpty')}</div>`;
+    return `<div class="row ${def.color}"><span class="hintCard ${def.color}">${cardArtHTML(def)}</span><span>${esc(def.short || def.name)}</span><span class="n">×${counts[k]}</span></div>`;
+  }).join('') || `<div class="row">${t('hud.deckEmpty')}</div>`));
 }
 
 let toastTimer = null;
-export function toast(msg) {
+export function toast(msg, kind = '') {
   const el = $('toast');
   el.textContent = msg;
-  el.classList.add('visible');
+  el.className = 'visible' + (kind ? ' ' + kind : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('visible'), 2200);
+  toastTimer = setTimeout(() => el.classList.remove('visible'), 2400);
 }
 
 // bocadillos de tutorial: los define cada nivel de historia en su JSON ("tips")
@@ -54,7 +91,7 @@ export function storyTip(key) {
   el.textContent = t(textKey);
   el.classList.add('visible');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('visible'), 2800);
+  el._t = setTimeout(() => el.classList.remove('visible'), 3000);
 }
 export const hideStoryTip = () => $('storyTip').classList.remove('visible');
 

@@ -52,3 +52,11 @@ export function setPos(el, x, y, ms, ease) {
   const s = cellStep();
   el.style.transform = `translate(${x * s.w}px, ${y * s.h}px)`;
 }
+
+// igual que fitCells pero con el hueco disponible ya medido (px)
+export function fitCellsTo(cols, rows, availW, availH, max = 64) {
+  let w = Math.floor((availW - GAP * (cols - 1)) / cols);
+  const wByH = Math.floor(((availH - GAP * (rows - 1)) / rows) / RATIO);
+  w = Math.max(24, Math.min(max, w, wByH));
+  setCellSize(w, Math.round(w * RATIO));
+}

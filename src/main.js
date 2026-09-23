@@ -18,6 +18,7 @@ import { loadArt } from './art.js';
 import { loadStoryLevels } from './content/levels/index.js';
 import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
+import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
 import { bindDialog } from './ui/dialog.js';
 import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/screens.js';
@@ -27,6 +28,7 @@ import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
 import { updateEndTurnHint } from './ui/hud.js';
 import { fxArmIdle, fxAmbientStart } from './fx/effects.js';
+import { sfx } from './audio/sfx.js';
 import { clearPieces } from './ui/board.js';
 
 applyStaticTexts();
@@ -34,6 +36,7 @@ applyStaticTexts();
 // listeners (un único sitio; nada de onclick en el HTML)
 bindBoard(ctl.clickCell);
 bindHands();
+bindCardTip();
 bindWin();
 bindDialog();
 bindScreens();
@@ -45,8 +48,18 @@ $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
 $('jaque').addEventListener('click', e => { if (e.target.closest('[data-act="confirmWin"]')) ctl.confirmWin(); });
 $('logTab').addEventListener('click', () => $('logPanel').classList.toggle('open'));
-$('deckInfo').addEventListener('click', () => $('deckPop').classList.toggle('open'));
-$('deckInfo').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('deckPop').classList.toggle('open'); } });
+$('logClose').addEventListener('click', () => $('logPanel').classList.remove('open'));
+$('deckPile').addEventListener('click', () => $('deckPop').classList.toggle('open'));
+$('deckPile').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('deckPop').classList.toggle('open'); } });
+// atajos de partida: E = terminar turno, D = descartar
+window.addEventListener('keydown', e => {
+  if (app.screen !== 'game' || e.metaKey || e.ctrlKey || e.altKey || e.target.matches('input, textarea, select') || document.querySelector('dialog[open]')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'e' && !$('endTurnBtn').disabled) { e.preventDefault(); $('endTurnBtn').click(); }
+  if (k === 'd' && !$('discardBtn').disabled) { e.preventDefault(); $('discardBtn').click(); }
+});
+// sonido sutil en cualquier botón de interfaz
+document.addEventListener('click', e => { if (e.target.closest('button:not(:disabled)')) sfx('click'); }, true);
 window.addEventListener('pointerdown', fxArmIdle);
 window.addEventListener('keydown', fxArmIdle);
 window.addEventListener('resize', () => {

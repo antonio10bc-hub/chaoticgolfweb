@@ -81,61 +81,6 @@
   65% { transform: rotate(5deg) scale(.96); filter: hue-rotate(160deg) brightness(1.15); }
 }
 
-/* banner de cambio de turno */
-#turnBanner {
-  position: fixed; top: 12px; left: 50%; z-index: 65; pointer-events: none;
-  transform: translateX(-50%) translateY(-70px) scale(.8); opacity: 0;
-  background: var(--panel); border-radius: 999px; padding: 8px 22px;
-  font-size: 15px; font-weight: 900; letter-spacing: .4px;
-  box-shadow: 0 8px 20px rgba(46,74,78,.25);
-  display: flex; align-items: center; gap: 9px;
-}
-#turnBanner .dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 -2px 0 rgba(0,0,0,.15); }
-#turnBanner.show { animation: bannerIn 1.05s cubic-bezier(.3,1.3,.5,1) forwards; }
-@keyframes bannerIn {
-  0%   { transform: translateX(-50%) translateY(-70px) scale(.8); opacity: 0; }
-  16%  { transform: translateX(-50%) translateY(0) scale(1.04); opacity: 1; }
-  24%  { transform: translateX(-50%) translateY(0) scale(1); }
-  78%  { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateX(-50%) translateY(-60px) scale(.9); opacity: 0; }
-}
-/* ---- claridad de turno: sin turno, muy translúcido; en turno, elevado y nítido ---- */
-#hands .hand { opacity: .45; transform: translateY(3px) scale(.98); }
-#hands .hand.active { opacity: 1; transform: translateY(-5px) scale(1); }
-#hands .hand:has(.cancelBar) { opacity: 1; } /* una acción en curso siempre legible */
-/* ---- tu mano (PVE): claramente más grande que la de los bots ---- */
-#hands .hand.mine { padding: 14px 18px; border-width: 4px; min-width: 300px; }
-#hands .hand.mine .handCards { min-height: 112px; gap: 10px; }
-#hands .hand.mine .card, #hands .hand.mine .card.back { width: 76px; height: 106px; font-size: 27px; }
-#hands .hand.mine .card .name { font-size: 11px; }
-#hands .hand.mine h3 { font-size: 15px; }
-#hands .hand.mine .tuBadge {
-  margin-left: auto; font-size: 10px; font-weight: 900; letter-spacing: .08em;
-  color: #fff; border-radius: 999px; padding: 2px 9px; box-shadow: 0 2px 4px rgba(20,50,30,.3);
-}
-/* puntos animados de "pensando…" del bot en turno */
-.thinkDots { display: inline-flex; gap: 3px; margin-left: 7px; align-items: center; }
-.thinkDots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .3; animation: thinkB 1s infinite; }
-.thinkDots i:nth-child(2) { animation-delay: .18s; }
-.thinkDots i:nth-child(3) { animation-delay: .36s; }
-@keyframes thinkB { 0%, 60%, 100% { transform: translateY(0); opacity: .3; } 30% { transform: translateY(-4px); opacity: 1; } }
-.hand.turnPulse { animation: turnGlow .85s ease-out; }
-@keyframes turnGlow {
-  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0); transform: translateY(-5px) scale(.96); }
-  40% { box-shadow: 0 0 0 6px rgba(255,255,255,.85), 0 10px 24px rgba(120,100,60,.28); transform: translateY(-11px) scale(1.045); }
-  100% { box-shadow: 0 4px 14px rgba(120,100,60,.14); transform: translateY(-5px) scale(1); }
-}
-
-/* botón de sonido */
-#sfxBtn {
-  position: fixed; left: 10px; bottom: 10px; z-index: 65;
-  width: 38px; height: 38px; padding: 0; border-radius: 50%;
-  font-size: 17px; display: flex; align-items: center; justify-content: center;
-  background: var(--panel); color: var(--ink); text-shadow: none;
-  box-shadow: 0 3px 0 #d8cbae, 0 6px 12px rgba(46,74,78,.18);
-}
-#sfxBtn:active { box-shadow: 0 1px 0 #d8cbae; }
-
 /* escena del menú: animación ambiental (colores planos, sin barrido de luz) */
 .mClouds { animation: drift 30s ease-in-out infinite alternate; }
 @keyframes drift { from { transform: translateX(-22px); } to { transform: translateX(30px); } }
@@ -241,8 +186,44 @@
   .mClouds, .mFlag, .mShine, .mTree, .mBallMenu, .mTitle,
   .cell.selectable, .cell.selectable-out,
   #jaque.visible, #winOverlay.visible .box, .piece.glide .cardOnCell,
-  .hand.turnPulse, #boardArea.zoomPulse, #boardArea.zoomShake,
+  .turnPulse, #boardArea.zoomPulse, #boardArea.zoomShake,
   .card.ctaJaque, .jaqueCtaTag, #endTurnBtn.ctaEndTurn,
   #pieces.idle .piece .cardOnCell, #traj .line, .piece.rewindFx .cardOnCell { animation: none !important; }
   #gameScreen, #editorScreen, #storyScreen, .lvlBtn, .card.dealIn { animation-duration: .01s !important; }
 }
+
+/* ==================== ajustes de la dirección de arte "club de golf aéreo" ====================
+   (sobrescriben los de arriba; las animaciones de movimiento se mantienen) */
+.piece.pball::before { display: none; }                 /* la bola ya lleva su sombra plana diagonal */
+.piece .cardOnCell { filter: none; }
+.piece.warp .cardOnCell { filter: drop-shadow(0 0 8px rgba(45,79,124,.9)) brightness(1.1); }
+.piece.sunk .cardOnCell { filter: saturate(.9); }
+.piece.sunk::after { background: var(--sand); box-shadow: inset 0 2px 0 var(--sand-hi); border-radius: 50% 50% 40% 40%; }
+#boardFlash { background: rgba(241,241,220,.85); }
+#menuScreen .mContent, #gameScreen, #editorScreen, #storyScreen { animation: screenIn .3s var(--ease-out); }
+@keyframes screenIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.cell.edFlash { animation: edFlashSoft .35s var(--ease-out); }
+@keyframes edFlashSoft { from { box-shadow: inset 0 0 0 3px var(--accent); } to { box-shadow: inset 0 0 0 0 transparent; } }
+.trailDot { width: 8px; height: 8px; margin: -4px 0 0 -4px; box-shadow: 2px 2px 0 var(--shadow); }
+.comboText {
+  font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: var(--ink);
+  -webkit-text-stroke: 0; text-shadow: none;
+  background: var(--cream); padding: 4px 12px; border-radius: 999px; box-shadow: 4px 4px 0 var(--shadow);
+  animation: comboSoft .85s var(--ease-out) forwards;
+}
+@keyframes comboSoft {
+  0% { opacity: 0; transform: translate(-50%, -30%); }
+  20% { opacity: 1; transform: translate(-50%, -90%); }
+  75% { opacity: 1; transform: translate(-50%, -120%); }
+  100% { opacity: 0; transform: translate(-50%, -150%); }
+}
+#traj .line { background: repeating-linear-gradient(90deg, rgba(241,241,220,.9) 0 6px, transparent 6px 11px); }
+#traj .head { border-left-color: var(--cream); }
+#traj.out .line { background: repeating-linear-gradient(90deg, rgba(217,96,58,.9) 0 6px, transparent 6px 11px); }
+#traj.out .head { border-left-color: var(--accent-deep); }
+#rewindTag {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(36,36,36,.86); color: var(--cream); font-size: 12px; font-weight: 500; letter-spacing: .12em;
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+#pieces.idle .piece.phole:not(.sunk) .cardOnCell { animation: none; }

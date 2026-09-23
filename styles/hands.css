@@ -1,82 +1,95 @@
-/* Manos y cartas */
-/* ---- Manos ---- */
-#hands { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-.cancelBar {
-  display: flex; align-items: center; gap: 8px; justify-content: space-between;
-  background: rgba(20,83,45,.1); border: 1px solid rgba(20,83,45,.35);
-  border-radius: 10px; padding: 5px 8px; margin: 6px 0 8px;
-  font-size: 11.5px; font-weight: 700; color: var(--sel-deep);
+/* Cartas: cara crema con franja de tipo, dorso aéreo y estados (jugable, elegida, bloqueada, a descartar, ¡úsala!) */
+:root {
+  /* dorso: mini ilustración aérea (franjas + bandera) sobre --grass-dark */
+  --card-back:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 84'><circle cx='30' cy='44' r='15' fill='%238DB05F'/><path d='M28 50 L40 60' stroke='rgba(20,40,20,.3)' stroke-width='2' stroke-linecap='round'/><ellipse cx='28' cy='50' rx='3.4' ry='2.3' fill='%23242424'/><path d='M28 50 V33' stroke='%23F1F1DC' stroke-width='1.4' stroke-linecap='round'/><path d='M28.6 33.4 L37 36.2 L28.6 39 Z' fill='%23E8873A'/></svg>") center / 100% 100% no-repeat,
+    repeating-linear-gradient(135deg, var(--grass-dark) 0 7px, var(--grass-mid) 7px 14px);
 }
-.cancelBar button { padding: 3px 10px; font-size: 11px; border-radius: 8px; }
-.hand {
-  background: var(--panel); border-radius: 16px; padding: 10px 12px; min-width: 170px;
-  border: 3px solid transparent;
-  box-shadow: 0 3px 12px rgba(120,100,60,.08);
-  transition: border-color .2s, box-shadow .25s, opacity .3s, transform .3s;
-}
-/* el color del borde se asigna por jugador desde renderHands */
-.hand h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 7px; font-weight: 800; }
-.hand .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; box-shadow: inset 0 -2px 0 rgba(0,0,0,.12); }
-.handCards { display: flex; gap: 8px; min-height: 92px; }
-.handCount {
-  font-size: 10.5px; font-weight: 800; background: rgba(20,60,35,.12);
-  color: var(--sel-deep); border-radius: 999px; padding: 2px 8px; margin-left: 2px;
-}
-/* dorso de carta (manos rivales tapadas): plano, con palo estilizado */
-.card.back {
-  background: #2c5f40; border: 4px solid #1c4030; cursor: default;
-  box-shadow: 0 3px 6px rgba(20,50,30,.3);
-}
-.card.back:hover { transform: none; box-shadow: 0 3px 6px rgba(20,50,30,.3); }
-.card.back::after {
-  content: '⛳'; font-size: 20px; opacity: .5;
-  width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(255,255,255,.12);
-  display: flex; align-items: center; justify-content: center;
-}
-/* manos de los contrincantes (PVE): un poco más pequeñas que la del jugador */
-#hands .hand.aiHand { padding: 7px 10px; }
-#hands .hand.aiHand .handCards { min-height: 66px; gap: 5px; }
-#hands .hand.aiHand .card, #hands .hand.aiHand .card.back {
-  width: 46px; height: 64px; font-size: 15px; border-width: 3px; border-radius: 8px;
-}
-#hands .hand.aiHand .card.back::after { width: 24px; height: 24px; font-size: 13px; }
-#hands .hand.aiHand .card .name { font-size: 8px; }
-#hands .hand.aiHand .card .ico { font-size: 15px; }
 .card {
-  width: 64px; height: 90px; border-radius: 10px; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; font-size: 24px; position: relative;
-  box-shadow: 0 3px 6px rgba(80,70,50,.25);
-  transition: transform .15s cubic-bezier(.25,.9,.3,1.35), box-shadow .15s, filter .15s, opacity .15s;
+  --cw: 92px;
+  --band: var(--ink);
+  position: relative; flex: 0 0 auto;
+  width: var(--cw); height: calc(var(--cw) * 1.4);
+  border-radius: 12px;
+  background-image: var(--grain); background-color: #F7F7E8;
+  box-shadow: 0 0 0 1px rgba(36,36,36,.08), 5px 5px 0 var(--shadow);
+  cursor: pointer; user-select: none; overflow: hidden;
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), opacity .2s, filter .2s;
   will-change: transform;
 }
-.card:hover { transform: translateY(-7px) rotate(-1.5deg) scale(1.05);
-  box-shadow: 0 11px 18px rgba(80,70,50,.32); }
-.card.cardSel { transform: translateY(-9px) scale(1.07); outline: 4px solid var(--sel-deep);
-  box-shadow: 0 12px 20px rgba(20,60,35,.45), 0 0 0 2px rgba(69,192,110,.35); }
-.card.cardSel:hover { transform: translateY(-9px) scale(1.07); }
-.card.unplayable { opacity: .35; cursor: default; filter: grayscale(.5); }
-.card.unplayable:hover { transform: none; box-shadow: 0 3px 6px rgba(80,70,50,.25); }
-.card .name { font-size: 9px; font-weight: 800; margin-top: 5px; line-height: 1.2; padding: 0 3px; }
-.card.black  { background: #f4f6fb; color: var(--card-black-ink); border: 4px solid var(--card-black-ink); }
-.card.orange { background: #ffeedd; color: var(--card-orange-ink); border: 4px solid var(--card-orange-border); }
-.card.discardSel { outline: 4px solid var(--warn); transform: translateY(-9px) scale(1.03);
-  box-shadow: 0 12px 18px rgba(184,85,76,.35); }
+.card::before { /* franja superior: tipo de carta */
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--cw) * .07);
+  background: var(--band);
+}
+.card.orange { --band: var(--accent); background-color: #FBF3E2; }
+.card > * { position: absolute; }
+.cardCorner {
+  top: calc(var(--cw) * .12); left: calc(var(--cw) * .11);
+  font-size: calc(var(--cw) * .17); font-weight: 600; line-height: 1; color: var(--ink); letter-spacing: -.03em;
+}
+.cardBolt { top: calc(var(--cw) * .12); right: calc(var(--cw) * .09); width: calc(var(--cw) * .16); height: calc(var(--cw) * .16); color: var(--accent); }
+.cardPic { left: 12%; right: 12%; top: 22%; height: 52%; display: flex; align-items: center; justify-content: center; }
+.cardSvg { width: 100%; height: 100%; overflow: visible; }
+.card .cardArt { max-width: 100%; max-height: 100%; }
+.cardName {
+  left: 6%; right: 6%; bottom: calc(var(--cw) * .09);
+  text-align: center; font-weight: 500; line-height: 1.05; letter-spacing: -.005em;
+  font-size: calc(var(--cw) * .12); color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card .ico { display: none; }
+
+/* interacción (la inclinación 3D sigue al ratón: --rx/--ry desde card-tip.js) */
+#hands { perspective: 800px; }
+.card:hover { transform: translateY(-7px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); z-index: 3;
+  box-shadow: 0 0 0 1px rgba(36,36,36,.08), 10px 12px 0 rgba(20,40,20,.22); }
+.card:active { transform: translateY(-3px); }
+.card.cardSel {
+  transform: translateY(-12px); z-index: 4;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px rgba(232,135,58,.2), 10px 14px 0 rgba(20,40,20,.22);
+}
+.card.unplayable { opacity: .55; filter: saturate(.5); cursor: not-allowed; }
+.card.dimmed { opacity: .75; }
+.card.unplayable:hover { transform: translateY(-2px); }
+.card.discardSel { transform: translateY(-10px) rotate(2deg);
+  box-shadow: 0 0 0 2px var(--accent-deep), 0 0 0 6px rgba(217,96,58,.18), 8px 12px 0 rgba(20,40,20,.22); }
 .card.discardSel::after {
-  content: '✕'; position: absolute; top: -9px; right: -9px; width: 22px; height: 22px;
-  background: var(--warn); color: #fff; border-radius: 50%; font-size: 13px; font-weight: 900;
-  display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,.3);
+  content: ''; position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent-deep) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 7l10 10M17 7 7 17' stroke='%23F1F1DC' stroke-width='2.4' stroke-linecap='round'/></svg>") center / 70% no-repeat;
 }
-.card.discardSel:hover { transform: translateY(-9px) scale(1.03); }
-.card.dealIn { animation: dealIn .34s cubic-bezier(.3,1.35,.5,1) backwards; }
-@keyframes dealIn {
-  from { transform: translateY(16px) scale(.6) rotate(4deg); opacity: 0; }
-  to   { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+.card.ctaJaque { opacity: 1; filter: none; cursor: pointer; z-index: 3; animation: ctaPulse 1.4s ease-in-out infinite; }
+@keyframes ctaPulse {
+  0%, 100% { transform: translateY(-6px); box-shadow: 0 0 0 2px var(--accent-deep), 0 0 0 5px rgba(217,96,58,.18), 8px 10px 0 rgba(20,40,20,.2); }
+  50% { transform: translateY(-10px); box-shadow: 0 0 0 2px var(--accent-deep), 0 0 0 9px rgba(217,96,58,.12), 10px 14px 0 rgba(20,40,20,.2); }
 }
-.card.shake { animation: cardShake .32s ease-in-out; }
-@keyframes cardShake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-5px) rotate(-2deg); } 40% { transform: translateX(5px) rotate(2deg); }
-  60% { transform: translateX(-4px); } 80% { transform: translateX(3px); }
+.card.shake { animation: cardShake .3s ease-in-out; }
+@keyframes cardShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+
+/* dorso */
+.card.back { background: var(--card-back); box-shadow: 0 0 0 3px var(--cream) inset, 4px 4px 0 var(--shadow); cursor: default; }
+.card.back::before { display: none; }
+.card.back:hover { transform: none; }
+
+/* miniaturas (asientos, pilas) */
+.card.mini { --cw: 32px; border-radius: 6px; cursor: default; box-shadow: 0 0 0 1px rgba(36,36,36,.1), 2px 2px 0 var(--shadow); }
+.card.mini.back { box-shadow: 0 0 0 2px var(--cream) inset, 2px 2px 0 var(--shadow); }
+.card.mini .cardName, .card.mini .cardBolt { display: none; }
+.card.mini .cardCorner { font-size: 8px; top: 5px; left: 3px; }
+.card.mini .cardPic { top: 24%; height: 62%; left: 8%; right: 8%; }
+.card.mini:hover { transform: translateY(-2px); }
+.card.mini[role="button"] { cursor: pointer; }
+.card.mini.unplayable { opacity: .55; }
+.card.mini.ctaJaque { animation: ctaPulseMini 1.4s ease-in-out infinite; }
+@keyframes ctaPulseMini { 0%, 100% { box-shadow: 0 0 0 2px var(--accent-deep); } 50% { box-shadow: 0 0 0 4px rgba(217,96,58,.5); } }
+
+/* carta suelta en pantalla (jugada / descartada) */
+.card.floating { transition: none; will-change: transform, opacity; box-shadow: 0 0 0 1px rgba(36,36,36,.08), 10px 12px 0 rgba(20,40,20,.25); }
+
+/* icono de carta en línea (barra de acción, popover del mazo, última jugada) */
+.hintCard {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 30px; height: 30px; border-radius: 8px; padding: 3px;
+  background: #F7F7E8; border-top: 3px solid var(--ink);
 }
+.hintCard.orange { background: #FBF3E2; border-top-color: var(--accent); }
+.hintCard svg, .hintCard img { width: 100%; height: 100%; }

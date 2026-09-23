@@ -87,6 +87,34 @@ en el manifiesto.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
 
+**Aspecto de las cartas:** cada carta declara `face: { art, value }` en su módulo; las ilustraciones SVG
+están en `src/ui/card-art.js` (añadir una ilustración = una función más en `ARTS`). La descripción del
+tooltip sale de `cards.<id>.desc` en i18n, y el motivo de bloqueo de `blockedReason`.
+
+## Dirección de arte
+
+"Club de golf premium visto desde el aire": ilustración vectorial plana y cenital, césped segado en
+franjas diagonales, búnkeres orgánicos, grano fino (feTurbulence) y sombras planas largas a 45°.
+Tipografía **Outfit** (OFL, alojada en `assets/fonts/` para funcionar sin conexión). Toda la paleta está
+en variables de `styles/base.css` (`--grass-dark`, `--green-putt`, `--sand`, `--cream`, `--ink`, `--accent`…).
+La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite SVG de `index.html`
+(`#aerial`, `#i-…`) y se reutilizan con `<svg><use href="#…"/></svg>`.
+
+## Interfaz de partida
+
+```
+[← Menú] [↺]            ( J2 · Turno de Jugador 2 · ▮▮ )           [📜] [🔊]
+ asientos de rivales  |          tablero          |  mazo · descartes · última jugada
+        ( barra de acción: qué hay que hacer ahora / JAQUE con cuenta atrás )
+ [ tu avatar ]            [ tus cartas ]            [Descartar] [TERMINAR TURNO]
+```
+
+- La píldora central dice siempre de quién es el turno (color del jugador) y cuántas negras le quedan.
+- Los asientos marcan al jugador activo, si un bot está pensando, si alguien puede reaccionar en un JAQUE.
+- Cada carta jugada (tuya o de un bot) vuela, se exhibe sobre el tablero y cae en descartes; al robar,
+  las cartas salen del mazo; al pulsar una carta bloqueada se explica por qué; un marcador flota sobre la
+  pelota que juega. Atajos: **E** terminar turno, **D** descartar, **Esc** cancelar.
+
 ## Tests y herramientas
 
 ```bash

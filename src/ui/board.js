@@ -43,7 +43,7 @@ export function renderBoard() {
   if (dims !== S.cols + 'x' + S.rows || board.children.length !== cells.length) buildGrid(board, S.cols, S.rows);
   for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
     const cell = cells[y * S.cols + x];
-    let cls = 'cell', html = '', title = '';
+    let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), html = '', title = ''; // mowB: banda de segado (decorativo)
     const aria = [t('a11y.cell', { x, y })];
     const par = g.parAt(x, y), tile = g.tileAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
@@ -64,7 +64,7 @@ export function renderBoard() {
     // marca sutil de las casillas iniciales reales (fijadas al empezar la partida)
     for (const m of g.initMarks) {
       if (m.x === x && m.y === y)
-        html += `<span class="spawnMark" style="background:${pColor(m.player)}" title="${t('board.spawnMark', { n: m.player + 1 })}"></span>`;
+        html += `<span class="spawnMark" style="--pc:${pColor(m.player)}" title="${t('board.spawnMark', { n: m.player + 1 })}"></span>`;
     }
     if (S.hole.initX === x && S.hole.initY === y)
       html += `<span class="spawnMark holeMark" title="${t('board.holeMark')}"></span>`;
@@ -149,8 +149,15 @@ function ensurePiece(id, html) {
 export function clearPieces() { $('pieces').innerHTML = ''; }
 
 export function ensurePieces() {
+  const g = app.game, S = g.S, pd = g.pending;
   ensurePiece('hole', ASSETS.holeHTML());
-  for (const b of app.game.S.balls) ensurePiece('b' + b.player, ASSETS.ballHTML(b.player));
+  for (const b of S.balls) {
+    const el = ensurePiece('b' + b.player, ASSETS.ballHTML(b.player) + '<div class="turnMark" aria-hidden="true"></div>');
+    el.style.setProperty('--pc', pColor(b.player));
+    // marcador sobre la pelota de quien juega + halo en la pelota que se está moviendo/eligiendo
+    el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && b.player === S.turn && S.winner === null);
+    el.classList.toggle('isSel', !!pd?.ball && pd.ball.player === b.player);
+  }
 }
 
 // coloca todas las piezas exactamente según el estado (sin animar)
@@ -171,6 +178,6 @@ export function syncPieces() {
   }
   // limpia clases transitorias de la reproducción para no dejar estados colgados
   $$('#pieces .piece').forEach(el =>
-    el.classList.remove('glide', 'falling', 'dropping', 'sinking', 'warp', 'warpOut', 'warpIn', 'air'));
+    el.classList.remove('glide', 'falling', 'dropping', 'sinking', 'warp', 'warpOut', 'warpIn', 'air', 'acting'));
   fxRewindApply(); // si venimos de una carta NO, retrocede visualmente desde la posición previa
 }

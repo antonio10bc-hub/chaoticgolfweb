@@ -26,6 +26,7 @@ const idle = () => new Promise(r => { const t = () => (!app.animating && !app.an
 
 export function aiStop() {
   clearTimeout(timer);
+  app.jaqueTimer = null;
   gen++;
   turnLock = false;
   app.ai.acting = false;
@@ -71,6 +72,7 @@ export function aiKick() {
   }
   pendSince = 0;
   if (s.jaque) { handleJaque(g); return; }
+  app.jaqueTimer = null;
   // reacción naranja espontánea, evaluada una sola vez por jugada
   if (!turnLock && app.playSeq !== reactedSeq && s.lastSnap) {
     reactedSeq = app.playSeq;
@@ -144,10 +146,12 @@ function handleJaque(g) {
   }
   const h = S().human;
   const humanCan = !S().winners.includes(h) && S().hands[h].some(k => CARDS[k].color === 'orange' && G().canPlay(h, k));
+  // cuenta atrás visible en el cartel del JAQUE mientras puedes reaccionar
+  if (humanCan && !app.jaqueTimer) { app.jaqueTimer = { at: Date.now(), ms: AI.jaqueWindowMs }; ctl.renderJaque(); }
   timer = setTimeout(() => {
     if (live(g) && S().jaque && S().winner !== null && !G().pending && !app.animating && !app.animQueue.length) ctl.confirmWin();
     else if (live(g)) aiKick();
-  }, humanCan ? AI.jaqueWindowMs : AI.jaqueIdleMs);
+  }, humanCan ? Math.max(400, app.jaqueTimer.at + app.jaqueTimer.ms - Date.now()) : AI.jaqueIdleMs);
 }
 
 // watchdog anti-atascos: una acción pendiente de la máquina sin bucle que la atienda se resuelve sola

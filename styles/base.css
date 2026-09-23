@@ -1,86 +1,111 @@
-/* Paleta, reset, botones y layout general */
+/* Sistema visual "club de golf premium visto desde el aire":
+   paleta, grano, tipografía, reset y botones */
+@font-face {
+  font-family: "Outfit"; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url(../assets/fonts/outfit-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Outfit"; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url(../assets/fonts/outfit-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   --cell-w: 52px;
   --cell-h: 73px;
-  --ink: #152b1c;          /* verde muy oscuro (texto) */
-  --ink-soft: #5c7c66;
-  --cream: #1d4730;        /* fondo verde golf oscuro */
-  --panel: #f7f0dc;        /* crema */
-  --grass: #a3da94;
-  --grass-fair: #cbebab;
-  --felt: #cde5bf;
-  --accent: #1f6b41;       /* botones verde profundo */
-  --accent-dark: #124a2c;
-  --warn: #b8554c;         /* granate */
-  --warn-dark: #853a33;
-  --gold: #ffd06b;         /* texto dorado de botones */
-  --mustard: #f4ae3c;
-  --hl: #ffab2e;
-  --sel: #1e8a46;          /* selección de casillas y trayectoria */
-  --sel-bright: #45c06e;
-  --sel-deep: #14532d;
 
-  /* -- assets: colores de componentes (editar aquí re-tematiza piezas y casillas) -- */
-  --tile-hole-bg: #2c5c46;
-  --tile-hole-circ: #14161a;
-  --tile-hole-ring: #c2d2bd;
-  --tile-bunker-bg: #f6e0a8;
-  --tile-bunker-ink: #8a6a2a;
-  --tile-portal-bg: #d9d4cb;
-  --tile-portal-ink: #57544e;
-  --cell-sand: #e6cb8d;
-  --cell-cement: #cfccc4;
-  --card-black-ink: #3a3d54;
-  --card-orange-ink: #c06f10;
-  --card-orange-border: #f59a3c;
+  /* paleta */
+  --grass-dark:  #4F8A4B;   /* franja oscura del césped segado */
+  --grass-mid:   #5C9854;   /* franja clara */
+  --green-putt:  #8DB05F;   /* green / zona jugable */
+  --green-light: #A3C173;   /* hover, casillas válidas */
+  --sand:        #ECE6CC;   /* búnkeres */
+  --sand-hi:     #F6F2E0;   /* brillo interior de la arena */
+  --cream:       #F1F1DC;   /* paneles, tarjetas, fondo de menús */
+  --cream-line:  #D9D9BE;   /* bordes finos y separadores */
+  --ink:         #242424;   /* texto, botón primario, agujero */
+  --accent:      #E8873A;   /* bandera, acentos, "tu turno" */
+  --accent-deep: #D9603A;   /* alertas, JAQUE */
+  --navy:        #2D4F7C;   /* acento secundario puntual */
+  --shadow:      rgba(20,40,20,.28);
+
+  /* derivados */
+  --ink-soft:    #66725F;   /* texto secundario gris verdoso */
+  --ink-line:    rgba(36,36,36,.6);
+  --cream-deep:  #E7E7CC;
+  --collar:      #6FA052;   /* collar de césped alrededor de greens y búnkeres */
+  --tree:        #3E7240;
+
+  /* compatibilidad con reglas existentes */
+  --panel: var(--cream); --panel-hi: #F7F7E6; --panel-edge: var(--cream-line);
+  --felt: var(--grass-mid); --line: var(--ink); --gold: var(--cream);
+  --card-black-frame: var(--ink); --card-orange-frame: var(--accent);
+  --cell-sand: var(--sand); --cell-cement: #CFD2C2;
+
+  /* grano fino (feTurbulence) para césped, arena y paneles */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.07'/></svg>");
+  --mow: repeating-linear-gradient(135deg, var(--grass-dark) 0 64px, var(--grass-mid) 64px 128px);
+
+  --font: "Outfit", "Urbanist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --r-sm: 10px; --r-md: 16px; --r-lg: 20px;
+  --shadow-soft: 0 10px 30px rgba(20,40,20,.18), 0 2px 6px rgba(20,40,20,.08);
+  --shadow-long: 6px 6px 0 var(--shadow);   /* sombra plana a 45° */
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-pop: cubic-bezier(.2,.7,.2,1);   /* sin rebote: todo suave */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: "Avenir Next", "Avenir", "Trebuchet MS", "Segoe UI", -apple-system, sans-serif;
-  background: var(--cream); /* color plano, sin degradados */
+  font-family: var(--font);
+  font-weight: 400;
+  background: var(--grass-dark);
   color: var(--ink);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
-#app { display: flex; gap: 14px; padding: 14px; align-items: flex-start; }
-#main { flex: 1; min-width: 0; }
+input, select, textarea { font-family: inherit; }
+h1, h2, h3, h4, h5 { font-weight: 600; letter-spacing: -.02em; }
 
-/* ---- Barra superior ---- */
-#topbar {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  background: var(--panel); border-radius: 16px; padding: 10px 16px; margin-bottom: 10px;
-  border: 1px solid rgba(255,255,255,.7);
-  box-shadow: 0 4px 14px rgba(120,100,60,.14);
-}
-#turnInfo {
-  position: absolute; top: 10px; left: 14px; z-index: 8;
-  font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;
-  background: rgba(16,42,26,.55); color: #eaf5ec;
-  padding: 4px 10px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.22);
-  backdrop-filter: blur(2px);
-  pointer-events: none; text-shadow: 0 1px 1px rgba(0,0,0,.3);
-}
-#turnInfo .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; box-shadow: inset 0 -2px 0 rgba(0,0,0,.12); }
+/* iconos de línea (sprite en index.html) */
+.i { width: 1.15em; height: 1.15em; flex: 0 0 auto; vertical-align: -.2em; }
+
+/* ---------- botones ---------- */
+/* por defecto: píldora secundaria con borde fino */
 button {
-  background: var(--accent); /* plano */
-  color: var(--gold); border: none; border-radius: 12px;
-  padding: 7px 16px; font-size: 13px; font-weight: 800; cursor: pointer;
-  font-family: inherit; letter-spacing: .3px;
-  text-shadow: 0 1px 0 rgba(0,0,0,.18);
-  box-shadow: 0 4px 0 var(--accent-dark);
-  transition: filter .12s, transform .08s, box-shadow .08s;
+  --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--b-bg); color: var(--b-fg);
+  border: 1px solid var(--b-line); border-radius: 999px;
+  padding: 7px 16px; font-family: inherit; font-size: 13px; font-weight: 500; letter-spacing: .005em; line-height: 1.15;
+  cursor: pointer; user-select: none;
+  transition: background-color .18s var(--ease-out), color .18s, border-color .18s, transform .15s var(--ease-out), box-shadow .2s, opacity .2s;
 }
-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
-button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-dark); }
-button:disabled { opacity: .35; cursor: default; transform: none; }
-button.danger { background: var(--warn); color: var(--gold);
-  box-shadow: 0 4px 0 var(--warn-dark); }
-button.danger:active { box-shadow: 0 1px 0 var(--warn-dark); }
-/* descartar: naranja con letras verdes (inverso del verde/dorado de fin de turno) */
-#discardBtn {
-  background: #e0952f;
-  color: #14532d; text-shadow: 0 1px 0 rgba(255,255,255,.4);
-  box-shadow: 0 4px 0 #a86a1d;
-}
-#discardBtn:active { box-shadow: 0 1px 0 #a86a1d; }
-#deckInfo { font-size: 12px; color: var(--ink-soft); margin-left: auto; }
+button:hover { background-color: color-mix(in srgb, var(--green-light) 35%, transparent); }
+button:active { transform: translateY(1px) scale(.985); }
+button:disabled { opacity: .38; cursor: default; transform: none; }
+button:disabled:hover { background-color: var(--b-bg); }
+button.danger { --b-fg: var(--accent-deep); --b-line: color-mix(in srgb, var(--accent-deep) 60%, transparent); }
+
+/* primario: píldora sólida tinta con texto crema */
+.btn-primary { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); box-shadow: 0 6px 16px rgba(20,40,20,.18); }
+.btn-primary:hover { background-color: #3a3a3a; }
+.btn-primary .i { transition: transform .2s var(--ease-out); }
+.btn-primary:hover .i { transform: translateX(3px); }
+/* acento: sólido verde césped (terminar turno…) */
+.btn-accent { --b-bg: var(--grass-dark); --b-fg: var(--cream); --b-line: var(--grass-dark); box-shadow: 0 6px 16px rgba(20,40,20,.2); }
+.btn-accent:hover { background-color: #467F43; }
+/* secundario claro sobre fondos oscuros o crema */
+.btn-secondary { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line); }
+.btn-light { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream-line); }
+.btn-light:hover { background-color: #fff; }
+/* píldora de borde crema sobre el césped (Menú, Reiniciar, Historial…) */
+.btn-ghost { --b-bg: rgba(241,241,220,.06); --b-fg: var(--cream); --b-line: rgba(241,241,220,.55); }
+.btn-ghost:hover { background-color: rgba(241,241,220,.16); }
+/* botón de texto */
+.btn-text { --b-line: transparent; --b-bg: transparent; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cream-line); }
+.btn-text:hover { background: none; color: var(--ink); }
+.btn-sm { padding: 6px 13px; font-size: 12.5px; }
+.btn-lg { padding: 12px 22px; font-size: 16px; font-weight: 500; }
+.btn-icon { gap: 7px; }
+button .kbd { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 5px; font-size: .72em; background: rgba(0,0,0,.12); }

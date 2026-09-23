@@ -1,18 +1,63 @@
-// Manos de los jugadores + barra de acción pendiente (sustituye a los popups).
+// Cartas de los jugadores:
+//   · dock   — la mano de quien juega en este dispositivo (en PVE tú; en modo libre, el jugador en turno)
+//   · asientos — el resto de jugadores, compactos a un lado del tablero (avatar, estado y cartas en miniatura)
+//   · barra de acción — qué hay que hacer ahora (sustituye a los popups)
 import { app } from './app.js';
 import { $, esc } from './dom.js';
-import { ASSETS, pColor } from '../art.js';
+import { pColor } from '../art.js';
 import { CARDS } from '../content/cards/index.js';
-import { JUICE } from '../fx/juice.js';
+import { cardFaceHTML, cardArtHTML } from './card-art.js';
+import { fxDealFrom } from '../fx/effects.js';
 import { t } from '../i18n/index.js';
 import * as ctl from './controller.js';
+import { refreshCardTip } from './card-tip.js';
 
-let prevHands = []; // tamaños de mano en el último render (para el robo escalonado)
-export const resetDealAnim = () => { prevHands = []; };
+let prevHands = []; // tamaños de mano en el último render (para el robo animado)
+let prevOwner = -1;
+export const resetDealAnim = () => { prevHands = []; prevOwner = -1; };
 
 const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard'];
 const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent'];
 
+// ¿de quién es la mano grande del dock?
+export function dockOwner(g = app.game) {
+  const S = g.S;
+  if (app.mode === 'pve') return S.human;
+  if (S.nPlayers === 1) return 0;
+  return S.turn; // modo libre (varios jugadores en el mismo dispositivo): el jugador en turno
+}
+// dueño de la acción pendiente (el dedo en curso no guarda p: es el de la pelota)
+export const pendingOwner = pd => !pd ? -1 : (pd.p !== undefined ? pd.p : (pd.kind === 'serpent' ? pd.ball.player : -1));
+
+export const isBotSeat = p => app.mode === 'pve' && p !== app.game.S.human;
+const hiddenFor = p => isBotSeat(p) && !app.pveShowHands; // manos rivales tapadas salvo debug
+
+// naranjas que p puede jugar ahora mismo durante un JAQUE (para pedirle acción)
+function jaqueCta(g, p) {
+  const S = g.S;
+  return S.jaque && S.winner !== null && !S.winners.includes(p) && !isBotSeat(p) && !hiddenFor(p)
+    && S.hands[p].some(k => CARDS[k].color === 'orange' && g.canPlay(p, k));
+}
+
+function cardHTML(g, p, idx, { mini = false } = {}) {
+  const S = g.S, pd = g.pending, k = S.hands[p][idx], def = CARDS[k];
+  const dealing = idx >= (prevHands[p] || 0);
+  const base = 'card' + (mini ? ' mini' : '') + (dealing ? ' dealing' : '');
+  if (hiddenFor(p)) { // dorso: se ve cuántas cartas tienen, no cuáles
+    return `<div class="${base} back" data-p="${p}" data-idx="${idx}" title="${esc(t('hands.hidden'))}"></div>`;
+  }
+  const discarding = pd?.kind === 'discard' && pd.p === p;
+  const selected = pd && pd.p === p && pd.idx === idx && SEL_KINDS.includes(pd.kind);
+  const playable = discarding || selected || g.canPlay(p, k);
+  let c = `${base} ${def.color}` + (playable ? '' : pd ? ' dimmed' : ' unplayable');
+  if (jaqueCta(g, p) && def.color === 'orange' && g.canPlay(p, k)) c += ' ctaJaque';
+  if (discarding && pd.selected.includes(idx)) c += ' discardSel';
+  if (selected) c += ' cardSel';
+  const label = def.name + (playable ? '' : ` (${t('a11y.unplayable')})`);
+  return `<div class="${c}" role="button" tabindex="0" data-p="${p}" data-idx="${idx}" data-key="${k}" aria-label="${esc(label)}">${cardFaceHTML(def)}</div>`;
+}
+
+/* ---------- barra de acción (qué hay que hacer ahora) ---------- */
 function hintFor(g, p) {
   const pd = g.pending, S = g.S;
   switch (pd.kind) {
@@ -27,7 +72,6 @@ function hintFor(g, p) {
   }
   return '';
 }
-
 function barButtons(g) {
   const pd = g.pending, S = g.S;
   let html = '';
@@ -35,74 +79,113 @@ function barButtons(g) {
     const trapped = g.inTrap(pd.ball);
     for (const n of [1, 2, 3]) {
       const dis = trapped && n === 1;
-      html += `<button data-act="amount" data-n="${n}"${dis ? ` disabled title="${esc(t('hands.cantLeaveTrap'))}"` : ''}>${n}</button>`;
+      html += `<button class="btn-light btn-sm stepBtn" data-act="amount" data-n="${n}"${dis ? ` disabled title="${esc(t('hands.cantLeaveTrap'))}"` : ''}>${n}</button>`;
     }
   } else if (pd.kind === 'pickHoled') {
-    for (const hb of S.balls.filter(b => b.holed)) html += `<button data-act="pickHoled" data-n="${hb.player}">J${hb.player + 1}</button>`;
+    for (const hb of S.balls.filter(b => b.holed)) html += `<button class="btn-light btn-sm" data-act="pickHoled" data-n="${hb.player}">J${hb.player + 1}</button>`;
   } else if (pd.kind === 'discard') {
     const n = pd.selected.length;
-    html += `<button data-act="confirmDiscard"${n ? '' : ' disabled'}>${n ? t('hands.discardN', { n }) : t('hands.confirm')}</button>`;
+    html += `<button class="btn-secondary btn-sm" data-act="confirmDiscard"${n ? '' : ' disabled'}>${n ? t('hands.discardN', { n }) : t('hands.confirm')}</button>`;
   }
-  if (pd.kind !== 'serpent') html += `<button class="danger" data-act="cancel">${t('common.cancel')}</button>`; // el dedo ya gastado no se puede cancelar
+  if (pd.kind !== 'serpent') html += `<button class="btn-ghost btn-sm" data-act="cancel">${t('common.cancel')}</button>`; // el dedo ya gastado no se puede cancelar
   return html;
+}
+// carta que está en juego en la acción pendiente (para mostrarla en la barra)
+function pendingCard(g) {
+  const pd = g.pending, S = g.S;
+  if (pd.kind === 'serpent' || pd.kind === 'dedoAmount') return CARDS.dedo;
+  if (pd.kind === 'placeTile') return CARDS[pd.tileType];
+  if (pd.kind === 'pickBall' || pd.kind === 'pickHoled' || (pd.kind === 'move' && pd.extract)) return CARDS.oPalo1;
+  if (pd.kind === 'move') return CARDS[S.hands[pd.p][pd.idx]];
+  return null;
+}
+
+// ¿le queda alguna carta jugable al dueño del dock?
+export const hasPlayable = (g, p) => g.S.hands[p].some(k => g.canPlay(p, k));
+
+function renderActionBar(g, owner) {
+  const S = g.S, pd = g.pending, bar = $('actionBar');
+  const pendP = pendingOwner(pd);
+  let html = '', kind = '';
+  if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
+    const interactive = app.mode !== 'pve' || pendP === S.human; // en PVE solo se interactúa con tus acciones
+    const card = pendingCard(g);
+    const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">J${pendP + 1}</span>` : '';
+    kind = pd.kind === 'discard' ? 'discard' : 'act';
+    html = `<div class="hint ${kind}${interactive ? '' : ' passive'}">` +
+      (card ? `<span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` : '') +
+      `${who}<span class="hintText">${esc(hintFor(g, pendP))}</span>` +
+      (interactive ? `<span class="hintBtns">${barButtons(g)}</span>` : '') + `</div>`;
+  } else if (!pd && !S.jaque && S.winner === null && owner === S.turn && !isBotSeat(owner)) {
+    // consejo suave cuando es tu turno y no hay nada en curso
+    const left = 2 - S.blackPlayed;
+    const txt = !hasPlayable(g, owner) ? t('hint.noMoves')
+      : S.blackPlayed === 0 ? t(S.nPlayers === 1 ? 'hint.startSolo' : 'hint.start') : t('hint.more', { n: left });
+    kind = 'idle';
+    html = `<div class="hint idle">${esc(txt)}</div>`;
+  }
+  if (bar._html !== html) { bar.innerHTML = html; bar._html = html; bar.dataset.kind = kind; }
+}
+
+/* ---------- dock ---------- */
+function renderDock(g, owner) {
+  const S = g.S, dock = $('dock');
+  const col = pColor(owner);
+  const myTurn = owner === S.turn && S.winner === null;
+  dock.style.setProperty('--pc', col);
+  dock.classList.toggle('myTurn', myTurn);
+  dock.classList.toggle('waiting', !myTurn);
+  dock.classList.toggle('cta', jaqueCta(g, owner));
+  const name = app.mode === 'pve' ? t('hands.yours') : (S.nPlayers === 1 ? t('hands.yours') : t('player.name', { n: owner + 1 }));
+  const status = S.winners.includes(owner) ? t('seat.inHole')
+    : jaqueCta(g, owner) ? t('seat.canReact')
+    : myTurn ? t('seat.yourTurn') : t('seat.waitTurn', { n: S.turn + 1 });
+  $('dockOwner').innerHTML = `<span class="avatar" style="--pc:${col}">J${owner + 1}</span>` +
+    `<span class="ownerTxt"><b>${esc(name)}</b><small>${esc(status)}</small></span>`;
+  const hand = $('hands');
+  hand.innerHTML = S.hands[owner].map((_, i) => cardHTML(g, owner, i)).join('') ||
+    `<div class="emptyHand">${esc(t('hands.empty'))}</div>`;
+  if (prevOwner !== owner && prevOwner !== -1) { hand.classList.remove('swap'); void hand.offsetWidth; hand.classList.add('swap'); }
+}
+
+/* ---------- asientos ---------- */
+function renderSeats(g, owner) {
+  const S = g.S, seats = $('seats');
+  const list = [];
+  for (let p = 0; p < S.nPlayers; p++) if (p !== owner) list.push(p);
+  $('table').classList.toggle('noSeats', !list.length);
+  seats.innerHTML = list.map(p => {
+    const col = pColor(p), active = p === S.turn && S.winner === null;
+    const thinking = app.ai.thinkingOf === p;
+    const won = S.winners.includes(p);
+    const cta = jaqueCta(g, p);
+    const cls = 'seat' + (active ? ' active' : '') + (thinking ? ' thinking' : '') + (won ? ' won' : '') + (cta ? ' cta' : '') + (isBotSeat(p) ? ' bot' : '');
+    const status = won ? t('seat.inHole') : cta ? t('seat.canReact')
+      : active ? (isBotSeat(p) ? t('seat.thinking') : t('seat.playing')) : t('seat.waiting');
+    const dots = thinking ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : '';
+    const cards = S.hands[p].map((_, i) => cardHTML(g, p, i, { mini: true })).join('');
+    return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
+      `<span class="avatar">J${p + 1}</span>` +
+      `<div class="seatBody"><div class="seatName">${esc(t('player.name', { n: p + 1 }))}${isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))}</span>` : ''}</div>` +
+      `<div class="seatStatus">${esc(status)}${dots}</div>` +
+      `<div class="seatCards">${cards || `<span class="noCards">${esc(t('seat.noCards'))}</span>`}</div></div></div>`;
+  }).join('');
 }
 
 export function renderHands() {
-  const g = app.game, S = g.S, pd = g.pending;
-  const el = $('hands');
-  const pve = app.mode === 'pve';
-  el.classList.toggle('pveSolo', pve || app.mode === 'story' || app.mode === 'test'); // mano centrada también en historia y al probar niveles
-  // jugador dueño de la acción pendiente
-  const pendP = !pd ? -1 : (pd.p !== undefined ? pd.p : (pd.kind === 'serpent' ? pd.ball.player : -1));
-  let html = '';
-  for (let p = 0; p < S.nPlayers; p++) {
-    const hidden = pve && p !== S.human && !app.pveShowHands; // manos rivales tapadas salvo debug
-    const col = pColor(p), active = p === S.turn, mine = pve && p === S.human;
-    const cls = 'hand' + (active ? ' active' : '') + (pve && p !== S.human ? ' aiHand' : '') + (mine ? ' mine' : '');
-    const style = `border-color:${active ? col : col + '55'}` + (active ? `;box-shadow:0 4px 14px ${col}55` : '');
-    const tag = mine ? t('hands.yours') : t('player.name', { n: p + 1 });
-    const badge = mine ? `<span class="tuBadge" style="background:${col}">${t('hands.youBadge')}</span>` : '';
-    const think = app.ai.thinkingOf === p ? `<span class="thinkDots" aria-label="${esc(t('hands.thinking'))}"><i></i><i></i><i></i></span>` : '';
-    // JAQUE: si tengo naranja usable, mi mano pide acción a gritos
-    const jaqueCta = S.jaque && S.winner !== null && !S.winners.includes(p) && (!pve || p === S.human) && !hidden
-      && S.hands[p].some(k => CARDS[k].color === 'orange' && g.canPlay(p, k));
-    const ctaTag = jaqueCta ? `<span class="jaqueCtaTag">${t('hands.useIt')}</span>` : '';
-    html += `<div class="${cls}" style="${style}" data-player="${p}">` +
-      `<h3><span class="dot" style="background:${col}"></span>${tag} <span class="handCount">${S.hands[p].length}</span>${think}${ctaTag}${badge}</h3>`;
-    // barra de acción pendiente: sustituye a los antiguos popups para TODOS los diálogos
-    if (pendP === p && BAR_KINDS.includes(pd.kind)) {
-      const interactive = app.mode !== 'pve' || p === S.human; // en PVE solo se interactúa con tus acciones
-      html += `<div class="cancelBar" role="status"><span>${esc(hintFor(g, p))}</span>${interactive ? barButtons(g) : ''}</div>`;
-    }
-    const discarding = pd?.kind === 'discard' && pd.p === p;
-    const prevLen = prevHands[p] || 0;
-    html += `<div class="handCards">`;
-    S.hands[p].forEach((k, idx) => {
-      const def = CARDS[k];
-      const dealing = idx >= prevLen; // robo con entrada escalonada (decorativo)
-      const dealCls = dealing ? ' dealIn' : '';
-      const dealStyle = dealing ? ` style="animation-delay:${(idx - prevLen) * JUICE.dealStaggerMs}ms"` : '';
-      if (hidden) { // dorso: se ve cuántas cartas tienen, no cuáles
-        html += `<div class="card back${dealCls}"${dealStyle} title="${esc(t('hands.hidden'))}" aria-label="${esc(t('hands.hidden'))}"></div>`;
-        return;
-      }
-      const playable = discarding || g.canPlay(p, k);
-      let c = `card ${def.color}` + (playable || def.color === 'orange' ? '' : ' unplayable'); // las naranjas siempre encendidas
-      if (jaqueCta && def.color === 'orange' && g.canPlay(p, k)) c += ' ctaJaque'; // tu naranja: quítale el apagado
-      if (discarding && pd.selected.includes(idx)) c += ' discardSel';
-      if (pd && pd.p === p && pd.idx === idx && SEL_KINDS.includes(pd.kind)) c += ' cardSel';
-      const label = def.name + (playable ? '' : ` (${t('a11y.unplayable')})`);
-      html += `<div class="${c}${dealCls}"${dealStyle} role="button" tabindex="0" data-p="${p}" data-idx="${idx}" aria-label="${esc(label)}">${ASSETS.handCardHTML(def)}</div>`;
-    });
-    html += `</div></div>`;
-  }
-  el.innerHTML = html;
+  const g = app.game, S = g.S;
+  const owner = dockOwner(g);
+  renderActionBar(g, owner);
+  renderDock(g, owner);
+  renderSeats(g, owner);
+  fxDealFrom('deckPile', document.querySelectorAll('#hands .card.dealing, #seats .card.dealing'));
   prevHands = S.hands.map(h => h.length);
+  prevOwner = owner;
+  refreshCardTip();
 }
 
-// un único listener para todas las manos (cartas y botones de la barra)
+// un único listener para dock, asientos y barra de acción
 export function bindHands() {
-  const el = $('hands');
   const activate = target => {
     const btn = target.closest('button[data-act]');
     if (btn) {
@@ -116,16 +199,19 @@ export function bindHands() {
       }
       return;
     }
-    const card = target.closest('.card[data-p]');
+    const card = target.closest('.card[data-p]:not(.back)');
     if (card) ctl.clickCard(+card.dataset.p, +card.dataset.idx);
   };
-  el.addEventListener('click', e => activate(e.target));
-  el.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.card[data-p]')) {
-      e.preventDefault();
-      const { p, idx } = e.target.dataset;
-      activate(e.target);
-      requestAnimationFrame(() => document.querySelector(`#hands .card[data-p="${p}"][data-idx="${idx}"]`)?.focus());
-    }
-  });
+  for (const id of ['dock', 'seats']) {
+    const el = $(id);
+    el.addEventListener('click', e => activate(e.target));
+    el.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.card[data-p]')) {
+        e.preventDefault();
+        const { p, idx } = e.target.dataset;
+        activate(e.target);
+        requestAnimationFrame(() => document.querySelector(`.card[data-p="${p}"][data-idx="${idx}"]`)?.focus());
+      }
+    });
+  }
 }

@@ -7,6 +7,7 @@ export default {
   icon: '<span class="ico ico-palo"></span>',
   art: 'icon.palo',
   stroke: true,
+  face: { art: 'paloReactivo', value: '1' },
   play(game, p, idx) {
     game.setPending({ kind: 'pickBall', p, idx, card: 'oPalo1' });
   },

@@ -1,0 +1,93 @@
+// Ilustraciones de las cartas: estilo plano/lineal de club de golf visto desde arriba
+// (trazo fino en tinta, colores planos de la paleta, sombras cortas a 45°, sin contornos gruesos).
+// Cada carta declara en su módulo `face: { art, value, dir? }`; aquí se dibuja.
+// Si hay arte bitmap (assets/art, clave def.art) se usa en lugar del SVG.
+import { ART } from '../art.js';
+
+const INK = '#242424', CREAM = '#F1F1DC', ACC = '#E8873A', NAVY = '#2D4F7C', SAND = '#ECE6CC';
+const G_MID = '#5C9854', G_PUTT = '#8DB05F', G_LIGHT = '#A3C173', SH = 'rgba(20,40,20,.22)';
+
+const ball = (cx, cy, r = 7) =>
+  `<circle cx="${cx + 3}" cy="${cy + 3}" r="${r}" fill="${SH}"/>` +
+  `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${INK}" stroke-width="1.8"/>`;
+
+// palo de hierro en diagonal
+const club = (grip = NAVY) =>
+  `<path d="M74 12 L44 74" stroke="${SH}" stroke-width="4" stroke-linecap="round" transform="translate(4 4)"/>` +
+  `<path d="M74 12 L44 74" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>` +
+  `<path d="M76 8 L69 22" stroke="${grip}" stroke-width="8" stroke-linecap="round"/>` +
+  `<path d="M33 70 Q40 67 48 72 L46 82 Q34 85 25 81 Q22 74 33 70 Z" fill="${INK}"/>` +
+  `<path d="M29 77 L41 78" stroke="${CREAM}" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>`;
+
+const ARROW_ROT = { up: 0, right: 90, down: 180, left: 270 };
+
+const ARTS = {
+  palo: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` + club() + ball(68, 76),
+  paloReactivo: () => `<circle cx="50" cy="54" r="40" fill="${ACC}" opacity=".16"/>` + club(ACC) + ball(68, 76) +
+    `<path d="M24 12 16 26h7l-3 12 10-15h-7l3-11z" fill="${ACC}"/>`,
+  dedo: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` +
+    // camino en zigzag hasta la bola
+    `<path d="M22 84 V68 H36 V54" fill="none" stroke="${ACC}" stroke-width="2.6" stroke-dasharray="1 6" stroke-linecap="round"/>` +
+    ball(22, 84, 6) +
+    // mano con el índice apuntando (plana, trazo fino)
+    `<path d="M50 90 Q40 90 40 79 L40 64 Q40 57 47 57 L50 57 L50 26 Q50 18 57 18 Q64 18 64 26 L64 53 L69 53 Q78 53 78 62 L78 77 Q78 90 66 90 Z"
+       transform="translate(4 4)" fill="${SH}"/>` +
+    `<path d="M50 90 Q40 90 40 79 L40 64 Q40 57 47 57 L50 57 L50 26 Q50 18 57 18 Q64 18 64 26 L64 53 L69 53 Q78 53 78 62 L78 77 Q78 90 66 90 Z"
+       fill="#F2CBA2" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>` +
+    `<path d="M64 62v5M71 62v5M50 64v7" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>`,
+  hoyo: face =>
+    // green con agujero y bandera en el centro + flecha de dirección en tinta
+    `<circle cx="50" cy="54" r="30" fill="${G_PUTT}"/>` +
+    `<path d="M46 62 L66 78" stroke="${SH}" stroke-width="3" stroke-linecap="round"/>` +
+    `<ellipse cx="46" cy="62" rx="8" ry="5.5" fill="${INK}"/>` +
+    `<path d="M46 62 V36" stroke="${CREAM}" stroke-width="2.6" stroke-linecap="round"/>` +
+    `<path d="M47 37 L62 42 L47 48 Z" fill="${ACC}"/>` +
+    `<g transform="rotate(${ARROW_ROT[face.dir] || 0} 50 54)">` +
+      `<path d="M50 4 L61 16 L54 16 L54 22 L46 22 L46 16 L39 16 Z" fill="${INK}"/>` +
+    `</g>`,
+  bunker: () =>
+    `<path d="M10 72C6 44 30 26 54 28c26 2 38 22 36 44-2 24-24 34-46 32-18-2-32-12-34-32z" fill="${G_MID}"/>` +
+    `<path d="M16 70c-2-22 18-36 38-35 22 1 32 18 30 36-2 18-20 27-38 25-16-2-28-10-30-26z" fill="${SAND}"/>` +
+    `<path d="M24 60c4-12 16-19 30-18 11 1 19 7 22 16-14-8-34-9-52 2z" fill="#F6F2E0"/>` +
+    // rastrillo fino
+    `<path d="M70 14 L56 56" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>` +
+    `<path d="M44 52 L68 60" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>` +
+    `<path d="M47 57l-2 6M53 59l-2 6M59 61l-2 6M65 63l-2 6" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>`,
+  portal: () =>
+    `<circle cx="55" cy="59" r="32" fill="${SH}"/>` +
+    `<circle cx="50" cy="54" r="32" fill="${NAVY}"/>` +
+    `<circle cx="50" cy="54" r="22" fill="none" stroke="${CREAM}" stroke-width="2.4" opacity=".85"/>` +
+    `<circle cx="50" cy="54" r="12" fill="none" stroke="${CREAM}" stroke-width="2.4" opacity=".55"/>` +
+    `<circle cx="50" cy="54" r="4.5" fill="${ACC}"/>` +
+    `<path d="M84 16v8M80 20h8M16 80v6M13 83h6" stroke="${ACC}" stroke-width="2" stroke-linecap="round"/>`,
+  no: () =>
+    // carta tachada: anula la última jugada
+    `<rect x="32" y="22" width="36" height="50" rx="6" fill="#fff" stroke="${INK}" stroke-width="1.8" transform="rotate(-8 50 47)"/>` +
+    `<path d="M41 40h18M41 49h13" stroke="${INK}" stroke-width="1.8" stroke-linecap="round" opacity=".35" transform="rotate(-8 50 47)"/>` +
+    `<circle cx="50" cy="48" r="32" fill="none" stroke="#D9603A" stroke-width="5"/>` +
+    `<path d="M28 26 L72 70" stroke="#D9603A" stroke-width="5" stroke-linecap="round"/>`,
+};
+
+export function cardArtSVG(def) {
+  const face = def.face || {};
+  const draw = ARTS[face.art];
+  if (!draw) return def.icon || '';
+  return `<svg class="cardSvg" viewBox="0 0 100 100" aria-hidden="true">${draw(face)}</svg>`;
+}
+
+// ilustración (bitmap si existe, si no SVG)
+export function cardArtHTML(def) {
+  const url = def.art && ART[def.art];
+  return url
+    ? `<img class="cardArt" src="${url}" alt="" style="transform:rotate(${def.artRot || 0}deg)">`
+    : cardArtSVG(def);
+}
+
+// cara completa de la carta: esquina con valor, ilustración y nombre
+export function cardFaceHTML(def) {
+  const v = def.face?.value;
+  return `<span class="cardCorner">${v ?? ''}</span>` +
+    (def.color === 'orange' ? `<svg class="cardBolt" aria-hidden="true"><use href="#i-bolt"/></svg>` : '') +
+    `<span class="cardPic">${cardArtHTML(def)}</span>` +
+    `<span class="cardName">${def.short || def.name}</span>`;
+}

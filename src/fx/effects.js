@@ -5,7 +5,7 @@ import { cellCenterPx } from '../ui/geometry.js';
 import { $, $$, restartClass } from '../ui/dom.js';
 import { app } from '../ui/app.js';
 import { sfx } from '../audio/sfx.js';
-import { ASSETS } from '../art.js';
+import { cardFaceHTML } from '../ui/card-art.js';
 import { CARDS } from '../content/cards/index.js';
 import { t } from '../i18n/index.js';
 
@@ -169,61 +169,86 @@ export function fxWinConfetti() {
   }
 }
 
-const handCard = (p, idx) => {
-  const hand = $$('#hands .hand')[p];
-  return hand && hand.querySelectorAll('.card')[idx];
-};
+// carta de una mano en pantalla (dock o asiento)
+const handCard = (p, idx) => document.querySelector(`.card[data-p="${p}"][data-idx="${idx}"]`);
+const rectOf = id => { const el = $(id); const r = el && el.getBoundingClientRect(); return r && r.width ? r : null; };
+const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
 
-// clona una carta de la mano y la anima (viaje al tablero o salida de descarte)
-export function fxCloneCard(p, idx, mode) {
-  if (REDUCED) return;
-  const card = handCard(p, idx);
-  if (!card) return;
-  const r = card.getBoundingClientRect();
-  const c = card.cloneNode(true);
-  c.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;
-    margin:0;z-index:90;pointer-events:none;transition:none;`;
+// una carta boca arriba, del tamaño de las del dock, suelta en la capa fija
+function floatingCard(def, w) {
+  const c = document.createElement("div");
+  c.className = `card floating ${def.color}`;
+  c.innerHTML = cardFaceHTML(def);
+  c.style.cssText = `position:fixed;left:0;top:0;--cw:${w}px;margin:0;z-index:95;pointer-events:none;`;
   document.body.appendChild(c);
-  let anim;
-  if (mode === 'play') { // viaja al centro del tablero con un arco y se encoge
-    const bw = $('boardWrap').getBoundingClientRect();
-    const tx = bw.left + bw.width / 2 - r.left - r.width / 2;
-    const ty = bw.top + bw.height / 2 - r.top - r.height / 2;
-    anim = c.animate([
-      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
-      { transform: `translate(${tx * .5}px, ${ty * .5 - 46}px) rotate(${(fxRand() - .5) * 14}deg) scale(.92)`, opacity: 1, offset: .55 },
-      { transform: `translate(${tx}px, ${ty}px) rotate(0) scale(.25)`, opacity: 0 },
-    ], { duration: JUICE.cardFlyMs, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards' });
-  } else { // descarte: sale por abajo girando
-    anim = c.animate([
-      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
-      { transform: `translate(${(fxRand() - .5) * 60}px, 130px) rotate(${(fxRand() - .5) * 40}deg) scale(.85)`, opacity: 0 },
-    ], { duration: 300, easing: 'cubic-bezier(.4,0,.7,.4)', fill: 'forwards' });
-  }
+  return c;
+}
+
+// carta jugada: vuela desde donde está (mano / asiento), se exhibe un instante sobre el
+// tablero y termina en la pila de descartes (o se funde, si se queda en la mesa)
+export function fxPlayCard(p, idx, cardKey, { fast = false } = {}) {
+  const def = CARDS[cardKey];
+  if (!def) return;
+  const src = handCard(p, idx)?.getBoundingClientRect() || $$(`.seat[data-player="${p}"]`)[0]?.getBoundingClientRect();
+  const board = rectOf("boardWrap");
+  if (!src || !board) return;
+  const W = 96, H = W * 1.4;
+  const c = floatingCard(def, W);
+  const from = center(src), show = { x: board.left + board.width / 2, y: board.top + Math.min(board.height * .28, 150) };
+  const pile = rectOf("discardPile");
+  const end = def.staysOnBoard || !pile ? { ...show, s: .6, o: 0 } : { ...center(pile), s: .42, o: .0 };
+  const at = (pt, s, r = 0) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${s}) rotate(${r}deg)`;
+  const s0 = src.width / W;
+  if (REDUCED) { c.remove(); return; }
+  const frames = [
+    { transform: at(from, s0, 0), opacity: 1, offset: 0 },
+    { transform: at(show, 1.18, (fxRand() - .5) * 6), opacity: 1, offset: fast ? .3 : .28 },
+    { transform: at(show, 1.08, 0), opacity: 1, offset: fast ? .55 : .72 },
+    { transform: at(end, end.s, (fxRand() - .5) * 30), opacity: end.o, offset: 1 },
+  ];
+  const anim = c.animate(frames, { duration: fast ? 700 : 1250, easing: "cubic-bezier(.3,.7,.3,1)", fill: "forwards" });
+  anim.onfinish = () => c.remove();
+  sfx("whoosh");
+}
+
+// descarte: las cartas vuelan a la pila de descartes (desveladas si eran de un bot)
+export function fxDiscardCard(p, idx, cardKey) {
+  if (REDUCED) return;
+  const def = CARDS[cardKey];
+  const el = handCard(p, idx);
+  const pile = rectOf("discardPile");
+  if (!def || !el || !pile) return;
+  const src = el.getBoundingClientRect();
+  const W = 96, H = W * 1.4, c = floatingCard(def, W);
+  const a = center(src), b = center(pile);
+  const at = (pt, s, r) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${s}) rotate(${r}deg)`;
+  const anim = c.animate([
+    { transform: at(a, src.width / W, 0), opacity: 1 },
+    { transform: at({ x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 60 }, .8, (fxRand() - .5) * 40), opacity: 1, offset: .5 },
+    { transform: at(b, .42, (fxRand() - .5) * 30), opacity: .2 },
+  ], { duration: 520, easing: "cubic-bezier(.4,0,.3,1)", fill: "forwards" });
   anim.onfinish = () => c.remove();
 }
 
-// en PVE las manos rivales están tapadas: cuando la máquina usa una carta, se
-// desvela desde su mano (carta boca arriba que se eleva y se desvanece)
-export function fxRevealCard(p, idx, cardKey) {
-  if (REDUCED) return;
-  const card = handCard(p, idx);
-  const def = CARDS[cardKey];
-  if (!card || !def) return;
-  const r = card.getBoundingClientRect();
-  const c = document.createElement('div');
-  c.className = `card ${def.color}`;
-  c.innerHTML = ASSETS.handCardHTML(def);
-  c.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;
-    margin:0;z-index:90;pointer-events:none;`;
-  document.body.appendChild(c);
-  const anim = c.animate([
-    { transform: 'translateY(0) scale(1)', opacity: 1 },
-    { transform: 'translateY(-24px) scale(1.1)', opacity: 1, offset: .5 },
-    { transform: 'translateY(-44px) scale(1.04)', opacity: 0 },
-  ], { duration: 950, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards' });
-  anim.onfinish = () => c.remove();
+// robo: las cartas nuevas salen del mazo y aterrizan en su sitio (FLIP)
+export function fxDealFrom(pileId, els) {
+  if (REDUCED || !els.length) return;
+  const pile = rectOf(pileId);
+  let i = 0;
+  for (const el of els) {
+    const r = el.getBoundingClientRect();
+    if (!r.width) continue;
+    const from = pile ? center(pile) : { x: r.left + r.width / 2, y: r.top + 60 };
+    const dx = from.x - (r.left + r.width / 2), dy = from.y - (r.top + r.height / 2);
+    el.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(.45) rotate(-12deg)`, opacity: 0 },
+      { transform: `translate(${dx * .15}px, ${dy * .15 - 18}px) scale(1.05) rotate(3deg)`, opacity: 1, offset: .7 },
+      { transform: "none", opacity: 1 },
+    ], { duration: 460, delay: i * JUICE.dealStaggerMs, easing: "cubic-bezier(.3,.8,.35,1)", fill: "backwards" });
+    if (i < 3) setTimeout(() => sfx("deal"), i * JUICE.dealStaggerMs + 60);
+    i++;
+  }
 }
 
 // carta no jugable: shake sutil
-export const fxBadCard = (p, idx) => restartClass(handCard(p, idx), 'shake');
+export const fxBadCard = (p, idx) => restartClass(handCard(p, idx), "shake");

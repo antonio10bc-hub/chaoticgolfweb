@@ -7,6 +7,8 @@ function hoyo(id, color, dir, dist, artRot) {
     icon: `<span class="ico ico-hoyo ${dir}"></span>`,
     art: dist === 2 ? 'icon.hoyo2' : 'icon.hoyo1', // flecha hacia ARRIBA: el juego la rota
     artRot,
+    face: { art: 'hoyo', value: '+' + dist, dir },
+    blockedReason: 'reason.holeTrapped',
     // con el hoyo en una trampa, la carta pierde 1 de distancia (un +1 se queda en 0)
     canPlay(game) { return game.holeMoveDist(this) > 0; },
     play(game, p, idx) {

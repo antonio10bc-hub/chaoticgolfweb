@@ -6,7 +6,7 @@ import { render } from './controller.js';
 import { t } from '../i18n/index.js';
 
 function paintMute() {
-  $('sfxBtn').textContent = SFX.muted ? '🔇' : '🔊';
+  $('sfxBtn').innerHTML = `<svg class="i" aria-hidden="true"><use href="#${SFX.muted ? 'i-mute' : 'i-sound'}"/></svg>`;
   $('sfxBtn').setAttribute('aria-pressed', SFX.muted);
   $('sfxBtn').setAttribute('aria-label', SFX.muted ? t('sound.unmute') : t('sound.mute'));
 }
