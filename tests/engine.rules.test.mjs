@@ -154,3 +154,31 @@ test('niveles de historia: JSON válido y jugable', () => {
     assert.equal(g.S.hands[0].length, 2);
   }
 });
+
+test('multijugador local: varias personas sin alterar el reparto ni los bots', () => {
+  const cfg = { players: 4, cols: 7, rows: 9, par: 3, humanColor: '#f26d6d' };
+  const one = Game.pve(cfg, { seed: 77 });
+  const two = Game.pve({ ...cfg, humans: 2 }, { seed: 77 });
+  assert.equal(one.S.humans, undefined);
+  assert.equal(two.S.humans.length, 2);
+  assert.ok(two.S.humans.includes(two.S.human));
+  assert.deepEqual(two.S.deck, one.S.deck);      // mismo mazo y mismas manos
+  assert.deepEqual(two.S.hands, one.S.hands);
+  for (const h of two.S.humans) assert.equal(two.S.aiStyles[h], null);
+  for (let i = 0; i < 4; i++) if (!two.S.humans.includes(i)) assert.equal(two.S.aiStyles[i], one.S.aiStyles[i]);
+});
+
+test('tope anti-bucle: la cadena de choques entre portales avisa con un evento', () => {
+  const g = Game.free({ players: 2, par: 1, cols: 6, rows: 5, counts: { palo3: 4 } }, { seed: 2 });
+  const S = g.S, y = 4;
+  S.tiles = [{ type: 'portal', x: 0, y }, { type: 'portal', x: 3, y }];
+  Object.assign(S.balls[0], { x: 1, y }); Object.assign(S.balls[1], { x: 2, y });
+  S.turn = 0; S.hands[0] = ['palo3'];
+  g.takeEvents();
+  g.clickCard(0, 0);
+  const tg = g.pending.targets.find(t => t.dir === 'right');
+  g.clickCell(tg.x, tg.y);
+  const evs = g.takeEvents();
+  assert.equal(evs.filter(e => e.t === 'chainStop').length, 1);
+  assert.match(S.log.join('\n'), /bucle/);
+});

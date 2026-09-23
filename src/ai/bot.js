@@ -19,6 +19,19 @@ export const STYLES = {
   // tramposo: frena más a los rivales y gasta naranjas con más alegría
   trick: { self: 10, ready: 14, trap: 7, opp: 4, threat: 44, oppTrap: 5, orangeReserve: 9, reactMin: 26, reactChance: .6, tileBias: 2 },
 };
+// niveles de dificultad (S.aiLevel; sin él, 'normal' — el comportamiento de siempre):
+//   noise      ruido aleatorio sumado a cada jugada (cuanto más, más despistes)
+//   wild       probabilidad de jugar una carta cualquiera sin pensar (ni ver la victoria)
+//   reactMul   multiplica las ganas de reaccionar con naranjas
+//   reactMinMul umbral de ganancia para reaccionar (menos = reacciona antes)
+//   saveChance probabilidad de ver que puede evitar un JAQUE
+//   lookahead  valora además la mejor segunda carta negra del turno
+export const LEVELS = {
+  easy:   { noise: 30, wild: .45, reactMul: .35, reactMinMul: 1.6, saveChance: .45, lookahead: false },
+  normal: { noise: .5, wild: 0, reactMul: 1, reactMinMul: 1, saveChance: 1, lookahead: false },
+  hard:   { noise: .2, wild: 0, reactMul: 1.45, reactMinMul: .7, saveChance: 1, lookahead: true },
+};
+const levelOf = game => LEVELS[game.S.aiLevel] || LEVELS.normal;
 export const WIN = 100000;
 const MAX_LEAVES = 4000; // tope de seguridad por decisión
 
@@ -142,39 +155,65 @@ export function enumeratePlays(game, p, filter = () => true) {
 
 const styleOf = (game, p) => game.S.aiStyles?.[p] || 'trick';
 
+// difícil: a las mejores jugadas negras se les suma (a medias) lo que aporta la mejor
+// segunda carta negra que quedaría en la mano — prefiere preparar combinaciones
+function lookahead(scored, p, style) {
+  const top = scored.filter(pl => pl.def.color === 'black' && pl.result.S.winner === null && pl.result.S.turn === p)
+    .sort((a, b) => b.score - a.score).slice(0, 8);
+  for (const pl of top) {
+    const g = pl.result;
+    if (g.S.blackPlayed >= 2) continue;
+    const now = evaluate(g, p, style);
+    let bestNext = now;
+    for (const nx of enumeratePlays(g, p, d => d.color === 'black')) {
+      const v = evaluate(nx.result, p, style);
+      if (v > bestNext) bestNext = v;
+    }
+    pl.score += (bestNext - now) * 0.9;
+  }
+}
+
 // mejor jugada del turno propio (negras y naranjas); null si ninguna merece la pena
 export function choosePlan(game, p, rand = Math.random) {
-  const style = styleOf(game, p), W = STYLES[style];
+  const style = styleOf(game, p), W = STYLES[style], L = levelOf(game);
   const base = evaluate(game, p, style);
-  let best = null;
+  const scored = [];
   for (const pl of enumeratePlays(game, p)) {
     const def = CARDS[pl.key];
     let s = evaluate(pl.result, p, style);
     if (def.color === 'orange') s -= W.orangeReserve; // las naranjas valen más guardadas para reaccionar
     if (def.staysOnBoard) s += W.tileBias;
-    s += rand() * 0.5; // desempate con algo de variedad
-    if (!best || s > best.score) best = { ...pl, score: s };
+    s += rand() * L.noise; // desempate con algo de variedad (en fácil, despistes de verdad)
+    scored.push({ ...pl, score: s, def });
   }
+  if (L.wild && scored.length && rand() < L.wild) { // fácil: a veces juega sin pensar
+    const pl = scored[Math.floor(rand() * scored.length)];
+    return { actions: pl.actions, key: pl.key, score: pl.score, gain: pl.score - base };
+  }
+  if (L.lookahead) lookahead(scored, p, style);
+  let best = null;
+  for (const pl of scored) if (!best || pl.score > best.score) best = pl;
   if (!best || best.score < base) return null;
   return { actions: best.actions, key: best.key, score: best.score, gain: best.score - base };
 }
 
 // reacción con naranja fuera de su turno: solo si frena algo serio
 export function chooseReaction(game, p, rand = Math.random) {
-  const style = styleOf(game, p), W = STYLES[style];
+  const style = styleOf(game, p), W = STYLES[style], L = levelOf(game);
   const base = evaluate(game, p, style);
   let best = null;
   for (const pl of enumeratePlays(game, p, def => def.color === 'orange')) {
     const s = evaluate(pl.result, p, style) + rand() * 0.5;
     if (!best || s > best.score) best = { ...pl, score: s };
   }
-  if (!best || best.score - base < W.reactMin) return null;
-  return { actions: best.actions, key: best.key, gain: best.score - base, chance: W.reactChance };
+  if (!best || best.score - base < W.reactMin * L.reactMinMul) return null;
+  return { actions: best.actions, key: best.key, gain: best.score - base, chance: Math.min(.95, W.reactChance * L.reactMul) };
 }
 
 // JAQUE de un rival: ¿hay una naranja que evite la victoria?
 export function chooseJaqueSave(game, p, rand = Math.random) {
-  const style = styleOf(game, p);
+  const style = styleOf(game, p), L = levelOf(game);
+  if (L.saveChance < 1 && rand() > L.saveChance) return null; // en fácil a veces no lo ve
   let best = null;
   for (const pl of enumeratePlays(game, p, def => def.color === 'orange')) {
     const S = pl.result.S;

@@ -6,6 +6,7 @@
 //            (palo, dedo, movimiento transferido y cartas de hoyo). Ej.: búnker.
 //   portal — no cuenta como casilla: teletransporta al otro portal y se sigue en
 //            la misma dirección. Máximo 2 en la mesa.
+// Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
 import portal from './portal.js';
 

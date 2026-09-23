@@ -87,6 +87,7 @@ export default {
   },
   god: { ball: 'ball', hole: 'hole' },
   notice: {
+    chainStop: 'Collisions looping through portals: the chain stops here',
     holeTrapped: 'The hole is in a bunker: [{card}] isn’t enough to get it out',
     cantDiscard: 'You have already played cards this turn: you can’t discard',
   },
@@ -98,6 +99,7 @@ export default {
     testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'level editor', editorTitle: 'Level Editor',
     continue: 'Continue game',
+    stats: 'stats', settings: 'settings',
   },
   nav: { toEditor: '← Editor', toLevels: '← Levels', toMenu: '← Menu' },
   game: {
@@ -114,17 +116,20 @@ export default {
     yours: 'Your turn', of: 'Player {n}’s turn', over: 'Game over',
     thinking: 'Thinking', blacksLeft: 'black cards', blacksAria: '{n} black cards left this turn',
     yoursBanner: 'Your turn!', ofBanner: 'Player {n}’s turn',
+    ofName: '{name}’s turn',
   },
   hint: {
     start: 'Your turn: play up to 2 black cards and end your turn',
     startSolo: 'Play up to 2 cards and end your turn to draw',
     more: 'You can play {n} more black card or end your turn',
     noMoves: 'No plays left: end your turn',
+    idle: 'You can play: {cards}',
   },
   seat: {
     playing: 'Playing', thinking: 'Thinking', waiting: 'Waiting', bot: 'bot',
     canReact: 'Can react!', inHole: 'In the hole!', noCards: 'no cards',
     yourTurn: 'Your turn!', waitTurn: 'Player {n}’s turn',
+    waitName: '{name}’s turn',
   },
   hud: {
     deck: 'Deck {deck} · Discards {discard}', lastCard: 'Last: {card}', lastPlay: 'Last play', deckLeft: 'Left in the deck',
@@ -158,7 +163,7 @@ export default {
   a11y: {
     board: 'Board', cell: 'Square {x},{y}', hole: 'hole', selectable: 'selectable', unplayable: 'not playable',
   },
-  fx: { combo: 'Combo x{n}!' },
+  fx: { combo: 'Combo x{n}!', chainStop: 'Loop broken!' },
   win: {
     levelDone: 'Level complete!', youWon: 'You won!',
     tieWithYou: 'Tie between {names} — you share the glory!',
@@ -172,6 +177,7 @@ export default {
     play: 'Play', completed: 'Completed', next: 'Next!', untitled: 'Untitled',
     none: 'You haven’t created any levels yet.<br>Make one in the Level Editor.',
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',
+    inProgress: 'In progress',
     tips: { hit: 'Watch out for collisions!', bunker: 'Subtract 1 from the club you use!', portal: 'Portals don’t count as a square!' },
   },
   pve: {
@@ -182,6 +188,13 @@ export default {
     sizeSName: 'Small', sizeMName: 'Medium', sizeLName: 'Large',
     play: 'Play', back: '← Back to menu',
     pickColor: 'Play with this colour', colorAria: 'Colour {n}',
+    humans: 'People on this device', colorFirst: 'First person’s colour',
+    localNote: 'Local multiplayer: pass the phone around each turn and nobody sees anyone else’s cards.',
+    diff: 'Bot difficulty', diffEasy: 'Easy', diffEasySub: 'gets distracted', diffNormal: 'Normal', diffNormalSub: 'plays well',
+    diffHard: 'Hard', diffHardSub: 'thinks 2 cards ahead',
+    subLocal: 'Several people on this device, no bots. Seats are drawn at random.',
+    subLocalBots: 'Several people on this device against the bots. Seats are drawn at random.',
+    localTitle: 'Local multiplayer', peopleN: '{n} people', botsN: '{n} bots', botN: '{n} bot',
   },
   editor: {
     title: 'LEVEL EDITOR', level: 'Level', slotLabel: 'Slot', file: 'File',
@@ -208,6 +221,7 @@ export default {
   dialog: { download: 'Download .json', copy: 'Copy', fromFile: 'Or from a file:', import: 'Import' },
   sound: {
     toggleTitle: 'Sound: on / off', settingsTitle: 'Settings',
+    muteAll: 'Mute everything',
     mute: 'Mute', unmute: 'Unmute',
     sfx: 'SFX', music: 'Music', musicOn: 'Ambient music',
     peek: 'Show bots’ cards', peekTitle: 'Debug: shows the bots’ hands',
@@ -226,5 +240,66 @@ export default {
     godPicked: 'Picked: {kind}. Click the destination square.',
     art: 'Bitmap art: {n}/{total} PNGs loaded (assets/art/)', seed: 'Seed: {seed}', empty: '(empty)',
     perf: 'FPS: {fps}<br>Particles: {n}',
+  },
+
+  /* ---------- local multiplayer, bots, settings, stats and tutorial ---------- */
+  hotseat: {
+    turnTitle: '{name}’s turn', reactTitle: '{name} wants to react',
+    passTo: 'Pass the device to {name}. Everyone else, no peeking!', show: 'I’m {name} · show my cards',
+    react: 'React', reactHint: 'Play an orange card or give the device back', giveBack: 'Give back',
+  },
+  persona: {
+    lines: {
+      hit: 'Ouch!|Hey!|Not cool!|You’ll pay for that!|Grrr!',
+      bump: 'Move it!|Knock knock!|Oops, sorry!',
+      fall: 'Nooo!|My ball!|Back to square one…|What a mess!',
+      sink: 'In!|Take that!|Ha!',
+      play: 'Here goes!|Watch this.|Hmm… yes!|I like this one.',
+      save: 'No way!|Not so fast!|Not yet!',
+      win: 'I won!|Unstoppable!|Again, again!',
+      lose: 'Next one’s mine.|Well played…|Rematch!',
+    },
+  },
+  preview: { tapAgain: 'Tap again' },
+  settings: {
+    title: 'Settings', more: 'More settings…',
+    soundH: 'Sound', musicSub: 'Generative tracks; they crossfade between the menu and the game',
+    track: 'In-game music', track_auto: 'Auto', track_fairway: 'Fairway', track_breeze: 'Breeze', track_lounge: 'Lounge',
+    gameH: 'Game', speed: 'Speed', slow: 'Slow', normal: 'Normal', fast: 'Fast',
+    theme: 'Course theme', theme_classic: 'Classic', theme_autumn: 'Autumn', theme_snow: 'Snow', theme_night: 'Night',
+    hints: 'Play hints', hintsSub: 'If you haven’t played for a while, the cards you can use are highlighted',
+    a11yH: 'Accessibility',
+    reduce: 'Reduce motion', reduceSub: 'Fewer animations, shakes and particles',
+    shapes: 'Shapes on balls', shapesSub: 'Each player also gets a shape (●▲■◆★✚) so colour isn’t the only cue',
+    tutorialH: 'Tutorial', tutorialSub: 'See the level 1 walkthrough and each card’s explanation again',
+    tutorialReset: 'Replay tutorial', tutorialDone: 'Done',
+  },
+  stats: {
+    title: 'Stats', byMode: 'Games', totals: 'All-time', bestH: 'Best results (Story Mode)',
+    mode_story: 'Story Mode', mode_pve: 'Quick game', mode_local: 'Local multiplayer',
+    played: 'played', won: 'Won', completed: 'Completed',
+    level: 'Level', turns: 'Turns', strokes: 'Strokes', noBest: 'Complete a story level to see your record here.',
+    turnsN: '{n} turns', bestN: 'best: {n}', newBest: 'New record!', bestTitle: 'Your best result',
+    turnsShort: '{n} turns', strokesShort: '{n} strokes',
+    reset: 'Reset stats', resetSub: 'Sets every counter back to zero', resetConfirm: 'Reset all stats? This can’t be undone.',
+  },
+  tutorial: {
+    ball: 'This is your ball.', hole: 'And this is the hole: get the ball in to win.',
+    hand: 'These are your cards. Tap one to use it.',
+    target: 'The light squares are the possible destinations. Hover to see the path and tap one.',
+    end: 'You can play up to 2 black cards per turn. When you’re done, press End turn to draw.',
+    next: 'Next', ok: 'Got it', skip: 'Skip tutorial', holeCards: 'Hole cards',
+    card: {
+      palo1: 'Your ball moves 1 square in a straight line. It can’t get out of a bunker: leaving costs 1.',
+      palo2: 'Your ball moves 2 squares in a straight line. If it hits another ball, it passes on the movement left.',
+      palo3: 'Your ball moves 3 squares in a straight line. Mind the edges: if it goes off, it returns to its start!',
+      dedo: 'Pick 1, 2 or 3 steps and move your ball square by square, turning at each step.',
+      hoyo: 'You don’t move the ball: you move the HOLE 2 squares in the arrow’s direction. If it lands on a ball, it swallows it.',
+      bunker: 'Place a bunker on a free square: whoever enters loses the rest of the move and leaving costs 1.',
+      portal: 'Place a portal (max. 2): whatever enters one comes out of the other without spending a step.',
+      oPalo1: 'Orange: play it at any time, even outside your turn. Moves ANY ball 1 square.',
+      oHoyo: 'Orange: moves the hole 1 square whenever you like. In a CHECK it can save you at the last second.',
+      no: 'Orange: cancels the last card played and the board goes back to how it was.',
+    },
   },
 };

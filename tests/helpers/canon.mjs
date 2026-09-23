@@ -19,7 +19,9 @@ export const hash = s => createHash('sha1').update(s).digest('hex').slice(0, 16)
 // estado canónico comparable: S completo + acción pendiente (la pelota se reduce a su jugador)
 export function canonical(S, pending) {
   // aiStyles (personalidad de los bots) es metadato de la IA, no de las reglas: fuera
-  if (S && S.aiStyles !== undefined) { S = { ...S }; delete S.aiStyles; }
+  if (S && (S.aiStyles !== undefined || S.aiLevel !== undefined || S.humans !== undefined)) {
+    S = { ...S }; delete S.aiStyles; delete S.aiLevel; delete S.humans; // (y el nivel de la IA / personas del dispositivo)
+  }
   const pd = pending ? { ...pending, ball: pending.ball ? pending.ball.player : undefined } : null;
   return stableStringify({ S, pending: pd });
 }

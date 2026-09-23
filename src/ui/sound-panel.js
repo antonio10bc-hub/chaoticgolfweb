@@ -9,6 +9,7 @@ function paintMute() {
   $('sfxBtn').innerHTML = `<svg class="i" aria-hidden="true"><use href="#${SFX.muted ? 'i-mute' : 'i-sound'}"/></svg>`;
   $('sfxBtn').setAttribute('aria-pressed', SFX.muted);
   $('sfxBtn').setAttribute('aria-label', SFX.muted ? t('sound.unmute') : t('sound.mute'));
+  $('muteAll').checked = SFX.muted;
 }
 
 export function bindSoundPanel() {
@@ -22,13 +23,15 @@ export function bindSoundPanel() {
   window.addEventListener('pointerdown', () => { sfxEnsure(); if (MUSIC.on) musicStart(); });
   window.addEventListener('keydown', () => { sfxEnsure(); if (MUSIC.on) musicStart(); }, { once: true });
 
-  $('sfxBtn').addEventListener('click', () => {
+  const toggleMute = () => {
     SFX.muted = !SFX.muted;
     paintMute();
     sfxApplyVolumes();
     if (!SFX.muted) { sfxEnsure(); sfx('pop'); }
     sndSave();
-  });
+  };
+  $('sfxBtn').addEventListener('click', toggleMute);
+  $('muteAll').addEventListener('change', () => { if ($('muteAll').checked !== SFX.muted) toggleMute(); }); // mismo silencio, desde el panel (móvil)
   $('sndCfgBtn').addEventListener('click', () => {
     const open = $('sndPanel').classList.toggle('open');
     $('sndCfgBtn').setAttribute('aria-expanded', open);

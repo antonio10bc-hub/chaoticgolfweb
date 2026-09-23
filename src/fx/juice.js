@@ -41,6 +41,7 @@ export const JUICE = {
   rewindMs: 320,          // retroceso rápido de las piezas al jugar NO
   music: { volume: 0.055, chordMs: 2600 },  // música ambiental generativa
   cardLeadMs: { mine: 220, bot: 520 },      // espera del tablero tras jugar una carta (para ver primero la carta)
+  cardShowMs: { mine: 1300, bot: 1700, discard: 900 }, // vida de la carta jugada / descartada sobre la mesa
   // ritmo de la IA — despacio y de una en una, para que se entienda qué hace
   ai: {
     thinkMs: 1250,       // pausa antes de decidir
@@ -54,7 +55,35 @@ export const JUICE = {
   },
 };
 
-export const REDUCED = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ---------- velocidad de las animaciones (ajustes: lenta / normal / rápida) ----------
+   Escala todas las duraciones de arriba (claves que acaban en "ms"), incluido el ritmo
+   de la IA, salvo esperas que no son animación: reposo, música, ambiente y la ventana
+   del JAQUE para que el jugador pueda reaccionar. */
+export const SPEEDS = { slow: 1.4, normal: 1, fast: .6 };
+const NO_SCALE = new Set(['idle.ms', 'music.chordMs', 'ambientMs', 'ai.jaqueWindowMs', 'ai.jaqueIdleMs']);
+const BASE = JSON.parse(JSON.stringify(JUICE));
+export let SPEED = 1;
+export function setSpeed(mult) {
+  SPEED = mult;
+  const walk = (base, live, path) => {
+    for (const [k, v] of Object.entries(base)) {
+      const key = path ? path + '.' + k : k;
+      if (v && typeof v === 'object') walk(v, live[k], key);
+      else if (typeof v === 'number' && /ms$/i.test(k) && !NO_SCALE.has(key)) live[k] = Math.round(v * mult);
+      else if (typeof v === 'number' && path && /ms$/i.test(path) && !NO_SCALE.has(path)) live[k] = Math.round(v * mult); // cardLeadMs.mine…
+    }
+  };
+  walk(BASE, JUICE, '');
+  if (typeof document !== 'undefined') document.documentElement.style.setProperty('--spd', mult);
+}
+
+// movimiento reducido: la preferencia del sistema o el ajuste del juego
+const SYS_REDUCED = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+export let REDUCED = SYS_REDUCED;
+export function setReduced(on) {
+  REDUCED = SYS_REDUCED || !!on;
+  if (typeof document !== 'undefined') document.documentElement.classList.toggle('reduceMotion', REDUCED);
+}
 
 export const GRASS_C = ['#8DB05F', '#A3C173', '#5C9854', '#D9E6B8'];
 export const SAND_C  = ['#ECE6CC', '#F6F2E0', '#DCD3B0', '#CFC49B'];

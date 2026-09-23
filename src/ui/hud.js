@@ -1,6 +1,5 @@
 // HUD de la partida: píldora de turno, pilas (mazo / descartes / última jugada),
 // botones de turno, historial, avisos y bocadillos de tutorial.
-import { playerTag } from '../engine/game.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
@@ -8,6 +7,8 @@ import { pColor } from '../art.js';
 import { cardArtHTML, cardFaceHTML } from './card-art.js';
 import { dockOwner, hasPlayable, isBotSeat } from './hands.js';
 import { t } from '../i18n/index.js';
+import { viewer, multiHuman, displayName, avatarHTML, handRevealed } from './players.js';
+import { prefs } from './prefs.js';
 
 const set = (el, html) => { if (el._html !== html) { el.innerHTML = html; el._html = html; } };
 
@@ -15,23 +16,23 @@ export function renderTopbar() {
   const g = app.game, S = g.S;
   // --- de quién es el turno ---
   const p = S.turn, col = pColor(p);
-  const mine = app.mode === 'pve' ? p === S.human : !isBotSeat(p);
+  const mine = app.mode === 'pve' ? p === viewer() : !isBotSeat(p);
   const pill = $('turnPill');
   pill.style.setProperty('--pc', col);
   pill.classList.toggle('mine', mine && app.mode === 'pve');
   pill.classList.toggle('bot', isBotSeat(p));
   const title = S.winner !== null && !S.jaque ? t('turn.over')
-    : (app.mode === 'pve' && mine) || S.nPlayers === 1 ? t('turn.yours') : t('turn.of', { n: p + 1 });
+    : (app.mode === 'pve' && mine && !multiHuman()) || S.nPlayers === 1 ? t('turn.yours') : t('turn.ofName', { name: displayName(p) });
   const sub = isBotSeat(p) && app.ai.thinkingOf === p ? t('turn.thinking') : t('turn.blacksLeft');
   const left = Math.max(0, 2 - S.blackPlayed);
   const pips = `<span class="pips" aria-label="${esc(t('turn.blacksAria', { n: left }))}">` +
     [0, 1].map(i => `<i class="${i < left ? 'on' : ''}"></i>`).join('') + `</span>`;
-  set(pill, `<span class="avatar">${playerTag(p)}</span><span class="tpText"><b>${esc(title)}</b>` +
+  set(pill, `${avatarHTML(p)}<span class="tpText"><b>${esc(title)}</b>` +
     `<small>${esc(sub)}${isBotSeat(p) && app.ai.thinkingOf === p ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : ''}</small></span>${pips}`);
 
   // --- botones de turno ---
   const owner = dockOwner(g);
-  const notMine = app.mode === 'pve' && S.turn !== S.human; // en PVE los botones solo en tu turno
+  const notMine = app.mode === 'pve' && (S.turn !== viewer() || !handRevealed(S.turn)); // en PVE los botones solo en tu turno
   const blocked = S.winner !== null || !!g.pending || g.godMode || notMine;
   const end = $('endTurnBtn'), disc = $('discardBtn');
   end.disabled = blocked;
@@ -56,7 +57,7 @@ function renderPiles() {
   const lp = $('lastPlay');
   if (S.lastCardKey) {
     const def = CARDS[S.lastCardKey];
-    const who = app.lastActor != null ? `<span class="avatar xs" style="--pc:${pColor(app.lastActor)}">${playerTag(app.lastActor)}</span>` : '';
+    const who = app.lastActor != null ? avatarHTML(app.lastActor, 'xs') : '';
     set(lp, `<small>${t('hud.lastPlay')}</small><div class="lastRow">${who}<span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(S.lastCardLabel)}</b></div>`);
   } else set(lp, '');
 }
@@ -107,4 +108,35 @@ export function updateEndTurnHint() {
   const on = !!(S && app.mode === 'story' && app.level?.builtIn && S.winner === null && !g.pending
     && S.hands[0] && (S.hands[0].length === 0 || Date.now() - app.lastPlayAt > 5000));
   $('endTurnBtn').classList.toggle('ctaEndTurn', on);
+  updateIdleNudge();
+}
+
+// aviso tras un rato sin jugar (ajuste "Avisos de jugada"): en tu turno y sin nada en curso,
+// las cartas que puedes jugar se mueven y la barra dice cuáles son; si no hay, pide terminar
+export const IDLE_NUDGE_MS = 9000;
+let nudging = false;
+function updateIdleNudge() {
+  const g = app.game, S = g?.S;
+  const owner = g ? dockOwner(g) : -1;
+  const on = !!(S && prefs.hints && app.screen === 'game' && app.mode !== 'free' && !app.animating && !g.pending && !S.jaque
+    && S.winner === null && owner === S.turn && !isBotSeat(owner) && handRevealed(owner)
+    && !document.querySelector('#coach.visible, #passScreen.visible, dialog[open]')
+    && Date.now() - Math.max(app.lastPlayAt, app.lastInputAt || 0) > IDLE_NUDGE_MS);
+  if (!on) {
+    if (nudging) { // se acabó el aviso: limpiar
+      document.querySelectorAll('#hands .card.nudge').forEach(el => el.classList.remove('nudge'));
+      $('actionBar').querySelector('.hint.nudgeHint')?.remove(); $('actionBar')._html = null;
+    }
+    nudging = false; return;
+  }
+  nudging = true;
+  const playable = S.hands[owner].map((k, i) => g.canPlay(owner, k) ? i : -1).filter(i => i >= 0);
+  if (!playable.length) { $('endTurnBtn').classList.add('ctaEndTurn'); return; }
+  // idempotente: el render puede haber rehecho la mano o la barra
+  playable.forEach(i => document.querySelector(`#hands .card[data-p="${owner}"][data-idx="${i}"]`)?.classList.add('nudge'));
+  const bar = $('actionBar');
+  if (bar.querySelector('.nudgeHint')) return;
+  const names = [...new Set(playable.map(i => CARDS[S.hands[owner][i]].short || CARDS[S.hands[owner][i]].name))];
+  bar.innerHTML = `<div class="hint idle nudgeHint">${esc(t('hint.idle', { cards: names.join(', ') }))}</div>`;
+  bar._html = null; // el próximo render la sustituye
 }

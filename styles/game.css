@@ -5,7 +5,8 @@
   height: 100vh; height: 100dvh;
   display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
   /* fondo más claro y de poco contraste para que el tablero real destaque */
-  background-image: var(--grain), repeating-linear-gradient(135deg, #8BBE7A 0 90px, #94C584 90px 180px);
+  background-image: var(--grain), repeating-linear-gradient(135deg, var(--bg-a) 0 90px, var(--bg-b) 90px 180px);
+  transition: background-color .4s;
   overflow: hidden;
 }
 #game > :not(#gameDecor) { position: relative; z-index: 1; }
@@ -259,7 +260,7 @@
 @media (max-width: 760px) {
   #gameBar { grid-template-columns: auto 1fr auto; padding: 8px 10px 6px; gap: 8px; }
   #gameBar .lbl { display: none; }
-  .barSide.right { padding-right: 44px; }
+  .barSide.right { padding-right: 50px; }
   .barSide { gap: 5px; }
   #gameBar button { white-space: nowrap; padding: 6px 10px; }
   #turnPill { justify-self: center; padding-right: 10px; gap: 8px; }

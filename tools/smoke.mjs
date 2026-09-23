@@ -107,6 +107,27 @@ try {
   if (contShown !== (fin.winner === null || fin.jaque)) problems.push(`"Continuar partida" ${contShown ? 'visible sin partida guardada' : 'oculto con partida a medias'}`);
   await shot('07b-menu-continuar');
 
+  console.log('ajustes y estadísticas');
+  await click('#settingsBtn'); await sleep(300);
+  await click('#setBox [data-speed="fast"]'); await click('#setBox [data-course-opt="night"]'); await sleep(200);
+  await shot('07c-ajustes');
+  await click('[data-tab="stats"]'); await sleep(200); await shot('07d-estadisticas');
+  await click('[data-set-act="close"]'); await sleep(200);
+  if (await page.evaluate(() => document.documentElement.dataset.course !== 'night')) problems.push('el tema del campo no se aplica');
+
+  console.log('multijugador local');
+  await page.evaluate(() => { window.chaoticGolf.app.pveCfg = { color: 1, size: 's', opps: 0, humans: 2, diff: 'normal' }; });
+  await click('#pveBtn'); await sleep(300);
+  await click('#pvePlay'); await confirmIfAsked(); await sleep(700);
+  if (!await page.$('#passScreen.visible')) problems.push('multijugador local: no aparece "pasa el dispositivo"');
+  if (await page.evaluate(() => document.querySelectorAll('#hands .card:not(.back)').length)) problems.push('multijugador local: se ven cartas antes de pasar el dispositivo');
+  await shot('07e-pasa-el-movil');
+  await click('#passScreen [data-pass="ok"]'); await sleep(400);
+  if (!await page.evaluate(() => document.querySelectorAll('#hands .card:not(.back)').length)) problems.push('multijugador local: no se ven las cartas propias');
+  await shot('07f-local');
+  await page.evaluate(() => document.getElementById('menuBtn').click()); await sleep(300);
+  await page.evaluate(() => { document.documentElement.dataset.course = 'classic'; });
+
   console.log('creador de niveles');
   await page.evaluate(() => { document.querySelectorAll('.screen, #winOverlay').forEach(() => {}); });
   await click('#editorBtn'); await sleep(300);

@@ -19,7 +19,8 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 
 ```
 index.html                 esqueleto de la página (sin lógica ni onclick)
-styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui
+styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
+                           themes (temas del campo) y features (componentes nuevos)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
   engine/                  REGLAS PURAS — sin DOM, sin sonido, sin timers
@@ -34,9 +35,15 @@ src/
     autoplay.js            partidas bot-contra-bot instantáneas (simulador y tests)
   ui/                      pantallas, tablero, manos, HUD, editor, debug, orquestador de la IA
     controller.js          une motor e interfaz: acción → eventos → efectos → render
+    players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
+    persona.js / bot-react.js  nombres, caras y bocadillos de los bots
+    preview.js             vista previa de la jugada (se simula sobre una copia del motor)
+    tutorial.js            presentación del nivel 1 y explicación de cada carta la primera vez
+    settings.js / prefs.js   pantalla de Ajustes (velocidad, tema, accesibilidad…) y Estadísticas
+    save.js / records.js   guardado por modo y estadísticas globales
   fx/                      partículas, efectos y constantes de "juice" (juice.js)
   audio/                   efectos de sonido y música generativa (WebAudio, sin archivos)
-  i18n/                    textos (es.js) y t()
+  i18n/                    textos (es.js, en.js) y t()
   storage.js               localStorage con esquema versionado
   art.js                   arte bitmap opcional + markup de piezas
 assets/icons/              iconos de la app
@@ -117,9 +124,20 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 
 - La píldora central dice siempre de quién es el turno (color del jugador) y cuántas negras le quedan.
 - Los asientos marcan al jugador activo, si un bot está pensando, si alguien puede reaccionar en un JAQUE.
-- Cada carta jugada (tuya o de un bot) vuela, se exhibe sobre el tablero y cae en descartes; al robar,
+- Cada carta jugada (tuya o de un bot) crece sobre su origen y reaparece un instante en descartes; al robar,
   las cartas salen del mazo; al pulsar una carta bloqueada se explica por qué; un marcador flota sobre la
   pelota que juega. Atajos: **E** terminar turno, **D** descartar, **Esc** cancelar.
+- **Vista previa:** al pasar por un destino (o por una carta de hoyo) se dibuja el recorrido real: choques en
+  cadena, portales, búnker, caídas y hoyo. En pantallas táctiles, primer toque = vista previa, segundo = jugar.
+- **Bots con personalidad:** nombre, cara que cambia de humor y bocadillos al jugar, recibir un golpe,
+  caerse o embocar. Dificultad fácil / normal / difícil (`LEVELS` en `src/ai/bot.js`).
+- **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
+  Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
+  reaccionar fuera de turno pide el dispositivo con "Reaccionar".
+- **Guardado:** uno por modo (historia y partida rápida). Salir al menú guarda; "Continuar partida" retoma la
+  más reciente; Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
+- **Ajustes:** sonido y pista de música (con fundido menú ↔ partida), idioma, velocidad de las animaciones,
+  tema del campo (clásico, otoño, nieve, noche), avisos de jugada, reducir movimiento, formas en las bolas.
 
 ## Tests y herramientas
 
@@ -144,7 +162,7 @@ obtenido. Si se cambia una regla **a propósito**, hay que cambiarla también en
 
 - **Bug corregido:** con dos portales y dos pelotas alineadas (`P2 · A · B · P1`) un golpe creaba un
   bucle de choques infinito y la página reventaba ("Maximum call stack size exceeded"), perdiendo la carta.
-  Ahora la cadena se corta tras 12 choques y se avisa en el historial.
+  Ahora la cadena se corta tras 12 choques y se avisa en el tablero ("¡Bucle cortado!") y en el historial.
 - **IA nueva:** simula cada jugada posible con el motor real en lugar de aproximar las reglas.
   Personalidades `aggro` / `trick`, reacciones naranjas una vez por jugada, salva JAQUEs también con el
   palo reactivo y renueva la mano en vez de atascarse. Frente a un jugador aleatorio gana ~98 % de las

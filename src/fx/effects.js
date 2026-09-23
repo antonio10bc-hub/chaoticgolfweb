@@ -91,28 +91,16 @@ export function fxComboText(px, py, n) {
   setTimeout(() => d.remove(), JUICE.comboMs);
 }
 
-// previsualización de trayectoria al hover de una casilla seleccionable
-export function fxShowTraj(bx, by, tx, ty, out) {
-  if (REDUCED) return;
-  const layer = fxGetDomLayer();
-  let tr = $('traj');
-  if (!tr) {
-    tr = document.createElement('div');
-    tr.id = 'traj';
-    tr.innerHTML = '<div class="line"></div><div class="head"></div>';
-    layer.appendChild(tr);
-  }
-  const a = cellCenterPx(bx, by), b = cellCenterPx(tx, ty);
-  const dx = b.px - a.px, dy = b.py - a.py, len = Math.hypot(dx, dy);
-  if (len < 6) { fxHideTraj(); return; }
-  tr.classList.toggle('out', !!out);
-  tr.style.display = 'block';
-  tr.style.left = a.px + 'px'; tr.style.top = a.py + 'px';
-  tr.style.width = len + 'px';
-  tr.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
-  tr.querySelector('.line').style.width = len + 'px';
+// cadena de choques cortada (tope anti-bucle): eslabón roto flotando sobre la pelota
+export function fxChainStop(px, py) {
+  const d = document.createElement('div');
+  d.className = 'chainStop' + (REDUCED ? ' still' : '');
+  d.innerHTML = `<svg class="i" aria-hidden="true"><use href="#i-chain-break"/></svg><span>${t('fx.chainStop')}</span>`;
+  const w = $('boardArea').offsetWidth;
+  d.style.left = Math.max(64, Math.min(w - 64, px)) + 'px'; d.style.top = (py - 16) + 'px'; // sin salirse del tablero
+  fxGetDomLayer().appendChild(d);
+  setTimeout(() => d.remove(), 1600);
 }
-export function fxHideTraj() { const tr = $('traj'); if (tr) tr.style.display = 'none'; }
 
 // animaciones de reposo tras unos segundos sin input
 let idleT = null;

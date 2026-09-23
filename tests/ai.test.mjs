@@ -76,3 +76,23 @@ test('nunca regala el hoyo a un rival si tiene alternativa', () => {
   assert.ok(!(after.S.winner !== null && !after.S.winners.includes(p)));
   assert.ok(evaluate(after, p) > -1000);
 });
+
+test('dificultad: el bot fácil gana bastante menos que el normal', () => {
+  const rate = lvl => {
+    const rand = mulberry32(3);
+    let w = 0, f = 0;
+    for (let i = 0; i < 70; i++) {
+      const g = Game.pve({ players: 2, cols: 7, rows: 9, par: 3, humanColor: PLAYER_COLORS[0], aiLevel: lvl }, { seed: 100 + i });
+      g.S.human = -1;
+      g.S.aiStyles = g.S.aiStyles.map(s => s || 'trick');
+      // el asiento 0 juega siempre en normal: referencia
+      const ref = (game, p, r) => { const L = game.S.aiLevel; game.S.aiLevel = undefined; try { return choosePlan(game, p, r); } finally { game.S.aiLevel = L; } };
+      const r = simulateGame(g, { rand, planFor: p => (p === 0 ? ref : null) });
+      if (!r.finished) continue;
+      f++; if (r.winners.includes(1)) w++;
+    }
+    return w / f;
+  };
+  const easy = rate('easy'), normal = rate('normal');
+  assert.ok(easy < normal - 0.12, `fácil ${easy.toFixed(2)} vs normal ${normal.toFixed(2)}`);
+});

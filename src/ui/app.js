@@ -15,11 +15,14 @@ export const app = {
   tipShown: {},          // bocadillos de tutorial ya mostrados en la partida actual
   storyLevels: [],       // niveles integrados de historia (cargados de JSON)
   pveShowHands: false,   // debug: ver las cartas de los contrincantes
-  pveCfg: { color: 0, size: 'm', opps: 2 },
+  pveCfg: { color: 0, size: 'm', opps: 2, humans: 1, diff: 'normal' },
   lastPveCfg: null,      // configuración de la partida PVE en curso (para Reiniciar)
   ai: { acting: false, thinkingOf: null },
+  // multijugador local (varias personas en el mismo dispositivo)
+  viewer: null,          // persona que tiene ahora el dispositivo (su mano es la del dock)
+  passFor: null,         // pantalla de "pasa el móvil" abierta para esta persona
+  reacting: null,        // persona fuera de turno que ha pedido el dispositivo para reaccionar
+  lastInputAt: 0,        // último clic / tecla (aviso tras un rato sin jugar)
 };
 
 export const S = () => app.game.S;
-export const isPve = () => app.mode === 'pve';
-export const isHuman = p => app.mode !== 'pve' || p === app.game.S.human;

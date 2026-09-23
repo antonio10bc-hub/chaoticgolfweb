@@ -12,8 +12,13 @@ import { fitEditorBoard, edRender, ED } from './editor.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t } from '../i18n/index.js';
 import { confirmDialog } from './dialog.js';
-import { saveGame, loadSave, applySaveExtras, clearSave } from './save.js';
+import { saveGame, loadSave, latestSave, applySaveExtras, clearSave } from './save.js';
 import { getLang } from '../i18n/index.js';
+import { recordStart, levelBest } from './records.js';
+import { musicScene } from '../audio/sfx.js';
+import { REDUCED } from '../fx/juice.js';
+import { humansOf } from './players.js';
+import { tutorialStart, tutorialStop } from './tutorial.js';
 
 // nombre de un nivel en el idioma activo (name_en, …) o el original
 export const levelName = L => (L && (L['name_' + getLang()] || L.name)) || '';
@@ -26,7 +31,13 @@ window.addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 const DISPLAY = { menu: 'flex', game: 'block', editor: 'block', story: 'flex', pve: 'flex' };
 
 export function showScreen(s) {
+  const prev = app.screen;
   app.screen = s;
+  // transición: la pantalla que entra aparece con un fundido suave (salvo movimiento reducido)
+  const el = $(s + 'Screen');
+  if (prev !== s && el && !REDUCED) { el.classList.remove('screenIn'); void el.offsetWidth; el.classList.add('screenIn'); }
+  musicScene(s === 'game' ? 'game' : 'menu'); // la música acompaña: menú ↔ partida con fundido cruzado
+  if (s !== 'game') tutorialStop();
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
   $('logPanel').style.display = s === 'game' ? 'flex' : 'none';   // el historial solo vive en la partida
@@ -58,8 +69,10 @@ export function startLevel(level, mode, idx = null) {
   const builtIn = mode === 'story' && idx !== null && idx < app.storyLevels.length;
   startGame(Game.fromLevel(level), mode, { levelIndex: idx, level: { ...level, builtIn } });
   refreshGivePlayer();
+  musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();
+  if (mode === 'story') { recordStart('story'); tutorialStart(); }
 }
 // nivel de historia por índice global: primero los integrados, luego los del creador
 export const storyLevelAt = i => i < app.storyLevels.length ? app.storyLevels[i] : loadLevels()[i - app.storyLevels.length];
@@ -69,6 +82,7 @@ export function openStory() {
   aiStop();
   const prog = loadProgress();
   const userLevels = loadLevels();
+  const storySave = loadSave('story');
   // el siguiente nivel sugerido: el primero sin completar
   const total = app.storyLevels.length + userLevels.length;
   let next = -1;
@@ -76,14 +90,23 @@ export function openStory() {
   const btn = (i, L) => {
     const state = prog[i] ? 'done' : i === next ? 'next' : '';
     const label = prog[i] ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${t('story.completed')}` : i === next ? t('story.next') : t('story.play');
-    return `<button class="lvlCard ${state}" style="animation-delay:${i * 60}ms" data-level="${i}"` +
+    const best = levelBest(i);
+    const saved = storySave && storySave.levelIndex === i;
+    return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${i * 60}ms" data-level="${i}"` +
       ` aria-label="${esc(t('story.levelAria', { n: i + 1, name: levelName(L) }))}${prog[i] ? ` · ${esc(t('story.done'))}` : ''}">` +
       `<span class="lvlNum">${i + 1}</span>` +
       `<span class="lvlPreview">${levelPreviewSVG(L)}</span>` +
       `<span class="lvlName">${esc(levelName(L) || t('story.untitled'))}</span>` +
-      `<span class="lvlState">${label}</span></button>`;
+      `<span class="lvlFoot"><span class="lvlState">${label}</span>` +
+      (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.turnsShort', { n: best.turns }))}</span>` : '') +
+      `</span>${saved ? `<span class="lvlSaved">${esc(t('story.inProgress'))}</span>` : ''}</button>`;
   };
   // dos apartados bien diferenciados: niveles integrados primero, los del creador después
+  // nivel a medias: se ofrece continuarlo en naranja, como en el menú
+  $('storyContinue').innerHTML = storySave
+    ? `<button class="mBtn continue" data-resume="story"><span class="cTxt"><span>${esc(t('menu.continue'))}</span>` +
+      `<small>${esc(t('story.level', { n: (storySave.levelIndex ?? 0) + 1 }))}${storySave.level ? ' · ' + esc(levelName(storySave.level)) : ''}</small></span>` +
+      `<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>` : '';
   $('lvlGrid').innerHTML =
     `<div class="lvlSection"><h3>${t('story.builtIn')}</h3><div class="lvlRow">${app.storyLevels.map((L, i) => btn(i, L)).join('')}</div></div>` +
     `<div class="lvlSection"><h3>${t('story.yours')}</h3><div class="lvlRow">${userLevels.length
@@ -121,8 +144,8 @@ async function confirmReset() {
 }
 
 // empezar una partida nueva sustituye a la guardada: se avisa antes. true = seguir adelante
-async function confirmReplaceSave() {
-  if (!loadSave()) return true;
+async function confirmReplaceSave(mode) {
+  if (!loadSave(mode)) return true;
   return confirmDialog(t('save.confirmReplace'), t('save.replaceOk'), true, t('save.title'));
 }
 
@@ -144,7 +167,7 @@ export function suspendGame() {
 // deja la partida realmente cerrada: sin IA, sin guardado y sin partida activa
 export function discardGame() {
   stopGameActivity();
-  clearSave();
+  if (app.game) clearSave(app.mode);
   app.game = null;
 }
 
@@ -176,8 +199,28 @@ export const PVE_COLORS = [...PLAYER_COLORS, '#e8833a'];
 
 export function openPveSetup() { buildPveSetup(); showScreen('pve'); }
 
+// límites de la mesa: de 2 a 6 jugadores; con una sola persona, al menos 1 bot
+function clampPve(cfg) {
+  cfg.humans = Math.min(4, Math.max(1, cfg.humans || 1));
+  cfg.opps = Math.max(cfg.humans > 1 ? 0 : 1, Math.min(6 - cfg.humans, cfg.opps ?? 2));
+  if (!['easy', 'normal', 'hard'].includes(cfg.diff)) cfg.diff = 'normal';
+}
 function buildPveSetup() {
   const cfg = app.pveCfg;
+  clampPve(cfg);
+  $$('#pveHumans .pveOpt').forEach(b => { const on = cfg.humans === +b.dataset.h; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  $$('#pveDiff .pveOpt').forEach(b => { const on = cfg.diff === b.dataset.diff; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  $$('#pveOpps .pveOpt').forEach(b => {
+    const n = +b.dataset.n;
+    b.disabled = (n === 0 && cfg.humans === 1) || n + cfg.humans > 6;
+  });
+  $('pveDiffRow').hidden = cfg.opps === 0;
+  $('pveColorH').textContent = t(cfg.humans > 1 ? 'pve.colorFirst' : 'pve.color');
+  $('pveCard').classList.toggle('local', cfg.humans > 1);
+  $('pveCard').querySelector('.sub').textContent = t(cfg.humans > 1 ? (cfg.opps ? 'pve.subLocalBots' : 'pve.subLocal') : 'pve.sub');
+  const d = loadSave('pve');
+  $('pveContinue').hidden = !d;
+  if (d) $('pveContinueSub').textContent = saveSub(d);
   $('pveColors').innerHTML = PVE_COLORS.map((c, i) =>
     `<button class="pveColor${cfg.color === i ? ' sel' : ''}" style="background:${c}" data-color="${i}"` +
     ` title="${esc(t('pve.pickColor'))}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${cfg.color === i}"></button>`).join('');
@@ -186,32 +229,45 @@ function buildPveSetup() {
 }
 
 export function startPveMatch() {
-  const cfg = app.pveCfg, sz = PVE_SIZES[cfg.size];
+  const cfg = app.pveCfg;
+  clampPve(cfg);
+  const sz = PVE_SIZES[cfg.size];
   app.lastPveCfg = { ...cfg };
-  startGame(Game.pve({ players: cfg.opps + 1, ...sz, humanColor: PVE_COLORS[cfg.color] }), 'pve');
+  startGame(Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, humanColor: PVE_COLORS[cfg.color] }), 'pve');
+  // con una persona, el dispositivo es suyo; con varias, se pasa antes de enseñar ninguna mano
+  app.viewer = cfg.humans > 1 ? null : app.game.S.human;
   refreshGivePlayer();
   updateMenuBtn();
+  musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();
+  recordStart(cfg.humans > 1 ? 'local' : 'pve');
   aiStart(900); // si abre la máquina, que juegue (cancelable si se sale antes)
 }
 
 /* ---------- continuar la partida guardada ---------- */
+// subtítulo de un guardado: "Modo Historia · Nivel 3" / "Partida rápida · 2 bots" / "Multijugador local · 3 personas"
+function saveSub(d) {
+  if (d.mode === 'story') return `${t('story.title')} · ${t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`;
+  const S = d.game.S, nh = (S.humans || [S.human]).length, nb = S.nPlayers - nh;
+  if (nh > 1) return `${t('pve.localTitle')} · ${t('pve.peopleN', { n: nh })}${nb ? ' + ' + t(nb > 1 ? 'pve.botsN' : 'pve.botN', { n: nb }) : ''}`;
+  return `${t('pve.title')} · ${t(nb > 1 ? 'pve.botsN' : 'pve.botN', { n: nb })}`;
+}
 export function updateContinueBtn() {
-  const d = loadSave(), btn = $('continueBtn');
+  const d = latestSave(), btn = $('continueBtn');
   btn.hidden = !d;
   document.querySelector('.mActions').classList.toggle('hasSave', !!d);
   if (!d) return;
-  const sub = d.mode === 'story'
-    ? `${t('story.title')} · ${t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`
-    : `${t('pve.title')} · ${d.game.S.nPlayers - 1} ${t('seat.bot')}${d.game.S.nPlayers > 2 ? 's' : ''}`;
-  $('continueSub').textContent = sub;
+  btn.dataset.resume = d.mode;
+  $('continueSub').textContent = saveSub(d);
 }
-export function resumeGame() {
-  const d = loadSave();
+export function resumeGame(mode) {
+  const d = typeof mode === 'string' ? loadSave(mode) : latestSave();
   if (!d) return;
   startGame(Game.restore(d.game), d.mode, { levelIndex: d.levelIndex, level: d.level });
   applySaveExtras(d);
+  // multijugador local: por privacidad, al volver se pasa el dispositivo antes de enseñar manos
+  app.viewer = humansOf().length > 1 ? null : d.game.S.human;
   refreshGivePlayer();
   updateMenuBtn();
   showScreen('game');
@@ -236,23 +292,31 @@ export function applyArtExtras() {
 /* ---------- listeners ---------- */
 export function bindScreens() {
   $('storyBtn').addEventListener('click', openStory);
-  $('continueBtn').addEventListener('click', resumeGame);
+  $('continueBtn').addEventListener('click', () => resumeGame());
+  $('pveContinue').addEventListener('click', () => resumeGame('pve'));
+  $('storyContinue').addEventListener('click', e => { if (e.target.closest('[data-resume]')) resumeGame('story'); });
   $('pveBtn').addEventListener('click', openPveSetup);
   $('testToolBtn').addEventListener('click', openTestingTool);
-  $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave()) startPveMatch(); });
+  $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave('pve')) startPveMatch(); });
   $('pveBack').addEventListener('click', () => showScreen('menu'));
   $('storyBack').addEventListener('click', () => showScreen('menu'));
   $('lvlGrid').addEventListener('click', async e => {
     const b = e.target.closest('[data-level]');
     if (!b) return;
     const i = +b.dataset.level, L = storyLevelAt(i);
-    if (L && await confirmReplaceSave()) startLevel(L, 'story', i);
+    if (!L) return;
+    const sv = loadSave('story');
+    if (sv && sv.levelIndex === i) { resumeGame('story'); return; } // el nivel a medias: se continúa
+    if (await confirmReplaceSave('story')) startLevel(L, 'story', i);
   });
   $('pveScreen').addEventListener('click', e => {
     const c = e.target.closest('[data-color]'), s = e.target.closest('[data-size]'), n = e.target.closest('#pveOpps [data-n]');
+    const h = e.target.closest('#pveHumans [data-h]'), d = e.target.closest('#pveDiff [data-diff]');
     if (c) app.pveCfg.color = +c.dataset.color;
     else if (s) app.pveCfg.size = s.dataset.size;
-    else if (n) app.pveCfg.opps = +n.dataset.n;
+    else if (n && !n.disabled) app.pveCfg.opps = +n.dataset.n;
+    else if (h) { app.pveCfg.humans = +h.dataset.h; if (app.pveCfg.humans > 1 && app.pveCfg.opps > 6 - app.pveCfg.humans) app.pveCfg.opps = 6 - app.pveCfg.humans; }
+    else if (d) app.pveCfg.diff = d.dataset.diff;
     else return;
     buildPveSetup();
   });

@@ -5,7 +5,8 @@ import { $, $$ } from './dom.js';
 import { ASSETS, pColor } from '../art.js';
 import { tileDef } from '../content/tiles/index.js';
 import { setPos } from './geometry.js';
-import { fxHideTraj, fxShowTraj, fxRewindApply } from '../fx/effects.js';
+import { fxRewindApply } from '../fx/effects.js';
+import { previewCell, hidePreview } from './preview.js';
 import { fxBurstCell } from '../fx/particles.js';
 import { JUICE, SAND_C, CEMENT_C } from '../fx/juice.js';
 import { sfx } from '../audio/sfx.js';
@@ -15,6 +16,8 @@ let cells = [], dims = '';
 let justPlaced = null; // última loseta colocada, para su animación de aparición
 export const markPlaced = (x, y) => { justPlaced = { x, y }; };
 let focusIdx = 0;      // casilla con el foco de teclado (tabindex roving)
+let armed = null;      // pantallas táctiles: casilla con la vista previa a la espera del segundo toque
+let lastPointer = 'mouse'; // tipo del último toque sobre el tablero (táctil: dos toques para confirmar)
 
 function buildGrid(board, cols, rows) {
   board.innerHTML = '';
@@ -38,7 +41,7 @@ function buildGrid(board, cols, rows) {
 
 export function renderBoard() {
   const g = app.game, S = g.S;
-  fxHideTraj(); // la trayectoria se recalcula con el hover tras cada render
+  hidePreview(); armed = null; // la vista previa se recalcula con el hover tras cada render
   const board = $('board');
   if (dims !== S.cols + 'x' + S.rows || board.children.length !== cells.length) buildGrid(board, S.cols, S.rows);
   for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
@@ -56,7 +59,7 @@ export function renderBoard() {
       if (pop) { // nubecilla de polvo al colocar la loseta (decorativo)
         const dustC = tileDef(tile.type).dust === 'sand' ? SAND_C : CEMENT_C;
         fxBurstCell(x, y, { n: JUICE.place.dust, colors: dustC, size: 7, dist: 30, dur: 460, gravity: 10 });
-        sfx('pop');
+        sfx(tileDef(tile.type).placeSound || 'pop');
       }
     }
     if (g.isHole(x, y)) aria.push(t('a11y.hole'));
@@ -89,9 +92,19 @@ export function renderBoard() {
 /* ---- interacción: click, teclado y previsualización de trayectoria ---- */
 export function bindBoard(onCell) {
   const board = $('board');
+  board.addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; });
   board.addEventListener('click', e => {
     const c = e.target.closest('.cell');
-    if (c) onCell(+c.dataset.x, +c.dataset.y);
+    if (!c) return;
+    const x = +c.dataset.x, y = +c.dataset.y;
+    // sin ratón no hay hover: el primer toque en un destino enseña la jugada, el segundo la confirma
+    if (lastPointer === 'touch' && previewable(c) && !(armed && armed.x === x && armed.y === y)) {
+      armed = { x, y };
+      previewCell(x, y, { armedAt: armed });
+      return;
+    }
+    armed = null;
+    onCell(x, y);
   });
   board.addEventListener('keydown', e => {
     const S = app.game?.S;
@@ -113,7 +126,7 @@ export function bindBoard(onCell) {
   });
   board.addEventListener('focusin', e => { const i = cells.indexOf(e.target); if (i >= 0) focusIdx = i; showTrajFor(e.target); });
   board.addEventListener('mouseover', e => showTrajFor(e.target.closest('.cell')));
-  board.addEventListener('mouseleave', fxHideTraj);
+  board.addEventListener('mouseleave', () => { if (!armed) hidePreview(); });
 }
 function focusCell(i) {
   if (!cells[i]) return;
@@ -122,14 +135,16 @@ function focusCell(i) {
   cells[i].tabIndex = 0;
   cells[i].focus();
 }
+// ¿la casilla es un destino de una jugada con recorrido (palo, dedo, palo reactivo)?
+function previewable(cell) {
+  const pd = app.game?.pending;
+  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent')
+    && (cell.classList.contains('selectable') || cell.classList.contains('selectable-out'));
+}
 function showTrajFor(cell) {
-  const g = app.game, pd = g?.pending;
-  if (!cell || !pd || (pd.kind !== 'move' && pd.kind !== 'serpent')) { fxHideTraj(); return; }
-  if (!cell.classList.contains('selectable') && !cell.classList.contains('selectable-out')) { fxHideTraj(); return; }
-  const cx = +cell.dataset.x, cy = +cell.dataset.y;
-  const targets = pd.kind === 'move' ? pd.targets : g.serpentTargets();
-  const tg = targets && targets.find(tt => tt.x === cx && tt.y === cy);
-  fxShowTraj(pd.ball.x, pd.ball.y, cx, cy, tg && tg.out);
+  if (armed) return; // táctil: se mantiene la vista previa del primer toque
+  if (!previewable(cell)) { hidePreview(); return; }
+  previewCell(+cell.dataset.x, +cell.dataset.y);
 }
 
 /* ---- capa de piezas móviles ---- */

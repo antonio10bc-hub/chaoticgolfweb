@@ -12,6 +12,9 @@ import { fxDealFrom } from '../fx/effects.js';
 import { t } from '../i18n/index.js';
 import * as ctl from './controller.js';
 import { refreshCardTip } from './card-tip.js';
+import { isBot, viewer, multiHuman, handRevealed, displayName, avatarHTML } from './players.js';
+import { startReaction, endReaction } from './hotseat.js';
+import { previewCard, hidePreview } from './preview.js';
 
 let prevHands = []; // tamaños de mano en el último render (para el robo animado)
 let prevOwner = -1;
@@ -23,20 +26,22 @@ const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent'];
 // ¿de quién es la mano grande del dock?
 export function dockOwner(g = app.game) {
   const S = g.S;
-  if (app.mode === 'pve') return S.human;
+  if (app.mode === 'pve') return viewer(); // tú (o, en multijugador local, quien tiene el dispositivo)
   if (S.nPlayers === 1) return 0;
   return S.turn; // modo libre (varios jugadores en el mismo dispositivo): el jugador en turno
 }
 // dueño de la acción pendiente (el dedo en curso no guarda p: es el de la pelota)
 export const pendingOwner = pd => !pd ? -1 : (pd.p !== undefined ? pd.p : (pd.kind === 'serpent' ? pd.ball.player : -1));
 
-export const isBotSeat = p => app.mode === 'pve' && p !== app.game.S.human;
-const hiddenFor = p => isBotSeat(p) && !app.pveShowHands; // manos rivales tapadas salvo debug
+export const isBotSeat = p => isBot(p);
+// manos tapadas: las de los bots (salvo debug) y, en multijugador local, las de las
+// personas que no tienen ahora el dispositivo
+const hiddenFor = p => isBotSeat(p) ? !app.pveShowHands : (app.mode === 'pve' && multiHuman() && !handRevealed(p));
 
 // naranjas que p puede jugar ahora mismo durante un JAQUE (para pedirle acción)
 function jaqueCta(g, p) {
   const S = g.S;
-  return S.jaque && S.winner !== null && !S.winners.includes(p) && !isBotSeat(p) && !hiddenFor(p)
+  return S.jaque && S.winner !== null && !S.winners.includes(p) && !isBotSeat(p) && !hiddenFor(p) // (manos tapadas: no se delata)
     && S.hands[p].some(k => CARDS[k].color === 'orange' && g.canPlay(p, k));
 }
 
@@ -109,7 +114,7 @@ function renderActionBar(g, owner) {
   const pendP = pendingOwner(pd);
   let html = '', kind = '';
   if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
-    const interactive = app.mode !== 'pve' || pendP === S.human; // en PVE solo se interactúa con tus acciones
+    const interactive = app.mode !== 'pve' || pendP === viewer(); // en PVE solo se interactúa con tus acciones
     const card = pendingCard(g);
     const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">${playerTag(pendP)}</span>` : '';
     kind = pd.kind === 'discard' ? 'discard' : 'act';
@@ -117,7 +122,12 @@ function renderActionBar(g, owner) {
       (card ? `<span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` : '') +
       `${who}<span class="hintText">${esc(hintFor(g, pendP))}</span>` +
       (interactive ? `<span class="hintBtns">${barButtons(g)}</span>` : '') + `</div>`;
-  } else if (!pd && !S.jaque && S.winner === null && owner === S.turn && !isBotSeat(owner)) {
+  } else if (!pd && app.reacting != null && app.reacting === owner && handRevealed(owner)) {
+    // multijugador local: alguien fuera de turno tiene el dispositivo para reaccionar
+    kind = 'act';
+    html = `<div class="hint act"><span class="hintText">${esc(t('hotseat.reactHint'))}</span>` +
+      `<span class="hintBtns"><button class="btn-light btn-sm" data-act="endReact">${esc(t('hotseat.giveBack'))}</button></span></div>`;
+  } else if (!pd && !S.jaque && S.winner === null && owner === S.turn && !isBotSeat(owner) && handRevealed(owner)) {
     // consejo suave cuando es tu turno y no hay nada en curso
     const left = 2 - S.blackPlayed;
     const txt = !hasPlayable(g, owner) ? t('hint.noMoves')
@@ -137,11 +147,12 @@ function renderDock(g, owner) {
   dock.classList.toggle('myTurn', myTurn);
   dock.classList.toggle('waiting', !myTurn);
   dock.classList.toggle('cta', jaqueCta(g, owner));
-  const name = app.mode === 'pve' ? t('hands.yours') : (S.nPlayers === 1 ? t('hands.yours') : t('player.name', { n: owner + 1 }));
+  const name = app.mode === 'pve' && multiHuman() ? displayName(owner)
+    : app.mode === 'pve' || S.nPlayers === 1 ? t('hands.yours') : t('player.name', { n: owner + 1 });
   const status = S.winners.includes(owner) ? t('seat.inHole')
     : jaqueCta(g, owner) ? t('seat.canReact')
-    : myTurn ? t('seat.yourTurn') : t('seat.waitTurn', { n: S.turn + 1 });
-  $('dockOwner').innerHTML = `<span class="avatar" style="--pc:${col}">${playerTag(owner)}</span>` +
+    : myTurn ? t('seat.yourTurn') : t('seat.waitName', { name: displayName(S.turn) });
+  $('dockOwner').innerHTML = avatarHTML(owner) +
     `<span class="ownerTxt"><b>${esc(name)}</b><small>${esc(status)}</small></span>`;
   const hand = $('hands');
   hand.innerHTML = S.hands[owner].map((_, i) => cardHTML(g, owner, i)).join('') ||
@@ -165,11 +176,16 @@ function renderSeats(g, owner) {
       : active ? (isBotSeat(p) ? t('seat.thinking') : t('seat.playing')) : t('seat.waiting');
     const dots = thinking ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : '';
     const cards = S.hands[p].map((_, i) => cardHTML(g, p, i, { mini: true })).join('');
+    // multijugador local: otra persona puede pedir el dispositivo para reaccionar con una naranja
+    const canAsk = multiHuman() && !isBotSeat(p) && app.reacting == null && app.passFor == null && S.hands[p].length
+      && !(S.winner !== null && !S.jaque) && !S.winners.includes(p);
+    const react = canAsk ? `<button class="btn-light btn-sm seatReact" data-act="react" data-n="${p}">${esc(t('hotseat.react'))}</button>` : '';
+    const tag = isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))} · ${playerTag(p)}</span>` : '';
     return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
-      `<span class="avatar">${playerTag(p)}</span>` +
-      `<div class="seatBody"><div class="seatName">${esc(t('player.name', { n: p + 1 }))}${isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))}</span>` : ''}</div>` +
+      avatarHTML(p) +
+      `<div class="seatBody"><div class="seatName">${esc(displayName(p))}${tag}</div>` +
       `<div class="seatStatus">${esc(status)}${dots}</div>` +
-      `<div class="seatCards">${cards || `<span class="noCards">${esc(t('seat.noCards'))}</span>`}</div></div></div>`;
+      `<div class="seatCards">${cards || `<span class="noCards">${esc(t('seat.noCards'))}</span>`}</div>${react}</div></div>`;
   }).join('');
 }
 
@@ -197,12 +213,20 @@ export function bindHands() {
         case 'pickHoled': ctl.pickHoled(n); break;
         case 'confirmDiscard': ctl.confirmDiscard(); break;
         case 'cancel': ctl.cancel(); break;
+        case 'react': startReaction(n); break;
+        case 'endReact': endReaction(); break;
       }
       return;
     }
     const card = target.closest('.card[data-p]:not(.back)');
     if (card) ctl.clickCard(+card.dataset.p, +card.dataset.idx);
   };
+  // cartas de efecto inmediato (hoyo…): al pasar por encima se ve en el tablero qué harán
+  $('hands').addEventListener('mouseover', e => {
+    const c = e.target.closest('.card[data-p]:not(.back)');
+    if (c) previewCard(+c.dataset.p, +c.dataset.idx);
+  });
+  $('hands').addEventListener('mouseleave', hidePreview);
   for (const id of ['dock', 'seats']) {
     const el = $(id);
     el.addEventListener('click', e => activate(e.target));

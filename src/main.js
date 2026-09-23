@@ -31,7 +31,13 @@ import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
 import { fxArmIdle, fxAmbientStart } from './fx/effects.js';
 import { sfx } from './audio/sfx.js';
 import { clearPieces } from './ui/board.js';
+import { loadPrefs } from './ui/prefs.js';
+import { bindSettings, repaintSettings } from './ui/settings.js';
+import { bindTutorial } from './ui/tutorial.js';
+import { bindHotseat } from './ui/hotseat.js';
 
+// preferencias (velocidad, tema del campo, accesibilidad) antes de pintar nada
+loadPrefs();
 // idioma: el elegido; si no, español en España e inglés fuera (por zona horaria)
 setLang(detectLang());
 applyStaticTexts();
@@ -47,6 +53,9 @@ bindScreens();
 bindEditor();
 bindDebug();
 bindSoundPanel();
+bindSettings();
+bindTutorial();
+bindHotseat();
 $('editorBtn').addEventListener('click', openEditor);
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
@@ -57,7 +66,7 @@ $('deckPile').addEventListener('click', () => $('deckPop').classList.toggle('ope
 $('deckPile').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('deckPop').classList.toggle('open'); } });
 // atajos de partida: E = terminar turno, D = descartar
 window.addEventListener('keydown', e => {
-  if (app.screen !== 'game' || e.metaKey || e.ctrlKey || e.altKey || e.target.matches('input, textarea, select') || document.querySelector('dialog[open]')) return;
+  if (app.screen !== 'game' || e.metaKey || e.ctrlKey || e.altKey || e.target.matches('input, textarea, select') || document.querySelector('dialog[open], #settingsOverlay.visible, #passScreen.visible')) return;
   const k = e.key.toLowerCase();
   if (k === 'e' && !$('endTurnBtn').disabled) { e.preventDefault(); $('endTurnBtn').click(); }
   if (k === 'd' && !$('discardBtn').disabled) { e.preventDefault(); $('discardBtn').click(); }
@@ -66,6 +75,10 @@ window.addEventListener('keydown', e => {
 document.addEventListener('click', e => { if (e.target.closest('button:not(:disabled)')) sfx('click'); }, true);
 window.addEventListener('pointerdown', fxArmIdle);
 window.addEventListener('keydown', fxArmIdle);
+// último gesto del jugador: el aviso de "puedes jugar…" espera a que lleve un rato quieto
+const markInput = () => { app.lastInputAt = Date.now(); };
+window.addEventListener('pointerdown', markInput, true);
+window.addEventListener('keydown', markInput, true);
 window.addEventListener('resize', () => {
   if (app.screen === 'editor' && ED.level) { fitEditorBoard(); edRender(); return; }
   if (app.game) { ctl.fitBoard(); if (!app.animating) ctl.render(); }
@@ -88,6 +101,7 @@ document.addEventListener('click', e => {
   setLang(b.dataset.lang); saveLang(b.dataset.lang); paintLangBtns();
   applyStaticTexts();
   buildDebugPanel();
+  repaintSettings();
   if (app.game) { ctl.render(); }
   if (app.screen === 'story') openStory();
   else if (app.screen === 'pve') openPveSetup();

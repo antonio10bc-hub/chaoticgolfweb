@@ -37,6 +37,17 @@
   --collar:      #6FA052;   /* collar de césped alrededor de greens y búnkeres */
   --tree:        #3E7240;
 
+  /* campo de juego (los temas de styles/themes.css los redefinen) */
+  --grout:       #3F7440;   /* junta entre casillas */
+  --par-cell:    #6FA052;
+  --sel-cell:    #93B566;
+  --cement-cell: #486E62;
+  --sand-cell:   #7FA95A;
+  --on-grass:    rgba(241,241,220,.72); /* textos impresos en el césped (PAR) */
+  --bg-a:        #8BBE7A;   /* franjas del fondo de la partida */
+  --bg-b:        #94C584;
+  --turn-btn:    #4F8A4B;   /* botón de terminar turno (no cambia con el tema del campo) */
+
   /* compatibilidad con reglas existentes */
   --panel: var(--cream); --panel-hi: #F7F7E6; --panel-edge: var(--cream-line);
   --felt: var(--grass-mid); --line: var(--ink); --gold: var(--cream);
@@ -55,6 +66,7 @@
   --ease-pop: cubic-bezier(.2,.7,.2,1);   /* sin rebote: todo suave */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; } /* los botones son inline-flex: sin esto, hidden no los ocultaría */
 html { -webkit-tap-highlight-color: transparent; }
 body {
   font-family: var(--font);
@@ -93,8 +105,8 @@ button.danger { --b-fg: var(--accent-deep); --b-line: color-mix(in srgb, var(--a
 .btn-primary .i { transition: transform .2s var(--ease-out); }
 .btn-primary:hover .i { transform: translateX(3px); }
 /* acento: sólido verde césped (terminar turno…) */
-.btn-accent { --b-bg: var(--grass-dark); --b-fg: var(--cream); --b-line: var(--grass-dark); box-shadow: 0 6px 16px rgba(20,40,20,.2); }
-.btn-accent:hover { background-color: #467F43; }
+.btn-accent { --b-bg: var(--turn-btn); --b-fg: var(--cream); --b-line: var(--turn-btn); box-shadow: 0 6px 16px rgba(20,40,20,.2); }
+.btn-accent:hover { background-color: color-mix(in srgb, var(--turn-btn) 88%, #000); }
 /* secundario claro sobre fondos oscuros o crema */
 .btn-secondary { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line); }
 .btn-light { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream-line); }

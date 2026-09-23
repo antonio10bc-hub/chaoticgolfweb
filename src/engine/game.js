@@ -19,6 +19,7 @@
      { t:'win' }                 victoria confirmada
      { t:'undo' }                deshacer (debug)
      { t:'notice', text }        aviso para el jugador (toast)
+     { t:'chainStop', p }        la cadena de choques se ha cortado (tope anti-bucle)
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
@@ -108,13 +109,23 @@ export class Game {
   }
 
   // contra la máquina: asientos y colores al azar, empieza el jugador a la derecha
-  // del que está bajo el par. cfg = { players, par, cols, rows, humanColor }
+  // del que está bajo el par. cfg = { players, par, cols, rows, humanColor, humans?, aiLevel? }
+  // humans > 1: varias personas en el mismo dispositivo (se pasan el móvil); el resto son bots
   static pve(cfg, opts = {}) {
     const counts = {};
     for (const [k, def] of Object.entries(CARDS)) counts[k] = def.copies;
     const g = Game.standard(cfg, opts, { human: 0, colorMap: null }); // metadatos PVE (no afectan a las reglas)
     const S = g.S, { cx, startX } = g._course;
     S.human = Math.floor(g.rand() * cfg.players);
+    const nh = Math.max(1, Math.min(cfg.players, cfg.humans || 1));
+    let humans = [S.human];
+    if (nh > 1) { // el resto de personas se sientan al azar (RNG aparte: el mazo sale igual)
+      const seatRand = mulberry32((g.seed ?? 1) ^ 0x51ed270b);
+      const free = shuffle([...Array(cfg.players).keys()].filter(i => i !== S.human), seatRand);
+      humans = [S.human, ...free.slice(0, nh - 1)].sort((a, b) => a - b);
+      S.humans = humans;
+    }
+    if (cfg.aiLevel && cfg.aiLevel !== 'normal') S.aiLevel = cfg.aiLevel;
     const rest = shuffle(PLAYER_COLORS.filter(c => c !== cfg.humanColor), g.rand);
     S.colorMap = [];
     let ri = 0;
@@ -122,7 +133,9 @@ export class Game {
     // personalidades de los bots: RNG aparte para no alterar el azar del juego
     const styleRand = opts.styleRand || mulberry32((g.seed ?? 1) ^ 0x9e3779b9);
     S.aiStyles = [];
-    for (let i = 0; i < cfg.players; i++) S.aiStyles[i] = i === S.human ? null : (styleRand() < .5 ? 'aggro' : 'trick');
+    for (let i = 0; i < cfg.players; i++) S.aiStyles[i] = i === S.human ? null
+      : humans.includes(i) ? (styleRand(), null) // mismo sorteo de estilos que con una sola persona
+      : (styleRand() < .5 ? 'aggro' : 'trick');
     S.turn = (cx - startX + 1) % cfg.players;
     g.fillDeck(counts);
     for (let i = 0; i < cfg.players; i++) g.drawTo2(i);
@@ -346,7 +359,11 @@ export class Game {
 
   // movimiento transferido por colisión: también sufre la penalización de trampa
   moveBallTransfer(ball, dirKey, steps) {
-    if ((this._chain || 0) >= MAX_CHAIN) { this.log('log.chainStops'); return; }
+    if ((this._chain || 0) >= MAX_CHAIN) {
+      this.log('log.chainStops');
+      this.anim({ t: 'chainStop', p: 'b' + ball.player }); // la interfaz lo explica en su momento de la animación
+      return;
+    }
     this._chain = (this._chain || 0) + 1;
     try { this._moveBallTransfer(ball, dirKey, steps); } finally { this._chain--; }
   }

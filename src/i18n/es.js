@@ -90,6 +90,7 @@ export default {
   },
   god: { ball: 'pelota', hole: 'hoyo' },
   notice: {
+    chainStop: 'Choques en bucle entre portales: la cadena se corta aquí',
     holeTrapped: 'El hoyo está en el búnker: [{card}] no basta para sacarlo',
     cantDiscard: 'Ya has jugado cartas este turno: no puedes descartar',
   },
@@ -101,6 +102,7 @@ export default {
     testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'creador de niveles', editorTitle: 'Creador de Niveles',
     continue: 'Continuar partida',
+    stats: 'estadísticas', settings: 'ajustes',
   },
   nav: { toEditor: '← Editor', toLevels: '← Niveles', toMenu: '← Menú' },
   game: {
@@ -117,17 +119,20 @@ export default {
     yours: 'Tu turno', of: 'Turno de Jugador {n}', over: 'Partida terminada',
     thinking: 'Pensando', blacksLeft: 'cartas negras', blacksAria: 'Le quedan {n} cartas negras este turno',
     yoursBanner: '¡Tu turno!', ofBanner: 'Turno de Jugador {n}',
+    ofName: 'Turno de {name}',
   },
   hint: {
     start: 'Tu turno: juega hasta 2 cartas negras y termina el turno',
     startSolo: 'Juega hasta 2 cartas y termina el turno para robar',
     more: 'Puedes jugar {n} carta negra más o terminar el turno',
     noMoves: 'No te quedan jugadas: termina el turno',
+    idle: 'Puedes jugar: {cards}',
   },
   seat: {
     playing: 'Jugando', thinking: 'Pensando', waiting: 'Esperando', bot: 'bot',
     canReact: '¡Puede reaccionar!', inHole: '¡En el hoyo!', noCards: 'sin cartas',
     yourTurn: '¡Es tu turno!', waitTurn: 'Turno de Jugador {n}',
+    waitName: 'Turno de {name}',
   },
   hud: {
     deck: 'Mazo {deck} · Descartes {discard}', lastCard: 'Última: {card}', lastPlay: 'Última jugada', deckLeft: 'Quedan en el mazo',
@@ -161,7 +166,7 @@ export default {
   a11y: {
     board: 'Tablero', cell: 'Casilla {x},{y}', hole: 'hoyo', selectable: 'seleccionable', unplayable: 'no jugable',
   },
-  fx: { combo: '¡Combo x{n}!' },
+  fx: { combo: '¡Combo x{n}!', chainStop: '¡Bucle cortado!' },
   win: {
     levelDone: '¡Nivel completado!', youWon: '¡Has ganado!',
     tieWithYou: 'Empate entre {names} — ¡te llevas parte de la gloria!',
@@ -175,6 +180,7 @@ export default {
     play: 'Jugar', completed: 'Completado', next: '¡Siguiente!', untitled: 'Sin título',
     none: 'Aún no has creado niveles.<br>Hazlo en el Creador de Niveles.',
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',
+    inProgress: 'A medias',
     tips: { hit: '¡Cuidado con chocarte!', bunker: '¡Resta 1 al palo que uses!', portal: '¡Los portales no cuentan como casilla!' },
   },
   pve: {
@@ -185,6 +191,13 @@ export default {
     sizeSName: 'Pequeño', sizeMName: 'Mediano', sizeLName: 'Grande',
     play: 'Jugar', back: '← Volver al menú',
     pickColor: 'Jugar con este color', colorAria: 'Color {n}',
+    humans: 'Personas en este dispositivo', colorFirst: 'Color de la primera persona',
+    localNote: 'Multijugador local: os pasáis el móvil en cada turno y nadie ve las cartas de los demás.',
+    diff: 'Dificultad de la máquina', diffEasy: 'Fácil', diffEasySub: 'se despista', diffNormal: 'Normal', diffNormalSub: 'juega bien',
+    diffHard: 'Difícil', diffHardSub: 'piensa 2 cartas',
+    subLocal: 'Varias personas en este dispositivo, sin bots. Los asientos se sortean.',
+    subLocalBots: 'Varias personas en este dispositivo contra la máquina. Los asientos se sortean.',
+    localTitle: 'Multijugador local', peopleN: '{n} personas', botsN: '{n} bots', botN: '{n} bot',
   },
   editor: {
     title: 'CREADOR DE NIVELES', level: 'Nivel', slotLabel: 'Slot', file: 'Archivo',
@@ -211,6 +224,7 @@ export default {
   dialog: { download: 'Descargar .json', copy: 'Copiar', fromFile: 'O desde un archivo:', import: 'Importar' },
   sound: {
     toggleTitle: 'Sonido: activar / silenciar', settingsTitle: 'Ajustes',
+    muteAll: 'Silenciar todo',
     mute: 'Silenciar', unmute: 'Activar sonido',
     sfx: 'SFX', music: 'Música', musicOn: 'Música ambiental',
     peek: 'Ver cartas rivales', peekTitle: 'Debug: muestra las manos de la máquina',
@@ -229,5 +243,66 @@ export default {
     godPicked: 'Cogido: {kind}. Click en la casilla destino.',
     art: 'Arte bitmap: {n}/{total} PNG cargados (assets/art/)', seed: 'Semilla: {seed}', empty: '(vacío)',
     perf: 'FPS: {fps}<br>Partículas: {n}',
+  },
+
+  /* ---------- multijugador local, bots, ajustes, estadísticas y tutorial ---------- */
+  hotseat: {
+    turnTitle: 'Turno de {name}', reactTitle: '{name} quiere reaccionar',
+    passTo: 'Pasa el dispositivo a {name}. Los demás, ¡no miréis!', show: 'Soy {name} · ver mis cartas',
+    react: 'Reaccionar', reactHint: 'Juega una carta naranja o devuelve el dispositivo', giveBack: 'Devolver',
+  },
+  persona: {
+    lines: {
+      hit: '¡Ay!|¡Oye!|¡Eso no se hace!|¡Me las pagarás!|¡Grrr!',
+      bump: '¡Aparta!|¡Toc toc!|¡Ups, perdona!',
+      fall: '¡Nooo!|¡Mi pelota!|Vuelta a empezar…|¡Qué desastre!',
+      sink: '¡Dentro!|¡Toma ya!|¡Ja!',
+      play: '¡Allá va!|Mira esto.|Hmm… ¡sí!|Esta me gusta.',
+      save: '¡Ni hablar!|¡De eso nada!|¡Todavía no!',
+      win: '¡He ganado!|¡Soy imparable!|¡Otra, otra!',
+      lose: 'La próxima es mía.|Bien jugado…|¡Revancha!',
+    },
+  },
+  preview: { tapAgain: 'Toca otra vez' },
+  settings: {
+    title: 'Ajustes', more: 'Más ajustes…',
+    soundH: 'Sonido', musicSub: 'Pistas generativas; cambian con fundido entre el menú y la partida',
+    track: 'Música de partida', track_auto: 'Auto', track_fairway: 'Campo', track_breeze: 'Brisa', track_lounge: 'Salón',
+    gameH: 'Juego', speed: 'Velocidad', slow: 'Lenta', normal: 'Normal', fast: 'Rápida',
+    theme: 'Tema del campo', theme_classic: 'Clásico', theme_autumn: 'Otoño', theme_snow: 'Nieve', theme_night: 'Noche',
+    hints: 'Avisos de jugada', hintsSub: 'Si llevas un rato sin jugar, se señalan las cartas que puedes usar',
+    a11yH: 'Accesibilidad',
+    reduce: 'Reducir movimiento', reduceSub: 'Menos animaciones, sacudidas y partículas',
+    shapes: 'Formas en las bolas', shapesSub: 'Cada jugador lleva además una forma (●▲■◆★✚) para no depender del color',
+    tutorialH: 'Tutorial', tutorialSub: 'Vuelve a ver la presentación del nivel 1 y las explicaciones de cada carta',
+    tutorialReset: 'Repetir el tutorial', tutorialDone: 'Listo',
+  },
+  stats: {
+    title: 'Estadísticas', byMode: 'Partidas', totals: 'En total', bestH: 'Mejores resultados (Modo Historia)',
+    mode_story: 'Modo Historia', mode_pve: 'Partida rápida', mode_local: 'Multijugador local',
+    played: 'jugadas', won: 'Ganadas', completed: 'Completadas',
+    level: 'Nivel', turns: 'Turnos', strokes: 'Golpes', noBest: 'Completa un nivel de historia para ver aquí tu récord.',
+    turnsN: '{n} turnos', bestN: 'récord: {n}', newBest: '¡Nuevo récord!', bestTitle: 'Tu mejor resultado',
+    turnsShort: '{n} turnos', strokesShort: '{n} golpes',
+    reset: 'Borrar estadísticas', resetSub: 'Pone todos los contadores a cero', resetConfirm: '¿Borrar todas las estadísticas? No se puede deshacer.',
+  },
+  tutorial: {
+    ball: 'Esta es tu pelota.', hole: 'Y este es el hoyo: mete la pelota dentro para ganar.',
+    hand: 'Estas son tus cartas. Toca una para usarla.',
+    target: 'Las casillas claras son los destinos posibles. Pasa por encima para ver el recorrido y toca una.',
+    end: 'Puedes jugar hasta 2 cartas negras por turno. Cuando acabes, pulsa Terminar turno para robar.',
+    next: 'Siguiente', ok: 'Entendido', skip: 'Saltar tutorial', holeCards: 'Cartas de hoyo',
+    card: {
+      palo1: 'Tu pelota avanza 1 casilla en línea recta. Desde el búnker no sirve: salir cuesta 1.',
+      palo2: 'Tu pelota avanza 2 casillas en línea recta. Si choca con otra, le pasa el movimiento que le quede.',
+      palo3: 'Tu pelota avanza 3 casillas en línea recta. ¡Ojo con los bordes: si se sale, vuelve a su salida!',
+      dedo: 'Eliges 1, 2 o 3 pasos y mueves tu pelota casilla a casilla, pudiendo girar en cada paso.',
+      hoyo: 'No mueves la pelota: mueves el HOYO 2 casillas en la dirección de la flecha. Si cae sobre una pelota, se la traga.',
+      bunker: 'Colocas un búnker en una casilla libre: quien entre pierde el resto del movimiento y salir le cuesta 1.',
+      portal: 'Colocas un portal (máx. 2): lo que entra por uno sale por el otro sin gastar paso.',
+      oPalo1: 'Naranja: se juega en cualquier momento, también fuera de tu turno. Mueve 1 casilla CUALQUIER pelota.',
+      oHoyo: 'Naranja: mueve el hoyo 1 casilla cuando quieras. En un JAQUE puede salvarte en el último segundo.',
+      no: 'Naranja: anula la última carta jugada y el tablero vuelve a como estaba.',
+    },
   },
 };

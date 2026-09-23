@@ -9,32 +9,44 @@ import { t, joinAnd } from '../i18n/index.js';
 import { stats } from './controller.js';
 import * as screens from './screens.js';
 import { clearSave } from './save.js';
+import { humansOf, multiHuman, displayName } from './players.js';
+import { recordEnd } from './records.js';
 
 export const hideWin = () => $('winOverlay').classList.remove('visible');
 
 export function showWin() {
   clearSave(); // partida terminada: ya no hay nada que continuar
   const S = app.game.S, mode = app.mode;
-  const names = joinAnd(S.winners.map(i => t('player.name', { n: i + 1 })));
+  const names = joinAnd(S.winners.map(displayName));
+  const multi = multiHuman(), me = S.human;
   let msg;
   if (mode === 'story' || mode === 'test') msg = t('win.levelDone');
-  else if (mode === 'pve' && S.winners.length === 1 && S.winners[0] === S.human) msg = t('win.youWon');
-  else if (mode === 'pve' && S.winners.includes(S.human)) msg = t('win.tieWithYou', { names });
+  else if (mode === 'pve' && !multi && S.winners.length === 1 && S.winners[0] === me) msg = t('win.youWon');
+  else if (mode === 'pve' && !multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
   $('winMsg').textContent = msg;
-  const lost = mode === 'pve' && !S.winners.includes(S.human);
+  // con varias personas nadie "pierde" frente a la pantalla salvo que ganen los bots
+  const lost = mode === 'pve' && !humansOf().some(h => S.winners.includes(h));
+
+  // estadísticas globales y récord del nivel
+  const kind = mode === 'pve' ? (multi ? 'local' : 'pve') : mode;
+  const rec = recordEnd(kind, { won: mode === 'story' || (mode === 'pve' && !lost), stats, levelIndex: app.levelIndex });
   $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
   $('winOverlay').classList.toggle('lost', lost);
 
   // colores del ganador bien visibles: fichas de color + acento de la caja
   const box = $('winOverlay').querySelector('.box');
   if (mode === 'story' || mode === 'test') {
-    $('winChips').innerHTML = '';
+    // turnos del nivel y, si lo hay, el récord personal
+    const turns = (stats?.turnos || 0) + 1;
+    $('winChips').innerHTML = mode === 'story'
+      ? `<span class="winRec${rec.newBest ? ' new' : ''}">${rec.newBest ? t('stats.newBest') + ' · ' : ''}${t('stats.turnsN', { n: turns })}` +
+        (rec.best && !rec.newBest ? ` · ${t('stats.bestN', { n: rec.best.turns })}` : '') + `</span>` : '';
     box.style.borderColor = 'transparent';
     box.style.boxShadow = '';
   } else {
     $('winChips').innerHTML = S.winners.map(i =>
-      `<span class="winChip" style="background:${pColor(i)}">${t('player.name', { n: i + 1 })}</span>`).join('');
+      `<span class="winChip" style="background:${pColor(i)}">${displayName(i)}</span>`).join('');
     const wc = pColor(S.winners[0]);
     box.style.borderColor = wc;
     box.style.boxShadow = ''; // borde fino del color del ganador; la sombra la pone el CSS

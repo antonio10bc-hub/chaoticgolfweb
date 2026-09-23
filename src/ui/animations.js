@@ -9,8 +9,12 @@ import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
 import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, CONFETTI_C } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxZoomPulse, fxComboText, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
+import { tileDef } from '../content/tiles/index.js';
+import { t } from '../i18n/index.js';
+import { toast } from './hud.js';
+import { botReact } from './bot-react.js';
 
 let combo = 0;
 
@@ -38,6 +42,7 @@ export async function playQueue(onDone) {
 async function playEvent(ev) {
   const el = pieceEl(ev.p);
   if (!el) return;
+  botReact(ev); // caras y bocadillos de los bots (decorativo)
   const inner = el.firstChild;
   const isHole = ev.p === 'hole';
   const pid = isHole ? -1 : +ev.p.slice(1);
@@ -53,8 +58,9 @@ async function playEvent(ev) {
         fxSpawn(px, py, { n: JUICE.move.dirtPuffs, colors: DIRT_C, size: 6, dist: 26, dur: 430, gravity: 14 });
         sfx('holeMove');
       } else {
-        fxSpawn(px, py, { n: JUICE.move.grassPuffs, colors: GRASS_C, size: 5, dist: 20, dur: 380, gravity: 12 });
-        sfx('roll');
+        const tile = app.game.tileAt(ev.x, ev.y), step = tile && tileDef(tile.type)?.stepSound;
+        fxSpawn(px, py, { n: JUICE.move.grassPuffs, colors: step ? SAND_C : GRASS_C, size: 5, dist: 20, dur: 380, gravity: 12 });
+        sfx(step || 'roll'); // cada loseta suena distinto al rodar por ella (arena…)
       }
       await wait(ms + 15);
       break;
@@ -143,6 +149,17 @@ async function playEvent(ev) {
       await wait(140);
       el.classList.remove('sinking');
       el.style.display = 'none';
+      break;
+    }
+    case 'chainStop': { // tope anti-bucle: la cadena de choques entre portales se corta aquí
+      const pt = pieceCenterPx(el);
+      el.firstChild.classList.add('hitFlash');
+      setTimeout(() => el.firstChild.classList.remove('hitFlash'), 500);
+      fxChainStop(pt.px, pt.py);
+      fxShake();
+      sfx('chainBreak');
+      toast(t('notice.chainStop'), 'warn');
+      await wait(Math.max(420, JUICE.comboMs * .6));
       break;
     }
     case 'settle': {  // "plof" de arena al quedarse en el búnker

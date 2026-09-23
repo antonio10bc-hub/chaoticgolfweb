@@ -1,0 +1,48 @@
+/* Temas del campo (Ajustes → Tema del campo). Solo cambian variables de color de la
+   pantalla de partida: césped, green, juntas, fondo y decorado. El menú no cambia. */
+
+/* ---- otoño: césped ocre, green dorado, hojas naranjas ---- */
+html[data-course="autumn"] #gameScreen {
+  --grass-dark: #6F7F3B; --grass-mid: #7C8B41; --green-putt: #B3A553; --green-light: #C9B96A;
+  --grout: #58632C; --par-cell: #8E8F45; --sel-cell: #B7A95C; --sand-cell: #A69552; --cement-cell: #5E6B4A;
+  --collar: #8E8A3F; --bg-a: #D8C58E; --bg-b: #DFCD98;
+}
+html[data-course="autumn"] #gameDecor .dTree { filter: hue-rotate(-70deg) saturate(1.5) brightness(1.08); }
+html[data-course="autumn"] #gameDecor .dBunker { filter: sepia(.25); }
+
+/* ---- nieve: campo blanco azulado, junta gris y textos en pizarra ---- */
+html[data-course="snow"] #gameScreen {
+  --grass-dark: #D4E0E6; --grass-mid: #E2EBEF; --green-putt: #BCD3DC; --green-light: #CFE4EC;
+  --grout: #9DB3BE; --par-cell: #C3D4DC; --sel-cell: #A9CBD9; --sand-cell: #D9D2BE; --cement-cell: #9FB0B8;
+  --collar: #B5C8D1; --on-grass: rgba(60,86,98,.7); --bg-a: #E8EFF2; --bg-b: #EEF3F5;
+}
+html[data-course="snow"] .cell .spawnMark { background: #fff; }
+html[data-course="snow"] #piles .pile, html[data-course="snow"] #lastPlay { color: #3C5662; }
+html[data-course="snow"] .pileLbl b { border-color: rgba(60,86,98,.4); }
+html[data-course="snow"] #discardTop.empty { border-color: rgba(60,86,98,.4); }
+html[data-course="snow"] #gameDecor .dTree { filter: saturate(.45) brightness(.95); }
+html[data-course="snow"] #gameDecor .dBunker { filter: grayscale(1) brightness(1.2); }
+html[data-course="snow"] #gameBar .btn-ghost,
+html[data-course="snow"] body[data-screen="game"] #sfxBtn,
+html[data-course="snow"] body[data-screen="game"] #sndCfgBtn { --b-fg: #2F4752; --b-line: rgba(47,71,82,.45); --b-bg: rgba(255,255,255,.35); }
+
+/* ---- noche: campo iluminado por focos, fondo profundo ---- */
+html[data-course="night"] #gameScreen {
+  --grass-dark: #2B4E42; --grass-mid: #325A4B; --green-putt: #4F7A55; --green-light: #6A9466;
+  --grout: #19302A; --par-cell: #3C6450; --sel-cell: #5F8C5B; --sand-cell: #5C6B4E; --cement-cell: #2C4852;
+  --collar: #3A5E47; --on-grass: rgba(241,241,220,.62); --bg-a: #1E3530; --bg-b: #213A34;
+}
+html[data-course="night"] #gameDecor .dTree { filter: brightness(.55) saturate(.8); }
+html[data-course="night"] #gameScreen { --turn-btn: #5E9A58; }
+html[data-course="night"] #gameDecor .dBunker { filter: brightness(.5) saturate(.6); }
+html[data-course="night"] #game::after { /* foco suave sobre el tablero */
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 55% 60% at 50% 45%, rgba(255,246,210,.1), transparent 70%);
+}
+html[data-course="night"] .tile-hole .holeSvg { filter: brightness(.82); }
+
+/* muestras de color en el selector de tema (Ajustes) */
+.themeOpt .sw.classic i:nth-child(1) { background: #4F8A4B; } .themeOpt .sw.classic i:nth-child(2) { background: #8DB05F; } .themeOpt .sw.classic i:nth-child(3) { background: #94C584; }
+.themeOpt .sw.autumn i:nth-child(1) { background: #6F7F3B; } .themeOpt .sw.autumn i:nth-child(2) { background: #B3A553; } .themeOpt .sw.autumn i:nth-child(3) { background: #D98A3D; }
+.themeOpt .sw.snow i:nth-child(1) { background: #D4E0E6; } .themeOpt .sw.snow i:nth-child(2) { background: #9DB3BE; } .themeOpt .sw.snow i:nth-child(3) { background: #FFFFFF; }
+.themeOpt .sw.night i:nth-child(1) { background: #2B4E42; } .themeOpt .sw.night i:nth-child(2) { background: #19302A; } .themeOpt .sw.night i:nth-child(3) { background: #F2D98A; }

@@ -9,6 +9,7 @@ import { CARDS } from '../content/cards/index.js';
 import { choosePlan, discardPlan, chooseReaction, farness } from '../ai/bot.js';
 import { jaqueSaver } from '../ai/autoplay.js';
 import * as ctl from './controller.js';
+import { isBot as botSeat, humansOf } from './players.js';
 
 const AI = JUICE.ai;
 let timer = null;
@@ -20,7 +21,7 @@ const rand = Math.random;
 
 const G = () => app.game;
 const S = () => app.game.S;
-const isBot = p => p !== S().human;
+const isBot = p => botSeat(p);
 // la IA solo actúa en su partida (gen) y con la pantalla de partida a la vista
 const live = g => app.mode === 'pve' && app.game && gen === g && app.screen === 'game';
 const idle = () => new Promise(r => { const t = () => (!app.animating && !app.animQueue.length) ? r() : setTimeout(t, 90); t(); });
@@ -63,7 +64,7 @@ async function runPlan(plan, g) {
     if (!live(g)) return;
     // blindaje: nunca dejar una acción de la máquina a medias
     if (G().pending?.kind === 'serpent') ctl.endSerpent();
-    else if (G().pending && G().pending.p !== S().human) ctl.cancel();
+    else if (G().pending && isBot(G().pending.p)) ctl.cancel();
   } finally { app.ai.acting = false; }
 }
 
@@ -144,6 +145,7 @@ async function takeTurn(g) {
 // JAQUE: si algún bot puede evitar la victoria, lo hace el que va peor; si no,
 // se deja una ventana de reacción al humano y luego se confirma
 function handleJaque(g) {
+  if (app.passFor != null) { timer = setTimeout(aiKick, 400); return; } // esperando a que se pase el dispositivo
   const saver = jaqueSaver(G(), rand, isBot);
   if (saver) {
     timer = setTimeout(async () => {
@@ -152,8 +154,8 @@ function handleJaque(g) {
     }, AI.thinkMs + rand() * 500);
     return;
   }
-  const h = S().human;
-  const humanCan = !S().winners.includes(h) && S().hands[h].some(k => CARDS[k].color === 'orange' && G().canPlay(h, k));
+  // ¿alguna persona (en multijugador local, cualquiera de ellas) puede reaccionar?
+  const humanCan = humansOf().some(h => !S().winners.includes(h) && S().hands[h].some(k => CARDS[k].color === 'orange' && G().canPlay(h, k)));
   // cuenta atrás visible en el cartel del JAQUE mientras puedes reaccionar
   if (humanCan && !app.jaqueTimer) { app.jaqueTimer = { at: Date.now(), ms: AI.jaqueWindowMs }; ctl.renderJaque(); }
   timer = setTimeout(() => {

@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="styles/fx.css">
 <link rel="stylesheet" href="styles/icons.css">
 <link rel="stylesheet" href="styles/ui.css">
+<link rel="stylesheet" href="styles/themes.css">
+<link rel="stylesheet" href="styles/features.css">
 <script type="module" src="src/main.js"></script>
 </head>
 <body>
@@ -110,6 +112,18 @@
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M11 7 5 12l6 5zM19 7l-6 5 6 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="i-sand" viewBox="0 0 24 24"><path d="M3 17c2-4 5.5-6 9-6s7 2 9 6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chain-break" viewBox="0 0 24 24"><path d="M9.5 14.5 7.8 16.2a3 3 0 0 1-4.2-4.2l2.6-2.6a3 3 0 0 1 4.2 0M14.5 9.5l1.7-1.7a3 3 0 0 1 4.2 4.2l-2.6 2.6a3 3 0 0 1-4.2 0M8 4v2.5M4 8h2.5M16 20v-2.5M20 16h-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16.5v-5M12 16.5V7M17 16.5v-8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 5.6a3.2 3.2 0 0 1 0 6M17.5 14a5.5 5.5 0 0 1 3 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.8" width="10" height="18.4" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- formas por jugador (accesibilidad: distinguir sin depender del color) -->
+  <symbol id="shp-0" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.3" fill="currentColor"/></symbol>
+  <symbol id="shp-1" viewBox="0 0 12 12"><path d="M6 1.4 10.8 10H1.2z" fill="currentColor"/></symbol>
+  <symbol id="shp-2" viewBox="0 0 12 12"><rect x="1.9" y="1.9" width="8.2" height="8.2" rx="1" fill="currentColor"/></symbol>
+  <symbol id="shp-3" viewBox="0 0 12 12"><path d="M6 .9 11.1 6 6 11.1.9 6z" fill="currentColor"/></symbol>
+  <symbol id="shp-4" viewBox="0 0 12 12"><path d="M6 .8l1.6 3.4 3.7.4-2.8 2.5.8 3.7L6 9 2.7 10.8l.8-3.7L.7 4.6l3.7-.4z" fill="currentColor"/></symbol>
+  <symbol id="shp-5" viewBox="0 0 12 12"><path d="M4.4 1h3.2v3.4H11v3.2H7.6V11H4.4V7.6H1V4.4h3.4z" fill="currentColor"/></symbol>
 </svg>
 
 <div id="scene" aria-hidden="true">
@@ -134,6 +148,8 @@
   <nav class="mBottom">
   <button id="testToolBtn" class="cornerBtn" data-i18n-title="menu.testToolTitle"><svg class="i" aria-hidden="true"><use href="#i-wrench"/></svg><span data-i18n="menu.testTool">testing tool</span></button>
   <button id="editorBtn" class="cornerBtn" data-i18n-title="menu.editorTitle"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.editor">creador de niveles</span></button>
+  <button id="statsBtn" class="cornerBtn" data-i18n-title="stats.title"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="menu.stats">estadísticas</span></button>
+  <button id="settingsBtn" class="cornerBtn" data-i18n-title="settings.title"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg><span data-i18n="menu.settings">ajustes</span></button>
   </nav>
 </div>
 
@@ -141,7 +157,15 @@
   <div id="pveCard" role="form" aria-labelledby="pveTitle">
     <h2 id="pveTitle" data-i18n="pve.title">Partida contra la máquina</h2>
     <div class="sub" data-i18n="pve.sub">Configura tu partida: los jugadores se sientan al azar y empieza quien esté a la derecha del centro.</div>
-    <h4 data-i18n="pve.color">Tu color de bola</h4>
+    <h4 data-i18n="pve.humans">Personas en este dispositivo</h4>
+    <div class="pveOpts" id="pveHumans">
+      <button class="pveOpt hum sel" data-h="1"><span class="optPeople" aria-hidden="true"><i></i></span><b>1</b></button>
+      <button class="pveOpt hum" data-h="2"><span class="optPeople" aria-hidden="true"><i></i><i></i></span><b>2</b></button>
+      <button class="pveOpt hum" data-h="3"><span class="optPeople" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
+      <button class="pveOpt hum" data-h="4"><span class="optPeople" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
+    </div>
+    <p class="pveNote" data-i18n="pve.localNote">Multijugador local: os pasáis el móvil en cada turno y nadie ve las cartas de los demás.</p>
+    <h4 id="pveColorH" data-i18n="pve.color">Tu color de bola</h4>
     <div class="pveOpts" id="pveColors"></div>
     <h4 data-i18n="pve.size">Tamaño del tablero</h4>
     <div class="pveOpts" id="pveSizes">
@@ -151,11 +175,21 @@
     </div>
     <h4 data-i18n="pve.opps">Contrincantes (máquina)</h4>
     <div class="pveOpts" id="pveOpps">
+      <button class="pveOpt opp" data-n="0"><span class="optBots" aria-hidden="true"></span><b>0</b></button>
       <button class="pveOpt opp" data-n="1"><span class="optBots" aria-hidden="true"><i></i></span><b>1</b></button>
       <button class="pveOpt opp sel" data-n="2"><span class="optBots" aria-hidden="true"><i></i><i></i></span><b>2</b></button>
       <button class="pveOpt opp" data-n="3"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
       <button class="pveOpt opp" data-n="4"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
     </div>
+    <div id="pveDiffRow">
+      <h4 data-i18n="pve.diff">Dificultad de la máquina</h4>
+      <div class="pveOpts" id="pveDiff">
+        <button class="pveOpt diff" data-diff="easy"><b data-i18n="pve.diffEasy">Fácil</b><small data-i18n="pve.diffEasySub">se despista</small></button>
+        <button class="pveOpt diff sel" data-diff="normal"><b data-i18n="pve.diffNormal">Normal</b><small data-i18n="pve.diffNormalSub">juega bien</small></button>
+        <button class="pveOpt diff" data-diff="hard"><b data-i18n="pve.diffHard">Difícil</b><small data-i18n="pve.diffHardSub">piensa 2 cartas</small></button>
+      </div>
+    </div>
+    <button id="pveContinue" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="pveContinueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     <button id="pvePlay" class="btn-primary btn-lg"><span data-i18n="pve.play">Jugar</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver al menú</button>
   </div>
@@ -224,6 +258,8 @@
   </section>
 </div>
 <div id="cardTip" role="tooltip" aria-hidden="true"></div>
+<div id="passScreen" role="dialog" aria-modal="true"></div>
+<div id="coach" role="dialog" aria-live="polite"></div>
 <div id="playShow" aria-hidden="true"></div>
 </div><!-- /gameScreen -->
 
@@ -269,6 +305,7 @@
   <div class="screenTop"><button id="storyBack" class="btn-light btn-sm" data-i18n="nav.toMenu">← Menú</button></div>
   <h1 class="sTitle" data-i18n="story.title">Modo Historia</h1>
   <p class="sSub" data-i18n="story.sub">Aprende a jugar hoyo a hoyo</p>
+  <div id="storyContinue"></div>
   <div id="lvlGrid"></div>
 </div>
 
@@ -277,12 +314,17 @@
 <button id="sfxBtn" data-i18n-title="sound.toggleTitle" title="Sonido: activar / silenciar"><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg></button>
 <button id="sndCfgBtn" data-i18n-title="sound.settingsTitle" title="Ajustes de sonido" aria-controls="sndPanel" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
 <div id="sndPanel">
+  <label class="muteRow"><input type="checkbox" id="muteAll"> <svg class="i" aria-hidden="true"><use href="#i-mute"/></svg><span data-i18n="sound.muteAll">Silenciar todo</span></label>
   <label><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg><span data-i18n="sound.sfx">SFX</span> <input type="range" id="sfxVol" min="0" max="100" value="45"></label>
   <label><svg class="i" aria-hidden="true"><use href="#i-music"/></svg><span data-i18n="sound.music">Música</span> <input type="range" id="musVol" min="0" max="100" value="55"></label>
   <label class="mus"><input type="checkbox" id="musOn" checked> <span data-i18n="sound.musicOn">Música ambiental</span></label>
+  <div class="langRow"><span data-i18n="settings.speed">Velocidad</span><span class="langBtns speedBtns"><button class="btn-sm" data-speed="slow" data-i18n="settings.slow">Lenta</button><button class="btn-sm" data-speed="normal" data-i18n="settings.normal">Normal</button><button class="btn-sm" data-speed="fast" data-i18n="settings.fast">Rápida</button></span></div>
   <div class="langRow"><span data-i18n="lang.label">Idioma</span><span class="langBtns"><button class="btn-sm" data-lang="es">ES</button><button class="btn-sm" data-lang="en">EN</button></span></div>
   <label class="mus" data-i18n-title="sound.peekTitle"><input type="checkbox" id="peekHands"> <svg class="i" aria-hidden="true"><use href="#i-eye"/></svg><span data-i18n="sound.peek">Ver cartas rivales</span></label>
+  <button id="moreSettings" class="btn-light btn-sm"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg><span data-i18n="settings.more">Más ajustes…</span></button>
 </div>
+
+<div id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="setTitle"><div class="setBox" id="setBox"></div></div>
 
 <button id="debugBtn" title="debug" aria-controls="debugPanel" aria-expanded="false">dbg</button>
 <div id="debugPanel">

@@ -72,7 +72,8 @@ export const ASSETS = {
     : `<div class="cardOnCell tile-hole">${HOLE_SVG}</div>`,
   ballHTML: pl => ART['ball.' + (pl + 1)]
     ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">${playerTag(pl)}</div></div>`
-    : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">${playerTag(pl)}</span></div></div>`,
+    : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">${playerTag(pl)}</span>` +
+      `<svg class="shp" aria-hidden="true"><use href="#shp-${pl % 6}"/></svg></div></div>`, // forma por jugador (accesibilidad)
   tileHTML: (type, extra = '') => {
     const d = tileDef(type);
     return ART[d.tileArt]

@@ -2,7 +2,6 @@
 // Cada acción del jugador o de la IA pasa por dispatch(): se ejecuta en el motor,
 // se procesan sus eventos (sonido, efectos, cola de animación…), se renderiza y
 // se disparan los ganchos posteriores (victoria en solitario, turno de la IA).
-import { playerTag } from '../engine/game.js';
 import { app } from './app.js';
 import { $, $$, restartClass } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
@@ -21,12 +20,17 @@ import { sfx } from '../audio/sfx.js';
 import { JUICE } from '../fx/juice.js';
 import { pColor } from '../art.js';
 import { t } from '../i18n/index.js';
+import { isBot, viewer, multiHuman, displayName, avatarHTML } from './players.js';
+import { resetMoods, clearBubbles } from './persona.js';
+import { botPlayed, botsGameOver } from './bot-react.js';
+import { passCheck } from './hotseat.js';
+import { tutorialEvent } from './tutorial.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
-const resetStats = () => { stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0 }; };
+const resetStats = () => { stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0 }; };
 export const setStats = s => { stats = { ...stats, ...s }; };
-const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle']);
+const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop']);
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
@@ -40,6 +44,8 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
   app.tipShown = {};
   app.lastPlayAt = Date.now();
   prevTurn = -1; jaqueShown = false;
+  app.passFor = null; app.reacting = null;
+  resetMoods(); clearBubbles();
   resetStats();
   resetDealAnim();
   clearPieces();
@@ -53,13 +59,15 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
 export function fitBoard() {
   const col = $('boardCol'), S = app.game.S;
   const w = col?.clientWidth || window.innerWidth - 360, h = col?.clientHeight || window.innerHeight * .6;
-  fitCellsTo(S.cols, S.rows, w - 30, h - 30, 84); // marco crema (10px) + junta (3px) a cada lado
+  const pad = window.innerWidth <= 760 ? 22 : 30; // marco crema (10px, 7px en móvil) + junta (3px) a cada lado
+  fitCellsTo(S.cols, S.rows, w - pad, h - pad, 84);
 }
 
 /* ---------- dispatch ---------- */
 function dispatch(fn) {
   const g = app.game;
   if (!g) return false;
+  const jaqueBefore = g.S.jaque && g.S.winner !== null;
   const ok = fn(g);
   const events = g.takeEvents();
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
@@ -74,8 +82,10 @@ function dispatch(fn) {
         sfx('card');
         app.lastActor = ev.p;
         // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
-        const mine = app.mode !== 'pve' || ev.p === g.S.human;
+        const mine = !isBot(ev.p);
         fxPlayCard(ev.p, ev.idx, ev.key, { fast: mine });
+        botPlayed(ev.p, { savingJaque: jaqueBefore && !g.S.winners.includes(ev.p) });
+        tutorialEvent('played', { p: ev.p, key: ev.key });
         // el tablero espera a que la carta despegue: primero se ve qué se juega, luego qué pasa
         app.animLead = mine ? JUICE.cardLeadMs.mine : JUICE.cardLeadMs.bot;
         if (CARDS[ev.key]?.stroke) stats.golpes++;
@@ -97,16 +107,18 @@ function dispatch(fn) {
       case 'tip': hud.storyTip(ev.key); break;
       case 'notice': hud.toast(ev.text); break;
       case 'resolved': resolved = true; break;
-      case 'turnEnded': turnEnded = true; break;
+      case 'turnEnded': turnEnded = true; stats.turnos++; break;
       case 'win': won = true; break;
     }
   }
   if (!app.animQueue.length) app.animLead = 0; // la espera solo tiene sentido si hay algo que animar
   if (onlyFeedback && !events.some(e => e.t !== 'badCard' && e.t !== 'notice')) return ok; // nada cambió
   if (resolved) { app.lastPlayAt = Date.now(); app.playSeq++; }
+  if (resolved && app.reacting != null && !g.pending) app.reacting = null; // la reacción del invitado ha terminado
   render();
   saveGame(); // guardado automático de la partida en curso
-  if (won) showWin();
+  if (resolved || turnEnded) tutorialEvent(turnEnded ? 'turnEnded' : 'resolved');
+  if (won) { botsGameOver(g.S.winners); showWin(); }
   if (resolved) maybeSoloWin();
   if (resolved || turnEnded) aiKick(); // en PVE la máquina reacciona/actúa tras cada jugada
   return ok;
@@ -117,7 +129,10 @@ export function clickCard(p, idx) {
   if (app.animating) return false;
   const before = app.game.pending;
   const ok = dispatch(g => g.clickCard(p, idx));
-  if (ok && app.game.pending && app.game.pending !== before) sfx('select'); // carta elegida: toca decidir
+  if (ok && app.game.pending && app.game.pending !== before) {
+    sfx('select'); // carta elegida: toca decidir
+    tutorialEvent('selected', { p, key: app.game.S.hands[p]?.[idx] });
+  }
   return ok;
 }
 export function clickCell(x, y) {
@@ -125,10 +140,10 @@ export function clickCell(x, y) {
   const g = app.game;
   if (g.godMode) { const r = dispatch(gg => gg.clickCell(x, y)); updateGodHint(); return r; }
   if (!g.pending) return false;
-  if (app.mode === 'pve' && !app.ai.acting) { // en PVE el jugador no puede interferir en la acción de la máquina
-    const pd = g.pending;
-    if (pd.p !== undefined && pd.p !== g.S.human) return false;
-    if (pd.kind === 'serpent' && pd.ball !== g.ownBall(g.S.human)) return false;
+  if (app.mode === 'pve' && !app.ai.acting) { // en PVE solo se decide la acción propia (la de quien tiene el dispositivo)
+    const pd = g.pending, me = viewer();
+    if (pd.p !== undefined && pd.p !== me) return false;
+    if (pd.kind === 'serpent' && pd.ball !== g.ownBall(me)) return false;
   }
   return dispatch(gg => gg.clickCell(x, y));
 }
@@ -162,6 +177,7 @@ export function maybeSoloWin() {
 export function render() {
   const g = app.game;
   if (!g) return;
+  passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
   hud.renderTopbar();
   renderJaque();
   renderBoard();
@@ -196,7 +212,7 @@ export function renderJaque() {
   if (app.game.pending) { el.classList.remove('visible'); return; }
   el.classList.add('visible');
   if (!jaqueShown) { jaqueShown = true; fxZoomShake(); sfx('jaque'); sfx('tension'); } // entrada dramática + sting
-  const names = S.winners.map(i => t('player.name', { n: i + 1 })).join(t('common.and'));
+  const names = S.winners.map(displayName).join(t('common.and'));
   const msg = S.winners.length > 1 ? t('jaque.tie', { names }) : t('jaque.one', { names });
   el.style.setProperty('--pc', pColor(S.winners[0]));
   // cuenta atrás de la ventana de reacción (la fija el orquestador de la IA en PVE)
@@ -217,9 +233,9 @@ function turnCheck() {
   prevTurn = S.turn;
   if (first) return; // sin banner en el primer render de la partida
   const b = $('turnBanner');
-  const mine = app.mode === 'pve' && S.turn === S.human;
+  const mine = app.mode === 'pve' && !multiHuman() && S.turn === viewer();
   b.style.setProperty('--pc', pColor(S.turn));
-  b.innerHTML = `<span class="avatar">${playerTag(S.turn)}</span><b>${mine ? t('turn.yoursBanner') : t('turn.ofBanner', { n: S.turn + 1 })}</b>`;
+  b.innerHTML = `${avatarHTML(S.turn)}<b>${mine ? t('turn.yoursBanner') : t('turn.ofName', { name: displayName(S.turn) })}</b>`;
   b.style.animationDuration = JUICE.turnBannerMs + 'ms';
   restartClass(b, 'show');
   restartClass(document.querySelector(`.seat[data-player="${S.turn}"]`) || $('dock'), 'turnPulse');
