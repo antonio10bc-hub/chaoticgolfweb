@@ -72,7 +72,7 @@ export const ASSETS = {
     : `<div class="cardOnCell tile-hole">${HOLE_SVG}</div>`,
   ballHTML: pl => ART['ball.' + (pl + 1)]
     ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">J${pl + 1}</div></div>`
-    : `<div class="cardOnCell tile-ball"><div class="circ" style="background:${pColor(pl)}">J${pl + 1}</div></div>`,
+    : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">J${pl + 1}</span></div></div>`,
   tileHTML: (type, extra = '') => {
     const d = tileDef(type);
     return ART[d.tileArt]

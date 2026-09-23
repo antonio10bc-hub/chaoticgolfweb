@@ -14,7 +14,7 @@
 .piece.air::before { transform: scale(.6); opacity: .5; }
 
 /* squash & stretch al arrancar/frenar cada paso */
-.piece.glide .cardOnCell { animation: glideWob .19s ease-out; }
+.piece.glide .cardOnCell { animation: glideWob .28s ease-out; }
 @keyframes glideWob {
   0%   { transform: scale(1.14,.84); }
   55%  { transform: scale(.94,1.07); }
@@ -33,17 +33,17 @@
 
 /* portal: succión / expulsión con glow */
 .piece.warp .cardOnCell { filter: drop-shadow(0 0 9px rgba(158,132,255,.95)) brightness(1.18); }
-.piece.warpOut .cardOnCell { animation: warpOut .17s ease-in forwards; }
+.piece.warpOut .cardOnCell { animation: warpOut .24s ease-in forwards; }
 @keyframes warpOut { to { transform: scale(.08) rotate(210deg); } }
-.piece.warpIn .cardOnCell { animation: warpIn .2s cubic-bezier(.3,1.5,.5,1); }
+.piece.warpIn .cardOnCell { animation: warpIn .28s cubic-bezier(.3,1.5,.5,1); }
 @keyframes warpIn { from { transform: scale(.08) rotate(-190deg); } to { transform: scale(1) rotate(0); } }
 
 /* caída del tablero: rueda hacia fuera */
-.piece.falling .cardOnCell { animation: fallRoll .24s ease-in forwards; }
+.piece.falling .cardOnCell { animation: fallRoll .34s ease-in forwards; }
 @keyframes fallRoll { to { transform: rotate(215deg) scale(.72); } }
 
 /* reaparición con drop-in y rebote */
-.piece.dropping .cardOnCell { animation: dropIn .34s cubic-bezier(.3,1.4,.5,1); }
+.piece.dropping .cardOnCell { animation: dropIn .46s cubic-bezier(.3,1.4,.5,1); }
 @keyframes dropIn {
   0%   { transform: translateY(-58%) scale(.72); }
   55%  { transform: translateY(3%)  scale(1.05,.9); }
@@ -52,7 +52,7 @@
 }
 
 /* embocar: espiral de succión hacia el centro */
-.piece.sinking .cardOnCell { animation: sinkSpin .3s cubic-bezier(.55,.1,.75,.4) forwards; }
+.piece.sinking .cardOnCell { animation: sinkSpin .42s cubic-bezier(.55,.1,.75,.4) forwards; }
 @keyframes sinkSpin {
   0%   { transform: scale(1) rotate(0); }
   40%  { transform: scale(.78) rotate(120deg); }
@@ -60,7 +60,7 @@
 }
 
 /* golpe seco: sacudida del tablero (2-3 px) */
-#boardArea.shake { animation: shakeX .24s linear; }
+#boardArea.shake { animation: shakeX .3s linear; }
 @keyframes shakeX {
   0%, 100% { transform: translate(0,0); }
   18% { transform: translate(-3px,1px); } 36% { transform: translate(3px,-1px); }

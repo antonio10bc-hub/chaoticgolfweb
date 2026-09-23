@@ -31,10 +31,11 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
   text-transform: lowercase; color: var(--ink); user-select: none; margin-bottom: 34px;
 }
 .mTitle .l1, .mTitle .l2 { display: block; }
-.mTitle .l2::after { content: '.'; color: var(--grass-dark); }
-.mTitle .c-accent { color: var(--accent); }
-.mTitle .c-navy { color: var(--navy); }
-.mTitle .c-grass { color: var(--grass-dark); }
+/* título propio: todo en verdes de césped ("chaotic" oscuro, "golf" en verde green) y bola naranja como punto */
+.mTitle { color: var(--grass-dark); }
+.mTitle .l2 { color: #7FA95A; }
+.mTitle .l2::after { content: ''; display: inline-block; width: .17em; height: .17em; margin-left: .06em; border-radius: 50%; background: var(--accent); box-shadow: .04em .04em 0 var(--shadow); }
+.mTitle .c-accent, .mTitle .c-navy, .mTitle .c-grass { color: inherit; }
 .mActions { display: flex; gap: 10px; flex-wrap: wrap; }
 .mBtn { padding: 13px 22px; font-size: 15.5px; font-weight: 500; }
 .mBtn.story { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); box-shadow: 0 8px 20px rgba(20,40,20,.18); }

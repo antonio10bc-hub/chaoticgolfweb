@@ -19,6 +19,7 @@ export async function playQueue(onDone) {
   resetChain(); combo = 0; fxTrailReset();   // reinicia contadores decorativos de la jugada
   const piecesEl = $('pieces');
   if (piecesEl) piecesEl.classList.remove('idle');
+  if (app.animLead) { const lead = app.animLead; app.animLead = 0; await wait(lead); }
   const q = app.animQueue; app.animQueue = [];
   for (const ev of q) {
     pieceEl(ev.p)?.classList.add('acting'); // la pieza que se mueve se destaca mientras actúa

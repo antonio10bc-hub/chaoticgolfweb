@@ -5,8 +5,8 @@ export default {
   cellClass: 'cement',    // el portal se asienta sobre cemento
   cellArt: 'cell.cement',
   tileArt: 'tile.portal',
-  // disco marino con anillos concéntricos (viewBox 100×140)
-  pic: '<svg class="tilePic" viewBox="0 0 100 140" aria-hidden="true"><circle cx="56" cy="76" r="34" fill="rgba(20,40,20,.28)"/><circle cx="50" cy="70" r="34" fill="#2D4F7C"/><circle cx="50" cy="70" r="24" fill="none" stroke="#F1F1DC" stroke-width="3" opacity=".85"/><circle cx="50" cy="70" r="14" fill="none" stroke="#F1F1DC" stroke-width="3" opacity=".6"/><circle cx="50" cy="70" r="5" fill="#E8873A"/></svg>',
+  // vórtice: disco con luz hacia el centro y brazos en espiral que giran (viewBox 100×140)
+  pic: '<svg class="tilePic" viewBox="0 0 100 140" aria-hidden="true"><circle cx="54" cy="74" r="36" fill="rgba(20,40,20,.25)"/><circle cx="50" cy="70" r="41" fill="url(#portalGlow)"/><circle cx="50" cy="70" r="35" fill="url(#portalGrad)"/><g class="portalSwirl"><path d="M50 70C58 67 63 58 61 49C59 41 51 37 43 38" fill="none" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round" opacity=".9"/><path d="M50 70C58 67 63 58 61 49C59 41 51 37 43 38" fill="none" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round" opacity=".7" transform="rotate(120 50 70)"/><path d="M50 70C58 67 63 58 61 49C59 41 51 37 43 38" fill="none" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round" opacity=".55" transform="rotate(240 50 70)"/></g><circle cx="50" cy="70" r="35" fill="none" stroke="#A9C3E6" stroke-width="1.6" stroke-dasharray="3 5" opacity=".8"/><circle cx="50" cy="70" r="5" fill="#fff"/></svg>',
   tileClass: 'tile-portal',
   dust: 'cement',
 };

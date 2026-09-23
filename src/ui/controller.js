@@ -50,7 +50,7 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
 export function fitBoard() {
   const col = $('boardCol'), S = app.game.S;
   const w = col?.clientWidth || window.innerWidth - 360, h = col?.clientHeight || window.innerHeight * .6;
-  fitCellsTo(S.cols, S.rows, w - 32, h - 32);
+  fitCellsTo(S.cols, S.rows, w - 30, h - 30, 84); // marco crema (10px) + junta (3px) a cada lado
 }
 
 /* ---------- dispatch ---------- */
@@ -70,7 +70,10 @@ function dispatch(fn) {
         sfx('card');
         app.lastActor = ev.p;
         // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
-        fxPlayCard(ev.p, ev.idx, ev.key, { fast: app.mode === 'pve' && ev.p === g.S.human });
+        const mine = app.mode !== 'pve' || ev.p === g.S.human;
+        fxPlayCard(ev.p, ev.idx, ev.key, { fast: mine });
+        // el tablero espera a que la carta despegue: primero se ve qué se juega, luego qué pasa
+        app.animLead = mine ? JUICE.cardLeadMs.mine : JUICE.cardLeadMs.bot;
         if (CARDS[ev.key]?.stroke) stats.golpes++;
         break;
       }
@@ -94,6 +97,7 @@ function dispatch(fn) {
       case 'win': won = true; break;
     }
   }
+  if (!app.animQueue.length) app.animLead = 0; // la espera solo tiene sentido si hay algo que animar
   if (onlyFeedback && !events.some(e => e.t !== 'badCard' && e.t !== 'notice')) return ok; // nada cambió
   if (resolved) { app.lastPlayAt = Date.now(); app.playSeq++; }
   render();

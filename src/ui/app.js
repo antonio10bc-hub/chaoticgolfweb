@@ -8,6 +8,7 @@ export const app = {
   screen: 'menu',
   animating: false,      // true mientras se reproducen las animaciones de una jugada
   animQueue: [],         // eventos de animación pendientes de reproducir
+  animLead: 0,           // espera antes de reproducirlos (tras jugar una carta)
   lastPlayAt: 0,         // última carta jugada (aviso de fin de turno en historia)
   playSeq: 0,            // contador de jugadas resueltas (la IA evalúa reacciones una vez por jugada)
   lastActor: null,       // jugador de la última carta consumida

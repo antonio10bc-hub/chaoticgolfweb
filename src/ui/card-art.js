@@ -46,20 +46,23 @@ const ARTS = {
       `<path d="M50 4 L61 16 L54 16 L54 22 L46 22 L46 16 L39 16 Z" fill="${INK}"/>` +
     `</g>`,
   bunker: () =>
-    `<path d="M10 72C6 44 30 26 54 28c26 2 38 22 36 44-2 24-24 34-46 32-18-2-32-12-34-32z" fill="${G_MID}"/>` +
-    `<path d="M16 70c-2-22 18-36 38-35 22 1 32 18 30 36-2 18-20 27-38 25-16-2-28-10-30-26z" fill="${SAND}"/>` +
-    `<path d="M24 60c4-12 16-19 30-18 11 1 19 7 22 16-14-8-34-9-52 2z" fill="#F6F2E0"/>` +
-    // rastrillo fino
-    `<path d="M70 14 L56 56" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>` +
-    `<path d="M44 52 L68 60" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>` +
-    `<path d="M47 57l-2 6M53 59l-2 6M59 61l-2 6M65 63l-2 6" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>`,
+    // búnker en riñón con collar, labio sombreado, brillo y marcas de rastrillo
+    `<path d="M6 64C3 44 20 31 39 33c13 1 17 9 28 7 15-3 28 5 27 21-1 22-23 34-46 33C23 93 8 82 6 64z" fill="${G_MID}"/>` +
+    `<path d="M12 64c-2-16 11-26 26-24 11 1 15 8 26 6 12-2 23 4 22 17-1 18-19 28-39 27-18-1-33-10-35-26z" fill="${SAND}"/>` +
+    `<path d="M12 64c-2-16 11-26 26-24 11 1 15 8 26 6 12-2 23 4 22 17-6-9-15-11-23-9-11 2-17-4-27-5-11-1-20 5-24 15z" fill="#DDD5B4"/>` +
+    `<path d="M21 76c10 8 31 10 47 5 8-2 13-7 15-12-5 11-27 18-46 15-8-1-13-4-16-8z" fill="#F6F2E0"/>` +
+    `<path d="M25 62c10-4 22-3 32 1M23 70c12-4 26-3 38 2M33 78c9-2 18-1 26 2" fill="none" stroke="#D4CBA6" stroke-width="1.4" stroke-linecap="round"/>` +
+    `<path d="M76 10 L64 44" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/><path d="M55 42 L73 48" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`,
   portal: () =>
-    `<circle cx="55" cy="59" r="32" fill="${SH}"/>` +
-    `<circle cx="50" cy="54" r="32" fill="${NAVY}"/>` +
-    `<circle cx="50" cy="54" r="22" fill="none" stroke="${CREAM}" stroke-width="2.4" opacity=".85"/>` +
-    `<circle cx="50" cy="54" r="12" fill="none" stroke="${CREAM}" stroke-width="2.4" opacity=".55"/>` +
-    `<circle cx="50" cy="54" r="4.5" fill="${ACC}"/>` +
-    `<path d="M84 16v8M80 20h8M16 80v6M13 83h6" stroke="${ACC}" stroke-width="2" stroke-linecap="round"/>`,
+    // vórtice: luz hacia el centro y brazos en espiral (giran en la mano igual que en el tablero)
+    `<circle cx="55" cy="59" r="34" fill="${SH}"/>` +
+    `<circle cx="50" cy="54" r="40" fill="url(#portalGlow)"/>` +
+    `<circle cx="50" cy="54" r="34" fill="url(#portalGrad)"/>` +
+    `<g class="portalSwirl">` +
+    [0, 120, 240].map((r, i) => `<path d="M50 54C58 51 63 42 61 33C59 25 51 21 43 22" fill="none" stroke="${CREAM}" stroke-width="3" stroke-linecap="round" opacity="${[.9, .7, .55][i]}" transform="rotate(${r} 50 54)"/>`).join('') +
+    `</g>` +
+    `<circle cx="50" cy="54" r="34" fill="none" stroke="#A9C3E6" stroke-width="1.6" stroke-dasharray="3 5" opacity=".8"/>` +
+    `<circle cx="50" cy="54" r="5" fill="#fff"/>`,
   no: () =>
     // carta tachada: anula la última jugada
     `<rect x="32" y="22" width="36" height="50" rx="6" fill="#fff" stroke="${INK}" stroke-width="1.8" transform="rotate(-8 50 47)"/>` +

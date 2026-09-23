@@ -184,49 +184,61 @@ function floatingCard(def, w) {
   return c;
 }
 
-// carta jugada: vuela desde donde está (mano / asiento), se exhibe un instante sobre el
-// tablero y termina en la pila de descartes (o se funde, si se queda en la mesa)
+// carta jugada, sin vuelo: crece encima de donde está (tu mano o el asiento del bot) y se
+// desvanece; reaparece un instante sobre la pila de descartes y se desvanece. Nunca cruza el tablero.
 export function fxPlayCard(p, idx, cardKey, { fast = false } = {}) {
   const def = CARDS[cardKey];
-  if (!def) return;
+  if (!def || REDUCED) return;
   const src = handCard(p, idx)?.getBoundingClientRect() || $$(`.seat[data-player="${p}"]`)[0]?.getBoundingClientRect();
-  const board = rectOf("boardWrap");
-  if (!src || !board) return;
+  if (!src) return;
   const W = 96, H = W * 1.4;
   const c = floatingCard(def, W);
-  const from = center(src), show = { x: board.left + board.width / 2, y: board.top + Math.min(board.height * .28, 150) };
-  const pile = rectOf("discardPile");
-  const end = def.staysOnBoard || !pile ? { ...show, s: .6, o: 0 } : { ...center(pile), s: .42, o: .0 };
-  const at = (pt, s, r = 0) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${s}) rotate(${r}deg)`;
+  const pile = def.staysOnBoard ? null : rectOf("discardPile");
+  // encima del origen, sin salirse de la pantalla
+  const a = center(src);
+  const up = { x: Math.min(window.innerWidth - W * .7, Math.max(W * .7, a.x)), y: Math.max(H * .7, a.y - H * .35) };
+  const at = (pt, sc) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${sc})`;
   const s0 = src.width / W;
-  if (REDUCED) { c.remove(); return; }
   const frames = [
-    { transform: at(from, s0, 0), opacity: 1, offset: 0 },
-    { transform: at(show, 1.18, (fxRand() - .5) * 6), opacity: 1, offset: fast ? .3 : .28 },
-    { transform: at(show, 1.08, 0), opacity: 1, offset: fast ? .55 : .72 },
-    { transform: at(end, end.s, (fxRand() - .5) * 30), opacity: end.o, offset: 1 },
+    { transform: at(a, s0), opacity: 1, offset: 0 },
+    { transform: at(up, 1.12), opacity: 1, offset: .16 },
+    { transform: at(up, 1.1), opacity: 1, offset: .4 },
+    { transform: at(up, 1.16), opacity: 0, offset: pile ? .52 : 1 },
   ];
-  const anim = c.animate(frames, { duration: fast ? 700 : 1250, easing: "cubic-bezier(.3,.7,.3,1)", fill: "forwards" });
+  if (pile) {
+    const d = center(pile);
+    frames.push(
+      { transform: at(d, .7), opacity: 0, offset: .53 },
+      { transform: at(d, .78), opacity: 1, offset: .66 },
+      { transform: at(d, .78), opacity: 1, offset: .82 },
+      { transform: at(d, .7), opacity: 0, offset: 1 });
+  }
+  const anim = c.animate(frames, { duration: fast ? 1300 : 1700, easing: "ease-out", fill: "forwards" });
   anim.onfinish = () => c.remove();
   sfx("whoosh");
 }
 
-// descarte: las cartas vuelan a la pila de descartes (desveladas si eran de un bot)
+// descarte: mismo lenguaje que la carta jugada, sin vuelo (se desvanece en la mano y aparece en descartes)
 export function fxDiscardCard(p, idx, cardKey) {
   if (REDUCED) return;
   const def = CARDS[cardKey];
   const el = handCard(p, idx);
   const pile = rectOf("discardPile");
-  if (!def || !el || !pile) return;
+  if (!def || !el) return;
   const src = el.getBoundingClientRect();
   const W = 96, H = W * 1.4, c = floatingCard(def, W);
-  const a = center(src), b = center(pile);
-  const at = (pt, s, r) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${s}) rotate(${r}deg)`;
-  const anim = c.animate([
-    { transform: at(a, src.width / W, 0), opacity: 1 },
-    { transform: at({ x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 60 }, .8, (fxRand() - .5) * 40), opacity: 1, offset: .5 },
-    { transform: at(b, .42, (fxRand() - .5) * 30), opacity: .2 },
-  ], { duration: 520, easing: "cubic-bezier(.4,0,.3,1)", fill: "forwards" });
+  const a = center(src);
+  const at = (pt, sc) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${sc})`;
+  const frames = [
+    { transform: at(a, src.width / W), opacity: 1, offset: 0 },
+    { transform: at({ x: a.x, y: a.y - 14 }, src.width / W * 1.04), opacity: 0, offset: pile ? .4 : 1 },
+  ];
+  if (pile) {
+    const d = center(pile);
+    frames.push({ transform: at(d, .7), opacity: 0, offset: .41 }, { transform: at(d, .78), opacity: 1, offset: .62 },
+                { transform: at(d, .7), opacity: 0, offset: 1 });
+  }
+  const anim = c.animate(frames, { duration: 900, easing: "ease-out", fill: "forwards" });
   anim.onfinish = () => c.remove();
 }
 
