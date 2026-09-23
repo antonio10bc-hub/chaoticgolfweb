@@ -1,5 +1,6 @@
 // HUD de la partida: píldora de turno, pilas (mazo / descartes / última jugada),
 // botones de turno, historial, avisos y bocadillos de tutorial.
+import { playerTag } from '../engine/game.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
@@ -25,7 +26,7 @@ export function renderTopbar() {
   const left = Math.max(0, 2 - S.blackPlayed);
   const pips = `<span class="pips" aria-label="${esc(t('turn.blacksAria', { n: left }))}">` +
     [0, 1].map(i => `<i class="${i < left ? 'on' : ''}"></i>`).join('') + `</span>`;
-  set(pill, `<span class="avatar">J${p + 1}</span><span class="tpText"><b>${esc(title)}</b>` +
+  set(pill, `<span class="avatar">${playerTag(p)}</span><span class="tpText"><b>${esc(title)}</b>` +
     `<small>${esc(sub)}${isBotSeat(p) && app.ai.thinkingOf === p ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : ''}</small></span>${pips}`);
 
   // --- botones de turno ---
@@ -55,7 +56,7 @@ function renderPiles() {
   const lp = $('lastPlay');
   if (S.lastCardKey) {
     const def = CARDS[S.lastCardKey];
-    const who = app.lastActor != null ? `<span class="avatar xs" style="--pc:${pColor(app.lastActor)}">J${app.lastActor + 1}</span>` : '';
+    const who = app.lastActor != null ? `<span class="avatar xs" style="--pc:${pColor(app.lastActor)}">${playerTag(app.lastActor)}</span>` : '';
     set(lp, `<small>${t('hud.lastPlay')}</small><div class="lastRow">${who}<span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(S.lastCardLabel)}</b></div>`);
   } else set(lp, '');
 }

@@ -21,8 +21,16 @@ const rand = Math.random;
 const G = () => app.game;
 const S = () => app.game.S;
 const isBot = p => p !== S().human;
-const live = g => app.mode === 'pve' && app.game && gen === g;
+// la IA solo actúa en su partida (gen) y con la pantalla de partida a la vista
+const live = g => app.mode === 'pve' && app.game && gen === g && app.screen === 'game';
 const idle = () => new Promise(r => { const t = () => (!app.animating && !app.animQueue.length) ? r() : setTimeout(t, 90); t(); });
+
+// arranque retrasado de la IA (al empezar o continuar): cancelable con aiStop
+export function aiStart(delay) {
+  clearTimeout(timer);
+  const g = gen;
+  timer = setTimeout(() => { if (gen === g) aiKick(); }, delay);
+}
 
 export function aiStop() {
   clearTimeout(timer);
@@ -62,7 +70,7 @@ async function runPlan(plan, g) {
 // orquestador: se llama tras cada jugada y cada cambio de turno
 export function aiKick() {
   clearTimeout(timer);
-  if (app.mode !== 'pve' || !app.game) return;
+  if (app.mode !== 'pve' || !app.game || app.screen !== 'game') return;
   const s = S(), g = gen;
   if (s.winner !== null && !s.jaque) return; // partida terminada (durante el JAQUE sí hay que actuar)
   if (app.animating || app.animQueue.length || G().pending) {

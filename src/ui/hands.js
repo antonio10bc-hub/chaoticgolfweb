@@ -2,6 +2,7 @@
 //   · dock   — la mano de quien juega en este dispositivo (en PVE tú; en modo libre, el jugador en turno)
 //   · asientos — el resto de jugadores, compactos a un lado del tablero (avatar, estado y cartas en miniatura)
 //   · barra de acción — qué hay que hacer ahora (sustituye a los popups)
+import { playerTag } from '../engine/game.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { pColor } from '../art.js';
@@ -82,7 +83,7 @@ function barButtons(g) {
       html += `<button class="btn-light btn-sm stepBtn" data-act="amount" data-n="${n}"${dis ? ` disabled title="${esc(t('hands.cantLeaveTrap'))}"` : ''}>${n}</button>`;
     }
   } else if (pd.kind === 'pickHoled') {
-    for (const hb of S.balls.filter(b => b.holed)) html += `<button class="btn-light btn-sm" data-act="pickHoled" data-n="${hb.player}">J${hb.player + 1}</button>`;
+    for (const hb of S.balls.filter(b => b.holed)) html += `<button class="btn-light btn-sm" data-act="pickHoled" data-n="${hb.player}">${playerTag(hb.player)}</button>`;
   } else if (pd.kind === 'discard') {
     const n = pd.selected.length;
     html += `<button class="btn-secondary btn-sm" data-act="confirmDiscard"${n ? '' : ' disabled'}>${n ? t('hands.discardN', { n }) : t('hands.confirm')}</button>`;
@@ -110,7 +111,7 @@ function renderActionBar(g, owner) {
   if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
     const interactive = app.mode !== 'pve' || pendP === S.human; // en PVE solo se interactúa con tus acciones
     const card = pendingCard(g);
-    const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">J${pendP + 1}</span>` : '';
+    const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">${playerTag(pendP)}</span>` : '';
     kind = pd.kind === 'discard' ? 'discard' : 'act';
     html = `<div class="hint ${kind}${interactive ? '' : ' passive'}">` +
       (card ? `<span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` : '') +
@@ -140,7 +141,7 @@ function renderDock(g, owner) {
   const status = S.winners.includes(owner) ? t('seat.inHole')
     : jaqueCta(g, owner) ? t('seat.canReact')
     : myTurn ? t('seat.yourTurn') : t('seat.waitTurn', { n: S.turn + 1 });
-  $('dockOwner').innerHTML = `<span class="avatar" style="--pc:${col}">J${owner + 1}</span>` +
+  $('dockOwner').innerHTML = `<span class="avatar" style="--pc:${col}">${playerTag(owner)}</span>` +
     `<span class="ownerTxt"><b>${esc(name)}</b><small>${esc(status)}</small></span>`;
   const hand = $('hands');
   hand.innerHTML = S.hands[owner].map((_, i) => cardHTML(g, owner, i)).join('') ||
@@ -165,7 +166,7 @@ function renderSeats(g, owner) {
     const dots = thinking ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : '';
     const cards = S.hands[p].map((_, i) => cardHTML(g, p, i, { mini: true })).join('');
     return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
-      `<span class="avatar">J${p + 1}</span>` +
+      `<span class="avatar">${playerTag(p)}</span>` +
       `<div class="seatBody"><div class="seatName">${esc(t('player.name', { n: p + 1 }))}${isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))}</span>` : ''}</div>` +
       `<div class="seatStatus">${esc(status)}${dots}</div>` +
       `<div class="seatCards">${cards || `<span class="noCards">${esc(t('seat.noCards'))}</span>`}</div></div></div>`;

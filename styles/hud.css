@@ -164,3 +164,8 @@ body[data-screen="game"] #sndPanel { top: 60px; bottom: auto; left: auto; right:
 #sndPanel input[type=range] { flex: 1; accent-color: var(--grass-dark); }
 #sndPanel input[type=checkbox] { accent-color: var(--grass-dark); }
 #sndPanel .mus { border-top: 1px solid var(--cream-line); padding-top: 9px; margin-top: 9px; }
+/* selector de idioma (panel de ajustes) */
+#sndPanel .langRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 9px 0 2px; padding-top: 9px; border-top: 1px solid var(--cream-line); }
+#sndPanel .langBtns { display: flex; gap: 4px; }
+#sndPanel .langBtns button { padding: 3px 10px; font-size: 11.5px; }
+#sndPanel .langBtns button[aria-pressed="true"] { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }

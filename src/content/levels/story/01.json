@@ -1,6 +1,7 @@
 {
   "version": 1,
   "name": "Primeros pasos",
+  "name_en": "First steps",
   "cols": 5,
   "rows": 5,
   "hole": { "x": 0, "y": 0 },

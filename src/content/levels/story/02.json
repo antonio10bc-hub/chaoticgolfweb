@@ -1,6 +1,7 @@
 {
   "version": 1,
   "name": "Pelotas de obstáculo",
+  "name_en": "Obstacle balls",
   "cols": 5,
   "rows": 6,
   "hole": { "x": 2, "y": 0 },

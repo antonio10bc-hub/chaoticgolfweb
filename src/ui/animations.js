@@ -15,15 +15,18 @@ import { sfx, resetChain } from '../audio/sfx.js';
 let combo = 0;
 
 export async function playQueue(onDone) {
+  const game = app.game; // si la partida se descarta o reinicia a mitad, la reproducción se aborta
   app.animating = true;
   resetChain(); combo = 0; fxTrailReset();   // reinicia contadores decorativos de la jugada
   const piecesEl = $('pieces');
   if (piecesEl) piecesEl.classList.remove('idle');
   if (app.animLead) { const lead = app.animLead; app.animLead = 0; await wait(lead); }
+  if (app.game !== game) return;
   const q = app.animQueue; app.animQueue = [];
   for (const ev of q) {
     pieceEl(ev.p)?.classList.add('acting'); // la pieza que se mueve se destaca mientras actúa
     try { await playEvent(ev); } catch (e) { console.warn('animación', ev, e); }
+    if (app.game !== game) return; // partida descartada: no tocar la nueva
   }
   app.animating = false;
   syncPieces();

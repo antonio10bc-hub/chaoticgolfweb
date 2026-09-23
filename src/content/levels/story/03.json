@@ -1,6 +1,7 @@
 {
   "version": 1,
   "name": "Búnkeres",
+  "name_en": "Bunkers",
   "cols": 5,
   "rows": 6,
   "hole": { "x": 2, "y": 0 },

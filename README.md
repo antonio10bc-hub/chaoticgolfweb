@@ -82,8 +82,14 @@ aspecto (`cellClass`, `emoji`, `tileArt`…); regístrala en `tiles/index.js` y 
 `npm run art-manifest`. Lo que no exista usa el respaldo emoji/CSS; el juego no pide archivos que no estén
 en el manifiesto.
 
-**Textos / idioma:** todo está en `src/i18n/es.js`; para otro idioma copia el archivo y regístralo en
-`src/i18n/index.js`.
+**Textos / idioma:** español en `src/i18n/es.js` e inglés en `src/i18n/en.js` (misma estructura; una clave
+que falte cae al español). Idioma inicial: el elegido en Ajustes (🎚 → Idioma); si no hay, español si la zona
+horaria del navegador es de España y si no inglés. Otro idioma = copiar `en.js` y registrarlo en
+`src/i18n/index.js`. Los niveles pueden traer `name_en`.
+
+**Guardado automático:** las partidas de Modo Historia y Partida rápida se guardan en `localStorage`
+(`chaoticgolf_save`) tras cada jugada y al cerrar la pestaña, incluido el estado del RNG, así que al
+continuar la partida sigue exactamente igual. El menú muestra "Continuar partida"; se borra al terminar.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
 

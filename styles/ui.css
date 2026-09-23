@@ -14,6 +14,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 /* diálogos (<dialog>) — confirmar, exportar e importar niveles */
 #dialog {
+  margin: auto; /* el reset global (* { margin: 0 }) lo sacaba del centro */
   border: none; border-radius: 20px; padding: 0; color: var(--ink);
   background-image: var(--grain); background-color: var(--cream);
   width: min(520px, 92vw); box-shadow: 0 30px 70px rgba(10,25,10,.35);
@@ -30,6 +31,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 }
 .dlgFile { font-size: 12.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .dlgBtns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+/* confirmaciones: todo centrado */
+.dlgBox.center { text-align: center; align-items: center; padding: 28px 30px 24px; }
+.dlgBox.center p { max-width: 34ch; color: var(--ink-soft); }
+.dlgBox.center .dlgBtns { justify-content: center; margin-top: 10px; }
+#dialog:has(.dlgBox.center) { width: min(420px, 92vw); }
 .dlgBtns button:last-child { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
 .dlgBtns button.danger:last-child { --b-bg: var(--accent-deep); --b-line: var(--accent-deep); --b-fg: var(--cream); }
 

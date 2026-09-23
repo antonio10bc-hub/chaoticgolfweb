@@ -13,7 +13,8 @@
    ========================================================= */
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
-import { applyStaticTexts } from './i18n/index.js';
+import { applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
+import { bindSave } from './ui/save.js';
 import { loadArt } from './art.js';
 import { loadStoryLevels } from './content/levels/index.js';
 import { bindBoard } from './ui/board.js';
@@ -21,17 +22,20 @@ import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
 import { bindDialog } from './ui/dialog.js';
-import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/screens.js';
+import { bindScreens, showScreen, newFreeGame, applyArtExtras, openStory, openPveSetup } from './ui/screens.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
 import { bindDebug, buildDebugPanel } from './ui/debug.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
-import { updateEndTurnHint } from './ui/hud.js';
+import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
 import { fxArmIdle, fxAmbientStart } from './fx/effects.js';
 import { sfx } from './audio/sfx.js';
 import { clearPieces } from './ui/board.js';
 
+// idioma: el elegido; si no, español en España e inglés fuera (por zona horaria)
+setLang(detectLang());
 applyStaticTexts();
+bindSave();
 
 // listeners (un único sitio; nada de onclick en el HTML)
 bindBoard(ctl.clickCell);
@@ -75,6 +79,23 @@ window.addEventListener('keydown', e => {
   if (app.screen === 'game' && app.game?.pending && !app.ai.acting) ctl.cancel();
 });
 setInterval(updateEndTurnHint, 500);
+
+// cambio de idioma en vivo (panel de ajustes): textos fijos + la pantalla actual
+function paintLangBtns() { document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === getLang())); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-lang]');
+  if (!b || b.dataset.lang === getLang()) return;
+  setLang(b.dataset.lang); saveLang(b.dataset.lang); paintLangBtns();
+  applyStaticTexts();
+  buildDebugPanel();
+  if (app.game) { ctl.render(); }
+  if (app.screen === 'story') openStory();
+  else if (app.screen === 'pve') openPveSetup();
+  else if (app.screen === 'editor') openEditor();
+  else showScreen(app.screen);
+  updateMenuBtn();
+});
+paintLangBtns();
 fxAmbientStart();
 
 buildDebugPanel();

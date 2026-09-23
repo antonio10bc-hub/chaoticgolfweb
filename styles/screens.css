@@ -36,7 +36,8 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .mTitle .l2 { color: #7FA95A; }
 .mTitle .l2::after { content: ''; display: inline-block; width: .17em; height: .17em; margin-left: .06em; border-radius: 50%; background: var(--accent); box-shadow: .04em .04em 0 var(--shadow); }
 .mTitle .c-accent, .mTitle .c-navy, .mTitle .c-grass { color: inherit; }
-.mActions { display: flex; gap: 10px; flex-wrap: wrap; }
+.mActions { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.mActions .mRow { display: flex; gap: 10px; flex-wrap: wrap; }
 .mBtn { padding: 13px 22px; font-size: 15.5px; font-weight: 500; }
 .mBtn.story { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); box-shadow: 0 8px 20px rgba(20,40,20,.18); }
 .mBtn.story:hover { background-color: #3a3a3a; }
@@ -166,3 +167,11 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .lvlCard.next { --b-line: var(--ink); }
 .lvlCard.next .lvlState { background: var(--accent); border-color: var(--accent); color: var(--ink); }
 .noLevels { border: 1px dashed var(--cream-line); border-radius: 14px; padding: 18px 24px; font-size: 14px; color: var(--ink-soft); }
+
+/* continuar la partida guardada: pasa a ser la acción principal del menú */
+.mBtn.continue { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--accent); box-shadow: 0 8px 20px rgba(232,135,58,.3); text-align: left; padding-block: 8px; }
+.mBtn.continue:hover { background-color: var(--accent-deep); border-color: var(--accent-deep); }
+.mBtn.continue .i { transition: transform .2s var(--ease-out); }
+.mBtn.continue:hover .i { transform: translateX(3px); }
+.mBtn.continue .cTxt { display: flex; flex-direction: column; line-height: 1.15; }
+.mBtn.continue small { font-size: 11.5px; font-weight: 400; opacity: .85; }

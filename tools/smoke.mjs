@@ -34,6 +34,8 @@ page.on('response', r => { if (r.status() >= 400) problems.push(`HTTP ${r.status
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const shot = async name => { await page.screenshot({ path: path.join(OUT, name + '.png') }); console.log('  📸', name); };
 const click = async sel => { await page.waitForSelector(sel, { visible: true, timeout: 5000 }); await page.click(sel); };
+// Menú / Reiniciar piden confirmación si hay una partida a medias
+const confirmIfAsked = async () => { await sleep(150); if (await page.$('#dialog[open]')) { await page.click('#dialog[open] button[value="ok"]'); await sleep(150); } };
 const state = () => page.evaluate(() => {
   const { app } = window.chaoticGolf, g = app.game;
   return { screen: app.screen, mode: app.mode, turn: g.S.turn, human: g.S.human, winner: g.S.winner, jaque: g.S.jaque,
@@ -67,7 +69,7 @@ try {
 
   console.log('modo historia');
   await click('#storyBtn'); await sleep(500); await shot('02-historia');
-  await click('.lvlCard[data-level="0"]'); await sleep(400); await shot('03-nivel1');
+  await click('.lvlCard[data-level="0"]'); await confirmIfAsked(); await sleep(400); await shot('03-nivel1');
   for (let i = 0; i < 80; i++) {
     const s = await state();
     if (s.winner !== null && !s.jaque) break;
@@ -83,7 +85,7 @@ try {
   await page.evaluate(() => window.chaoticGolf.app.pveCfg = { color: 2, size: 'm', opps: 3 });
   await page.evaluate(() => document.getElementById('storyBack').click());
   await click('#pveBtn'); await sleep(300); await shot('05-pve-setup');
-  await click('#pvePlay'); await sleep(800);
+  await click('#pvePlay'); await confirmIfAsked(); await sleep(800); // sustituye la partida guardada (si la hay)
   const t0 = Date.now(); let aiTurns = 0, lastTurn = -1, shots = 0, humanActs = 0;
   while (Date.now() - t0 < PVE_SECONDS * 1000) {
     const s = await state();
@@ -97,7 +99,13 @@ try {
   console.log(`  turnos de la IA: ${aiTurns} · acciones humanas: ${humanActs} · líneas de log: ${fin.log} · ganador: ${fin.winner}`);
   if (aiTurns < 2) problems.push('la IA no ha jugado turnos en PVE');
   await shot('07-pve-fin');
-  await page.evaluate(() => { document.getElementById('winOverlay').classList.remove('visible'); window.chaoticGolf.app.game && document.getElementById('menuBtn').click(); });
+  await page.evaluate(() => { document.getElementById('winOverlay').classList.remove('visible'); document.getElementById('menuBtn').click(); });
+  await sleep(200);
+  if (await page.$('#dialog[open]')) problems.push('salir al menú no debe pedir confirmación');
+  if (await page.evaluate(() => window.chaoticGolf.app.game)) problems.push('la partida sigue activa tras salir al menú');
+  const contShown = await page.evaluate(() => !document.getElementById('continueBtn').hidden);
+  if (contShown !== (fin.winner === null || fin.jaque)) problems.push(`"Continuar partida" ${contShown ? 'visible sin partida guardada' : 'oculto con partida a medias'}`);
+  await shot('07b-menu-continuar');
 
   console.log('creador de niveles');
   await page.evaluate(() => { document.querySelectorAll('.screen, #winOverlay').forEach(() => {}); });
@@ -111,7 +119,7 @@ try {
   await click('#edSave'); await sleep(200);
   await shot('08-editor');
   await click('#edTest'); await sleep(500); await shot('09-editor-prueba');
-  await click('#menuBtn'); await sleep(300);
+  await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
   await click('#edExport'); await sleep(300); await shot('10-exportar');
   await page.keyboard.press('Escape'); await sleep(200);
   await click('#edMenu');

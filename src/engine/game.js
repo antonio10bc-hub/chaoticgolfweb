@@ -178,6 +178,26 @@ export class Game {
 
   marksFromBalls() { return this.S.balls.map(b => ({ x: b.x, y: b.y, player: b.player })); }
 
+  /* ---------- guardado: todo lo necesario para continuar la partida tal cual ---------- */
+  serialize() {
+    const pd = this.pending ? { ...this.pending, ball: this.pending.ball ? this.pending.ball.player : undefined } : null;
+    return {
+      S: clone(this.S), pending: pd ? clone(pd) : null, initMarks: this.initMarks,
+      seed: this.seed, rngState: typeof this.rand.getState === 'function' ? this.rand.getState() : null,
+    };
+  }
+  static restore(data) {
+    const g = new Game(clone(data.S), { seed: data.seed ?? undefined });
+    if (data.rngState != null) g.rand = mulberry32(data.rngState); // el mazo sigue saliendo igual que sin cerrar
+    g.initMarks = data.initMarks || g.marksFromBalls();
+    if (data.pending) {
+      const pd = { ...data.pending };
+      if (pd.ball !== undefined) pd.ball = g.S.balls.find(b => b.player === pd.ball);
+      g.pending = pd;
+    }
+    return g;
+  }
+
   /* ---------- eventos / log ---------- */
   emit(ev) { this.events.push(ev); }
   anim(ev) { this.events.push(ev); }

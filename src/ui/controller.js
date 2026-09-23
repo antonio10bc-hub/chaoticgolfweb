@@ -2,6 +2,7 @@
 // Cada acción del jugador o de la IA pasa por dispatch(): se ejecuta en el motor,
 // se procesan sus eventos (sonido, efectos, cola de animación…), se renderiza y
 // se disparan los ganchos posteriores (victoria en solitario, turno de la IA).
+import { playerTag } from '../engine/game.js';
 import { app } from './app.js';
 import { $, $$, restartClass } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
@@ -15,6 +16,7 @@ import { renderDebugState, updateGodHint } from './debug.js';
 import { aiKick, aiStop } from './ai-driver.js';
 import { fxPlayCard, fxDiscardCard, fxBadCard, fxRewind, fxZoomShake } from '../fx/effects.js';
 import { blockedReason } from './reasons.js';
+import { saveGame } from './save.js';
 import { sfx } from '../audio/sfx.js';
 import { JUICE } from '../fx/juice.js';
 import { pColor } from '../art.js';
@@ -23,6 +25,7 @@ import { t } from '../i18n/index.js';
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
 const resetStats = () => { stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0 }; };
+export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle']);
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
@@ -56,6 +59,7 @@ export function fitBoard() {
 /* ---------- dispatch ---------- */
 function dispatch(fn) {
   const g = app.game;
+  if (!g) return false;
   const ok = fn(g);
   const events = g.takeEvents();
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
@@ -101,6 +105,7 @@ function dispatch(fn) {
   if (onlyFeedback && !events.some(e => e.t !== 'badCard' && e.t !== 'notice')) return ok; // nada cambió
   if (resolved) { app.lastPlayAt = Date.now(); app.playSeq++; }
   render();
+  saveGame(); // guardado automático de la partida en curso
   if (won) showWin();
   if (resolved) maybeSoloWin();
   if (resolved || turnEnded) aiKick(); // en PVE la máquina reacciona/actúa tras cada jugada
@@ -145,7 +150,7 @@ export function startDiscard() {
 export const confirmDiscard = () => dispatch(g => g.confirmDiscard());
 export const confirmWin = () => dispatch(g => g.confirmWin());
 // herramientas de debug
-export const debugAction = fn => dispatch(g => { const r = fn(g); return r === undefined ? true : r; });
+export const debugAction = fn => app.game ? dispatch(g => { const r = fn(g); return r === undefined ? true : r; }) : false;
 
 // en solitario no hay ventana de reacción: la victoria se confirma sola tras la animación
 export function maybeSoloWin() {
@@ -214,7 +219,7 @@ function turnCheck() {
   const b = $('turnBanner');
   const mine = app.mode === 'pve' && S.turn === S.human;
   b.style.setProperty('--pc', pColor(S.turn));
-  b.innerHTML = `<span class="avatar">J${S.turn + 1}</span><b>${mine ? t('turn.yoursBanner') : t('turn.ofBanner', { n: S.turn + 1 })}</b>`;
+  b.innerHTML = `<span class="avatar">${playerTag(S.turn)}</span><b>${mine ? t('turn.yoursBanner') : t('turn.ofBanner', { n: S.turn + 1 })}</b>`;
   b.style.animationDuration = JUICE.turnBannerMs + 'ms';
   restartClass(b, 'show');
   restartClass(document.querySelector(`.seat[data-player="${S.turn}"]`) || $('dock'), 'turnPulse');

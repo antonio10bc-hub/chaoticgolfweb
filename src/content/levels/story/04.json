@@ -1,6 +1,7 @@
 {
   "version": 1,
   "name": "Portales",
+  "name_en": "Portals",
   "cols": 7,
   "rows": 7,
   "hole": { "x": 3, "y": 0 },

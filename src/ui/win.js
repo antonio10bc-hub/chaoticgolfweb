@@ -8,10 +8,12 @@ import { sfx } from '../audio/sfx.js';
 import { t, joinAnd } from '../i18n/index.js';
 import { stats } from './controller.js';
 import * as screens from './screens.js';
+import { clearSave } from './save.js';
 
 export const hideWin = () => $('winOverlay').classList.remove('visible');
 
 export function showWin() {
+  clearSave(); // partida terminada: ya no hay nada que continuar
   const S = app.game.S, mode = app.mode;
   const names = joinAnd(S.winners.map(i => t('player.name', { n: i + 1 })));
   let msg;

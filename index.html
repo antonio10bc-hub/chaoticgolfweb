@@ -122,7 +122,10 @@
     <h1 class="mTitle"><span class="l1"><span class="c-accent">C</span>haotic</span> <span class="l2"><span class="c-navy">G</span>o<span class="c-grass">l</span>f</span></h1>
     <div class="mActions">
     <button id="storyBtn" class="mBtn story"><span data-i18n="menu.story">Modo Historia</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
-    <button id="pveBtn" class="mBtn multi"><span data-i18n="menu.pve">Partida Rápida</span><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></button>
+    <div class="mRow">
+      <button id="pveBtn" class="mBtn multi"><span data-i18n="menu.pve">Partida Rápida</span><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></button>
+      <button id="continueBtn" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="continueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+    </div>
     </div>
     <p class="mTag" data-i18n="menu.tag">Golf de cartas. Caótico. Con JAQUE.</p>
   </main>
@@ -277,6 +280,7 @@
   <label><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg><span data-i18n="sound.sfx">SFX</span> <input type="range" id="sfxVol" min="0" max="100" value="45"></label>
   <label><svg class="i" aria-hidden="true"><use href="#i-music"/></svg><span data-i18n="sound.music">Música</span> <input type="range" id="musVol" min="0" max="100" value="55"></label>
   <label class="mus"><input type="checkbox" id="musOn" checked> <span data-i18n="sound.musicOn">Música ambiental</span></label>
+  <div class="langRow"><span data-i18n="lang.label">Idioma</span><span class="langBtns"><button class="btn-sm" data-lang="es">ES</button><button class="btn-sm" data-lang="en">EN</button></span></div>
   <label class="mus" data-i18n-title="sound.peekTitle"><input type="checkbox" id="peekHands"> <svg class="i" aria-hidden="true"><use href="#i-eye"/></svg><span data-i18n="sound.peek">Ver cartas rivales</span></label>
 </div>
 

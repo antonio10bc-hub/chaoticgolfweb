@@ -10,7 +10,7 @@
    manifiesto no se pide ningún PNG (cero peticiones 404).
    ========================================================= */
 import { app } from './ui/app.js';
-import { PLAYER_COLORS } from './engine/game.js';
+import { PLAYER_COLORS, playerTag } from './engine/game.js';
 import { tileDef } from './content/tiles/index.js';
 import { t } from './i18n/index.js';
 
@@ -71,8 +71,8 @@ export const ASSETS = {
     ? `<div class="cardOnCell tile-hole artCard"><img class="fill" src="${ART['tile.hole']}" alt=""></div>`
     : `<div class="cardOnCell tile-hole">${HOLE_SVG}</div>`,
   ballHTML: pl => ART['ball.' + (pl + 1)]
-    ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">J${pl + 1}</div></div>`
-    : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">J${pl + 1}</span></div></div>`,
+    ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">${playerTag(pl)}</div></div>`
+    : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">${playerTag(pl)}</span></div></div>`,
   tileHTML: (type, extra = '') => {
     const d = tileDef(type);
     return ART[d.tileArt]

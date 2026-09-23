@@ -69,6 +69,7 @@ export function bindDebug() {
   $('dbgSkip').addEventListener('click', () => debugAction(g => g.skipTurn()));
   $('dbgGod').addEventListener('click', () => {
     const g = app.game;
+    if (!g) return;
     g.toggleGod();
     $('dbgGod').style.background = g.godMode ? '#c99b2e' : '';
     $('dbgGod').setAttribute('aria-pressed', g.godMode);
