@@ -149,7 +149,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
 - **Ajustes:** perfil (nombre y color), sonido y pista de música (con fundido menú ↔ partida), idioma,
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
-  nieve, noche), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
+  nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
+  contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
   modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa.
 - **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del

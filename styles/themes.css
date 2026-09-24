@@ -1,5 +1,7 @@
 /* Temas del campo (Ajustes → Tema del campo). Solo cambian variables de color de la
-   pantalla de partida: césped, green, juntas, fondo y decorado. El menú no cambia. */
+   pantalla de partida: césped, green, juntas, fondo y decorado. El menú no cambia.
+   Cada modo tiene el suyo por defecto (prefs.js → MODE_THEME): contrarreloj lago,
+   desafíos brasas, reto diario atardecer y el resto clásico. */
 
 /* ---- otoño: césped ocre, green dorado, hojas naranjas ---- */
 html[data-course="autumn"] #gameScreen {
@@ -41,8 +43,38 @@ html[data-course="night"] #game::after { /* foco suave sobre el tablero */
 }
 html[data-course="night"] .tile-hole .holeSvg { filter: brightness(.82); }
 
+/* ---- lago (azul): el color del Contrarreloj ---- */
+html[data-course="ocean"] #gameScreen {
+  --grass-dark: #3D6A96; --grass-mid: #4675A3; --green-putt: #7EA7CE; --green-light: #9CBFE0;
+  --grout: #2D5378; --par-cell: #5884B0; --sel-cell: #86AFD6; --sand-cell: #5E86AC; --cement-cell: #3F5C74;
+  --collar: #5F8DBA; --tree: #2F5A82; --bg-a: #8FB5DA; --bg-b: #99BDE0;
+}
+html[data-course="ocean"] #gameDecor .dTree { filter: hue-rotate(95deg) saturate(.9); }
+
+/* ---- brasas (rojo): el color de los Desafíos ---- */
+html[data-course="ember"] #gameScreen {
+  --grass-dark: #9A4540; --grass-mid: #A64F48; --green-putt: #CF8575; --green-light: #DE9D8C;
+  --grout: #793430; --par-cell: #B7645A; --sel-cell: #D8907F; --sand-cell: #B06A5E; --cement-cell: #6C4744;
+  --collar: #BA6A5E; --tree: #7C3732; --bg-a: #DDA093; --bg-b: #E3AA9E;
+}
+html[data-course="ember"] #gameDecor .dTree { filter: hue-rotate(-105deg) saturate(1.1) brightness(.95); }
+/* sobre el campo rojo, las casillas de "sacar del hoyo" se marcan en crema */
+html[data-course="ember"] .cell.selectable-out { background-color: rgba(255,226,170,.28); box-shadow: inset 0 0 0 2px rgba(255,236,200,.85); animation: none; }
+html[data-course="ember"] .cell.selectable-out:hover { background-color: rgba(255,226,170,.42); }
+
+/* ---- atardecer (naranja): el color del Reto diario ---- */
+html[data-course="sunset"] #gameScreen {
+  --grass-dark: #C9742F; --grass-mid: #D4813A; --green-putt: #EBAF64; --green-light: #F2C27C;
+  --grout: #A35A20; --par-cell: #DE9449; --sel-cell: #F0BD72; --sand-cell: #D48A42; --cement-cell: #86603C;
+  --collar: #DC9148; --tree: #A55F22; --bg-a: #F6C890; --bg-b: #F8D09B;
+}
+html[data-course="sunset"] #gameDecor .dTree { filter: hue-rotate(-60deg) saturate(1.3) brightness(1.02); }
+
 /* muestras de color en el selector de tema (Ajustes) */
 .themeOpt .sw.classic i:nth-child(1) { background: #4F8A4B; } .themeOpt .sw.classic i:nth-child(2) { background: #8DB05F; } .themeOpt .sw.classic i:nth-child(3) { background: #94C584; }
 .themeOpt .sw.autumn i:nth-child(1) { background: #6F7F3B; } .themeOpt .sw.autumn i:nth-child(2) { background: #B3A553; } .themeOpt .sw.autumn i:nth-child(3) { background: #D98A3D; }
 .themeOpt .sw.snow i:nth-child(1) { background: #D4E0E6; } .themeOpt .sw.snow i:nth-child(2) { background: #9DB3BE; } .themeOpt .sw.snow i:nth-child(3) { background: #FFFFFF; }
 .themeOpt .sw.night i:nth-child(1) { background: #2B4E42; } .themeOpt .sw.night i:nth-child(2) { background: #19302A; } .themeOpt .sw.night i:nth-child(3) { background: #F2D98A; }
+.themeOpt .sw.ocean i:nth-child(1) { background: #3D6A96; } .themeOpt .sw.ocean i:nth-child(2) { background: #7EA7CE; } .themeOpt .sw.ocean i:nth-child(3) { background: #9CBFE0; }
+.themeOpt .sw.ember i:nth-child(1) { background: #9A4540; } .themeOpt .sw.ember i:nth-child(2) { background: #CF8575; } .themeOpt .sw.ember i:nth-child(3) { background: #F1D3B0; }
+.themeOpt .sw.sunset i:nth-child(1) { background: #C9742F; } .themeOpt .sw.sunset i:nth-child(2) { background: #EBAF64; } .themeOpt .sw.sunset i:nth-child(3) { background: #F8D09B; }

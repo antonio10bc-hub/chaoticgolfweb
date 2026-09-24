@@ -3,10 +3,14 @@
 import { SPEEDS, setSpeed, setReduced, SPEED } from '../fx/juice.js';
 
 const KEY = 'chaoticgolf_prefs';
-export const THEMES = ['classic', 'autumn', 'snow', 'night'];
+export const THEMES = ['classic', 'autumn', 'snow', 'night', 'ocean', 'ember', 'sunset'];
+// cada modo tiene su color de campo por defecto para reconocerlo de un vistazo (se puede cambiar
+// en Ajustes y cada modo recuerda el suyo): contrarreloj azul, desafíos rojo, reto diario naranja
+// y el resto (Lo básico, partida rápida…) verde
+export const MODE_THEME = { rush: 'ocean', challenge: 'ember', daily: 'sunset' };
 export const TRACKS = ['auto', 'fairway', 'breeze', 'lounge'];
 const DEFAULTS = {
-  speed: 'normal', theme: 'classic', reduce: false, shapes: false, hints: true, track: 'auto',
+  speed: 'normal', theme: 'classic', themes: {}, reduce: false, shapes: false, hints: true, track: 'auto',
   botFast: false,     // acelerar solo los turnos de la máquina
   bigText: false,     // interfaz con texto grande
   contrast: false,    // alto contraste
@@ -20,6 +24,7 @@ export function loadPrefs() {
   try { Object.assign(prefs, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { /* sin storage */ }
   if (!SPEEDS[prefs.speed]) prefs.speed = 'normal';
   if (!THEMES.includes(prefs.theme)) prefs.theme = 'classic';
+  prefs.themes = Object.fromEntries(Object.entries(prefs.themes || {}).filter(([k, v]) => MODE_THEME[k] && THEMES.includes(v)));
   if (!TRACKS.includes(prefs.track)) prefs.track = 'auto';
   applyPrefs();
 }
@@ -35,6 +40,23 @@ export function resetPrefs() {
   applyPrefs();
 }
 
+// tema del campo del modo en pantalla ('default' = Lo básico, partida rápida, editor…)
+let courseSlot = 'default';
+export const themeFor = slot => MODE_THEME[slot] ? prefs.themes[slot] || MODE_THEME[slot] : prefs.theme;
+export const currentTheme = () => themeFor(courseSlot);
+export const currentThemeSlot = () => courseSlot;
+export function setCourseSlot(slot) {
+  const s = MODE_THEME[slot] ? slot : 'default';
+  if (s === courseSlot) return;
+  courseSlot = s;
+  applyPrefs();
+}
+// elegir tema en Ajustes: se guarda para el modo en pantalla
+export function setTheme(th) {
+  if (courseSlot === 'default') setPref('theme', th);
+  else setPref('themes', { ...prefs.themes, [courseSlot]: th });
+}
+
 // ritmo efectivo: la velocidad elegida y, si se pide, x2 mientras juega la máquina
 let botTempo = false;
 export function setBotTempo(on) {
@@ -48,7 +70,7 @@ export function applyPrefs() {
   setBotTempo(botTempo);
   setReduced(prefs.reduce);
   const root = document.documentElement;
-  root.dataset.course = prefs.theme;                   // colores del campo (styles/themes.css)
+  root.dataset.course = currentTheme();                // colores del campo del modo (styles/themes.css)
   root.classList.toggle('cbShapes', !!prefs.shapes);   // formas por jugador en bolas y avatares
   root.classList.toggle('bigText', !!prefs.bigText);   // texto grande en la interfaz
   root.classList.toggle('hiContrast', !!prefs.contrast);

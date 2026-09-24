@@ -159,6 +159,7 @@ export function modeChip() {
   const txt = app.variant ? modeChipText() : '';
   const was = !el.hidden;
   el.hidden = !txt;
+  el.dataset.variant = app.variant || ''; // con el color del modo
   if (el.textContent !== txt) el.textContent = txt;
   return was !== !!txt;
 }

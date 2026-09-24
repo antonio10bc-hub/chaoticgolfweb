@@ -24,6 +24,7 @@ import { historyScreen } from './back.js';
 import { clearPause } from './pause.js';
 import { resetZoom } from './board-zoom.js';
 import { clearBubbles } from './persona.js';
+import { setCourseSlot } from './prefs.js';
 import { renderDailyCard, paintRushTimer } from './screen-modes.js';
 
 // qué hacen "← Volver" y "Reiniciar" en cada modo (lo rellena cada módulo de pantalla)
@@ -46,6 +47,7 @@ export function showScreen(s) {
   // transición: la pantalla que entra aparece con un fundido suave (salvo movimiento reducido)
   const el = $(s + 'Screen');
   if (prev !== s && el && !REDUCED) { el.classList.remove('screenIn'); void el.offsetWidth; el.classList.add('screenIn'); }
+  setCourseSlot(s === 'game' ? app.variant : null); // cada modo con su color de campo
   musicScene(s === 'game' ? 'game' : 'menu'); // la música acompaña: menú ↔ partida con fundido cruzado
   if (s !== 'game') { tutorialStop(); clearBubbles(); } // ni tutorial ni bocadillos de los bots fuera de la partida
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla

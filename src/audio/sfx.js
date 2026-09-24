@@ -1,7 +1,7 @@
 /* ---------- SFX + música generativa (WebAudio, sin archivos) ---------- */
 import { fxRand } from '../fx/particles.js';
 import { loadSound, saveSound } from '../storage.js';
-import { prefs } from '../ui/prefs.js';
+import { prefs, currentTheme } from '../ui/prefs.js';
 
 export const SFX = { ctx: null, sfxGain: null, musicGain: null, muted: false, sfxVol: 0.45, musVol: 0.55 };
 export const MUSIC = { on: true, scene: 'menu', track: null, games: 0, mood: 'calm' };
@@ -190,7 +190,7 @@ function makeTrack(name) {
 // pista de partida según el ajuste (auto: noche → salón; si no, alterna campo / brisa)
 function gameTrack() {
   if (prefs.track !== 'auto') return prefs.track;
-  if (prefs.theme === 'night') return 'lounge';
+  if (currentTheme() === 'night') return 'lounge';
   return MUSIC.games % 2 ? 'breeze' : 'fairway';
 }
 const FADE = 1.6;

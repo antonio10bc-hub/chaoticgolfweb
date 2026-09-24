@@ -272,7 +272,7 @@ export function openModes() {
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
   $('modesGrid').innerHTML =
     `<div class="mdRow">${quickCard}${rushCard}</div>` +
-    `<section class="mdSection"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3><div class="chGrid">${chCards}</div></section>`;
+    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3><div class="chGrid">${chCards}</div></section>`;
   showScreen('modes');
 }
 

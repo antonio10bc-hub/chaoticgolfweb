@@ -4,7 +4,7 @@
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { t, getLang } from '../i18n/index.js';
-import { prefs, setPref, resetPrefs, THEMES, TRACKS } from './prefs.js';
+import { prefs, setPref, resetPrefs, THEMES, TRACKS, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
 import { SFX, MUSIC, sfx, sfxApplyVolumes, musicStart, musicStop, musicRefresh, sndSave } from '../audio/sfx.js';
 import { loadRecords, resetRecords, REC_MODES, turnsLabel } from './records.js';
 import { resetTutorial } from './tutorial.js';
@@ -27,7 +27,7 @@ const toggle = (id, on, label, sub = '') =>
   `<span class="tl"><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></label>`;
 
 function settingsHTML() {
-  const themeBtn = th => `<button class="themeOpt" data-course-opt="${th}" aria-pressed="${prefs.theme === th}">` +
+  const themeBtn = th => `<button class="themeOpt" data-course-opt="${th}" aria-pressed="${currentTheme() === th}">` +
     `<span class="sw ${th}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(t('settings.theme_' + th))}</b></button>`;
   const prof = loadProfile();
   return `
@@ -45,7 +45,7 @@ function settingsHTML() {
   <section><h4>${esc(t('settings.gameH'))}</h4>
     <div class="setRow"><span>${esc(t('settings.speed'))}</span>${seg('speed', ['slow', 'normal', 'fast'], prefs.speed)}</div>
     <div class="setRow"><span>${esc(t('lang.label'))}</span><span class="segBtns">${['es', 'en'].map(l => `<button class="btn-sm" data-lang="${l}" aria-pressed="${l === getLang()}">${esc(t('lang.' + l))}</button>`).join('')}</span></div>
-    <div class="setRow col"><span>${esc(t('settings.theme'))}</span><div class="themeOpts">${THEMES.map(themeBtn).join('')}</div></div>
+    <div class="setRow col"><span>${esc(t('settings.theme'))}${currentThemeSlot() !== 'default' ? ` <small class="themeFor">· ${esc(t('settings.themeFor_' + currentThemeSlot()))}</small>` : ''}</span><div class="themeOpts">${THEMES.map(themeBtn).join('')}</div></div>
     ${toggle('setBotFast', prefs.botFast, t('settings.botFast'), t('settings.botFastSub'))}
     ${toggle('setHints', prefs.hints, t('settings.hints'), t('settings.hintsSub'))}
     ${toggle('setCaddie', prefs.caddie, t('settings.caddie'), t('settings.caddieSub'))}
@@ -147,7 +147,7 @@ export function bindSettings() {
     const tb = e.target.closest('[data-tab]');
     if (tb) { tab = tb.dataset.tab; paint(); return; }
     const th = e.target.closest('[data-course-opt]');
-    if (th) { setPref('theme', th.dataset.courseOpt); musicRefresh(); paint(); if (app.game) ctl.render(); return; }
+    if (th) { setTheme(th.dataset.courseOpt); musicRefresh(); paint(); if (app.game) ctl.render(); return; }
     const pc = e.target.closest('[data-prof-color]');
     if (pc) { const prof = loadProfile(); prof.color = +pc.dataset.profColor; saveProfile(prof); app.pveCfg.color = prof.color; paint(); return; }
     const tr = e.target.closest('[data-track]');
