@@ -95,7 +95,7 @@ export default {
   /* ---------- interface ---------- */
   common: { and: ' and ', cancel: 'Cancel', ok: 'OK', close: 'Close' },
   menu: {
-    story: 'Story Mode', pve: 'Quick Game', tag: 'Card golf. Chaotic. With CHECK.',
+    story: 'The basics', pve: 'Quick Game', tag: 'Card golf. Chaotic. With CHECK.',
     testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'level editor', editorTitle: 'Level Editor',
     continue: 'Continue game',
@@ -173,7 +173,7 @@ export default {
     backToEditor: 'Back to editor', newGame: 'New game', menu: 'Menu',
   },
   story: {
-    title: 'Story Mode', sub: 'Learn to play one hole at a time', builtIn: 'Story levels', yours: 'Your levels',
+    title: 'The basics', sub: 'Learn to play one hole at a time', builtIn: 'Levels', yours: 'Your levels',
     play: 'Play', completed: 'Completed', next: 'Next!', untitled: 'Untitled',
     none: 'You haven’t created any levels yet.<br>Make one in the Level Editor.',
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',
@@ -211,7 +211,7 @@ export default {
     newSlot: '— New (Level {n})', slot: 'Current slot: Level {n}', slotNew: 'Current slot: new (Level {n})',
     ballOnHole: 'The ball can’t start on the hole', deckTooSmall: 'The deck needs at least 3 cards',
     emptySlot: 'That slot is empty', loaded: 'Level {n} loaded into the editor',
-    saved: 'Level {n} saved — it’s now available in Story Mode',
+    saved: 'Level {n} saved — it’s now available in The basics',
     confirmDelete: 'Delete Level {n}? The following ones will be renumbered.', delete: 'Delete', deleted: 'Level {n} deleted',
     exportTitle: 'Export levels', copied: 'Levels copied to the clipboard',
     copyFailed: 'Couldn’t copy: select the text and copy it by hand',
@@ -275,10 +275,10 @@ export default {
     tutorialReset: 'Replay tutorial', tutorialDone: 'Done',
   },
   stats: {
-    title: 'Stats', byMode: 'Games', totals: 'All-time', bestH: 'Best results (Story Mode)',
-    mode_story: 'Story Mode', mode_pve: 'Quick game', mode_local: 'Local multiplayer',
+    title: 'Stats', byMode: 'Games', totals: 'All-time', bestH: 'Best results (The basics)',
+    mode_story: 'The basics', mode_pve: 'Quick game', mode_local: 'Local multiplayer',
     played: 'played', won: 'Won', completed: 'Completed',
-    level: 'Level', turns: 'Turns', strokes: 'Strokes', noBest: 'Complete a story level to see your record here.',
+    level: 'Level', turns: 'Turns', strokes: 'Strokes', noBest: 'Complete a level in The basics to see your record here.',
     turnsN: '{n} turns', bestN: 'best: {n}', newBest: 'New record!', bestTitle: 'Your best result',
     turnsShort: '{n} turns', strokesShort: '{n} strokes',
     reset: 'Reset stats', resetSub: 'Sets every counter back to zero', resetConfirm: 'Reset all stats? This can’t be undone.',

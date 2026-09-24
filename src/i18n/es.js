@@ -98,7 +98,7 @@ export default {
   /* ---------- interfaz ---------- */
   common: { and: ' y ', cancel: 'Cancelar', ok: 'Aceptar', close: 'Cerrar' },
   menu: {
-    story: 'Modo Historia', pve: 'Partida Rápida', tag: 'Golf de cartas. Caótico. Con JAQUE.',
+    story: 'Lo básico', pve: 'Partida Rápida', tag: 'Golf de cartas. Caótico. Con JAQUE.',
     testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'creador de niveles', editorTitle: 'Creador de Niveles',
     continue: 'Continuar partida',
@@ -176,7 +176,7 @@ export default {
     backToEditor: 'Volver al editor', newGame: 'Nueva partida', menu: 'Menú',
   },
   story: {
-    title: 'Modo Historia', sub: 'Aprende a jugar hoyo a hoyo', builtIn: 'Niveles de historia', yours: 'Tus niveles',
+    title: 'Lo básico', sub: 'Aprende a jugar hoyo a hoyo', builtIn: 'Niveles', yours: 'Tus niveles',
     play: 'Jugar', completed: 'Completado', next: '¡Siguiente!', untitled: 'Sin título',
     none: 'Aún no has creado niveles.<br>Hazlo en el Creador de Niveles.',
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',
@@ -214,7 +214,7 @@ export default {
     newSlot: '— Nuevo (Nivel {n})', slot: 'Slot actual: Nivel {n}', slotNew: 'Slot actual: nuevo (Nivel {n})',
     ballOnHole: 'La pelota no puede empezar en el hoyo', deckTooSmall: 'El mazo necesita al menos 3 cartas',
     emptySlot: 'Ese slot está vacío', loaded: 'Nivel {n} cargado en el editor',
-    saved: 'Nivel {n} guardado — ya está disponible en el Modo Historia',
+    saved: 'Nivel {n} guardado — ya está disponible en Lo básico',
     confirmDelete: '¿Borrar el Nivel {n}? Los siguientes se renumerarán.', delete: 'Borrar', deleted: 'Nivel {n} borrado',
     exportTitle: 'Exportar niveles', copied: 'Niveles copiados al portapapeles',
     copyFailed: 'No se pudo copiar: selecciona el texto y cópialo a mano',
@@ -278,10 +278,10 @@ export default {
     tutorialReset: 'Repetir el tutorial', tutorialDone: 'Listo',
   },
   stats: {
-    title: 'Estadísticas', byMode: 'Partidas', totals: 'En total', bestH: 'Mejores resultados (Modo Historia)',
-    mode_story: 'Modo Historia', mode_pve: 'Partida rápida', mode_local: 'Multijugador local',
+    title: 'Estadísticas', byMode: 'Partidas', totals: 'En total', bestH: 'Mejores resultados (Lo básico)',
+    mode_story: 'Lo básico', mode_pve: 'Partida rápida', mode_local: 'Multijugador local',
     played: 'jugadas', won: 'Ganadas', completed: 'Completadas',
-    level: 'Nivel', turns: 'Turnos', strokes: 'Golpes', noBest: 'Completa un nivel de historia para ver aquí tu récord.',
+    level: 'Nivel', turns: 'Turnos', strokes: 'Golpes', noBest: 'Completa un nivel de Lo básico para ver aquí tu récord.',
     turnsN: '{n} turnos', bestN: 'récord: {n}', newBest: '¡Nuevo récord!', bestTitle: 'Tu mejor resultado',
     turnsShort: '{n} turnos', strokesShort: '{n} golpes',
     reset: 'Borrar estadísticas', resetSub: 'Pone todos los contadores a cero', resetConfirm: '¿Borrar todas las estadísticas? No se puede deshacer.',

@@ -321,3 +321,8 @@ html.cbShapes .tile-ball .circ .shp {
 }
 #sndPanel .muteRow { margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid var(--cream-line); }
 @media (min-width: 761px) { #sndPanel .muteRow { display: none; } }
+
+/* panel rápido: la velocidad en su propia fila (tres botones no caben junto a la etiqueta) */
+#sndPanel .speedRow { flex-direction: column; align-items: stretch; gap: 6px; }
+#sndPanel .speedBtns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+#sndPanel .speedBtns button { padding: 4px 4px; min-width: 0; }
