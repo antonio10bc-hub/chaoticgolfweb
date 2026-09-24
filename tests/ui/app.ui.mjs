@@ -29,7 +29,7 @@ async function fresh(seed = {}) {
 const app = fn => page.evaluate(fn);
 const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
 // Partida rápida vive en Modos de juego
-const openQuick = async () => { await click('#modesBtn'); await sleep(300); await click('[data-mode="quick"]'); await sleep(300); };
+const openQuick = async () => { await click('#modesBtn'); await sleep(300); await click('[data-mode="quick"]'); await confirmIfAsked(); await sleep(300); };
 const confirmIfAsked = async () => { await sleep(250); if (await page.$('#dialog[open]')) { await page.click('#dialog[open] button[value="ok"]'); await sleep(200); } };
 
 before(async () => {
@@ -51,11 +51,11 @@ it('guardado: salir al menú guarda y "Continuar partida" retoma el mismo estado
   await openQuick();
   await click('#pvePlay'); await sleep(900);
   const s0 = await app(() => JSON.stringify(window.chaoticGolf.app.game.serialize().S.balls));
-  await click('#menuBtn'); await sleep(400);
-  await click('#modesBack'); await sleep(300);
-  assert.equal(await app(() => document.getElementById('continueBtn').hidden), false);
+  await click('#menuBtn'); await sleep(400); // Partida rápida vuelve a Modos, con su "Continuar" en naranja
+  assert.ok(await page.$('#modesGrid .btn-continue[data-mode="resume:pve"]'));
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(900);
-  await click('#continueBtn'); await sleep(600);
+  await click('#modesBtn'); await sleep(300);
+  await click('[data-mode="resume:pve"]'); await sleep(600);
   assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
   assert.equal(await app(() => JSON.stringify(window.chaoticGolf.app.game.serialize().S.balls)), s0);
 });
@@ -112,11 +112,15 @@ it('deshacer: en Lo básico devuelve la pelota a donde estaba', async () => {
   assert.equal(await app(() => JSON.stringify(window.chaoticGolf.app.game.S.balls[0])), b0);
 });
 
-it('reto diario: el mismo tablero y el mismo mazo en dos cargas', async () => {
+it('reto diario: tablero pequeño contra 2 bots, igual (semilla, rivales, dificultad) en dos cargas', async () => {
   await fresh();
   const take = async () => {
-    await click('#dailyCard'); await confirmIfAsked(); await sleep(700);
-    const r = await app(() => JSON.stringify({ deck: window.chaoticGolf.app.game.S.deck, hole: window.chaoticGolf.app.game.S.hole, balls: window.chaoticGolf.app.game.S.balls }));
+    await click('#dailyCard'); await confirmIfAsked(); await sleep(400);
+    const r = await app(() => { const { app } = window.chaoticGolf, S = app.game.S;
+      return JSON.stringify({ mode: app.mode, variant: app.variant, seed: app.game.seed, n: S.nPlayers, cols: S.cols, rows: S.rows, human: S.human, personas: S.personas, lvl: S.aiLevel || 'normal' }); });
+    const o = JSON.parse(r);
+    assert.equal(o.mode, 'pve'); assert.equal(o.variant, 'daily'); assert.equal(o.n, 3); assert.equal(o.cols, 5);
+    assert.equal(o.personas.filter(Boolean).length, 2);
     await click('#menuBtn'); await sleep(300);
     await app(() => localStorage.removeItem('chaoticgolf_save_daily'));
     return r;

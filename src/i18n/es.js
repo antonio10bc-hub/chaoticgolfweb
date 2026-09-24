@@ -100,7 +100,6 @@ export default {
   common: { and: ' y ', cancel: 'Cancelar', ok: 'Aceptar', close: 'Cerrar' },
   menu: {
     story: 'Lo básico', pve: 'Partida Rápida', tag: 'Golf de cartas. Caótico. Con JAQUE.',
-    testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'creador de niveles', editorTitle: 'Creador de Niveles',
     continue: 'Continuar partida',
     stats: 'estadísticas', settings: 'ajustes',
@@ -372,10 +371,10 @@ export default {
 
   modes: {
     title: 'Modos de juego', sub: 'Partida rápida, contrarreloj y desafíos',
-    quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Configurar', last: 'Última: {cfg}' },
+    quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',
-    daily: { title: 'Reto diario', sub: 'El mismo tablero y el mismo mazo para todo el mundo. Métela en el menor número de turnos.',
+    daily: { title: 'Reto diario', sub: 'Tablero pequeño contra 2 bots, igual para todo el mundo. Cada día, rivales y dificultad nuevos.', vs: 'contra {a} y {b} · {diff}',
       bestToday: 'Tu mejor hoy: {turns}', notYet: 'Aún no lo has completado', streak: 'Racha: {n} días', streak1: 'Racha: 1 día' },
     rush: { title: 'Contrarreloj', holes: '{n} hoyos generados', sub: 'Cada hoyo tiene su cuenta atrás: menos turnos y más tiempo de sobra, más puntos. Si se acaba el tiempo, se acaba la serie.',
       best: 'Récord: {n} pts', continue: 'Seguir · hoyo {n}', pts: '{n} pts' },

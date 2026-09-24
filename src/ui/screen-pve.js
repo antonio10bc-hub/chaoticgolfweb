@@ -116,12 +116,13 @@ export function applyOwnLook(S, seats, people) {
 
 // crea una partida contra la máquina con tus nombres/colores y los rivales elegidos.
 // extra: { counts, rules } (desafíos) · rivals: ids de personajes (el resto, al azar)
-export function createVsGame(cfg, { extra = {}, rivals = [] } = {}) {
+// seed: partida igual para todo el mundo (reto diario)
+export function createVsGame(cfg, { extra = {}, rivals = [], seed } = {}) {
   const sz = PVE_SIZES[cfg.size] || PVE_SIZES.m;
   const prof = loadProfile();
   const people = cfg.humans > 1 ? prof.people.slice(0, cfg.humans) : [{ name: prof.name, color: cfg.color ?? prof.color }];
   const game = Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, ...extra,
-    humanColor: PVE_COLORS[people[0].color % PVE_COLORS.length] });
+    humanColor: PVE_COLORS[people[0].color % PVE_COLORS.length] }, seed != null ? { seed } : {});
   return { game, people, rivals };
 }
 // tras startGame: aplica caras, nombres y colores (necesita app.mode = 'pve' ya puesto)

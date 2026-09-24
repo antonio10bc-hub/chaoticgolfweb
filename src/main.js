@@ -26,7 +26,6 @@ import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/scree
 import { bindStory, openStory } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
 import { bindModes, openModes } from './ui/screen-modes.js';
-import { bindResume } from './ui/resume.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
@@ -63,7 +62,6 @@ bindScreens();
 bindStory();
 bindPve();
 bindModes();
-bindResume();
 bindAssist();
 bindZoom();
 bindEditor();

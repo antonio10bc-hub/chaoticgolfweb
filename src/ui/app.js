@@ -2,8 +2,8 @@
 // y los flags de la reproducción de animaciones. Un único objeto compartido.
 export const app = {
   game: null,            // Game en curso (src/engine/game.js)
-  mode: 'free',          // 'free' (testing tool) | 'test' (probar desde editor) | 'story' (en solitario) | 'pve' (con bots)
-  variant: null,         // subtipo: en solitario 'puzzle' | 'daily' | 'rush'; con bots 'challenge'; null = el normal
+  mode: 'free',          // 'free' (partida del panel de debug) | 'test' (probar desde editor) | 'story' (en solitario) | 'pve' (con bots)
+  variant: null,         // subtipo: en solitario 'puzzle' | 'rush'; con bots 'daily' | 'challenge'; null = el normal
   run: null,             // datos del subtipo en curso (hoyo del torneo, puntos del contrarreloj, fecha del reto…)
   levelIndex: null,      // índice del nivel en juego (modo historia)
   level: null,           // nivel en juego (historia / prueba)

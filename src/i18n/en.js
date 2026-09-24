@@ -97,7 +97,6 @@ export default {
   common: { and: ' and ', cancel: 'Cancel', ok: 'OK', close: 'Close' },
   menu: {
     story: 'The basics', pve: 'Quick Game', tag: 'Card golf. Chaotic. With CHECK.',
-    testTool: 'testing tool', testToolTitle: 'Testing Tool',
     editor: 'level editor', editorTitle: 'Level Editor',
     continue: 'Continue game',
     stats: 'stats', settings: 'settings',
@@ -369,10 +368,10 @@ export default {
 
   modes: {
     title: 'Game modes', sub: 'Quick game, time attack and challenges',
-    quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'Set up', last: 'Last: {cfg}' },
+    quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',
-    daily: { title: 'Daily challenge', sub: 'The same board and the same deck for everyone. Sink it in as few turns as you can.',
+    daily: { title: 'Daily challenge', sub: 'A small board against 2 bots, the same for everyone. New rivals and difficulty every day.', vs: 'vs {a} and {b} · {diff}',
       bestToday: 'Your best today: {turns}', notYet: 'Not completed yet', streak: 'Streak: {n} days', streak1: 'Streak: 1 day' },
     rush: { title: 'Time attack', holes: '{n} generated holes', sub: 'Every hole has its own countdown: fewer turns and more time to spare, more points. If time runs out, the run is over.',
       best: 'Record: {n} pts', continue: 'Continue · hole {n}', pts: '{n} pts' },

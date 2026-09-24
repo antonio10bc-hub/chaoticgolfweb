@@ -31,7 +31,7 @@ src/
     tiles/                 losetas (búnker, portal) con sus rasgos: trap / portal
     levels/story/          niveles de Lo básico en JSON (+ index.json)
     levels/puzzles/        puzles de "gana en 1 turno" (mano fija)
-    levels/generate.js     generador determinista (reto diario y contrarreloj)
+    levels/generate.js     generador determinista (contrarreloj)
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
     autoplay.js            partidas bot-contra-bot instantáneas (simulador y tests)
@@ -104,9 +104,10 @@ que falte cae al español). Idioma inicial: el elegido en Ajustes (🎚 → Idio
 horaria del navegador es de España y si no inglés. Otro idioma = copiar `en.js` y registrarlo en
 `src/i18n/index.js`. Los niveles pueden traer `name_en`.
 
-**Guardado automático:** las partidas de Modo Historia y Partida rápida se guardan en `localStorage`
-(`chaoticgolf_save`) tras cada jugada y al cerrar la pestaña, incluido el estado del RNG, así que al
-continuar la partida sigue exactamente igual. El menú muestra "Continuar partida"; se borra al terminar.
+**Guardado automático:** las partidas de cada modo se guardan en `localStorage`
+(una ranura por modo) tras cada jugada y al cerrar la pestaña, incluido el estado del RNG, así que al
+continuar la partida sigue exactamente igual. Cada pantalla (Lo básico, Modos, Partida rápida, reto diario)
+muestra su "Continuar partida" en naranja; se borra al terminar.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
 
@@ -144,8 +145,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
-- **Guardado:** uno por modo (historia y partida rápida). Salir al menú guarda; "Continuar partida" retoma la
-  más reciente; Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
+- **Guardado:** uno por modo. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
+  Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
 - **Ajustes:** perfil (nombre y color), sonido y pista de música (con fundido menú ↔ partida), idioma,
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
   nieve, noche), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
@@ -154,8 +155,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
   pantalla de carga.
-- **Menú:** título, tarjeta del reto diario (mismo tablero y mazo para todos cada día; récord del día y racha
-  de días) y debajo Lo básico y Modos de juego.
+- **Menú:** título, tarjeta del reto diario (tablero pequeño contra 2 bots, igual para todos; cada día cambian
+  los rivales, su personalidad y la dificultad; récord del día en turnos propios y racha de días) y debajo
+  Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
 - **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
   configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas

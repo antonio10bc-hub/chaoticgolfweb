@@ -1,6 +1,7 @@
 // Modos de juego y reto diario:
-//   · Reto diario  — (en el menú principal) un tablero y un mazo iguales para todos cada día
-//                    (semilla de la fecha): récord del día (menos turnos) y racha de días jugados.
+//   · Reto diario  — (en el menú principal) tablero pequeño contra 2 bots, igual para todos cada día
+//                    (semilla de la fecha): cada día cambian los rivales y su dificultad.
+//                    Récord del día (victoria en menos turnos propios) y racha de días jugados.
 //   · Pantalla de Modos: Partida rápida (contra bots o multijugador local), Contrarreloj y Desafíos.
 //   · Contrarreloj — 5 hoyos generados de dificultad creciente, cada uno con su cuenta atrás:
 //                    puntos por turnos y por el tiempo que sobra; si se acaba el tiempo, se acaba la serie.
@@ -20,8 +21,10 @@ import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel 
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
-import { startLevel, levelPreviewSVG } from './screen-story.js';
-import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve } from './screen-pve.js';
+import { startLevel } from './screen-story.js';
+import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
+import { PERSONAS, personaById, faceSVG } from './persona.js';
+import { confirmDialog } from './dialog.js';
 import { resumeGame } from './resume.js';
 import { stats } from './controller.js';
 
@@ -36,12 +39,34 @@ const RUSH_LIMITS = [60, 75, 90, 100, 110]; // segundos de cada hoyo (más grand
 
 /* =============== reto diario =============== */
 const dailyDate = () => dateKey();
-export function dailyLevel(date = dailyDate()) { return generateLevel(seedOf('daily:' + date), 3); }
+const DAILY_DIFFS = ['easy', 'normal', 'hard'];
+// rivales del día: dos personajes de personalidades distintas y una dificultad, sacados de la fecha
+export function dailySetup(date = dailyDate()) {
+  const r = mulberry32(seedOf('dailyBots:' + date));
+  const diff = DAILY_DIFFS[Math.floor(r() * DAILY_DIFFS.length)];
+  const first = PERSONAS[Math.floor(r() * PERSONAS.length)];
+  const rest = PERSONAS.filter(p => p.style !== first.style);
+  const second = rest[Math.floor(r() * rest.length)];
+  return { diff, rivals: [first.id, second.id], seed: seedOf('daily:' + date) };
+}
+function startDailyGame(date = dailyDate()) {
+  const d = dailySetup(date);
+  const made = createVsGame({ humans: 1, opps: 2, size: 's', diff: d.diff }, { rivals: d.rivals, seed: d.seed });
+  startGame(made.game, 'pve', { variant: 'daily', run: { date } });
+  dressVsGame(made);
+  refreshGivePlayer();
+  updateMenuBtn();
+  musicScene('game', { newGame: true });
+  showScreen('game');
+  saveGame();
+  aiStart(900);
+}
 export async function startDaily() {
   if (!await confirmReplaceSave('daily')) return;
   const date = dailyDate();
   recordDailyPlayed(date); // jugar hoy ya cuenta para la racha
-  startLevel(dailyLevel(date), 'story', null, { variant: 'daily', run: { date }, seed: seedOf('deck:' + date) });
+  recordStart('daily');
+  startDailyGame(date);
 }
 export const streakLabel = n => n === 1 ? t('modes.daily.streak1') : t('modes.daily.streak', { n });
 function prevDayKey(date) {
@@ -53,11 +78,15 @@ export function renderDailyCard() {
   const R = loadRecords(), date = dailyDate(), today = R.daily.days[date];
   const streak = R.daily.last === date || R.daily.last === prevDayKey(date) ? R.daily.streak : 0;
   const saved = loadSave('daily');
-  const when = new Date().toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
+  const narrow = window.matchMedia('(max-width: 420px)').matches; // en el móvil, fecha corta
+  const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' });
   const status = today?.best ? t('modes.daily.bestToday', { turns: turnsLabel(today.best) }) : t('modes.daily.notYet');
+  const { diff, rivals } = dailySetup(date), rv = rivals.map(personaById);
+  const face = pr => `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`;
+  const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name, diff: t('pve.diff' + diff[0].toUpperCase() + diff.slice(1)) });
   $('dailyCard').innerHTML =
-    `<span class="dPreview">${levelPreviewSVG(dailyLevel(date))}</span>` +
-    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><b>${esc(t('modes.daily.title'))}</b>` +
+    `<span class="dPreview dRivals">${rv.map(face).join('')}</span>` +
+    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><b>${esc(t('modes.daily.title'))}</b><span class="dVs">${esc(vs)}</span>` +
     `<span class="dMeta"><span>${esc(status)}</span>${streak ? `<span class="dStreak"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(streakLabel(streak))}</span>` : ''}</span></span>` +
     `<span class="dPlay">${esc(saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play'))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
@@ -221,29 +250,39 @@ export function openModes() {
   const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge');
   const rush = store.get(RUSH_KEY), last = lastPve();
   const btn = (act, label, main = true) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}">${esc(label)}</button>`;
+  const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
   const stat = (icon, txt) => `<span class="mdStat"><svg class="i" aria-hidden="true"><use href="#${icon}"/></svg>${esc(txt)}</span>`;
   const quickCard = `<article class="modeCard quick">
       <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></span><div><h3>${esc(t('pve.title'))}</h3><small>${esc(t('modes.quick.kinds'))}</small></div></div>
       <p>${esc(t('modes.quick.sub'))}</p>
       ${last ? `<div class="mdStats">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</div>` : ''}
-      <div class="mdBtns">${qsave ? btn('resume:pve', t('menu.continue')) : ''}${btn('quick', t('modes.quick.setup'), !qsave)}${last ? btn('repeat', t('menu.repeat'), false) : ''}</div></article>`;
+      <div class="mdBtns">${qsave ? cont('resume:pve') : ''}${btn('quick', t('modes.quick.setup'), !qsave)}${last ? btn('repeat', t('menu.repeat'), false) : ''}</div></article>`;
   const rushCard = `<article class="modeCard rush">
       <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3><small>${esc(t('modes.rush.holes', { n: RUSH_HOLES }))}</small></div></div>
       <p>${esc(t('modes.rush.sub'))}</p>
       <div class="mdStats">${stat('i-trophy', t('modes.rush.best', { n: R.rush.best || 0 }))}${rush ? stat('i-flag', t('modes.holeN', { n: rush.hole + 1, total: rush.total })) : ''}</div>
-      <div class="mdBtns">${rsave ? btn('resume:rush', t('menu.continue')) : rush ? btn('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
+      <div class="mdBtns">${rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
   const chCards = CHALLENGES.map(ch => {
     const done = R.challenges[ch.id];
     return `<article class="chCard${done ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
       `<div class="chTxt"><b>${esc(t('challenges.' + ch.id + '.name'))}</b><small>${esc(t('challenges.' + ch.id + '.desc'))}</small></div>` +
       (done ? `<span class="chDone"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
-      (csave?.run?.id === ch.id ? btn('resume:challenge', t('menu.continue')) : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
+      (csave?.run?.id === ch.id ? cont('resume:challenge') : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
   }).join('');
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
   $('modesGrid').innerHTML =
     `<div class="mdRow">${quickCard}${rushCard}</div>` +
     `<section class="mdSection"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3><div class="chGrid">${chCards}</div></section>`;
   showScreen('modes');
+}
+
+// "Nueva partida": si hay una partida rápida guardada, se avisa y, al aceptar, se borra
+async function newQuick() {
+  if (loadSave('pve')) {
+    if (!await confirmDialog(t('modes.quick.replace'), t('save.replaceOk'), true, t('save.title'))) return;
+    clearSave('pve');
+  }
+  openPveSetup();
 }
 
 export function bindModes() {
@@ -256,14 +295,14 @@ export function bindModes() {
     const [act, arg] = b.dataset.mode.split(':');
     switch (act) {
       case 'resume': resumeGame(arg); break;
-      case 'quick': openPveSetup(); break;
+      case 'quick': newQuick(); break;
       case 'repeat': repeatLastPve(); break;
       case 'rush': startRush(false); break;
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
     }
   });
-  MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); const date = dailyDate(); startLevel(dailyLevel(date), 'story', null, { variant: 'daily', run: { date }, seed: seedOf('deck:' + date) }); } };
+  MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); startDailyGame(); } };
   MODE_NAV.rush = { back: openModes, restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
   MODE_NAV.challenge = { back: openModes, restart: () => startChallenge(app.run?.id) };
 }

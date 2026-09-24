@@ -22,8 +22,8 @@ import { tutorialStop } from './tutorial.js';
 import { syncWakeLock } from './wake.js';
 import { historyScreen } from './back.js';
 import { clearPause } from './pause.js';
-import { updateContinueBtn } from './resume.js';
 import { resetZoom } from './board-zoom.js';
+import { clearBubbles } from './persona.js';
 import { renderDailyCard, paintRushTimer } from './screen-modes.js';
 
 // qué hacen "← Volver" y "Reiniciar" en cada modo (lo rellena cada módulo de pantalla)
@@ -47,14 +47,14 @@ export function showScreen(s) {
   const el = $(s + 'Screen');
   if (prev !== s && el && !REDUCED) { el.classList.remove('screenIn'); void el.offsetWidth; el.classList.add('screenIn'); }
   musicScene(s === 'game' ? 'game' : 'menu'); // la música acompaña: menú ↔ partida con fundido cruzado
-  if (s !== 'game') tutorialStop();
+  if (s !== 'game') { tutorialStop(); clearBubbles(); } // ni tutorial ni bocadillos de los bots fuera de la partida
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
   $('logPanel').style.display = s === 'game' ? 'flex' : 'none';   // el historial solo vive en la partida
   if (s === 'game' && app.game) { resetZoom(); fitBoard(); render(); } // recalcular tamaños al hacerse visible
   paintRushTimer();   // la cuenta atrás del contrarreloj (y el tinte rojo) solo en su partida
   if (s === 'editor' && ED.level) { fitEditorBoard(); edRender(); }
-  if (s === 'menu') { updateContinueBtn(); renderDailyCard(); }
+  if (s === 'menu') renderDailyCard();
   syncWakeLock();     // en partida, la pantalla no se apaga (móvil)
   historyScreen(s);   // botón / gesto de atrás del sistema
   if (!usingKeyboard) return; // con ratón no se mueve el foco (evita anillos de foco inesperados)
@@ -62,7 +62,7 @@ export function showScreen(s) {
   requestAnimationFrame(() => document.querySelector(`#${s}Screen ${focusTarget}`)?.focus({ preventScroll: true }));
 }
 
-/* ---------- modo libre (testing tool) ---------- */
+/* ---------- modo libre (partida del panel de debug) ---------- */
 export function newFreeGame() {
   const cfg = readDebugSettings();
   startGame(Game.free(cfg, { seed: cfg.seed }), 'free');
@@ -70,11 +70,6 @@ export function newFreeGame() {
   updateMenuBtn();
   fitBoard();
   render();
-}
-export function openTestingTool() {
-  if (app.mode !== 'free' || !app.game) newFreeGame(); // vuelve al modo libre con los ajustes del debug
-  updateMenuBtn();
-  showScreen('game');
 }
 
 export function backToEditor() {
@@ -106,6 +101,7 @@ function stopGameActivity() {
   aiStop();
   clearPause();
   hideWin();
+  clearBubbles();
   document.querySelectorAll('.card.floating').forEach(el => el.remove());
   app.animQueue = []; app.animLead = 0;
 }
@@ -140,7 +136,6 @@ export function applyArtExtras() {
 
 /* ---------- listeners comunes ---------- */
 export function bindScreens() {
-  $('testToolBtn').addEventListener('click', openTestingTool);
   MODE_NAV.free = { back: () => showScreen('menu'), restart: newFreeGame };
   // "← Menú / Niveles / Modos": la partida se guarda y se vuelve a la pantalla de su modo
   $('menuBtn').addEventListener('click', () => {

@@ -1,7 +1,6 @@
-// Continuar una partida guardada: el botón naranja del menú (la más reciente) y los de cada
-// pantalla (Lo básico, Partida rápida, Modos), con un subtítulo que dice qué es.
+// Continuar una partida guardada: los botones naranjas de cada pantalla (Lo básico, Partida
+// rápida, Modos, reto diario), con un subtítulo que dice qué es.
 import { app } from './app.js';
-import { $ } from './dom.js';
 import { Game } from '../engine/game.js';
 import { startGame } from './controller.js';
 import { aiStart } from './ai-driver.js';
@@ -27,15 +26,6 @@ export function saveSub(d) {
   return `${t('pve.title')} · ${t(nb > 1 ? 'pve.botsN' : 'pve.botN', { n: nb })}`;
 }
 
-export function updateContinueBtn() {
-  const d = latestSave(), btn = $('continueBtn');
-  btn.hidden = !d;
-  document.querySelector('.mActions').classList.toggle('hasSave', !!d);
-  if (!d) return;
-  btn.dataset.resume = d.slot || d.mode;
-  $('continueSub').textContent = saveSub(d);
-}
-
 // sin ranura: la más reciente
 export function resumeGame(slot) {
   const d = typeof slot === 'string' ? loadSave(slot) : latestSave();
@@ -48,9 +38,5 @@ export function resumeGame(slot) {
   updateMenuBtn();
   showScreen('game');
   toast(t('save.restored'));
-  if (VS_SLOTS.includes(d.slot || d.mode)) aiStart(700);
-}
-
-export function bindResume() {
-  $('continueBtn').addEventListener('click', () => resumeGame());
+  if (d.mode === 'pve' && VS_SLOTS.includes(d.slot || d.mode)) aiStart(700); // (retos diarios antiguos: en solitario)
 }

@@ -68,7 +68,7 @@ function statsHTML() {
   const pct = (w, p) => p ? Math.round(100 * w / p) + '%' : '—';
   const cards = REC_MODES.map(m => `<div class="stCard"><small>${esc(t('stats.mode_' + m))}</small>` +
     `<b>${r.played[m]}</b><span>${esc(t('stats.played'))}</span>` +
-    `<div class="stWin"><span>${esc(t(['story', 'puzzle', 'daily', 'rush'].includes(m) ? 'stats.completed' : 'stats.won'))}: <b>${r.won[m]}</b></span><span>${pct(r.won[m], r.played[m])}</span></div></div>`).join('');
+    `<div class="stWin"><span>${esc(t(['story', 'puzzle', 'rush'].includes(m) ? 'stats.completed' : 'stats.won'))}: <b>${r.won[m]}</b></span><span>${pct(r.won[m], r.played[m])}</span></div></div>`).join('');
   const tot = r.totals;
   const totals = [['i-club', tot.golpes, 'win.stats.strokes'], ['i-hole', tot.hundidas, 'win.stats.sunk'],
     ['i-burst', tot.colisiones, 'win.stats.collisions'], ['i-spiral', tot.portales, 'win.stats.portals'], ['i-out', tot.caidas, 'win.stats.falls']]

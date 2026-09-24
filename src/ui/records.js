@@ -74,7 +74,8 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null }) 
   const d = loadRecords();
   if (won) d.won[kind]++;
   if (stats) for (const k of Object.keys(d.totals)) d.totals[k] += stats[k] || 0;
-  const turns = (stats?.turnos || 0) + 1, strokes = stats?.golpes || 0;
+  // reto diario contra bots: cuentan tus turnos, no los de toda la mesa
+  const turns = (kind === 'daily' && stats?.misTurnos ? stats.misTurnos : stats?.turnos || 0) + 1, strokes = stats?.golpes || 0;
   let newBest = false, best = null;
   if (kind === 'story' && won && levelIndex != null && stats) {
     const prev = d.levels[levelIndex];

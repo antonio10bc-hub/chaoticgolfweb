@@ -77,7 +77,7 @@ export function undoAllowed() {
   const g = app.game, S = g?.S;
   if (!S || !app.undo?.count || g.pending || app.animating || app.paused || (S.winner !== null && !S.jaque)) return false;
   if (app.mode === 'story') return !app.variant;
-  return app.mode === 'pve' && S.aiLevel === 'easy' && !multiHuman();
+  return app.mode === 'pve' && !app.variant && S.aiLevel === 'easy' && !multiHuman(); // no en el reto diario ni en desafíos
 }
 export function undoLast() {
   if (!undoAllowed()) return;

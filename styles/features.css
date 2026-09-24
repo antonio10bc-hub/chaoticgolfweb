@@ -577,6 +577,7 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 .mdIco { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--grass-dark); color: var(--cream); font-size: 18px; }
 .modeCard.daily .mdIco { background: var(--accent); color: var(--ink); }
 .modeCard.rush .mdIco { background: var(--navy); }
+.modeCard.quick .mdIco { background: var(--accent); color: var(--ink); } /* el verde queda para los desafíos */
 .mdPreview { height: 110px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background-image: var(--grain); background-color: var(--grass-dark); padding: 8px; }
 .mdPreview svg { max-height: 100%; max-width: 100%; }
 .mdStats { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -691,7 +692,6 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 .mActions .mRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mActions .mRow .mBtn { justify-content: space-between; min-height: 50px; }
 .mBtn.modes { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line); min-height: 50px; font-size: 15.5px; padding: 13px 22px; }
-#continueBtn { justify-content: space-between; }
 .mTitle { margin-bottom: 26px; }
 /* tarjeta del reto diario */
 .mDaily {
@@ -714,7 +714,6 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 .dPlay { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: 13.5px; font-weight: 500; white-space: nowrap; }
 .mDaily.done .dPlay { background: var(--accent); color: var(--ink); }
 body[data-screen="menu"]:not(.loading) .mActions > .mDaily { animation: btnUp .45s .34s var(--ease-out) both; }
-body[data-screen="menu"]:not(.loading) .mActions > #continueBtn { animation: btnUp .45s .58s var(--ease-out) both; }
 @media (max-width: 820px) {
   .mFrame { grid-template-rows: minmax(30vh, 1fr) auto; } /* la ilustración ocupa el sitio sobrante: sin hueco vacío */
   .mActions { width: 100%; }
@@ -794,3 +793,26 @@ html.reduceMotion #rushTimer.danger, html.reduceMotion #game.urgent #boardWrap {
 /* tarjetas de Partida rápida y Contrarreloj en Modos: con su propio fondo */
 #modesGrid > .mdRow > .modeCard { background-image: var(--grain); background-color: var(--cream); border: none; padding: 18px; box-shadow: 0 24px 60px rgba(10,25,10,.3); border-radius: 20px; }
 #modesGrid > .mdRow > .modeCard .mdHead h3 { font-size: 21px; }
+
+/* reto diario: los dos rivales del día (cara a cara) y "contra X e Y · dificultad" */
+.dRivals { position: relative; padding: 0; background: rgba(36,36,36,.14); }
+.dRivals .avatar { position: absolute; width: 34px; height: 34px; box-shadow: none; border: 2px solid var(--cream); background: var(--pc); }
+.dRivals .avatar:first-child { left: 4px; top: 5px; }
+.dRivals .avatar:last-child { right: 4px; bottom: 5px; }
+.dVs { font-size: 12.5px; font-weight: 500; margin-top: 1px; }
+.mDaily .dMeta { opacity: .75; }
+@media (max-width: 420px) { .dRivals .avatar { width: 28px; height: 28px; } }
+@media (max-width: 420px) { .mDaily { gap: 10px; padding-right: 12px; } .dTxt b { font-size: 16.5px; } .dVs { font-size: 12px; } }
+
+/* continuar una partida guardada: siempre en naranja */
+.btn-continue { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--accent); }
+.btn-continue:hover { background-color: var(--accent-deep); border-color: var(--accent-deep); }
+
+/* ningún botón lleva sombra (look limpio). Solo quedan los anillos que marcan algo:
+   color elegido, "termina el turno" y el consejo del caddie */
+button:where(:not(#endTurnBtn)) { box-shadow: none !important; } /* (sin especificidad: los anillos de abajo ganan) */
+#endTurnBtn { box-shadow: none; }
+#endTurnBtn.cta, #endTurnBtn.ctaEndTurn { box-shadow: 0 0 0 4px rgba(232,135,58,.45); }
+@keyframes endPulse { 50% { box-shadow: 0 0 0 7px rgba(232,135,58,.25); } }
+#endTurnBtn.caddiePick { box-shadow: 0 0 0 4px var(--accent); }
+.pveColor.sel { box-shadow: 0 0 0 3px var(--cream), 0 0 0 4.5px var(--ink) !important; }

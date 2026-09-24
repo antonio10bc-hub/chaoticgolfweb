@@ -23,7 +23,7 @@ import { resumeGame } from './resume.js';
 export const storyLevelAt = i => i < app.storyLevels.length ? app.storyLevels[i] : loadLevels()[i - app.storyLevels.length];
 export const puzzleAt = i => app.puzzleLevels[i] || null;
 
-// arranca un nivel en solitario. variant: null (Lo básico / editor) | 'puzzle' | 'daily' | 'rush'
+// arranca un nivel en solitario. variant: null (Lo básico / editor) | 'puzzle' | 'rush'
 export function startLevel(level, mode, idx = null, { variant = null, run = null, seed } = {}) {
   const builtIn = mode === 'story' && idx !== null && (variant === 'puzzle' || (!variant && idx < app.storyLevels.length));
   startGame(Game.fromLevel(level, seed != null ? { seed } : undefined), mode, { levelIndex: idx, level: { ...level, builtIn }, variant, run });

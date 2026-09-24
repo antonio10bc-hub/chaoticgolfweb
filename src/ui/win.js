@@ -43,7 +43,7 @@ export function showWin() {
   const lost = mode === 'pve' && !humansOf().some(h => S.winners.includes(h));
   let msg;
   if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
-  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t(slot === 'challenge' ? 'win.challengeDone' : 'win.youWon');
+  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
   $('winMsg').textContent = msg;
@@ -60,7 +60,7 @@ export function showWin() {
   $('winStyle').innerHTML = fx ? `<span class="wsChip ${style}"><svg class="i" aria-hidden="true"><use href="#${fx.icon}"/></svg>${esc(t('win.style.' + style))}</span>` : '';
 
   const box = $('winOverlay').querySelector('.box');
-  const turns = (stats?.turnos || 0) + 1;
+  const turns = (slot === 'daily' && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
   let chips = '', btns = '';
   const btn = (act, label, main = false) => `<button data-act="${act}" class="${main ? 'btn-primary btn-lg' : 'btn-light'}">${esc(label)}</button>`;
   const recChip = (txt, isNew = false) => `<span class="winRec${isNew ? ' new' : ''}">${esc(txt)}</span>`;
@@ -83,10 +83,10 @@ export function showWin() {
       btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('levels', t('win.levels'));
       break;
     case 'daily':
-      chips = recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
+      chips = lost ? recChip(streakLabel(rec.dailyStreak || 1)) : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '') +
         recChip(streakLabel(rec.dailyStreak || 1));
-      btns = btn('daily', t('modes.again'), true) + btn('menuHome', t('win.menu'));
+      btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('menuHome', t('win.menu'));
       break;
     case 'rush': {
       const r = rushHoleDone();
@@ -140,7 +140,7 @@ export function showWin() {
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
   if (slot === 'story' && (stats?.turnos || 0) === 0) unlock('holeInOne');
-  if ((kind === 'pve' || kind === 'challenge') && !lost && S.aiLevel === 'hard') unlock('winHard');
+  if (['pve', 'challenge', 'daily'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
 
