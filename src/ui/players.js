@@ -28,6 +28,8 @@ export const handRevealed = p => !multiHuman() || (p === app.viewer && app.passF
 
 // nombre visible: los bots tienen el suyo; las personas, "Jugador N"
 export function displayName(p) {
+  const own = app.game?.S.playerNames?.[p]; // el nombre que se ha puesto la persona (perfil)
+  if (own) return own;
   const b = isBot(p) ? botName(p) : null;
   return b || t('player.name', { n: p + 1 });
 }

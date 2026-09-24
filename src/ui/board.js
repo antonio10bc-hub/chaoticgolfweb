@@ -11,6 +11,8 @@ import { fxBurstCell } from '../fx/particles.js';
 import { JUICE, SAND_C, CEMENT_C } from '../fx/juice.js';
 import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
+import { dockOwner } from './hands.js';
+import { isBot } from './players.js';
 
 let cells = [], dims = '';
 let justPlaced = null; // última loseta colocada, para su animación de aparición
@@ -172,7 +174,17 @@ export function ensurePieces() {
     // marcador sobre la pelota de quien juega + halo en la pelota que se está moviendo/eligiendo
     el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && b.player === S.turn && S.winner === null);
     el.classList.toggle('isSel', !!pd?.ball && pd.ball.player === b.player);
+    // JAQUE: la pelota embocada se ve como fantasma; si se puede sacar ahora, se señala como objetivo
+    const ghost = b.holed && S.jaque && S.winner !== null;
+    el.classList.toggle('ghostPick', ghost && (pd?.kind === 'pickBall' || pd?.kind === 'pickHoled'));
+    el.classList.toggle('ghostCan', ghost && !pd && canPullOut(g));
+    if (ghost) el.dataset.pull = t('board.pullOut');
   }
+}
+// ¿quien tiene el dispositivo podría sacar ahora una pelota del hoyo? (palo 1 reactivo jugable)
+function canPullOut(g) {
+  const S = g.S, me = dockOwner(g);
+  return me != null && !isBot(me) && !S.winners.includes(me) && S.hands[me]?.some(k => k === 'oPalo1' && g.canPlay(me, k));
 }
 
 // coloca todas las piezas exactamente según el estado (sin animar)
@@ -185,8 +197,17 @@ export function syncPieces() {
   for (const b of S.balls) {
     const el = pieceEl('b' + b.player);
     if (!el) continue;
-    el.style.display = b.holed ? 'none' : 'flex';
-    if (!b.holed) {
+    // durante el JAQUE la pelota que ha entrado sigue a la vista, semitransparente, dentro del hoyo
+    // (con empate, las embocadas se escalonan un poco para que se vean todas)
+    const ghost = b.holed && S.jaque && S.winner !== null && !b.decoy;
+    el.style.display = b.holed && !ghost ? 'none' : 'flex';
+    el.classList.toggle('ghostHoled', ghost);
+    if (ghost) {
+      const gi = S.balls.filter(o => o.holed && o.player < b.player).length;
+      setPos(el, S.hole.x, S.hole.y, 0); el.style.opacity = '';
+      el.firstChild.style.transform = `translate(${gi * 9}px, ${-gi * 7}px)`;
+      el.classList.remove('sunk');
+    } else if (!b.holed) {
       setPos(el, b.x, b.y, 0); el.style.opacity = 1; el.firstChild.style.transform = '';
       el.classList.toggle('sunk', g.trapAt(b.x, b.y));
     }

@@ -38,6 +38,17 @@ const MAX_CHAIN = 12;
 export const clone = o => JSON.parse(JSON.stringify(o));
 export const manhattan = (ax, ay, bx, by) => Math.abs(ax - bx) + Math.abs(ay - by);
 export const playerTag = i => t('player.tag', { n: i + 1 });
+// jugadores que aparecen en una línea de log (etiquetas "J3" en p / b / a; el JAQUE lleva el número)
+function logPlayers(key, params) {
+  if (!params) return [];
+  if (key === 'log.jaque') return [params.n - 1];
+  const out = [];
+  for (const k of ['p', 'a', 'b']) {
+    const m = typeof params[k] === 'string' && /(\d+)$/.exec(params[k]);
+    if (m) out.push(+m[1] - 1);
+  }
+  return out;
+}
 
 // estado vacío de partida; `extra` añade/sobrescribe campos
 function blankState(extra) {
@@ -50,6 +61,7 @@ function blankState(extra) {
     winner: null, winners: [], jaque: false,
     lastSnap: null, lastCardLabel: null, lastCardKey: null, // para el NO
     log: [],
+    logK: [], // por cada línea de log: [clave, jugadores…] (la interfaz agrupa y colorea el historial)
     ...extra,
   };
 }
@@ -172,7 +184,7 @@ export class Game {
   clone({ lite = false } = {}) {
     let S;
     if (lite) {
-      const { log, ...rest } = this.S;
+      const { log, logK, ...rest } = this.S;
       S = clone(rest); S.log = [];
     } else S = clone(this.S);
     const g = new Game(S, { rand: mulberry32(0) });
@@ -219,6 +231,10 @@ export class Game {
     if (this.lite) return; // simulaciones de la IA: sin log
     const S = this.S;
     S.log.unshift(t(key, params));
+    if (S.logK) { // partidas guardadas antes de existir no lo tienen: se quedan sin él
+      S.logK.unshift([key.replace(/^log\./, ''), ...logPlayers(key, params)]);
+      if (S.logK.length > MAX_LOG) S.logK.pop();
+    }
     if (S.log.length > MAX_LOG) S.log.pop();
   }
   notice(key, params) { this.emit({ t: 'notice', text: t(key, params) }); }

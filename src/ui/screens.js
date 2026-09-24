@@ -14,11 +14,15 @@ import { t } from '../i18n/index.js';
 import { confirmDialog } from './dialog.js';
 import { saveGame, loadSave, latestSave, applySaveExtras, clearSave } from './save.js';
 import { getLang } from '../i18n/index.js';
-import { recordStart, levelBest } from './records.js';
+import { recordStart, levelBest, turnsLabel } from './records.js';
 import { musicScene } from '../audio/sfx.js';
 import { REDUCED } from '../fx/juice.js';
 import { humansOf } from './players.js';
 import { tutorialStart, tutorialStop } from './tutorial.js';
+import { loadProfile, saveProfile, cleanName, MAX_NAME } from './profile.js';
+import { syncWakeLock } from './wake.js';
+import { historyScreen } from './back.js';
+import { clearPause } from './pause.js';
 
 // nombre de un nivel en el idioma activo (name_en, …) o el original
 export const levelName = L => (L && (L['name_' + getLang()] || L.name)) || '';
@@ -43,7 +47,9 @@ export function showScreen(s) {
   $('logPanel').style.display = s === 'game' ? 'flex' : 'none';   // el historial solo vive en la partida
   if (s === 'game' && app.game) { fitBoard(); render(); }        // recalcular tamaños al hacerse visible
   if (s === 'editor' && ED.level) { fitEditorBoard(); edRender(); }
-  if (s === 'menu') updateContinueBtn();
+  if (s === 'menu') { updateContinueBtn(); updateRepeatBtn(); }
+  syncWakeLock();     // en partida, la pantalla no se apaga (móvil)
+  historyScreen(s);   // botón / gesto de atrás del sistema
   if (!usingKeyboard) return; // con ratón no se mueve el foco (evita anillos de foco inesperados)
   const focusTarget = { menu: '.mBtn', story: '.lvlBtn', pve: '#pvePlay', editor: '#edTools button', game: '#hands .card[data-p]' }[s];
   requestAnimationFrame(() => document.querySelector(`#${s}Screen ${focusTarget}`)?.focus({ preventScroll: true }));
@@ -68,6 +74,7 @@ export function openTestingTool() {
 export function startLevel(level, mode, idx = null) {
   const builtIn = mode === 'story' && idx !== null && idx < app.storyLevels.length;
   startGame(Game.fromLevel(level), mode, { levelIndex: idx, level: { ...level, builtIn } });
+  applyOwnLook(app.game.S, [0], [loadProfile()]); // tu color y tu nombre también en los niveles
   refreshGivePlayer();
   musicScene('game', { newGame: true });
   showScreen('game');
@@ -98,9 +105,14 @@ export function openStory() {
       `<span class="lvlPreview">${levelPreviewSVG(L)}</span>` +
       `<span class="lvlName">${esc(levelName(L) || t('story.untitled'))}</span>` +
       `<span class="lvlFoot"><span class="lvlState">${label}</span>` +
-      (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.turnsShort', { n: best.turns }))}</span>` : '') +
+      (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(turnsLabel(best.turns))}</span>` : '') +
       `</span>${saved ? `<span class="lvlSaved">${esc(t('story.inProgress'))}</span>` : ''}</button>`;
   };
+  // progreso de Lo básico: "3 de 4 completados" + barra
+  const nb = app.storyLevels.length, done = app.storyLevels.filter((_, i) => prog[i]).length;
+  $('storyProgress').innerHTML = nb ? `<div class="spText"><b>${esc(t('story.progress', { n: done, total: nb }))}</b>` +
+    `${done === nb ? `<span class="spAll"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.allDone'))}</span>` : ''}</div>` +
+    `<div class="spBar" role="progressbar" aria-valuemin="0" aria-valuemax="${nb}" aria-valuenow="${done}"><i style="width:${Math.round(100 * done / nb)}%"></i></div>` : '';
   // dos apartados bien diferenciados: niveles integrados primero, los del creador después
   // nivel a medias: se ofrece continuarlo en naranja, como en el menú
   $('storyContinue').innerHTML = storySave
@@ -152,6 +164,7 @@ async function confirmReplaceSave(mode) {
 // detiene todo lo que corre en segundo plano (IA, temporizadores, cartas en pantalla)
 function stopGameActivity() {
   aiStop();
+  clearPause();
   hideWin();
   document.querySelectorAll('.card.floating').forEach(el => el.remove());
   app.animQueue = []; app.animLead = 0;
@@ -197,7 +210,7 @@ const PVE_SIZES = {
 };
 export const PVE_COLORS = [...PLAYER_COLORS, '#e8833a'];
 
-export function openPveSetup() { buildPveSetup(); showScreen('pve'); }
+export function openPveSetup() { app.pveCfg.color = loadProfile().color; buildPveSetup(); showScreen('pve'); }
 
 // límites de la mesa: de 2 a 6 jugadores; con una sola persona, al menos 1 bot
 function clampPve(cfg) {
@@ -221,6 +234,14 @@ function buildPveSetup() {
   const d = loadSave('pve');
   $('pveContinue').hidden = !d;
   if (d) $('pveContinueSub').textContent = saveSub(d);
+  // nombres (y, con varias personas, el color de cada una): se recuerdan en el perfil
+  const prof = loadProfile();
+  $('pveColors').hidden = cfg.humans > 1;
+  $('pvePeople').innerHTML = cfg.humans === 1
+    ? `<input class="pveName" data-person="me" maxlength="${MAX_NAME}" value="${esc(prof.name)}" placeholder="${esc(t('pve.namePh'))}" aria-label="${esc(t('pve.nameAria'))}">`
+    : prof.people.slice(0, cfg.humans).map((pp, i) =>
+      `<div class="pvePerson"><button class="pveDot" data-cycle="${i}" style="background:${PVE_COLORS[pp.color % PVE_COLORS.length]}" title="${esc(t('pve.cycleColor'))}" aria-label="${esc(t('pve.cycleColor'))}"></button>` +
+      `<input class="pveName" data-person="${i}" maxlength="${MAX_NAME}" value="${esc(pp.name)}" placeholder="${esc(t('player.name', { n: i + 1 }))}" aria-label="${esc(t('pve.nameAriaN', { n: i + 1 }))}"></div>`).join('');
   $('pveColors').innerHTML = PVE_COLORS.map((c, i) =>
     `<button class="pveColor${cfg.color === i ? ' sel' : ''}" style="background:${c}" data-color="${i}"` +
     ` title="${esc(t('pve.pickColor'))}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${cfg.color === i}"></button>`).join('');
@@ -228,12 +249,58 @@ function buildPveSetup() {
   $$('#pveOpps .pveOpt').forEach(b => { b.classList.toggle('sel', cfg.opps === +b.dataset.n); b.setAttribute('aria-pressed', cfg.opps === +b.dataset.n); });
 }
 
+// nombres y colores propios sobre los asientos de las personas (cosmético: el motor no los usa).
+// Los bots que coincidan de color con una persona reciben otro libre.
+function applyOwnLook(S, seats, people) {
+  const n = S.nPlayers;
+  S.colorMap = S.colorMap ? [...S.colorMap] : Array.from({ length: n }, (_, i) => PLAYER_COLORS[i % PLAYER_COLORS.length]);
+  S.playerNames = Array(n).fill(null);
+  const taken = new Set();
+  seats.forEach((seat, i) => {
+    const pp = people[i]; if (!pp) return;
+    let ci = pp.color % PVE_COLORS.length;
+    while (taken.has(PVE_COLORS[ci])) ci = (ci + 1) % PVE_COLORS.length;
+    S.colorMap[seat] = PVE_COLORS[ci]; taken.add(PVE_COLORS[ci]);
+    S.playerNames[seat] = cleanName(pp.name) || null;
+  });
+  for (let p = 0; p < n; p++) {
+    if (seats.includes(p)) continue;
+    if (taken.has(S.colorMap[p])) S.colorMap[p] = PVE_COLORS.find(c => !taken.has(c) && !S.colorMap.includes(c)) || S.colorMap[p];
+    taken.add(S.colorMap[p]);
+  }
+}
+
+/* ---------- "Repetir la última" (partida rápida con la misma configuración) ---------- */
+const LAST_PVE = 'chaoticgolf_lastpve';
+function lastPve() { try { const c = JSON.parse(localStorage.getItem(LAST_PVE)); return c && PVE_SIZES[c.size] ? c : null; } catch (e) { return null; } }
+function cfgSub(c) {
+  const sz = PVE_SIZES[c.size], parts = [`${sz.cols}×${sz.rows}`];
+  if (c.humans > 1) parts.push(t('pve.peopleN', { n: c.humans }));
+  if (c.opps) parts.push(t(c.opps > 1 ? 'pve.botsN' : 'pve.botN', { n: c.opps }), t('pve.diff' + c.diff[0].toUpperCase() + c.diff.slice(1)));
+  return parts.join(' · ');
+}
+export function updateRepeatBtn() {
+  const c = lastPve();
+  $('repeatBtn').hidden = !c;
+  if (c) $('repeatSub').textContent = cfgSub(c);
+}
+export async function repeatLastPve() {
+  const c = lastPve();
+  if (!c || !await confirmReplaceSave('pve')) return;
+  app.pveCfg = { ...app.pveCfg, ...c };
+  startPveMatch();
+}
+
 export function startPveMatch() {
   const cfg = app.pveCfg;
   clampPve(cfg);
   const sz = PVE_SIZES[cfg.size];
   app.lastPveCfg = { ...cfg };
-  startGame(Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, humanColor: PVE_COLORS[cfg.color] }), 'pve');
+  const prof = loadProfile();
+  const people = cfg.humans > 1 ? prof.people.slice(0, cfg.humans) : [{ name: prof.name, color: cfg.color }];
+  startGame(Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, humanColor: PVE_COLORS[people[0].color % PVE_COLORS.length] }), 'pve');
+  applyOwnLook(app.game.S, humansOf(), people);
+  try { localStorage.setItem(LAST_PVE, JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }
   // con una persona, el dispositivo es suyo; con varias, se pasa antes de enseñar ninguna mano
   app.viewer = cfg.humans > 1 ? null : app.game.S.human;
   refreshGivePlayer();
@@ -294,6 +361,16 @@ export function bindScreens() {
   $('storyBtn').addEventListener('click', openStory);
   $('continueBtn').addEventListener('click', () => resumeGame());
   $('pveContinue').addEventListener('click', () => resumeGame('pve'));
+  $('repeatBtn').addEventListener('click', repeatLastPve);
+  // nombres del perfil: se guardan al escribir
+  $('pveScreen').addEventListener('input', e => {
+    const inp = e.target.closest('.pveName');
+    if (!inp) return;
+    const prof = loadProfile();
+    if (inp.dataset.person === 'me') prof.name = inp.value.slice(0, MAX_NAME);
+    else prof.people[+inp.dataset.person].name = inp.value.slice(0, MAX_NAME);
+    saveProfile(prof);
+  });
   $('storyContinue').addEventListener('click', e => { if (e.target.closest('[data-resume]')) resumeGame('story'); });
   $('pveBtn').addEventListener('click', openPveSetup);
   $('testToolBtn').addEventListener('click', openTestingTool);
@@ -312,7 +389,14 @@ export function bindScreens() {
   $('pveScreen').addEventListener('click', e => {
     const c = e.target.closest('[data-color]'), s = e.target.closest('[data-size]'), n = e.target.closest('#pveOpps [data-n]');
     const h = e.target.closest('#pveHumans [data-h]'), d = e.target.closest('#pveDiff [data-diff]');
-    if (c) app.pveCfg.color = +c.dataset.color;
+    const cy = e.target.closest('[data-cycle]');
+    if (cy) { // multijugador local: cada persona cambia su color (sin repetir el de otra)
+      const prof = loadProfile(), i = +cy.dataset.cycle, used = prof.people.slice(0, app.pveCfg.humans).map((pp, j) => j !== i && pp.color % PVE_COLORS.length);
+      let ci = prof.people[i].color;
+      do ci = (ci + 1) % PVE_COLORS.length; while (used.includes(ci));
+      prof.people[i].color = ci; saveProfile(prof); buildPveSetup(); return;
+    }
+    if (c) { app.pveCfg.color = +c.dataset.color; const prof = loadProfile(); prof.color = app.pveCfg.color; saveProfile(prof); }
     else if (s) app.pveCfg.size = s.dataset.size;
     else if (n && !n.disabled) app.pveCfg.opps = +n.dataset.n;
     else if (h) { app.pveCfg.humans = +h.dataset.h; if (app.pveCfg.humans > 1 && app.pveCfg.opps > 6 - app.pveCfg.humans) app.pveCfg.opps = 6 - app.pveCfg.humans; }

@@ -24,7 +24,9 @@ const S = () => app.game.S;
 const isBot = p => botSeat(p);
 // la IA solo actúa en su partida (gen) y con la pantalla de partida a la vista
 const live = g => app.mode === 'pve' && app.game && gen === g && app.screen === 'game';
-const idle = () => new Promise(r => { const t = () => (!app.animating && !app.animQueue.length) ? r() : setTimeout(t, 90); t(); });
+// en pausa, la máquina se queda quieta donde esté (las esperas no avanzan)
+const idle = () => new Promise(r => { const t = () => (!app.animating && !app.animQueue.length && !app.paused) ? r() : setTimeout(t, 90); t(); });
+const pwait = async ms => { await wait(ms); while (app.paused) await wait(120); };
 
 // arranque retrasado de la IA (al empezar o continuar): cancelable con aiStop
 export function aiStart(delay) {
@@ -48,7 +50,7 @@ async function runPlan(plan, g) {
   try {
     for (let i = 0; i < plan.actions.length; i++) {
       const a = plan.actions[i];
-      if (i > 0) await wait(G().pending?.kind === 'serpent' ? AI.stepMs : AI.clickMs);
+      if (i > 0) await pwait(G().pending?.kind === 'serpent' ? AI.stepMs : AI.clickMs);
       await idle();
       if (!live(g)) return;
       let ok;
@@ -71,7 +73,7 @@ async function runPlan(plan, g) {
 // orquestador: se llama tras cada jugada y cada cambio de turno
 export function aiKick() {
   clearTimeout(timer);
-  if (app.mode !== 'pve' || !app.game || app.screen !== 'game') return;
+  if (app.mode !== 'pve' || !app.game || app.screen !== 'game' || app.paused) return; // (al reanudar se vuelve a llamar)
   const s = S(), g = gen;
   if (s.winner !== null && !s.jaque) return; // partida terminada (durante el JAQUE sí hay que actuar)
   if (app.animating || app.animQueue.length || G().pending) {
@@ -95,7 +97,7 @@ export function aiKick() {
     const c = cands[0];
     if (c && rand() < c.chance) {
       timer = setTimeout(async () => {
-        if (!live(g) || S().jaque || S().winner !== null || G().pending || turnLock) { aiKick(); return; }
+        if (!live(g) || app.paused || S().jaque || S().winner !== null || G().pending || turnLock) { aiKick(); return; }
         const fresh = chooseReaction(G(), c.p, rand); // el tablero puede haber cambiado
         if (fresh) await runPlan(fresh, g);
         if (live(g)) aiKick();
@@ -112,28 +114,28 @@ async function takeTurn(g) {
   const p = S().turn;
   app.ai.thinkingOf = p; ctl.render(); // puntos de "pensando…" en el panel del bot
   try {
-    await wait(AI.thinkMs + rand() * 400);
+    await pwait(AI.thinkMs + rand() * 400);
     for (let n = 0; n < 3; n++) {
       await idle();
       if (!live(g) || S().winner !== null || S().turn !== p || G().pending) break;
       const plan = choosePlan(G(), p, rand);
       if (!plan) break;
       await runPlan(plan, g);
-      await wait(AI.betweenMs + rand() * 300);
+      await pwait(AI.betweenMs + rand() * 300);
     }
     await idle();
     if (live(g) && S().winner === null && S().turn === p && !G().pending) {
       const junk = S().playedThisTurn === 0 ? discardPlan(G(), p) : [];
       if (junk.length) {
         ctl.startDiscard();
-        await wait(280);
+        await pwait(280);
         if (live(g) && G().pending?.kind === 'discard') {
           for (const i of junk) ctl.clickCard(p, i);
-          await wait(280);
+          await pwait(280);
           if (live(g)) ctl.confirmDiscard();
         }
       } else {
-        await wait(AI.endMs);
+        await pwait(AI.endMs);
         if (live(g) && S().winner === null && S().turn === p && !G().pending) ctl.endTurn();
       }
     }
@@ -149,6 +151,7 @@ function handleJaque(g) {
   const saver = jaqueSaver(G(), rand, isBot);
   if (saver) {
     timer = setTimeout(async () => {
+      if (app.paused) return; // al reanudar, aiKick() lo reevalúa
       if (live(g) && S().jaque && S().winner !== null && !G().pending && !app.animating) await runPlan(saver, g);
       if (live(g)) aiKick();
     }, AI.thinkMs + rand() * 500);
@@ -159,6 +162,7 @@ function handleJaque(g) {
   // cuenta atrás visible en el cartel del JAQUE mientras puedes reaccionar
   if (humanCan && !app.jaqueTimer) { app.jaqueTimer = { at: Date.now(), ms: AI.jaqueWindowMs }; ctl.renderJaque(); }
   timer = setTimeout(() => {
+    if (app.paused) return;
     if (live(g) && S().jaque && S().winner !== null && !G().pending && !app.animating && !app.animQueue.length) ctl.confirmWin();
     else if (live(g)) aiKick();
   }, humanCan ? Math.max(400, app.jaqueTimer.at + app.jaqueTimer.ms - Date.now()) : AI.jaqueIdleMs);

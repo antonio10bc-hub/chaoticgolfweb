@@ -15,6 +15,8 @@ import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
 import { toast } from './hud.js';
 import { botReact } from './bot-react.js';
+import { unlock } from './achievements.js';
+import { isBot } from './players.js';
 
 let combo = 0;
 
@@ -27,12 +29,17 @@ export async function playQueue(onDone) {
   if (app.animLead) { const lead = app.animLead; app.animLead = 0; await wait(lead); }
   if (app.game !== game) return;
   const q = app.animQueue; app.animQueue = [];
+  const warped = new Set(); // pelotas que han cruzado un portal en esta jugada (logro "de portal a hoyo")
   for (const ev of q) {
+    if (ev.t === 'teleport') warped.add(ev.p);
+    if (ev.t === 'sink' && warped.has(ev.p) && app.mode !== 'free' && !isBot(+ev.p.slice(1))) unlock('portalSink');
+    if (ev.t === 'chainStop' && app.mode !== 'free') unlock('loop');
     pieceEl(ev.p)?.classList.add('acting'); // la pieza que se mueve se destaca mientras actúa
     try { await playEvent(ev); } catch (e) { console.warn('animación', ev, e); }
     if (app.game !== game) return; // partida descartada: no tocar la nueva
   }
   app.animating = false;
+  if (combo >= 3 && app.mode !== 'free' && app.lastActor != null && !isBot(app.lastActor)) unlock('combo3');
   syncPieces();
   fxTrailShow(); // estela fantasma del camino recorrido
   fxArmIdle();
@@ -118,6 +125,7 @@ async function playEvent(ev) {
     }
     case 'appear': {  // reaparece con drop-in, rebote y polvareda
       el.style.display = 'flex';
+      el.classList.remove('ghostHoled', 'ghostPick', 'ghostCan'); // (si salía del hoyo, deja de ser fantasma)
       inner.style.transform = '';
       setPos(el, ev.x, ev.y, 0);
       el.classList.add('dropping', 'air');

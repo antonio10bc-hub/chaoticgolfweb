@@ -25,10 +25,21 @@ import { resetMoods, clearBubbles } from './persona.js';
 import { botPlayed, botsGameOver } from './bot-react.js';
 import { passCheck } from './hotseat.js';
 import { tutorialEvent } from './tutorial.js';
+import { unlock } from './achievements.js';
+import { setBotTempo } from './prefs.js';
+import { clearPause } from './pause.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
-const resetStats = () => { stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0 }; };
+const resetStats = () => {
+  stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0,
+    misTurnos: 0,                  // turnos propios (partida rápida con una persona)
+    longest: { n: 0, p: null },    // jugada que más casillas movió y de quién
+    hitsOnMe: {},                  // quién golpeó tu pelota: jugador -> veces
+    cardsUsed: {} };               // cartas que has jugado: clave -> veces
+};
+// jugador "tú" para el resumen: la persona en partida rápida con una sola persona, o el nivel
+const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop']);
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', teleport: 'portales', sink: 'hundidas' };
@@ -45,6 +56,7 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
   app.lastPlayAt = Date.now();
   prevTurn = -1; jaqueShown = false;
   app.passFor = null; app.reacting = null;
+  clearPause();
   resetMoods(); clearBubbles();
   resetStats();
   resetDealAnim();
@@ -68,19 +80,28 @@ function dispatch(fn) {
   const g = app.game;
   if (!g) return false;
   const jaqueBefore = g.S.jaque && g.S.winner !== null;
+  const turnBefore = g.S.turn;
   const ok = fn(g);
   const events = g.takeEvents();
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
+  let actor = null, moves = 0;
+  const me = meSeat(g);
   for (const ev of events) {
     if (ANIM.has(ev.t)) {
       app.animQueue.push(ev);
       if (STAT_OF[ev.t]) stats[STAT_OF[ev.t]]++;
+      if (ev.t === 'move') moves++;
+      if (ev.t === 'impact' && me != null && ev.target === 'b' + me && ev.p !== ev.target) { // te han golpeado
+        const by = +ev.p.slice(1);
+        stats.hitsOnMe[by] = (stats.hitsOnMe[by] || 0) + 1;
+      }
       continue;
     }
     switch (ev.t) {
       case 'card': {
         sfx('card');
-        app.lastActor = ev.p;
+        app.lastActor = ev.p; actor = ev.p;
+        if (!isBot(ev.p)) stats.cardsUsed[ev.key] = (stats.cardsUsed[ev.key] || 0) + 1;
         // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
         const mine = !isBot(ev.p);
         fxPlayCard(ev.p, ev.idx, ev.key, { fast: mine });
@@ -107,11 +128,15 @@ function dispatch(fn) {
       case 'tip': hud.storyTip(ev.key); break;
       case 'notice': hud.toast(ev.text); break;
       case 'resolved': resolved = true; break;
-      case 'turnEnded': turnEnded = true; stats.turnos++; break;
+      case 'turnEnded': turnEnded = true; stats.turnos++; if (app.mode === 'pve' && !isBot(turnBefore)) stats.misTurnos++; break;
       case 'win': won = true; break;
     }
   }
   if (!app.animQueue.length) app.animLead = 0; // la espera solo tiene sentido si hay algo que animar
+  // la jugada que más casillas ha movido (pelotas en cadena y hoyo incluidos)
+  if (moves && (actor ?? app.lastActor) != null && moves > stats.longest.n) stats.longest = { n: moves, p: actor ?? app.lastActor };
+  // logro: una persona evita un JAQUE con una naranja
+  if (jaqueBefore && actor != null && !isBot(actor) && g.S.winner === null && app.mode !== 'free') unlock('jaqueSaved');
   if (onlyFeedback && !events.some(e => e.t !== 'badCard' && e.t !== 'notice')) return ok; // nada cambió
   if (resolved) { app.lastPlayAt = Date.now(); app.playSeq++; }
   if (resolved && app.reacting != null && !g.pending) app.reacting = null; // la reacción del invitado ha terminado
@@ -125,8 +150,15 @@ function dispatch(fn) {
 }
 
 /* ---------- acciones (interfaz e IA) ---------- */
+const CANCELLABLE = ['move', 'placeTile', 'pickBall', 'dedoAmount', 'pickHoled']; // (el dedo en marcha ya no)
 export function clickCard(p, idx) {
   if (app.animating) return false;
+  const pd = app.game.pending;
+  // tocar otra vez la carta elegida la suelta; tocar otra carta tuya cambia de elección
+  if (pd && pd.p === p && pd.idx !== undefined && CANCELLABLE.includes(pd.kind) && (app.mode !== 'pve' || !app.ai.acting)) {
+    cancel();
+    if (pd.idx === idx) { sfx('select'); return true; }
+  }
   const before = app.game.pending;
   const ok = dispatch(g => g.clickCard(p, idx));
   if (ok && app.game.pending && app.game.pending !== before) {
@@ -178,6 +210,7 @@ export function render() {
   const g = app.game;
   if (!g) return;
   passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
+  setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting)); // (ajuste: turnos de la máquina más rápidos)
   hud.renderTopbar();
   renderJaque();
   renderBoard();

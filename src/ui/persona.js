@@ -109,7 +109,10 @@ export function say(p, kind, { chance = 1, force = false } = {}) {
   lastSaid[p] = now;
   const r = el.getBoundingClientRect();
   const seatR = el.closest('.seat')?.getBoundingClientRect(); // fuera de la tarjeta del asiento, para no tapar su nombre
+  // un bot solo dice una cosa a la vez: la frase nueva sustituye a la anterior
+  document.querySelectorAll(`.bubble[data-p="${p}"]`).forEach(o => { o.remove(); live--; });
   const b = document.createElement('div');
+  b.dataset.p = p;
   b.className = 'bubble ' + kind + (REDUCED ? ' still' : '');
   b.textContent = text;
   b.style.setProperty('--pc', getComputedStyle(el).getPropertyValue('--pc'));
@@ -126,6 +129,6 @@ export function say(p, kind, { chance = 1, force = false } = {}) {
   b.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
   live++;
   setTimeout(() => { b.classList.add('out'); }, 2000);
-  setTimeout(() => { b.remove(); live--; }, 2350);
+  setTimeout(() => { if (b.isConnected) { b.remove(); live--; } }, 2350);
 }
 export function clearBubbles() { document.querySelectorAll('.bubble').forEach(b => b.remove()); live = 0; }

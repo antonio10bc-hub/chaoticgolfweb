@@ -35,6 +35,10 @@ import { loadPrefs } from './ui/prefs.js';
 import { bindSettings, repaintSettings } from './ui/settings.js';
 import { bindTutorial } from './ui/tutorial.js';
 import { bindHotseat } from './ui/hotseat.js';
+import { bindPause, pauseGame, resumePlay } from './ui/pause.js';
+import { bindRules, openRules, closeRules, rulesOpen } from './ui/rules.js';
+import { bindBack } from './ui/back.js';
+import { bindLogFilter } from './ui/hud.js';
 
 // preferencias (velocidad, tema del campo, accesibilidad) antes de pintar nada
 loadPrefs();
@@ -56,6 +60,10 @@ bindSoundPanel();
 bindSettings();
 bindTutorial();
 bindHotseat();
+bindPause();
+bindRules();
+bindBack();
+bindLogFilter();
 $('editorBtn').addEventListener('click', openEditor);
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
@@ -68,6 +76,10 @@ $('deckPile').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key 
 window.addEventListener('keydown', e => {
   if (app.screen !== 'game' || e.metaKey || e.ctrlKey || e.altKey || e.target.matches('input, textarea, select') || document.querySelector('dialog[open], #settingsOverlay.visible, #passScreen.visible')) return;
   const k = e.key.toLowerCase();
+  // P = pausa / reanudar, H o ? = reglas
+  if (k === 'p') { e.preventDefault(); if (app.paused === 'user') resumePlay(); else pauseGame('user'); return; }
+  if (k === 'h' || e.key === '?') { e.preventDefault(); if (rulesOpen()) closeRules(); else openRules(); return; }
+  if (app.paused) return;
   if (k === 'e' && !$('endTurnBtn').disabled) { e.preventDefault(); $('endTurnBtn').click(); }
   if (k === 'd' && !$('discardBtn').disabled) { e.preventDefault(); $('discardBtn').click(); }
 });
@@ -86,12 +98,20 @@ window.addEventListener('resize', () => {
 // Escape cierra paneles flotantes / cancela la acción en curso
 window.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+  if (rulesOpen()) { closeRules(); return; }
+  if (app.paused === 'user') { resumePlay(); return; }
   for (const [id, cls] of [['deckPop', 'open'], ['sndPanel', 'open'], ['logPanel', 'open'], ['debugPanel', 'visible']]) {
     if ($(id).classList.contains(cls)) { $(id).classList.remove(cls); return; }
   }
   if (app.screen === 'game' && app.game?.pending && !app.ai.acting) ctl.cancel();
 });
 setInterval(updateEndTurnHint, 500);
+// cerrar o recargar la pestaña con una jugada a medias: el navegador pide confirmación
+// (la partida se guarda igualmente, pero la jugada en curso se perdería)
+window.addEventListener('beforeunload', e => {
+  if (app.screen !== 'game' || !app.game || app.mode === 'free') return;
+  if (app.animating || app.animQueue.length || app.game.pending || app.ai.acting) { e.preventDefault(); e.returnValue = ''; }
+});
 
 // cambio de idioma en vivo (panel de ajustes): textos fijos + la pantalla actual
 function paintLangBtns() { document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === getLang())); }
@@ -115,16 +135,24 @@ fxAmbientStart();
 buildDebugPanel();
 
 // arranque: niveles de historia + partida libre de fondo (testing tool) + arte
+// (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía)
 (async () => {
+  const t0 = performance.now();
   try { app.storyLevels = await loadStoryLevels(); }
   catch (e) { console.error('No se pudieron cargar los niveles de historia', e); }
   newFreeGame();
   showScreen('menu');
-  await loadArt();
+  await Promise.all([loadArt(), document.fonts?.ready.catch(() => {})]);
   // el arte que exista sustituye a los fallbacks: reconstruir piezas y re-renderizar
   clearPieces();
   applyArtExtras();
   ctl.render();
+  // un mínimo breve para que no parpadee; luego se desvanece y el menú hace su entrada
+  await new Promise(r => setTimeout(r, Math.max(0, 450 - (performance.now() - t0))));
+  const ld = $('loadScreen');
+  ld.classList.add('done');
+  document.body.classList.remove('loading'); // ahora sí: la entrada animada del menú
+  setTimeout(() => ld.remove(), 500);
 })();
 
 // PWA: jugar sin conexión (solo en http/https)

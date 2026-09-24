@@ -23,6 +23,7 @@ export const app = {
   passFor: null,         // pantalla de "pasa el móvil" abierta para esta persona
   reacting: null,        // persona fuera de turno que ha pedido el dispositivo para reaccionar
   lastInputAt: 0,        // último clic / tecla (aviso tras un rato sin jugar)
+  paused: false,         // false | 'user' | 'settings' | 'rules': la máquina y sus temporizadores esperan
 };
 
 export const S = () => app.game.S;

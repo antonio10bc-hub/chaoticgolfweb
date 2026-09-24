@@ -40,7 +40,10 @@ src/
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
     tutorial.js            presentación del nivel 1 y explicación de cada carta la primera vez
     settings.js / prefs.js   pantalla de Ajustes (velocidad, tema, accesibilidad…) y Estadísticas
-    save.js / records.js   guardado por modo y estadísticas globales
+    save.js / records.js   guardado por modo y estadísticas globales (rachas, récords)
+    pause.js / rules.js    pausa real (congela la IA) y hoja de reglas
+    back.js / wake.js      botón de atrás del sistema y pantalla siempre encendida en partida
+    profile.js / achievements.js  tu nombre y color (y los de cada persona) y logros
   fx/                      partículas, efectos y constantes de "juice" (juice.js)
   audio/                   efectos de sonido y música generativa (WebAudio, sin archivos)
   i18n/                    textos (es.js, en.js) y t()
@@ -126,7 +129,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - Los asientos marcan al jugador activo, si un bot está pensando, si alguien puede reaccionar en un JAQUE.
 - Cada carta jugada (tuya o de un bot) crece sobre su origen y reaparece un instante en descartes; al robar,
   las cartas salen del mazo; al pulsar una carta bloqueada se explica por qué; un marcador flota sobre la
-  pelota que juega. Atajos: **E** terminar turno, **D** descartar, **Esc** cancelar.
+  pelota que juega. Atajos: **E** terminar turno, **D** descartar, **P** pausa, **H** reglas, **Esc** cancelar.
 - **Vista previa:** al pasar por un destino (o por una carta de hoyo) se dibuja el recorrido real: choques en
   cadena, portales, búnker, caídas y hoyo. En pantallas táctiles, primer toque = vista previa, segundo = jugar.
 - **Bots con personalidad:** nombre, cara que cambia de humor y bocadillos al jugar, recibir un golpe,
@@ -136,8 +139,16 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
 - **Guardado:** uno por modo (historia y partida rápida). Salir al menú guarda; "Continuar partida" retoma la
   más reciente; Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
-- **Ajustes:** sonido y pista de música (con fundido menú ↔ partida), idioma, velocidad de las animaciones,
-  tema del campo (clásico, otoño, nieve, noche), avisos de jugada, reducir movimiento, formas en las bolas.
+- **Ajustes:** perfil (nombre y color), sonido y pista de música (con fundido menú ↔ partida), idioma,
+  velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
+  nieve, noche), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
+  modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa.
+- **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
+  "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
+  sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
+  pantalla de carga.
+- **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final
+  (jugada más larga, quién te golpeó más, tu carta más usada).
 
 ## Tests y herramientas
 

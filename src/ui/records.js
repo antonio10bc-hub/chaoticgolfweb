@@ -1,7 +1,11 @@
 // Estadísticas globales del jugador (todas sus partidas en este dispositivo):
 // partidas empezadas y ganadas por modo, totales de la mesa y el mejor resultado de
 // cada nivel de historia (menos turnos; a igualdad, menos golpes).
+import { t } from '../i18n/index.js';
+
 const KEY = 'chaoticgolf_stats';
+// "1 turno" / "3 turnos"
+export const turnsLabel = n => n === 1 ? t('stats.turn1') : t('stats.turnsShort', { n });
 const VERSION = 1;
 export const REC_MODES = ['story', 'pve', 'local'];
 
@@ -11,6 +15,7 @@ const blank = () => ({
   won: { story: 0, pve: 0, local: 0 },
   totals: { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0 },
   levels: {}, // índice de historia -> { turns, strokes, at }
+  pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
 });
 
 export function loadRecords() {
@@ -18,7 +23,7 @@ export function loadRecords() {
     const d = JSON.parse(localStorage.getItem(KEY));
     if (d && d.version === VERSION) {
       const b = blank();
-      return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals } };
+      return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals }, pve: { ...b.pve, ...d.pve } };
     }
   } catch (e) { /* sin storage o corrupto */ }
   return blank();
@@ -49,7 +54,19 @@ export function recordEnd(kind, { won, stats, levelIndex = null }) {
     if (!prev || newBest) d.levels[levelIndex] = cur;
     best = d.levels[levelIndex];
   }
+  // partida rápida: racha de victorias seguidas y victoria más rápida (en turnos propios)
+  let streak = 0, newFastest = false;
+  if (kind === 'pve') {
+    d.pve.streak = won ? d.pve.streak + 1 : 0;
+    d.pve.bestStreak = Math.max(d.pve.bestStreak, d.pve.streak);
+    streak = d.pve.streak;
+    if (won && stats) {
+      const mine = (stats.misTurnos || 0) + 1;
+      newFastest = d.pve.fastest != null && mine < d.pve.fastest;
+      if (d.pve.fastest == null || mine < d.pve.fastest) d.pve.fastest = mine;
+    }
+  }
   saveRecords(d);
-  return { newBest, best };
+  return { newBest, best, streak, newFastest, fastest: d.pve.fastest };
 }
 export const levelBest = i => loadRecords().levels[i] || null;

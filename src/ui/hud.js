@@ -65,13 +65,59 @@ function renderPiles() {
 // historial, popover del mazo
 export function renderHud() {
   const S = app.game.S;
-  set($('logList'), S.log.slice(0, 60).map(s => `<div>${esc(s)}</div>`).join(''));
+  set($('logList'), logHTML(S));
   const counts = {};
   S.deck.forEach(k => counts[k] = (counts[k] || 0) + 1);
   set($('deckPop'), `<h5>${t('hud.deckLeft')}</h5>` + (Object.keys(CARDS).filter(k => counts[k]).map(k => {
     const def = CARDS[k];
     return `<div class="row ${def.color}"><span class="hintCard ${def.color}">${cardArtHTML(def)}</span><span>${esc(def.short || def.name)}</span><span class="n">×${counts[k]}</span></div>`;
   }).join('') || `<div class="row">${t('hud.deckEmpty')}</div>`));
+}
+
+/* ---------- historial legible: agrupado por turnos, con icono y color de cada jugador ---------- */
+const LOG_ICON = {
+  plays: 'i-hand', collision: 'i-burst', collisionDedo: 'i-burst', ballPortal: 'i-spiral', holePortal: 'i-spiral', holeInitPortal: 'i-spiral',
+  ballFell: 'i-out', holeFell: 'i-out', ballHoled: 'i-flag', holeSwallows: 'i-flag', jaque: 'i-flag', tieInPlay: 'i-flag',
+  ballTrapped: 'i-sand', ballStaysTrap: 'i-sand', transferTrap: 'i-sand', cantLeaveTrap: 'i-sand', holeTrapped: 'i-sand',
+  ballLeavesTrap: 'i-sand', holeLeavesTrap: 'i-sand', ballMoved: 'i-arrow-r', holeMoved: 'i-hole', holeEmerges: 'i-hole',
+  ballLeavesHole: 'i-arrow-r', ballExtracted: 'i-arrow-r', endTurn: 'i-check', discards: 'i-reset', cancelEffects: 'i-rewind',
+  jaqueCancelled: 'i-x', chainStops: 'i-chain-break', tilePlaced: 'i-grid',
+};
+export let logMine = false;
+export const setLogMine = v => { logMine = v; };
+function logHTML(S) {
+  const meta = S.logK && S.logK.length === S.log.length ? S.logK : null;
+  const n = Math.min(S.log.length, 90);
+  if (!meta) return S.log.slice(0, 60).map(x => `<div class="lg">${esc(x)}</div>`).join(''); // partidas antiguas: texto plano
+  const me = dockOwner(app.game);
+  const line = i => {
+    const [k, ...pl] = meta[i];
+    const who = pl[0];
+    const col = who != null && who < S.nPlayers ? pColor(who) : '';
+    return `<div class="lg${who != null ? ' who' : ''}"${col ? ` style="--pc:${col}"` : ''}>` +
+      `<svg class="i" aria-hidden="true"><use href="#${LOG_ICON[k] || 'i-list'}"/></svg><span>${esc(S.log[i])}</span></div>`;
+  };
+  // de lo más nuevo a lo más viejo: cada "Turno de …" cierra el grupo de su turno
+  const groups = []; let cur = [];
+  for (let i = 0; i < n; i++) {
+    if (meta[i][0] === 'turnOf') { groups.push({ head: i, items: cur }); cur = []; }
+    else cur.push(i);
+  }
+  if (cur.length) groups.push({ head: null, items: cur });
+  return groups.map(({ head, items }) => {
+    const shown = logMine ? items.filter(i => meta[i].slice(1).includes(me)) : items;
+    if (logMine && !shown.length) return '';
+    const p = head != null ? meta[head][1] : null;
+    const h = head != null ? `<div class="lgHead" style="--pc:${pColor(p)}">${avatarHTML(p, 'xs')}<b>${esc(S.log[head])}</b></div>` : '';
+    return `<div class="lgGroup">${h}${shown.map(line).join('')}</div>`;
+  }).join('') || `<div class="lg muted">${esc(t('hud.logNone'))}</div>`;
+}
+export function bindLogFilter() {
+  $('logMine').addEventListener('click', () => {
+    logMine = !logMine;
+    $('logMine').setAttribute('aria-pressed', logMine);
+    if (app.game) renderHud();
+  });
 }
 
 let toastTimer = null;
@@ -118,7 +164,7 @@ let nudging = false;
 function updateIdleNudge() {
   const g = app.game, S = g?.S;
   const owner = g ? dockOwner(g) : -1;
-  const on = !!(S && prefs.hints && app.screen === 'game' && app.mode !== 'free' && !app.animating && !g.pending && !S.jaque
+  const on = !!(S && prefs.hints && app.screen === 'game' && app.mode !== 'free' && !app.paused && !app.animating && !g.pending && !S.jaque
     && S.winner === null && owner === S.turn && !isBotSeat(owner) && handRevealed(owner)
     && !document.querySelector('#coach.visible, #passScreen.visible, dialog[open]')
     && Date.now() - Math.max(app.lastPlayAt, app.lastInputAt || 0) > IDLE_NUDGE_MS);
