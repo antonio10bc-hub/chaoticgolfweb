@@ -123,9 +123,11 @@ export class Game {
   // contra la máquina: asientos y colores al azar, empieza el jugador a la derecha
   // del que está bajo el par. cfg = { players, par, cols, rows, humanColor, humans?, aiLevel? }
   // humans > 1: varias personas en el mismo dispositivo (se pasan el móvil); el resto son bots
+  // cfg.counts (opcional): mazo propio (desafíos); cfg.rules (opcional): reglas especiales en S.rules
   static pve(cfg, opts = {}) {
-    const counts = {};
+    let counts = {};
     for (const [k, def] of Object.entries(CARDS)) counts[k] = def.copies;
+    if (cfg.counts) counts = { ...cfg.counts };
     const g = Game.standard(cfg, opts, { human: 0, colorMap: null }); // metadatos PVE (no afectan a las reglas)
     const S = g.S, { cx, startX } = g._course;
     S.human = Math.floor(g.rand() * cfg.players);
@@ -138,6 +140,7 @@ export class Game {
       S.humans = humans;
     }
     if (cfg.aiLevel && cfg.aiLevel !== 'normal') S.aiLevel = cfg.aiLevel;
+    if (cfg.rules) S.rules = { ...cfg.rules };
     const rest = shuffle(PLAYER_COLORS.filter(c => c !== cfg.humanColor), g.rand);
     S.colorMap = [];
     let ri = 0;
@@ -174,7 +177,8 @@ export class Game {
     }
     g.initMarks = g.marksFromBalls();
     g.fillDeck(L.deckCounts);
-    g.drawTo2(0);
+    if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
+    else g.drawTo2(0);
     g.log('log.levelLoaded');
     return g;
   }
@@ -816,6 +820,19 @@ export class Game {
     S.playedThisTurn = 0;
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
+    if (S.rules?.holeDrift) this.holeDrift();
+  }
+
+  // regla especial (desafío): al empezar cada turno el hoyo se desplaza 1 casilla al azar
+  // (con portales, búnker y caídas como cualquier movimiento del hoyo; si cae sobre una pelota, JAQUE)
+  holeDrift() {
+    const S = this.S;
+    if (S.winner !== null || this.holeInTrap()) return; // en el búnker el hoyo se queda quieto
+    const dirs = ['up', 'down', 'left', 'right'];
+    const dir = dirs[Math.floor(this.rand() * 4)];
+    this.log('log.holeDrifts', { dir: t('dirs.' + dir) });
+    this.moveHole(dir, 1);
+    this.afterPlay();
   }
 
   // null | 'sel' | 'out' según si la casilla es clicable en la acción en curso

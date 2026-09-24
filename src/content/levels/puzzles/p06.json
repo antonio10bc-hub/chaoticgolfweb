@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Por los pelos",
+  "name_en": "By a whisker",
+  "cols": 6,
+  "rows": 7,
+  "hole": {
+    "x": 0,
+    "y": 0
+  },
+  "ball": {
+    "x": 4,
+    "y": 6
+  },
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "type": "portal",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "type": "bunker",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "type": "bunker",
+      "x": 2,
+      "y": 0
+    }
+  ],
+  "hand": [
+    "palo3",
+    "oHoyoRight",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3,
+    "dedo": 0,
+    "hoyoUp": 0,
+    "hoyoDown": 0,
+    "hoyoLeft": 0,
+    "hoyoRight": 0,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 0,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0
+  }
+}

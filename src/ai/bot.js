@@ -18,7 +18,13 @@ export const STYLES = {
   aggro: { self: 12, ready: 18, trap: 7, opp: 2, threat: 30, oppTrap: 3, orangeReserve: 14, reactMin: 36, reactChance: .42, tileBias: 0 },
   // tramposo: frena más a los rivales y gasta naranjas con más alegría
   trick: { self: 10, ready: 14, trap: 7, opp: 4, threat: 44, oppTrap: 5, orangeReserve: 9, reactMin: 26, reactChance: .6, tileBias: 2 },
+  // cauteloso: no gasta naranjas salvo para evitar un JAQUE; avanza sin arriesgar
+  cautious: { self: 11, ready: 16, trap: 9, opp: 3, threat: 38, oppTrap: 4, orangeReserve: 40, reactMin: 70, reactChance: .25, tileBias: 0 },
+  // caótico: le encanta llenar la mesa de búnkeres y portales y reacciona por impulso
+  chaos: { self: 8, ready: 12, trap: 5, opp: 3, threat: 30, oppTrap: 6, orangeReserve: 4, reactMin: 18, reactChance: .75, tileBias: 26, noise: 6 },
 };
+// todas las personalidades (el reparto al azar de Game.pve solo usa aggro / trick)
+export const STYLE_IDS = Object.keys(STYLES);
 // niveles de dificultad (S.aiLevel; sin él, 'normal' — el comportamiento de siempre):
 //   noise      ruido aleatorio sumado a cada jugada (cuanto más, más despistes)
 //   wild       probabilidad de jugar una carta cualquiera sin pensar (ni ver la victoria)
@@ -181,9 +187,10 @@ export function choosePlan(game, p, rand = Math.random) {
   for (const pl of enumeratePlays(game, p)) {
     const def = CARDS[pl.key];
     let s = evaluate(pl.result, p, style);
-    if (def.color === 'orange') s -= W.orangeReserve; // las naranjas valen más guardadas para reaccionar
+    // las naranjas valen más guardadas para reaccionar (en "solo naranjas" no hay otra cosa que jugar)
+    if (def.color === 'orange' && !game.S.rules?.onlyOrange) s -= W.orangeReserve;
     if (def.staysOnBoard) s += W.tileBias;
-    s += rand() * L.noise; // desempate con algo de variedad (en fácil, despistes de verdad)
+    s += rand() * (L.noise + (W.noise || 0)); // desempate con algo de variedad (en fácil, despistes de verdad)
     scored.push({ ...pl, score: s, def });
   }
   if (L.wild && scored.length && rand() < L.wild) { // fácil: a veces juega sin pensar
@@ -206,7 +213,9 @@ export function chooseReaction(game, p, rand = Math.random) {
     const s = evaluate(pl.result, p, style) + rand() * 0.5;
     if (!best || s > best.score) best = { ...pl, score: s };
   }
-  if (!best || best.score - base < W.reactMin * L.reactMinMul) return null;
+  // en "solo naranjas" todo son naranjas: se reacciona solo a lo muy grave o la partida no avanzaría
+  const minGain = W.reactMin * L.reactMinMul * (game.S.rules?.onlyOrange ? 3 : 1);
+  if (!best || best.score - base < minGain) return null;
   return { actions: best.actions, key: best.key, gain: best.score - base, chance: Math.min(.95, W.reactChance * L.reactMul) };
 }
 
@@ -254,4 +263,46 @@ export function discardPlan(game, p) {
 export function farness(game, p) {
   const b = game.ownBall(p);
   return !b || b.holed ? -1 : game.holeDist(b.x, b.y);
+}
+
+/* ---------- explicar una jugada ----------
+   Compara el tablero antes y después de una jugada de `p` y devuelve el motivo más
+   importante: { key, target? } (target = jugador afectado). Lo usa la interfaz para
+   decir por qué ha jugado así un bot y para el "¿Por qué he perdido?". */
+export function explainPlay(before, after, p, cardKey) {
+  const B = before.S, A = after.S;
+  const ballOf = (S, pl) => S.balls.find(b => b.player === pl);
+  const hd = (S, b) => Math.abs(b.x - S.hole.x) + Math.abs(b.y - S.hole.y);
+  const rivals = B.balls.filter(b => b.player !== p && !b.decoy && !b.holed).map(b => b.player);
+  if (A.winner !== null && A.winners.includes(p)) return { key: 'sink' };
+  if (B.jaque && B.winner !== null && !B.winners.includes(p) && A.winner === null) return { key: 'saveJaque', target: B.winners[0] };
+  if (cardKey === 'no') return { key: 'rewind' };
+  // ¿ha sacado a alguien del tablero o lo ha alejado del hoyo?
+  let worst = null;
+  for (const r of rivals) {
+    const b0 = ballOf(B, r), b1 = ballOf(A, r);
+    if (!b0 || !b1 || b1.holed) continue;
+    const fell = (b0.x !== b1.x || b0.y !== b1.y) && b1.x === b1.spawnX && b1.y === b1.spawnY && hd(B, b0) < hd(A, b1);
+    const delta = hd(A, b1) - hd(B, b0);
+    if (fell) return { key: 'knockOff', target: r };
+    if (delta > 0 && (!worst || delta > worst.delta)) worst = { r, delta, moved: b0.x !== b1.x || b0.y !== b1.y };
+  }
+  const holeMoved = B.hole.x !== A.hole.x || B.hole.y !== A.hole.y;
+  if (worst?.moved) return { key: 'pushAway', target: worst.r };
+  if (holeMoved) {
+    const me0 = ballOf(B, p), me1 = ballOf(A, p);
+    if (worst) return { key: 'holeAway', target: worst.r };
+    if (me0 && me1 && hd(A, me1) < hd(B, me0)) return { key: 'holeCloser' };
+  }
+  const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
+  if (placed) {
+    // ¿en el camino de quién? (la pelota rival más cercana a la loseta)
+    let near = null;
+    for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
+    if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
+    return { key: 'portal' };
+  }
+  const me0 = ballOf(B, p), me1 = ballOf(A, p);
+  if (me0 && me1 && hd(A, me1) < hd(B, me0)) return { key: 'closer', n: hd(B, me0) - hd(A, me1) };
+  return { key: 'generic' };
 }

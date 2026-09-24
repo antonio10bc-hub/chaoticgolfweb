@@ -9,13 +9,14 @@ import { SFX, MUSIC, sfx, sfxApplyVolumes, musicStart, musicStop, musicRefresh, 
 import { loadRecords, resetRecords, REC_MODES, turnsLabel } from './records.js';
 import { resetTutorial } from './tutorial.js';
 import { confirmDialog } from './dialog.js';
-import { levelName, storyLevelAt } from './screens.js';
+import { levelName } from './screens.js';
+import { storyLevelAt } from './screen-story.js';
 import * as ctl from './controller.js';
 import { pauseGame, resumePlay } from './pause.js';
 import { ensureGuard } from './back.js';
 import { loadProfile, saveProfile, MAX_NAME } from './profile.js';
 import { achievementsHTML } from './achievements.js';
-import { PVE_COLORS } from './screens.js';
+import { PVE_COLORS } from './screen-pve.js';
 
 let tab = 'settings', lastFocus = null;
 
@@ -47,6 +48,7 @@ function settingsHTML() {
     <div class="setRow col"><span>${esc(t('settings.theme'))}</span><div class="themeOpts">${THEMES.map(themeBtn).join('')}</div></div>
     ${toggle('setBotFast', prefs.botFast, t('settings.botFast'), t('settings.botFastSub'))}
     ${toggle('setHints', prefs.hints, t('settings.hints'), t('settings.hintsSub'))}
+    ${toggle('setCaddie', prefs.caddie, t('settings.caddie'), t('settings.caddieSub'))}
   </section>
   <section><h4>${esc(t('settings.a11yH'))}</h4>
     ${toggle('setReduce', prefs.reduce, t('settings.reduce'), t('settings.reduceSub'))}
@@ -66,7 +68,7 @@ function statsHTML() {
   const pct = (w, p) => p ? Math.round(100 * w / p) + '%' : '—';
   const cards = REC_MODES.map(m => `<div class="stCard"><small>${esc(t('stats.mode_' + m))}</small>` +
     `<b>${r.played[m]}</b><span>${esc(t('stats.played'))}</span>` +
-    `<div class="stWin"><span>${esc(t(m === 'story' ? 'stats.completed' : 'stats.won'))}: <b>${r.won[m]}</b></span><span>${pct(r.won[m], r.played[m])}</span></div></div>`).join('');
+    `<div class="stWin"><span>${esc(t(['story', 'puzzle', 'daily', 'rush'].includes(m) ? 'stats.completed' : 'stats.won'))}: <b>${r.won[m]}</b></span><span>${pct(r.won[m], r.played[m])}</span></div></div>`).join('');
   const tot = r.totals;
   const totals = [['i-club', tot.golpes, 'win.stats.strokes'], ['i-hole', tot.hundidas, 'win.stats.sunk'],
     ['i-burst', tot.colisiones, 'win.stats.collisions'], ['i-spiral', tot.portales, 'win.stats.portals'], ['i-out', tot.caidas, 'win.stats.falls']]
@@ -80,8 +82,16 @@ function statsHTML() {
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(t('stats.streak'))} <b>${pv.streak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.bestStreak'))} <b>${pv.bestStreak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('stats.fastest'))} <b>${pv.fastest != null ? esc(turnsLabel(pv.fastest)) : '—'}</b></div></div>`;
+  const dl = r.daily, nCh = Object.keys(r.challenges).length, nPz = Object.keys(r.puzzles).length;
+  const modes = `<div class="stTotals">` +
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t('stats.dailyStreak'))} <b>${dl.streak}</b> · ${esc(t('stats.bestStreak'))} <b>${dl.bestStreak}</b></div>` +
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg>${esc(t('modes.rush.title'))} <b>${r.rush.best || 0}</b> pts</div>` +
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('modes.tour.titles', { n: r.tour.champion }))}</div>` +
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('modes.challengesH'))} <b>${nCh}/6</b></div>` +
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.puzzlesH'))} <b>${nPz}</b></div></div>`;
   return `<section><h4>${esc(t('stats.byMode'))}</h4><div class="stCards">${cards}</div></section>
   <section><h4>${esc(t('stats.quickH'))}</h4>${quick}</section>
+  <section><h4>${esc(t('stats.modesH'))}</h4>${modes}</section>
   <section><h4>${esc(t('ach.title'))}</h4>${achievementsHTML()}</section>
   <section><h4>${esc(t('stats.totals'))}</h4><div class="stTotals">${totals}</div></section>
   <section><h4>${esc(t('stats.bestH'))}</h4>${lv
@@ -169,6 +179,7 @@ export function bindSettings() {
     if (id === 'setShapes') setPref('shapes', on);
     if (id === 'setShapes' && app.game) ctl.render();
     if (id === 'setBotFast') setPref('botFast', on);
+    if (id === 'setCaddie') { setPref('caddie', on); if (app.game) ctl.render(); }
     if (id === 'setContrast') setPref('contrast', on);
     if (id === 'setBigText' || id === 'setLeftHand') {
       setPref(id === 'setBigText' ? 'bigText' : 'leftHand', on);

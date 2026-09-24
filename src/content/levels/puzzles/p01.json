@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Acércalo",
+  "name_en": "Bring it closer",
+  "cols": 5,
+  "rows": 6,
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "ball": {
+    "x": 1,
+    "y": 4
+  },
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 3,
+      "y": 3
+    },
+    {
+      "type": "bunker",
+      "x": 0,
+      "y": 1
+    }
+  ],
+  "hand": [
+    "hoyoLeft",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3,
+    "dedo": 0,
+    "hoyoUp": 0,
+    "hoyoDown": 0,
+    "hoyoLeft": 0,
+    "hoyoRight": 0,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 0,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0
+  }
+}

@@ -4,7 +4,7 @@ import { loadSound, saveSound } from '../storage.js';
 import { prefs } from '../ui/prefs.js';
 
 export const SFX = { ctx: null, sfxGain: null, musicGain: null, muted: false, sfxVol: 0.45, musVol: 0.55 };
-export const MUSIC = { on: true, scene: 'menu', track: null, games: 0 };
+export const MUSIC = { on: true, scene: 'menu', track: null, games: 0, mood: 'calm' };
 let chain = 0;   // semitonos acumulados en la jugada en curso (pitch progresivo)
 export const resetChain = () => { chain = 0; };
 
@@ -92,64 +92,89 @@ export function sfx(name) {
     case 'click':  tone(660, 520, .035, 'triangle', .14); break;                           // botón de interfaz
     case 'select': tone(560, 840, .06, 'triangle', .22); break;                          // carta elegida
     case 'win':    [523, 659, 784, 1047].forEach((f, i) => tone(f, f, .16, 'triangle', .5, i * .09)); break;
+    case 'lose':   [392, 349, 311, 262].forEach((f, i) => tone(f, f * .98, .2, 'triangle', .35, i * .13)); break; // "uooh" descendente
   }
 }
 
-/* ---------- música generativa por pistas, con fundido cruzado ----------
-   Cada pista es un patrón de acordes + melodía sobre su propio GainNode; al cambiar
-   de escena (menú ↔ partida) la nueva entra y la anterior se apaga en ~1,6 s. */
-const N = (m) => 440 * Math.pow(2, (m - 69) / 12); // nota MIDI -> Hz
+/* ---------- música: minimalista y con toque cartoon ----------
+   Secuenciador por semicorcheas con instrumentos muy simples (pizzicato, bajo saltarín,
+   campanita, "boop" y un tic de percusión). Cada pista es un patrón de 4 compases.
+   Capas: la base y la de tensión (JAQUE); musicMood() las mezcla:
+     'calm'  solo la base · 'tense' la base se aparta y entra la tensión · 'win' fanfarria y calma.
+   Al cambiar de escena (menú ↔ partida) la pista nueva entra con fundido cruzado. */
+const N = m => 440 * Math.pow(2, (m - 69) / 12); // nota MIDI -> Hz
 const TRACK_DEFS = {
-  // menú: pads lentos y campanitas, muy tranquilo
-  menu: { chordMs: 3600, pad: 'sine', padVol: .15, attack: 1.4,
-    chords: [[60, 64, 67, 71], [57, 60, 64, 67], [53, 57, 60, 64], [55, 59, 62, 69]],
-    lead: [79, 81, 84, 86, 88], leadType: 'sine', leadChance: .55, leadVol: .09, leadHits: [0, .5] },
-  // campo: la de siempre (pads de triángulo + plucks pentatónicos)
-  fairway: { chordMs: 2600, pad: 'triangle', padVol: .16, attack: .9,
-    chords: [[60, 64, 67, 71], [57, 60, 64, 67], [53, 57, 60, 65], [55, 59, 62, 67]],
-    lead: [72, 74, 76, 79, 81], leadType: 'sine', leadChance: .5, leadVol: .12, leadHits: [0] },
-  // brisa: aire de bossa, bajo en 1 y 3 y plucks a contratiempo
-  breeze: { chordMs: 2200, pad: 'triangle', padVol: .1, attack: .5,
-    chords: [[62, 65, 69, 72], [55, 59, 65, 69], [60, 64, 67, 71], [57, 61, 64, 67]],
-    bass: [.0, .5], lead: [74, 76, 79, 81, 83], leadType: 'triangle', leadChance: .8, leadVol: .1, leadHits: [.1875, .4375, .8125] },
-  // salón nocturno: menores con novena, graves suaves y pocas notas
-  lounge: { chordMs: 3000, pad: 'sine', padVol: .17, attack: 1.1,
-    chords: [[57, 60, 64, 71], [53, 57, 60, 64], [50, 53, 57, 64], [52, 56, 59, 62]],
-    bass: [0], lead: [69, 72, 74, 76, 79], leadType: 'sine', leadChance: .4, leadVol: .08, leadHits: [.25, .75] },
+  // menú: tranquilo, arpegios sueltos y una campanita cada dos compases
+  menu: { bpm: 84, chords: [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]],
+    bass: [0, 8], pluck: [0, 6, 10], lead: [72, 74, 76, 79, 81], leadAt: [3, 13], leadChance: .45, bell: true },
+  // campo: saltarín (bajo en 1 y 3, acordes a contratiempo)
+  fairway: { bpm: 104, chords: [[55, 59, 62], [60, 64, 67], [62, 66, 69], [55, 59, 62]],
+    bass: [0, 8], stab: [4, 12], pluck: [], lead: [67, 69, 71, 74, 76], leadAt: [2, 6, 10, 14], leadChance: .4, boop: true, tick: [4, 12] },
+  // brisa: bossa ligera, bajo sincopado y pizzicatos a contratiempo
+  breeze: { bpm: 96, chords: [[53, 57, 60, 64], [50, 53, 57, 60], [55, 58, 62, 65], [48, 52, 55, 58]],
+    bass: [0, 6, 8, 14], stab: [3, 7, 11, 15], pluck: [], lead: [72, 74, 77, 79, 81], leadAt: [1, 9], leadChance: .35, tick: [2, 6, 10, 14] },
+  // salón (noche): lento, campanitas y bajo suave
+  lounge: { bpm: 76, chords: [[57, 60, 64], [53, 57, 60], [50, 53, 57], [52, 56, 59]],
+    bass: [0, 10], pluck: [4, 12], lead: [69, 72, 74, 76, 79], leadAt: [6, 14], leadChance: .35, bell: true },
 };
 
-function note(dest, f, t0, dur, type, vol, attack = .01) {
-  const o = SFX.ctx.createOscillator(), g = SFX.ctx.createGain();
-  o.type = type; o.frequency.value = f; o.detune.value = (fxRand() - .5) * 7;
+function env(dest, t0, vol, attack, decay) {
+  const g = SFX.ctx.createGain();
   g.gain.setValueAtTime(0, t0);
   g.gain.linearRampToValueAtTime(vol, t0 + attack);
-  g.gain.linearRampToValueAtTime(0, t0 + dur);
-  o.connect(g); g.connect(dest);
-  o.start(t0); o.stop(t0 + dur + .05);
+  g.gain.exponentialRampToValueAtTime(.0008, t0 + attack + decay);
+  g.connect(dest);
+  return g;
 }
+function osc(dest, type, f, t0, dur, f1) {
+  const o = SFX.ctx.createOscillator();
+  o.type = type; o.frequency.setValueAtTime(f, t0);
+  if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur * .6);
+  o.connect(dest); o.start(t0); o.stop(t0 + dur + .05);
+}
+const INSTR = {
+  pluck: (d, f, t, v = .16) => { const g = env(d, t, v, .004, .28); osc(g, 'triangle', f, t, .32); osc(env(d, t, v * .35, .003, .12), 'sine', f * 2, t, .14); },
+  stab: (d, fs, t) => fs.forEach(f => INSTR.pluck(d, f, t, .075)),
+  bass: (d, f, t) => { const g = env(d, t, .26, .006, .22); osc(g, 'sine', f * 1.02, t, .26, f); },
+  bell: (d, f, t) => { osc(env(d, t, .07, .004, .9), 'sine', f, t, 1); osc(env(d, t, .025, .004, .5), 'sine', f * 2.76, t, .6); },
+  boop: (d, t) => osc(env(d, t, .06, .005, .12), 'sine', 520, t, .14, 820),
+  tick: (d, t) => {
+    const len = (.018 * SFX.ctx.sampleRate) | 0, buf = SFX.ctx.createBuffer(1, len, SFX.ctx.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) ch[i] = (fxRand() * 2 - 1) * (1 - i / len);
+    const src = SFX.ctx.createBufferSource(), f = SFX.ctx.createBiquadFilter();
+    src.buffer = buf; f.type = 'highpass'; f.frequency.value = 6500;
+    src.connect(f); f.connect(env(d, t, .045, .001, .02)); src.start(t);
+  },
+};
 
 function makeTrack(name) {
   const def = TRACK_DEFS[name];
-  const gain = SFX.ctx.createGain();
-  gain.gain.value = 0;
-  gain.connect(SFX.musicGain);
-  let step = 0;
+  const gain = SFX.ctx.createGain(), base = SFX.ctx.createGain(), tense = SFX.ctx.createGain();
+  gain.gain.value = 0; base.gain.value = 1; tense.gain.value = 0;
+  base.connect(gain); tense.connect(gain); gain.connect(SFX.musicGain);
+  const stepDur = 60 / def.bpm / 4; // semicorchea
+  let step = 0, next = SFX.ctx.currentTime + .08;
   const tick = () => {
     if (!SFX.ctx) return;
-    const t0 = SFX.ctx.currentTime + .05, bar = def.chordMs / 1000;
-    const chord = def.chords[step % def.chords.length]; step++;
-    chord.forEach(m => note(gain, N(m), t0, bar + .4, def.pad, def.padVol, def.attack));
-    for (const at of def.bass || []) note(gain, N(chord[0] - 12), t0 + at * bar, .5, 'sine', .22, .015);
-    for (const at of def.leadHits) {
-      if (fxRand() < def.leadChance) {
-        const m = def.lead[(fxRand() * def.lead.length) | 0];
-        note(gain, N(m), t0 + at * bar, .7, def.leadType, def.leadVol, .01);
-      }
+    while (next < SFX.ctx.currentTime + .15) { // programa un poco por delante (sin tirones)
+      const bar = Math.floor(step / 16) % def.chords.length, st = step % 16, chord = def.chords[bar], t0 = next;
+      if (def.bass.includes(st)) INSTR.bass(base, N(chord[st >= 8 && chord.length > 2 ? 2 : 0] - 12), t0);
+      if (def.stab?.includes(st)) INSTR.stab(base, chord.map(N), t0);
+      if (def.pluck.includes(st)) INSTR.pluck(base, N(chord[(st / 2 | 0) % chord.length] + 12), t0);
+      if (def.leadAt.includes(st) && fxRand() < def.leadChance) INSTR.pluck(base, N(def.lead[(fxRand() * def.lead.length) | 0]), t0, .12);
+      if (def.bell && st === 0 && bar % 2 === 0) INSTR.bell(base, N(chord[0] + 24), t0);
+      if (def.boop && st === 15 && bar === def.chords.length - 1) INSTR.boop(base, t0);
+      if (def.tick?.includes(st)) INSTR.tick(base, t0);
+      // capa de tensión: tic en cada corchea, pulso grave en cada tiempo y un roce disonante al empezar el compás
+      if (st % 2 === 0) INSTR.tick(tense, t0);
+      if (st % 4 === 0) INSTR.bass(tense, N(chord[0] - 24), t0);
+      if (st === 0) { INSTR.bell(tense, N(chord[0] + 13), t0); INSTR.bell(tense, N(chord[0] + 12), t0 + stepDur); }
+      step++; next += stepDur;
     }
   };
   tick();
-  const timer = setInterval(tick, def.chordMs);
-  return { name, gain, timer };
+  const timer = setInterval(tick, 40);
+  return { name, gain, base, tense, timer };
 }
 
 // pista de partida según el ajuste (auto: noche → salón; si no, alterna campo / brisa)
@@ -159,20 +184,42 @@ function gameTrack() {
   return MUSIC.games % 2 ? 'breeze' : 'fairway';
 }
 const FADE = 1.6;
+function ramp(param, to, secs) {
+  const now = SFX.ctx.currentTime;
+  param.cancelScheduledValues(now);
+  param.setValueAtTime(param.value, now);
+  param.linearRampToValueAtTime(to, now + secs);
+}
 function crossfadeTo(name) {
   if (!SFX.ctx || MUSIC.track?.name === name) return;
-  const now = SFX.ctx.currentTime;
   const old = MUSIC.track;
-  if (old) {
-    old.gain.gain.cancelScheduledValues(now);
-    old.gain.gain.setValueAtTime(old.gain.gain.value, now);
-    old.gain.gain.linearRampToValueAtTime(0, now + FADE);
-    setTimeout(() => { clearInterval(old.timer); old.gain.disconnect(); }, FADE * 1000 + 300);
-  }
+  if (old) { ramp(old.gain.gain, 0, FADE); setTimeout(() => { clearInterval(old.timer); old.gain.disconnect(); }, FADE * 1000 + 300); }
   const tr = makeTrack(name);
-  tr.gain.gain.setValueAtTime(0, now);
-  tr.gain.gain.linearRampToValueAtTime(1, now + FADE);
+  ramp(tr.gain.gain, 1, FADE);
   MUSIC.track = tr;
+  applyMood(.1);
+}
+// humor de la música: 'calm' | 'tense' (JAQUE) | 'win' (fanfarria y vuelta a la calma)
+export function musicMood(m) {
+  if (MUSIC.mood === m && m !== 'win') return;
+  MUSIC.mood = m === 'win' ? 'calm' : m;
+  if (!SFX.ctx || !MUSIC.track) return;
+  if (m === 'win') fanfare();
+  applyMood(m === 'tense' ? .4 : 1.2);
+}
+function applyMood(secs) {
+  const tr = MUSIC.track; if (!tr) return;
+  const tense = MUSIC.mood === 'tense';
+  ramp(tr.base.gain, tense ? .45 : 1, secs);
+  ramp(tr.tense.gain, tense ? 1 : 0, secs);
+}
+// fanfarria corta de victoria sobre la música (arpegio subiendo, "boop" y acorde)
+function fanfare() {
+  const t0 = SFX.ctx.currentTime + .05, d = SFX.musicGain;
+  [60, 64, 67, 72].forEach((m, i) => INSTR.pluck(d, N(m + 12), t0 + i * .11, .2));
+  INSTR.boop(d, t0 + .46);
+  [72, 76, 79].forEach(m => INSTR.bell(d, N(m), t0 + .56));
+  const tr = MUSIC.track; if (tr) { ramp(tr.base.gain, .25, .2); setTimeout(() => applyMood(1.5), 1400); }
 }
 // escena actual: 'menu' | 'game' (newGame: una partida nueva puede cambiar de pista)
 export function musicScene(scene, { newGame = false } = {}) {
@@ -188,10 +235,7 @@ export function musicStart() {
 export function musicStop() {
   const tr = MUSIC.track; MUSIC.track = null;
   if (!tr || !SFX.ctx) return;
-  const now = SFX.ctx.currentTime;
-  tr.gain.gain.cancelScheduledValues(now);
-  tr.gain.gain.setValueAtTime(tr.gain.gain.value, now);
-  tr.gain.gain.linearRampToValueAtTime(0, now + .5);
+  ramp(tr.gain.gain, 0, .5);
   setTimeout(() => { clearInterval(tr.timer); tr.gain.disconnect(); }, 800);
 }
 // al cambiar la pista elegida en ajustes

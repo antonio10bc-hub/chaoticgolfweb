@@ -112,6 +112,9 @@
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M11 7 5 12l6 5zM19 7l-6 5 6 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="i-sand" viewBox="0 0 24 24"><path d="M3 17c2-4 5.5-6 9-6s7 2 9 6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.5V9.5M10 3h4M18 7l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 17.5h6M9.8 20.5h4.4M12 3.5a6 6 0 0 0-3.6 10.8c.8.6 1.1 1.3 1.1 2.2h5c0-.9.3-1.6 1.1-2.2A6 6 0 0 0 12 3.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5v14M15.5 5v14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.6M12 16.9h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
@@ -143,6 +146,7 @@
       <button id="pveBtn" class="mBtn multi"><span data-i18n="menu.pve">Partida Rápida</span><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></button>
       <button id="continueBtn" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="continueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     </div>
+    <button id="modesBtn" class="mBtn modes"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.modes">Más modos</span><i class="mDot" id="modesDot" hidden></i></button>
     <button id="repeatBtn" class="btn-text mRepeat" hidden><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg><span data-i18n="menu.repeat">Repetir la última</span><small id="repeatSub"></small></button>
     </div>
     <p class="mTag" data-i18n="menu.tag">Golf de cartas. Caótico. Con JAQUE.</p>
@@ -186,6 +190,10 @@
       <button class="pveOpt opp" data-n="3"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
       <button class="pveOpt opp" data-n="4"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
     </div>
+    <div id="pveRivalsRow">
+      <h4 data-i18n="pve.rivals">Rivales</h4>
+      <div class="pveOpts" id="pveRivals"></div>
+    </div>
     <div id="pveDiffRow">
       <h4 data-i18n="pve.diff">Dificultad de la máquina</h4>
       <div class="pveOpts" id="pveDiff">
@@ -217,6 +225,7 @@
       <button id="resetBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="game.resetTitle" title="Empezar la partida de cero"><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg><span class="lbl" data-i18n="game.resetShort">Reiniciar</span></button>
     </div>
     <div id="turnPill" aria-live="polite"></div>
+    <div id="modeChip" hidden></div>
     <div class="barSide right">
       <button id="rulesBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="rules.btnTitle" title="Reglas y cartas (H)" aria-label="Reglas"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></button>
       <button id="pauseBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="pause.btnTitle" title="Pausa (P)" aria-label="Pausa"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button>
@@ -228,12 +237,15 @@
     <aside id="seats" aria-label="Jugadores"></aside>
     <div id="boardCol">
       <div id="boardWrap">
+       <div id="boardZoom">
         <div id="boardArea">
           <div id="board" role="grid" data-i18n-aria="a11y.board"></div>
           <div id="pieces" aria-hidden="true"></div>
           <div id="boardFlash" aria-hidden="true"></div>
           <div id="rewindTag" aria-hidden="true"><svg class="i"><use href="#i-rewind"/></svg> REWIND</div>
         </div>
+       </div>
+       <button id="zoomReset" class="btn-light btn-sm btn-icon" hidden data-i18n-aria="zoom.reset" aria-label="Ver todo el tablero"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg></button>
       </div>
     </div>
     <aside id="piles">
@@ -258,6 +270,10 @@
       <div id="dockOwner"></div>
       <div id="hands"></div>
       <div id="turnActions">
+        <span class="assistBtns">
+          <button id="undoBtn" class="btn-light btn-sm btn-icon" hidden data-i18n-title="assist.undoTitle" title="Deshacer tu última jugada"><svg class="i" aria-hidden="true"><use href="#i-rewind"/></svg><span data-i18n="assist.undo">Deshacer</span></button>
+          <button id="caddieBtn" class="btn-light btn-sm btn-icon" hidden data-i18n-title="assist.caddieTitle" title="El caddie te sugiere tu mejor jugada"><svg class="i" aria-hidden="true"><use href="#i-bulb"/></svg><span data-i18n="assist.caddie">Consejo</span></button>
+        </span>
         <button id="discardBtn" class="btn-secondary"><span data-i18n="game.discard">Descartar</span><small data-i18n="game.discardSub">y robar</small></button>
         <button id="endTurnBtn" class="btn-accent btn-lg"><span data-i18n="game.endTurn">Terminar turno</span><small data-i18n="game.endTurnSub">roba hasta 2</small></button>
       </div>
@@ -317,6 +333,13 @@
   <div id="lvlGrid"></div>
 </div>
 
+<div id="modesScreen">
+  <div class="screenTop"><button id="modesBack" class="btn-light btn-sm" data-i18n="nav.toMenu">← Menú</button></div>
+  <h1 class="sTitle" data-i18n="modes.title">Modos</h1>
+  <p class="sSub" data-i18n="modes.sub">Retos para cada día, contrarreloj, torneos y desafíos</p>
+  <div id="modesGrid"></div>
+</div>
+
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="turnBanner" aria-hidden="true"></div>
 <button id="sfxBtn" data-i18n-title="sound.toggleTitle" title="Sonido: activar / silenciar"><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg></button>
@@ -364,10 +387,12 @@
 
 <div id="winOverlay" role="dialog" aria-modal="true" aria-labelledby="winMsg"><div class="box">
   <div class="winIcon" id="winIcon" aria-hidden="true"><svg class="i"><use href="#i-trophy"/></svg></div>
+  <div id="winStyle"></div>
   <div class="msg" id="winMsg"></div>
   <div id="winChips"></div>
   <div id="winStats"></div>
   <div id="winSummary"></div>
+  <div id="winWhy"></div>
   <div id="winBtns" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap"></div>
 </div></div>
 

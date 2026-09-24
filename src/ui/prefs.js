@@ -11,6 +11,7 @@ const DEFAULTS = {
   bigText: false,     // interfaz con texto grande
   contrast: false,    // alto contraste
   leftHand: false,    // botones de turno a la izquierda (zurdos)
+  caddie: true,       // botón de consejo del caddie en la partida
 };
 
 export const prefs = { ...DEFAULTS };

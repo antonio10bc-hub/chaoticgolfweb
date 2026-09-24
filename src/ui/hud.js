@@ -9,6 +9,7 @@ import { dockOwner, hasPlayable, isBotSeat } from './hands.js';
 import { t } from '../i18n/index.js';
 import { viewer, multiHuman, displayName, avatarHTML, handRevealed } from './players.js';
 import { prefs } from './prefs.js';
+import { modeChipText } from './screen-modes.js';
 
 const set = (el, html) => { if (el._html !== html) { el.innerHTML = html; el._html = html; } };
 
@@ -58,7 +59,8 @@ function renderPiles() {
   if (S.lastCardKey) {
     const def = CARDS[S.lastCardKey];
     const who = app.lastActor != null ? avatarHTML(app.lastActor, 'xs') : '';
-    set(lp, `<small>${t('hud.lastPlay')}</small><div class="lastRow">${who}<span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(S.lastCardLabel)}</b></div>`);
+    const why = app.lastWhy && app.lastWhy.p === app.lastActor ? `<small class="lastWhy">${esc(app.lastWhy.txt)}</small>` : '';
+    set(lp, `<small>${t('hud.lastPlay')}</small><div class="lastRow">${who}<span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(S.lastCardLabel)}</b></div>${why}`);
   } else set(lp, '');
 }
 
@@ -144,8 +146,36 @@ export function storyTip(key) {
 export const hideStoryTip = () => $('storyTip').classList.remove('visible');
 
 export function updateMenuBtn() {
-  $('menuBtn').textContent = app.mode === 'test' ? t('nav.toEditor') : app.mode === 'story' ? t('nav.toLevels') : t('nav.toMenu');
+  const v = app.variant;
+  $('menuBtn').textContent = app.mode === 'test' ? t('nav.toEditor')
+    : ['daily', 'rush', 'tour', 'challenge'].includes(v) ? t('nav.toModes')
+    : app.mode === 'story' ? t('nav.toLevels') : t('nav.toMenu');
 }
+
+// etiqueta del modo en la partida (reto diario, contrarreloj, torneo, desafío, puzle)
+// devuelve true si ha aparecido o desaparecido (cambia el hueco del tablero en el móvil)
+export function modeChip() {
+  const el = $('modeChip');
+  const txt = app.variant ? modeChipText() : '';
+  const was = !el.hidden;
+  el.hidden = !txt;
+  if (el.textContent !== txt) el.textContent = txt;
+  return was !== !!txt;
+}
+
+// por qué ha jugado así un bot: en la última jugada y, unos segundos, en la barra de acción
+// (la pinta renderActionBar mientras no haya nada más importante que decir)
+export const BOT_WHY_MS = 3500;
+export function botWhy(p, why) {
+  if (!why || why.key === 'generic') return;
+  const target = why.target != null ? (why.target === viewer() && app.mode === 'pve' && !multiHuman() ? t('why.you') : displayName(why.target)) : '';
+  app.lastWhy = { p, txt: t('explain.' + why.key, { name: displayName(p), target, n: why.n || '' }), at: Date.now() };
+}
+export const botWhyHTML = () => {
+  const w = app.lastWhy;
+  if (!w || Date.now() - w.at > BOT_WHY_MS) return '';
+  return `<div class="hint idle botWhy" style="--pc:${pColor(w.p)}">${avatarHTML(w.p, 'xs')}<span>${esc(w.txt)}</span></div>`;
+};
 
 // en los niveles de historia, el botón de fin de turno pide atención cuando no
 // quedan cartas en la mano o llevas más de 5 s sin jugar una
@@ -155,6 +185,9 @@ export function updateEndTurnHint() {
     && S.hands[0] && (S.hands[0].length === 0 || Date.now() - app.lastPlayAt > 5000));
   $('endTurnBtn').classList.toggle('ctaEndTurn', on);
   updateIdleNudge();
+  // la explicación del bot caduca: se quita de la barra
+  const bw = $('actionBar').querySelector('.botWhy');
+  if (bw && !botWhyHTML()) { bw.remove(); $('actionBar')._html = null; }
 }
 
 // aviso tras un rato sin jugar (ajuste "Avisos de jugada"): en tu turno y sin nada en curso,

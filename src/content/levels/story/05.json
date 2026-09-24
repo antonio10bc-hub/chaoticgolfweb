@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "name": "Mueve el hoyo",
+  "name_en": "Move the hole",
+  "cols": 7,
+  "rows": 7,
+  "hole": {
+    "x": 6,
+    "y": 0
+  },
+  "ball": {
+    "x": 0,
+    "y": 6
+  },
+  "parCells": [
+    {
+      "x": 3,
+      "y": 1,
+      "n": 4
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "n": 3
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "n": 2
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "n": 1
+    }
+  ],
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 3,
+      "y": 5
+    },
+    {
+      "type": "bunker",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "type": "bunker",
+      "x": 1,
+      "y": 2
+    }
+  ],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 4,
+    "palo3": 3,
+    "dedo": 0,
+    "hoyoUp": 2,
+    "hoyoDown": 3,
+    "hoyoLeft": 3,
+    "hoyoRight": 2,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 0,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0
+  },
+  "tips": {
+    "bunker": "story.tips.bunker"
+  }
+}

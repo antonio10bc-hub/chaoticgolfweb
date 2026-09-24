@@ -2,7 +2,9 @@
 // y los flags de la reproducción de animaciones. Un único objeto compartido.
 export const app = {
   game: null,            // Game en curso (src/engine/game.js)
-  mode: 'free',          // 'free' (testing tool) | 'test' (probar desde editor) | 'story' | 'pve'
+  mode: 'free',          // 'free' (testing tool) | 'test' (probar desde editor) | 'story' (en solitario) | 'pve' (con bots)
+  variant: null,         // subtipo: en solitario 'puzzle' | 'daily' | 'rush'; con bots 'tour' | 'challenge'; null = el normal
+  run: null,             // datos del subtipo en curso (hoyo del torneo, puntos del contrarreloj, fecha del reto…)
   levelIndex: null,      // índice del nivel en juego (modo historia)
   level: null,           // nivel en juego (historia / prueba)
   screen: 'menu',
@@ -13,7 +15,8 @@ export const app = {
   playSeq: 0,            // contador de jugadas resueltas (la IA evalúa reacciones una vez por jugada)
   lastActor: null,       // jugador de la última carta consumida
   tipShown: {},          // bocadillos de tutorial ya mostrados en la partida actual
-  storyLevels: [],       // niveles integrados de historia (cargados de JSON)
+  storyLevels: [],       // niveles integrados de Lo básico (cargados de JSON)
+  puzzleLevels: [],      // puzles de "gana en 1 turno"
   pveShowHands: false,   // debug: ver las cartas de los contrincantes
   pveCfg: { color: 0, size: 'm', opps: 2, humans: 1, diff: 'normal' },
   lastPveCfg: null,      // configuración de la partida PVE en curso (para Reiniciar)

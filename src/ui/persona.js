@@ -5,27 +5,44 @@ import { app } from './app.js';
 import { t } from '../i18n/index.js';
 import { REDUCED } from '../fx/juice.js';
 
-// nombres por personalidad (agresivo / tramposo); se reparten sin repetir en la partida
-const NAMES = {
-  aggro: ['Rocco', 'Bruno', 'Duke', 'Tank', 'Brutus'],
-  trick: ['Lola', 'Pixie', 'Vito', 'Nina', 'Coco'],
-};
+// catálogo de rivales: cada bot tiene nombre y personalidad (el estilo de juego de src/ai/bot.js)
+export const PERSONAS = [
+  { id: 'rocco', name: 'Rocco', style: 'aggro' }, { id: 'bruno', name: 'Bruno', style: 'aggro' }, { id: 'tank', name: 'Tank', style: 'aggro' },
+  { id: 'lola', name: 'Lola', style: 'trick' }, { id: 'pixie', name: 'Pixie', style: 'trick' }, { id: 'vito', name: 'Vito', style: 'trick' },
+  { id: 'vera', name: 'Vera', style: 'cautious' }, { id: 'tito', name: 'Tito', style: 'cautious' }, { id: 'olga', name: 'Olga', style: 'cautious' },
+  { id: 'chispa', name: 'Chispa', style: 'chaos' }, { id: 'zas', name: 'Zas', style: 'chaos' }, { id: 'kiko', name: 'Kiko', style: 'chaos' },
+];
+export const personaById = id => PERSONAS.find(p => p.id === id) || null;
 
-// nombre de cada bot de la partida en curso (cacheado por partida)
+// reparte personajes a los asientos de bots: los elegidos (ids) y, para el resto, otros al azar
+// sin repetir. Escribe su estilo y su nombre en el estado (metadatos: no afectan a las reglas).
+export function assignPersonas(S, botSeats, chosen = [], rand = Math.random) {
+  const used = new Set(chosen.filter(id => personaById(id)));
+  const pool = PERSONAS.filter(p => !used.has(p.id));
+  S.playerNames = S.playerNames || Array(S.nPlayers).fill(null);
+  S.personas = S.personas || Array(S.nPlayers).fill(null);
+  botSeats.forEach((seat, i) => {
+    let pr = personaById(chosen[i]);
+    if (!pr) { const k = Math.floor(rand() * pool.length); pr = pool.splice(k, 1)[0] || PERSONAS[i % PERSONAS.length]; }
+    S.aiStyles[seat] = pr.style; S.playerNames[seat] = pr.name; S.personas[seat] = pr.id;
+  });
+}
+
+// nombre de un bot sin personaje asignado (partidas antiguas): uno de su estilo, sin repetir
 let nameCache = { game: null, names: {} };
 export function botName(p) {
   const g = app.game, S = g?.S;
   if (!S?.aiStyles?.[p]) return null;
   if (nameCache.game !== g) {
     const used = new Set(), names = {};
-    const off = (g.seed ?? 7) % 5;
+    const off = (g.seed ?? 7) % 3;
     for (let i = 0; i < S.nPlayers; i++) {
       const st = S.aiStyles[i];
       if (!st) continue;
-      const list = NAMES[st] || NAMES.trick;
-      let k = (off + i) % list.length;
-      while (used.has(list[k])) k = (k + 1) % list.length;
-      used.add(list[k]); names[i] = list[k];
+      const list = PERSONAS.filter(pp => pp.style === st);
+      let k = (off + i) % list.length, tries = 0;
+      while (used.has(list[k].name) && tries++ < list.length) k = (k + 1) % list.length;
+      used.add(list[k].name); names[i] = list[k].name;
     }
     nameCache = { game: g, names };
   }
@@ -48,8 +65,8 @@ export function setMood(p, m, ms = 2400) {
 export const resetMoods = () => { for (const k of Object.keys(moods)) delete moods[k]; };
 
 // cara plana: ojos, cejas y boca según personalidad y humor (viewBox 40×40, sobre el círculo de color)
-export function faceSVG(p) {
-  const style = app.game?.S.aiStyles?.[p] || 'trick', m = moodOf(p);
+export function faceSVG(p, forceStyle = null, forceMood = null) {
+  const style = forceStyle || app.game?.S.aiStyles?.[p] || 'trick', m = forceMood || moodOf(p);
   const ink = '#242424';
   // cejas: el agresivo las lleva fruncidas por defecto
   const browsBy = {
@@ -58,7 +75,10 @@ export function faceSVG(p) {
     think: 'M11 13.5l7 .8M22 12.5l7 2',
     happy: 'M11 13.5q3.5-2.4 7 0M22 13.5q3.5-2.4 7 0',
     smug: 'M11 14l7 .2M22 12.8l7 1.4',
-    idle: style === 'aggro' ? 'M11 13.6l7 2M29 13.6l-7 2' : 'M11 14q3.5-1.6 7 0M22 14q3.5-1.6 7 0',
+    idle: style === 'aggro' ? 'M11 13.6l7 2M29 13.6l-7 2'
+      : style === 'cautious' ? 'M11 14.5l7-1.6M29 14.5l-7-1.6'      // cejas de preocupación
+      : style === 'chaos' ? 'M11 12.5l7 2.5M22 15q3.5-3 7-1'         // una ceja arriba, otra abajo
+      : 'M11 14q3.5-1.6 7 0M22 14q3.5-1.6 7 0',
   };
   const mouthBy = {
     happy: '<path d="M13 25q7 7 14 0z" fill="#242424"/>',
@@ -68,16 +88,22 @@ export function faceSVG(p) {
     smug: '<path d="M15 26.5q6 3.5 11-1.5" fill="none" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>',
     idle: style === 'aggro'
       ? '<path d="M15 27.5q5 1.6 10 0" fill="none" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>'
+      : style === 'cautious' ? '<path d="M17 28h6" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>'
+      : style === 'chaos' ? '<path d="M13 26l3 2.5 3-2.5 3 2.5 3-2.5 2 1.5" fill="none" stroke="#242424" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
       : '<path d="M15 26.5q5.5 3.6 11 0" fill="none" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>',
   };
   const eyeY = m === 'think' ? 18.4 : 19;
+  // ojos: el caótico los tiene desiguales; el cauteloso lleva gafas redondas
+  const rL = style === 'chaos' ? 3.1 : 2.4, rR = style === 'chaos' ? 1.9 : 2.4;
   const eyes = m === 'happy'
     ? `<path d="M12 19.5q2.6-3 5.2 0M22.8 19.5q2.6-3 5.2 0" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round"/>`
-    : `<circle cx="14.6" cy="${eyeY}" r="2.4" fill="${ink}"/><circle cx="25.4" cy="${eyeY}" r="2.4" fill="${ink}"/>` +
+    : `<circle cx="14.6" cy="${eyeY}" r="${rL}" fill="${ink}"/><circle cx="25.4" cy="${eyeY}" r="${rR}" fill="${ink}"/>` +
       `<circle cx="15.3" cy="${eyeY - .8}" r=".8" fill="#fff"/><circle cx="26.1" cy="${eyeY - .8}" r=".8" fill="#fff"/>`;
+  const glasses = style === 'cautious'
+    ? `<circle cx="14.6" cy="19" r="4.6" fill="rgba(255,255,255,.28)" stroke="${ink}" stroke-width="1.4"/><circle cx="25.4" cy="19" r="4.6" fill="rgba(255,255,255,.28)" stroke="${ink}" stroke-width="1.4"/><path d="M19.2 19h1.6" stroke="${ink}" stroke-width="1.4"/>` : '';
   return `<svg class="face" viewBox="0 0 40 40" aria-hidden="true" data-mood="${m}">` +
     `<path d="${browsBy[m] || browsBy.idle}" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round"/>` +
-    eyes + (mouthBy[m] || mouthBy.idle) + `</svg>`;
+    eyes + glasses + (mouthBy[m] || mouthBy.idle) + `</svg>`;
 }
 
 // actualiza en sitio las caras de un bot (sin re-renderizar la mesa)

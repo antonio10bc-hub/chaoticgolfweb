@@ -144,16 +144,18 @@ function fxPerfTick(ts) {
 export function fxPerfWatch() { if (!perfRaf) { perfFrames = 0; perfLast = performance.now(); perfRaf = requestAnimationFrame(fxPerfTick); } }
 
 // confeti de celebración en un punto de la pantalla (capa fija)
-function fxConfettiAt(clientX, clientY, n) {
-  fxSpawn(clientX, clientY, { n, colors: CONFETTI_C, size: 9, dist: 120, up: 60, gravity: 60,
+function fxConfettiAt(clientX, clientY, n, colors = CONFETTI_C) {
+  fxSpawn(clientX, clientY, { n, colors, size: 9, dist: 120, up: 60, gravity: 60,
     dur: 750, rect: true, fixed: true });
 }
-export function fxWinConfetti() {
+// colors: paleta de la celebración (según cómo se ha ganado); con ella, una ráfaga más
+export function fxWinConfetti(colors) {
   if (REDUCED) return;
   const cx = window.innerWidth / 2, cy = window.innerHeight * 0.32;
-  for (let i = 0; i < JUICE.confettiWin.bursts; i++) {
-    setTimeout(() => fxConfettiAt(cx + (fxRand() - .5) * 220, cy + (fxRand() - .5) * 80,
-      JUICE.confettiWin.perBurst), i * JUICE.confettiWin.gapMs);
+  const bursts = JUICE.confettiWin.bursts + (colors ? 2 : 0);
+  for (let i = 0; i < bursts; i++) {
+    setTimeout(() => fxConfettiAt(cx + (fxRand() - .5) * (colors ? 360 : 220), cy + (fxRand() - .5) * 80,
+      JUICE.confettiWin.perBurst, colors || CONFETTI_C), i * JUICE.confettiWin.gapMs);
   }
 }
 

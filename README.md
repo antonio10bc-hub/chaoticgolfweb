@@ -29,12 +29,19 @@ src/
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
     tiles/                 losetas (búnker, portal) con sus rasgos: trap / portal
-    levels/story/          niveles del modo historia en JSON (+ index.json)
+    levels/story/          niveles de Lo básico en JSON (+ index.json)
+    levels/puzzles/        puzles de "gana en 1 turno" (mano fija)
+    levels/generate.js     generador determinista (reto diario y contrarreloj)
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
     autoplay.js            partidas bot-contra-bot instantáneas (simulador y tests)
   ui/                      pantallas, tablero, manos, HUD, editor, debug, orquestador de la IA
     controller.js          une motor e interfaz: acción → eventos → efectos → render
+    screens.js             navegación, salir / reiniciar, modo libre
+    screen-story.js        Lo básico y puzles · screen-pve.js  Partida rápida (y rivales)
+    screen-modes.js        reto diario, contrarreloj, torneo y desafíos · resume.js  continuar
+    assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
+    board-zoom.js          pellizcar y desplazar el tablero
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
@@ -147,13 +154,25 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
   pantalla de carga.
+- **Modos** (menú → Más modos): reto diario (mismo tablero y mazo para todos cada día; récord del día y
+  racha de días), contrarreloj (5 hoyos generados; puntos por turnos y rapidez), torneo de 9 hoyos contra los
+  mismos rivales (conservan cara y humor) y 6 desafíos con reglas especiales (solo naranjas, sin palo 3, hoyo
+  inquieto, mar de arena, atajos, multitud). Lo básico tiene 8 niveles y 6 puzles de "gana en 1 turno".
+- **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en
+  Partida rápida. Tras cada jugada un bot explica por qué la ha hecho.
+- **Ayudas:** consejo del caddie (misma IA que los bots; queda anotado), deshacer en Lo básico y en fácil,
+  "¿Por qué he perdido?" con el momento clave (antes / después) y un consejo.
+- **Música** minimalista con toque cartoon: se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene
+  su celebración (de portal, carambola, el hoyo se la traga, robo, tiro largo, zigzag, a la primera).
+- **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
 - **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final
   (jugada más larga, quién te golpeó más, tu carta más usada).
 
 ## Tests y herramientas
 
 ```bash
-npm test                          # oráculo de reglas + reglas concretas + IA (~3 s)
+npm test                          # oráculo de reglas + reglas concretas + IA + niveles y puzles (~3 s)
+npm run test:ui                   # interfaz en Chrome real: guardado, pausa, multijugador, logros, deshacer, reto, puzles
 npm run simulate                  # telemetría: 500 partidas bot-contra-bot, victorias y uso de cartas
 npm run simulate -- --random 0 --players 4 --size l --games 2000
 npm run smoke                     # prueba de humo en Chrome real (capturas en smoke-out/)

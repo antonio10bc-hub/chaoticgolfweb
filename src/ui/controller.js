@@ -28,6 +28,11 @@ import { tutorialEvent } from './tutorial.js';
 import { unlock } from './achievements.js';
 import { setBotTempo } from './prefs.js';
 import { clearPause } from './pause.js';
+import { explainPlay } from '../ai/bot.js';
+import { trackMoment, resetMoments } from './why-lost.js';
+import { redrawCaddie, clearCaddie, paintAssist } from './assist.js';
+import { showPuzzleFail } from './win.js';
+import { musicMood } from '../audio/sfx.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -45,10 +50,12 @@ const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 's
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
-export function startGame(game, mode, { levelIndex = null, level = null } = {}) {
+export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {
   aiStop();
   app.game = game;
   app.mode = mode;
+  app.variant = variant;
+  app.run = run;
   app.levelIndex = levelIndex;
   app.level = level;
   app.animQueue = []; app.animating = false;
@@ -56,7 +63,10 @@ export function startGame(game, mode, { levelIndex = null, level = null } = {}) 
   app.lastPlayAt = Date.now();
   prevTurn = -1; jaqueShown = false;
   app.passFor = null; app.reacting = null;
+  app.winStyle = {}; app.undo = null; app.caddie = null; app.lastWhy = null; // cómo ganó cada uno · deshacer · consejo del caddie
+  resetMoments();
   clearPause();
+  musicMood('calm');
   resetMoods(); clearBubbles();
   resetStats();
   resetDealAnim();
@@ -81,10 +91,11 @@ function dispatch(fn) {
   if (!g) return false;
   const jaqueBefore = g.S.jaque && g.S.winner !== null;
   const turnBefore = g.S.turn;
+  const before = app.mode === 'pve' ? g.clone({ lite: true }) : null; // para explicar la jugada y el momento clave
   const ok = fn(g);
   const events = g.takeEvents();
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
-  let actor = null, moves = 0;
+  let actor = null, moves = 0, cardKey = null;
   const me = meSeat(g);
   for (const ev of events) {
     if (ANIM.has(ev.t)) {
@@ -100,7 +111,7 @@ function dispatch(fn) {
     switch (ev.t) {
       case 'card': {
         sfx('card');
-        app.lastActor = ev.p; actor = ev.p;
+        app.lastActor = ev.p; actor = ev.p; cardKey = ev.key;
         if (!isBot(ev.p)) stats.cardsUsed[ev.key] = (stats.cardsUsed[ev.key] || 0) + 1;
         // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
         const mine = !isBot(ev.p);
@@ -124,7 +135,7 @@ function dispatch(fn) {
       }
       case 'tilePlaced': markPlaced(ev.x, ev.y); break;
       case 'rewind': hideWin(); fxRewind(); break;                  // flash de "rebobinado"
-      case 'undo': hideWin(); break;
+      case 'undo': hideWin(); fxRewind(); break;
       case 'tip': hud.storyTip(ev.key); break;
       case 'notice': hud.toast(ev.text); break;
       case 'resolved': resolved = true; break;
@@ -135,6 +146,15 @@ function dispatch(fn) {
   if (!app.animQueue.length) app.animLead = 0; // la espera solo tiene sentido si hay algo que animar
   // la jugada que más casillas ha movido (pelotas en cadena y hoyo incluidos)
   if (moves && (actor ?? app.lastActor) != null && moves > stats.longest.n) stats.longest = { n: moves, p: actor ?? app.lastActor };
+  // cómo ha entrado cada pelota (para celebrar la victoria a su manera)
+  noteWinStyle(g, events, actor, cardKey, jaqueBefore);
+  // ayudas: una jugada propia gasta el consejo; deshacer vale para tus jugadas del turno en curso
+  if (actor != null && !isBot(actor)) clearCaddie();
+  if (turnEnded || (actor != null && isBot(actor))) { app.undo = null; if (turnEnded) clearCaddie(); }
+  else if (resolved && actor != null && !isBot(actor) && g.S.turn === turnBefore) app.undo = { count: (app.undo?.count || 0) + 1 };
+  // los bots explican su jugada; con una persona contra la máquina se apunta el momento clave
+  if (resolved && before && actor != null && isBot(actor)) hud.botWhy(actor, explainPlay(before, g, actor, cardKey));
+  if ((resolved || turnEnded) && app.mode === 'pve' && !multiHuman()) trackMoment(g, g.S.human, { actor, card: cardKey, before });
   // logro: una persona evita un JAQUE con una naranja
   if (jaqueBefore && actor != null && !isBot(actor) && g.S.winner === null && app.mode !== 'free') unlock('jaqueSaved');
   if (onlyFeedback && !events.some(e => e.t !== 'badCard' && e.t !== 'notice')) return ok; // nada cambió
@@ -144,6 +164,8 @@ function dispatch(fn) {
   saveGame(); // guardado automático de la partida en curso
   if (resolved || turnEnded) tutorialEvent(turnEnded ? 'turnEnded' : 'resolved');
   if (won) { botsGameOver(g.S.winners); showWin(); }
+  // puzle: el turno ha terminado sin embocar
+  if (turnEnded && app.variant === 'puzzle' && g.S.winner === null) setTimeout(() => { if (app.variant === 'puzzle' && app.game === g) showPuzzleFail(); }, 450);
   if (resolved) maybeSoloWin();
   if (resolved || turnEnded) aiKick(); // en PVE la máquina reacciona/actúa tras cada jugada
   return ok;
@@ -196,6 +218,29 @@ export function startDiscard() {
 }
 export const confirmDiscard = () => dispatch(g => g.confirmDiscard());
 export const confirmWin = () => dispatch(g => g.confirmWin());
+// deshacer la última jugada propia (ayuda: Lo básico y partidas fáciles)
+export const undoMove = () => dispatch(g => g.undo());
+
+// cómo ha entrado la pelota: portal, carambola, el hoyo se la traga, robo en el JAQUE, tiro largo, dedo…
+function noteWinStyle(g, events, actor, cardKey, jaqueBefore) {
+  const S = g.S;
+  for (const ev of events) {
+    if (ev.t !== 'sink' || ev.p === 'hole') continue;
+    const p = +ev.p.slice(1), ball = S.balls.find(b => b.player === p);
+    if (!ball || ball.decoy) continue;
+    const upTo = events.slice(0, events.indexOf(ev));
+    const own = upTo.filter(e => e.p === ev.p);
+    let style = null;
+    if (own.some(e => e.t === 'teleport')) style = 'portal';
+    else if (upTo.filter(e => e.t === 'impact').length >= 2) style = 'chain';
+    else if (!own.some(e => e.t === 'move') && upTo.some(e => e.p === 'hole' && e.t === 'move')) style = 'swallow';
+    else if (jaqueBefore && actor === p) style = 'steal';
+    else if (app.mode === 'story' && (stats?.turnos || 0) === 0) style = 'first';
+    else if (cardKey === 'dedo') style = 'zigzag';
+    else if (own.filter(e => e.t === 'move').length >= 3) style = 'long';
+    if (style) app.winStyle[p] = style; else delete app.winStyle[p];
+  }
+}
 // herramientas de debug
 export const debugAction = fn => app.game ? dispatch(g => { const r = fn(g); return r === undefined ? true : r; }) : false;
 
@@ -219,6 +264,9 @@ export function render() {
   renderDebugState();
   hud.renderHud();
   turnCheck();
+  if (hud.modeChip()) requestAnimationFrame(() => { if (app.game === g) { fitBoard(); render(); } }); // etiqueta del modo (torneo, contrarreloj…)
+  paintAssist();    // botones de consejo y deshacer
+  redrawCaddie();   // el consejo sigue a la vista hasta que juegas
 }
 
 function renderPieces() {
@@ -228,6 +276,7 @@ function renderPieces() {
     playQueue(() => {
       renderJaque();   // el JAQUE se anuncia al terminar la jugada
       maybeSoloWin();  // en solitario la victoria se confirma sin ventana de reacción
+      paintAssist();   // consejo y deshacer dependen de que no haya animación en curso
     });
     return;
   }
@@ -239,12 +288,13 @@ export function renderJaque() {
   const el = $('jaque'), S = app.game.S;
   // no anunciar el JAQUE hasta que termine la animación de la jugada
   if (!S.jaque || S.winner === null || app.animating || app.animQueue.length) {
+    if (jaqueShown && S.winner === null) musicMood('calm'); // el JAQUE se ha evitado: la música se relaja
     el.classList.remove('visible'); el.innerHTML = ''; el._html = ''; jaqueShown = false; return;
   }
   // mientras alguien resuelve su naranja, manda la instrucción de la barra de acción
   if (app.game.pending) { el.classList.remove('visible'); return; }
   el.classList.add('visible');
-  if (!jaqueShown) { jaqueShown = true; fxZoomShake(); sfx('jaque'); sfx('tension'); } // entrada dramática + sting
+  if (!jaqueShown) { jaqueShown = true; fxZoomShake(); sfx('jaque'); sfx('tension'); musicMood('tense'); } // entrada dramática + sting
   const names = S.winners.map(displayName).join(t('common.and'));
   const msg = S.winners.length > 1 ? t('jaque.tie', { names }) : t('jaque.one', { names });
   el.style.setProperty('--pc', pColor(S.winners[0]));

@@ -10,7 +10,8 @@
     "golden": "node tools/gen-golden.mjs",
     "simulate": "node tools/simulate.mjs",
     "art-manifest": "node tools/build-art-manifest.mjs",
-    "smoke": "node tools/smoke.mjs"
+    "smoke": "node tools/smoke.mjs",
+    "test:ui": "node --test \"tests/ui/*.ui.mjs\""
   },
   "devDependencies": {
     "jsdom": "^24.1.3",

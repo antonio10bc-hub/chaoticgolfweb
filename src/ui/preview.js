@@ -7,6 +7,7 @@ import { $ } from './dom.js';
 import { cellCenterPx, cellStep } from './geometry.js';
 import { pColor } from '../art.js';
 import { t } from '../i18n/index.js';
+import { applyAction } from '../ai/bot.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 
@@ -119,4 +120,12 @@ export function previewCard(p, idx) {
   const res = simulate(g, sim => sim.clickCard(p, idx) && !sim.pending);
   if (!res || !Object.keys(res.paths).length) { hidePreview(); return; }
   draw(res);
+}
+
+// una jugada completa (lista de acciones, como las de la IA): consejo del caddie
+export function previewPlan(actions) {
+  const g = app.game;
+  if (!g || g.pending || app.animating) return;
+  const res = simulate(g, sim => { for (const a of actions) if (!applyAction(sim, a)) return false; return true; });
+  if (res && Object.keys(res.paths).length) draw(res);
 }

@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "name": "Carambolas",
+  "name_en": "Cannons",
+  "cols": 7,
+  "rows": 8,
+  "hole": {
+    "x": 3,
+    "y": 0
+  },
+  "ball": {
+    "x": 3,
+    "y": 7
+  },
+  "parCells": [
+    {
+      "x": 3,
+      "y": 1,
+      "n": 4
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "n": 3
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "n": 2
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "n": 1
+    }
+  ],
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 3,
+      "y": 5
+    },
+    {
+      "x": 1,
+      "y": 3
+    },
+    {
+      "x": 5,
+      "y": 3
+    },
+    {
+      "x": 2,
+      "y": 1
+    },
+    {
+      "x": 4,
+      "y": 1
+    },
+    {
+      "x": 0,
+      "y": 6
+    },
+    {
+      "x": 6,
+      "y": 6
+    }
+  ],
+  "deckCounts": {
+    "palo1": 4,
+    "palo2": 5,
+    "palo3": 5,
+    "dedo": 2,
+    "hoyoUp": 1,
+    "hoyoDown": 1,
+    "hoyoLeft": 1,
+    "hoyoRight": 1,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 2,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0
+  },
+  "tips": {
+    "hit": "story.tips.hit"
+  }
+}

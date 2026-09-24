@@ -15,6 +15,7 @@ import { refreshCardTip } from './card-tip.js';
 import { isBot, viewer, multiHuman, handRevealed, displayName, avatarHTML } from './players.js';
 import { startReaction, endReaction } from './hotseat.js';
 import { previewCard, hidePreview } from './preview.js';
+import { botWhyHTML } from './hud.js';
 
 let prevHands = []; // tamaños de mano en el último render (para el robo animado)
 let prevOwner = -1;
@@ -134,6 +135,8 @@ function renderActionBar(g, owner) {
       : S.blackPlayed === 0 ? t(S.nPlayers === 1 ? 'hint.startSolo' : 'hint.start') : t('hint.more', { n: left });
     kind = 'idle';
     html = `<div class="hint idle">${esc(txt)}</div>`;
+  } else if (!pd && botWhyHTML()) {
+    kind = 'idle'; html = botWhyHTML(); // por qué ha jugado así el bot
   }
   if (bar._html !== html) { bar.innerHTML = html; bar._html = html; bar.dataset.kind = kind; }
 }

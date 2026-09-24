@@ -20,8 +20,8 @@ export const hash = s => createHash('sha1').update(s).digest('hex').slice(0, 16)
 export function canonical(S, pending) {
   // aiStyles (personalidad de los bots) es metadato de la IA, no de las reglas: fuera
   // (también el nivel de la IA, las personas del dispositivo, sus nombres y el índice del historial: interfaz)
-  if (S && ['aiStyles', 'aiLevel', 'humans', 'playerNames', 'logK'].some(k => S[k] !== undefined)) {
-    S = { ...S }; for (const k of ['aiStyles', 'aiLevel', 'humans', 'playerNames', 'logK']) delete S[k];
+  if (S && ['aiStyles', 'aiLevel', 'humans', 'playerNames', 'logK', 'personas'].some(k => S[k] !== undefined)) {
+    S = { ...S }; for (const k of ['aiStyles', 'aiLevel', 'humans', 'playerNames', 'logK', 'personas']) delete S[k];
   }
   const pd = pending ? { ...pending, ball: pending.ball ? pending.ball.player : undefined } : null;
   return stableStringify({ S, pending: pd });

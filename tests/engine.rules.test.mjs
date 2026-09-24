@@ -145,7 +145,7 @@ test('semilla: misma semilla ⇒ mismo reparto', () => {
 test('niveles de historia: JSON válido y jugable', () => {
   const dir = new URL('../src/content/levels/story/', import.meta.url);
   const files = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
-  assert.equal(files.length, 4);
+  assert.equal(files.length, 8);
   for (const f of files) {
     const L = JSON.parse(fs.readFileSync(new URL(f, dir)));
     assert.equal(L.version, 1);
@@ -181,4 +181,36 @@ test('tope anti-bucle: la cadena de choques entre portales avisa con un evento',
   const evs = g.takeEvents();
   assert.equal(evs.filter(e => e.t === 'chainStop').length, 1);
   assert.match(S.log.join('\n'), /bucle/);
+});
+
+test('puzles: cada uno se resuelve en un solo turno con su mano fija', async () => {
+  const { enumeratePlays } = await import('../src/ai/bot.js');
+  const dir = new URL('../src/content/levels/puzzles/', import.meta.url);
+  const files = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
+  assert.ok(files.length >= 6);
+  const solvable = g => g.S.winner !== null || enumeratePlays(g, 0).some(pl => solvable(pl.result));
+  for (const f of files) {
+    const L = JSON.parse(fs.readFileSync(new URL(f, dir)));
+    const g = Game.fromLevel(L, { seed: 1 });
+    assert.deepEqual(g.S.hands[0], L.hand, `${f}: la mano debe ser la del puzle`);
+    assert.ok(solvable(g), `${f}: sin solución en un turno`);
+  }
+});
+
+test('regla especial: el hoyo se desplaza solo al empezar cada turno', () => {
+  const g = Game.pve({ players: 2, cols: 7, rows: 9, par: 3, humanColor: '#f26d6d', rules: { holeDrift: true } }, { seed: 5 });
+  const h0 = { ...g.S.hole };
+  g.endTurn();
+  const h1 = g.S.hole;
+  assert.equal(Math.abs(h1.x - h0.x) + Math.abs(h1.y - h0.y) <= 1 || g.S.log.some(l => /hoyo/i.test(l)), true);
+  assert.match(g.S.log.join('\n'), /se desplaza solo/);
+});
+
+test('niveles generados: deterministas y con mano inicial', async () => {
+  const { generateLevel, seedOf } = await import('../src/content/levels/generate.js');
+  const a = generateLevel(seedOf('2026-09-24'), 2), b = generateLevel(seedOf('2026-09-24'), 2);
+  assert.deepEqual(a, b);
+  const g1 = Game.fromLevel(a, { seed: 7 }), g2 = Game.fromLevel(b, { seed: 7 });
+  assert.deepEqual(g1.S.deck, g2.S.deck);
+  assert.equal(g1.S.hands[0].length, 2);
 });

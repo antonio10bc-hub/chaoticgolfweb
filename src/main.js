@@ -16,13 +16,19 @@ import { $ } from './ui/dom.js';
 import { applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
 import { bindSave } from './ui/save.js';
 import { loadArt } from './art.js';
-import { loadStoryLevels } from './content/levels/index.js';
+import { loadStoryLevels, loadPuzzleLevels } from './content/levels/index.js';
 import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
 import { bindDialog } from './ui/dialog.js';
-import { bindScreens, showScreen, newFreeGame, applyArtExtras, openStory, openPveSetup } from './ui/screens.js';
+import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/screens.js';
+import { bindStory, openStory } from './ui/screen-story.js';
+import { bindPve, openPveSetup } from './ui/screen-pve.js';
+import { bindModes, openModes } from './ui/screen-modes.js';
+import { bindResume } from './ui/resume.js';
+import { bindAssist } from './ui/assist.js';
+import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
 import { bindDebug, buildDebugPanel } from './ui/debug.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
@@ -54,6 +60,12 @@ bindCardTip();
 bindWin();
 bindDialog();
 bindScreens();
+bindStory();
+bindPve();
+bindModes();
+bindResume();
+bindAssist();
+bindZoom();
 bindEditor();
 bindDebug();
 bindSoundPanel();
@@ -125,6 +137,7 @@ document.addEventListener('click', e => {
   if (app.game) { ctl.render(); }
   if (app.screen === 'story') openStory();
   else if (app.screen === 'pve') openPveSetup();
+  else if (app.screen === 'modes') openModes();
   else if (app.screen === 'editor') openEditor();
   else showScreen(app.screen);
   updateMenuBtn();
@@ -138,8 +151,8 @@ buildDebugPanel();
 // (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía)
 (async () => {
   const t0 = performance.now();
-  try { app.storyLevels = await loadStoryLevels(); }
-  catch (e) { console.error('No se pudieron cargar los niveles de historia', e); }
+  try { [app.storyLevels, app.puzzleLevels] = await Promise.all([loadStoryLevels(), loadPuzzleLevels()]); }
+  catch (e) { console.error('No se pudieron cargar los niveles', e); }
   newFreeGame();
   showScreen('menu');
   await Promise.all([loadArt(), document.fonts?.ready.catch(() => {})]);

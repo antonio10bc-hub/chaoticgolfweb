@@ -549,3 +549,128 @@ html.leftHand #dockOwner { order: 1; }
 }
 .piece.ghostCan::after { opacity: .85; }
 html.reduceMotion .piece.ghostCan .tile-ball .circ, html.reduceMotion .piece.ghostPick .tile-ball .circ { animation: none; }
+
+/* =========================================================
+   Modos, rivales, ayudas, celebraciones y zoom
+   ========================================================= */
+
+/* ---------- menú: "Más modos" ---------- */
+.mBtn.modes { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--cream-line); min-height: 44px; padding-block: 8px; font-size: 14.5px; }
+.mBtn.modes .i { color: var(--grass-dark); }
+.mDot { position: absolute; top: 7px; right: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--cream); }
+body[data-screen="menu"]:not(.loading) .mActions > .mBtn.modes { animation-delay: .6s; }
+
+/* ---------- pantalla de Modos ---------- */
+#modesScreen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 8vh 20px 60px; position: relative; z-index: 1; }
+body[data-screen="modes"] #scene { display: block; }
+body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
+#modesGrid { display: flex; flex-direction: column; gap: 20px; width: min(920px, 94vw); }
+.mdSection { background-image: var(--grain); background-color: var(--cream); border-radius: 20px; padding: 18px 20px 20px; box-shadow: 0 24px 60px rgba(10,25,10,.3); }
+.mdSection > h3, .lvlSection h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; color: var(--ink-soft); }
+.lvlCount { font-size: 11px; letter-spacing: .04em; padding: 1px 8px; border-radius: 999px; background: var(--grass-dark); color: var(--cream); }
+.mdRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.modeCard { border: 1px solid var(--cream-line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.modeCard p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.4; }
+.mdHead { display: flex; align-items: center; gap: 10px; }
+.mdHead h3 { font-size: 19px; font-weight: 500; letter-spacing: -.02em; }
+.mdHead small { font-size: 12px; color: var(--ink-soft); display: block; }
+.mdHead small::first-letter { text-transform: uppercase; }
+.mdIco { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--grass-dark); color: var(--cream); font-size: 18px; }
+.modeCard.daily .mdIco { background: var(--accent); color: var(--ink); }
+.modeCard.rush .mdIco { background: var(--navy); }
+.mdPreview { height: 110px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background-image: var(--grain); background-color: var(--grass-dark); padding: 8px; }
+.mdPreview svg { max-height: 100%; max-width: 100%; }
+.mdStats { display: flex; flex-wrap: wrap; gap: 6px; }
+.mdStat { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--cream-line); color: var(--ink-soft); }
+.mdStat .i { width: 13px; height: 13px; color: var(--accent); }
+.mdBtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.mdCfg { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.mdTable { display: flex; flex-wrap: wrap; gap: 6px; }
+.mdTable span { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; background: rgba(163,193,115,.2); }
+.mdTable span.me { background: var(--accent); color: var(--ink); }
+.chGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 10px; }
+.chCard { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 12px; border: 1px solid var(--cream-line); border-radius: 14px; position: relative; }
+.chCard > button { flex: 0 0 auto; margin-left: auto; }
+.chCard.done { background: rgba(163,193,115,.15); }
+.chTxt { flex: 1 1 150px; display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.chTxt b { font-size: 14px; font-weight: 600; }
+.chTxt small { font-size: 12px; color: var(--ink-soft); }
+.chDone { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--grass-dark); color: var(--cream); font-size: 12px; }
+.lvlSub { font-size: 13px; color: var(--ink-soft); margin: -8px 0 12px; }
+.lvlSection.puzzles .lvlCard.next { --b-line: var(--accent); }
+
+/* ---------- etiqueta del modo en la partida ---------- */
+#gameBar { position: relative; }
+#modeChip { position: absolute; left: 50%; top: calc(100% - 2px); transform: translateX(-50%); z-index: 31; white-space: nowrap;
+  padding: 3px 12px; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: 11.5px; font-weight: 500; box-shadow: 2px 2px 0 var(--shadow); }
+
+/* ---------- rivales (partida rápida) ---------- */
+.pveOpt.rival { flex: 1; min-width: 92px; gap: 3px; }
+.pveOpt.rival .avatar { width: 36px; height: 36px; }
+.pveOpt.rival.picked { --b-line: var(--ink); }
+.rivalRandom { background: var(--cream-line); color: var(--ink-soft); font-size: 16px; font-weight: 600; box-shadow: 3px 3px 0 var(--shadow); }
+#pveRivals { flex-wrap: wrap; }
+
+/* ---------- ayudas: consejo y deshacer ---------- */
+.assistBtns { display: flex; flex-direction: column; gap: 6px; }
+.assistBtns:not(:has(button:not([hidden]))) { display: none; }
+#caddieBtn .i { color: var(--accent); }
+#hands .card.caddiePick { box-shadow: 0 0 0 3px var(--accent), 0 0 0 7px rgba(232,135,58,.25), 4px 4px 0 var(--shadow); transform: translateY(-8px); }
+#board .cell.caddieCell { box-shadow: inset 0 0 0 3px var(--accent) !important; }
+#endTurnBtn.caddiePick { box-shadow: 0 0 0 4px var(--accent), 0 6px 16px rgba(20,40,20,.2); }
+@media (max-width: 760px) {
+  /* en el móvil, consejo y deshacer van en la fila de los botones de turno, solo con icono */
+  .assistBtns { flex-direction: row; flex: 0 0 auto; gap: 6px; }
+  #turnActions .assistBtns button { flex: 0 0 auto; width: 40px; height: 40px; padding: 0; }
+  .assistBtns .btn-icon span { display: none; }
+}
+
+/* ---------- explicación de la jugada del bot ---------- */
+.hint.botWhy { display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 0 1.5px var(--pc), 0 8px 24px rgba(20,40,20,.2); background: rgba(36,36,36,.82); padding: 4px 14px 4px 5px; }
+#lastPlay .lastWhy { max-width: 190px; font-size: 11px; line-height: 1.3; letter-spacing: 0; text-transform: none; opacity: .9; }
+
+/* ---------- resumen final: celebración, tabla del torneo y "¿por qué he perdido?" ---------- */
+#winStyle:empty { display: none; }
+#winStyle { margin: -6px 0 8px; }
+.wsChip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: .02em;
+  background: var(--ink); color: var(--cream); animation: recPop .6s .1s cubic-bezier(.3,1.6,.5,1) both; }
+.wsChip.portal { background: var(--navy); } .wsChip.chain { background: #B8860B; } .wsChip.swallow { background: #5C4A2E; }
+.wsChip.steal { background: var(--accent-deep); } .wsChip.first { background: var(--accent); color: var(--ink); }
+.winTable { display: flex; flex-direction: column; gap: 4px; width: min(300px, 100%); margin: 0 auto 6px; }
+.winTable span { display: flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 10px; background: rgba(163,193,115,.18); font-size: 14px; text-align: left; }
+.winTable span i { margin-left: auto; font-style: normal; font-weight: 600; }
+.winTable span.me { background: rgba(232,135,58,.22); }
+.winTable span.champ { box-shadow: inset 0 0 0 1.5px var(--accent); }
+#winChips { flex-wrap: wrap; justify-content: center; }
+#winWhy:empty { display: none; }
+#winWhy { margin: -8px 0 18px; }
+.winWhyBtn { gap: 6px; }
+.whyPanel { margin-top: 8px; padding: 12px; border-radius: 14px; border: 1px solid var(--cream-line); text-align: left; }
+.whyHead b { font-size: 14px; }
+.whyHead p { font-size: 13.5px; margin-top: 3px; color: var(--ink-soft); }
+.whyBoards { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0; }
+.whyBoards figure { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.whyBoards figure svg { width: min(140px, 30vw); max-height: 170px; border-radius: 8px; background: #3F7440; padding: 3px; }
+.whyBoards .whyArrow { width: 22px; height: 22px; }
+.whyBoards figcaption { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .12em; }
+.whyArrow { color: var(--ink-soft); }
+.whyTip { display: flex; gap: 7px; align-items: flex-start; font-size: 13px; }
+.whyTip .i { color: var(--accent); flex: 0 0 auto; margin-top: 1px; }
+#winOverlay { overflow-y: auto; padding: 48px 12px 24px; } /* resúmenes largos: se desplaza la capa, no la caja (el icono sobresale) */
+#winOverlay .box { margin: auto; }
+
+/* ---------- zoom del tablero ---------- */
+#boardZoom { transform-origin: 0 0; width: max-content; margin: 0 auto; }
+#boardWrap.zoomed { overflow: hidden; }
+#zoomReset { position: absolute; top: 8px; right: 8px; z-index: 12; width: 34px; height: 34px; padding: 0; box-shadow: var(--shadow-soft); }
+@media (pointer: coarse) { #boardWrap { touch-action: none; } }
+@media (max-width: 760px) {
+  #modeChip { position: static; transform: none; grid-column: 1 / -1; justify-self: center; margin-top: 2px; font-size: 11px; padding: 2px 10px; }
+  #modeChip[hidden] { display: none; }
+}
+@media (max-width: 760px) {
+  #gameBar > .barSide:first-child { grid-row: 1; grid-column: 1; }
+  #gameBar > #turnPill { grid-row: 1; grid-column: 2; }
+  #gameBar > .barSide.right { grid-row: 1; grid-column: 3; }
+  #gameBar > #modeChip { grid-row: 2; }
+}
