@@ -65,7 +65,8 @@ export function tutorialEvent(kind, data = {}) {
   if (step) return;
   // fuera de la presentación: explicación de cada carta la primera vez que se usa
   if ((kind === 'selected' || kind === 'played') && firstCard && data.p === 0 && S.winner === null) {
-    showCoach({ target: kind === 'selected' ? '#actionBar' : '#discardPile', card: data.key, btn: 'ok' });
+    // señala la carta elegida (o, si ya se ha jugado, la última jugada)
+    showCoach({ target: kind === 'selected' ? '#hands .card.cardSel' : (window.innerWidth > 760 ? '#lastPlay' : null), card: data.key, btn: 'ok' });
   }
 }
 
@@ -107,11 +108,12 @@ function place() {
   const r = tg?.getBoundingClientRect();
   let ring = $('coachRing');
   if (!ring) { ring = document.createElement('div'); ring.id = 'coachRing'; document.body.appendChild(ring); }
-  if (!r || !r.width) { ring.classList.remove('visible'); el.style.transform = `translate(${(innerWidth - el.offsetWidth) / 2}px, ${innerHeight * .3}px)`; return; }
+  if (!r || !r.width) { ring.classList.remove('visible'); el.dataset.side = 'mid'; el.style.transform = `translate(${(innerWidth - el.offsetWidth) / 2}px, ${innerHeight * .3}px)`; return; }
   const pad = 6;
+  ring.classList.remove('visible'); void ring.offsetWidth; // se recoloca sin animar (antes crecía desde el objetivo anterior)
   ring.style.transform = `translate(${r.left - pad}px, ${r.top - pad}px)`;
   ring.style.width = r.width + pad * 2 + 'px'; ring.style.height = r.height + pad * 2 + 'px';
-  ring.classList.toggle('big', r.width > 200);
+  ring.classList.toggle('round', Math.abs(r.width - r.height) < 14 && r.width < 120); // pelota / hoyo: aro redondo
   ring.classList.add('visible');
   const w = el.offsetWidth, h = el.offsetHeight;
   // objetivo grande (el tablero): al lado, para no tapar las casillas

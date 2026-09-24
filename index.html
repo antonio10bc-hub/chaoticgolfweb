@@ -141,13 +141,12 @@
   <main class="mContent">
     <h1 class="mTitle"><span class="l1"><span class="c-accent">C</span>haotic</span> <span class="l2"><span class="c-navy">G</span>o<span class="c-grass">l</span>f</span></h1>
     <div class="mActions">
-    <button id="storyBtn" class="mBtn story"><span data-i18n="menu.story">Lo básico</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+    <button id="dailyCard" class="mDaily"></button>
     <div class="mRow">
-      <button id="pveBtn" class="mBtn multi"><span data-i18n="menu.pve">Partida Rápida</span><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></button>
-      <button id="continueBtn" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="continueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+      <button id="storyBtn" class="mBtn story"><span data-i18n="menu.story">Lo básico</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
+      <button id="modesBtn" class="mBtn modes"><span data-i18n="menu.modes">Modos de juego</span><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg></button>
     </div>
-    <button id="modesBtn" class="mBtn modes"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.modes">Más modos</span><i class="mDot" id="modesDot" hidden></i></button>
-    <button id="repeatBtn" class="btn-text mRepeat" hidden><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg><span data-i18n="menu.repeat">Repetir la última</span><small id="repeatSub"></small></button>
+    <button id="continueBtn" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="continueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     </div>
     <p class="mTag" data-i18n="menu.tag">Golf de cartas. Caótico. Con JAQUE.</p>
   </main>
@@ -165,14 +164,19 @@
   <div id="pveCard" role="form" aria-labelledby="pveTitle">
     <h2 id="pveTitle" data-i18n="pve.title">Partida contra la máquina</h2>
     <div class="sub" data-i18n="pve.sub">Configura tu partida: los jugadores se sientan al azar y empieza quien esté a la derecha del centro.</div>
+    <div class="pveKind" id="pveKind" role="group">
+      <button class="pveOpt kind sel" data-kind="bots"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg><b data-i18n="pve.kindBots">Contra la máquina</b><small data-i18n="pve.kindBotsSub">tú contra los bots</small></button>
+      <button class="pveOpt kind" data-kind="local"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg><b data-i18n="pve.kindLocal">Multijugador local</b><small data-i18n="pve.kindLocalSub">os pasáis el móvil</small></button>
+    </div>
+    <div id="pveHumansRow">
     <h4 data-i18n="pve.humans">Personas en este dispositivo</h4>
     <div class="pveOpts" id="pveHumans">
-      <button class="pveOpt hum sel" data-h="1"><span class="optPeople" aria-hidden="true"><i></i></span><b>1</b></button>
       <button class="pveOpt hum" data-h="2"><span class="optPeople" aria-hidden="true"><i></i><i></i></span><b>2</b></button>
       <button class="pveOpt hum" data-h="3"><span class="optPeople" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
       <button class="pveOpt hum" data-h="4"><span class="optPeople" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
     </div>
     <p class="pveNote" data-i18n="pve.localNote">Multijugador local: os pasáis el móvil en cada turno y nadie ve las cartas de los demás.</p>
+    </div>
     <h4 id="pveColorH" data-i18n="pve.color">Tu nombre y tu color</h4>
     <div id="pvePeople"></div>
     <div class="pveOpts" id="pveColors"></div>
@@ -182,13 +186,14 @@
       <button class="pveOpt size sel" data-size="m"><span class="optGrid m" aria-hidden="true"></span><b data-i18n="pve.sizeMName">Mediano</b><small>7×9</small></button>
       <button class="pveOpt size" data-size="l"><span class="optGrid l" aria-hidden="true"></span><b data-i18n="pve.sizeLName">Grande</b><small>9×11</small></button>
     </div>
-    <h4 data-i18n="pve.opps">Contrincantes (máquina)</h4>
+    <h4 id="pveOppsH" data-i18n="pve.opps">Contrincantes (máquina)</h4>
     <div class="pveOpts" id="pveOpps">
       <button class="pveOpt opp" data-n="0"><span class="optBots" aria-hidden="true"></span><b>0</b></button>
       <button class="pveOpt opp" data-n="1"><span class="optBots" aria-hidden="true"><i></i></span><b>1</b></button>
       <button class="pveOpt opp sel" data-n="2"><span class="optBots" aria-hidden="true"><i></i><i></i></span><b>2</b></button>
       <button class="pveOpt opp" data-n="3"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i></span><b>3</b></button>
       <button class="pveOpt opp" data-n="4"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
+      <button class="pveOpt opp" data-n="5"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><b>5</b></button>
     </div>
     <div id="pveRivalsRow">
       <h4 data-i18n="pve.rivals">Rivales</h4>
@@ -204,7 +209,7 @@
     </div>
     <button id="pveContinue" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="pveContinueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     <button id="pvePlay" class="btn-primary btn-lg"><span data-i18n="pve.play">Jugar</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
-    <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver al menú</button>
+    <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver a Modos de juego</button>
   </div>
 </div>
 
@@ -226,6 +231,7 @@
     </div>
     <div id="turnPill" aria-live="polite"></div>
     <div id="modeChip" hidden></div>
+    <div id="rushTimer" hidden role="timer" aria-live="off"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg><b>1:00</b><i class="rtBar"><i></i></i></div>
     <div class="barSide right">
       <button id="rulesBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="rules.btnTitle" title="Reglas y cartas (H)" aria-label="Reglas"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></button>
       <button id="pauseBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="pause.btnTitle" title="Pausa (P)" aria-label="Pausa"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg></button>

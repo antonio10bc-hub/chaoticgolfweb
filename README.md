@@ -39,7 +39,7 @@ src/
     controller.js          une motor e interfaz: acción → eventos → efectos → render
     screens.js             navegación, salir / reiniciar, modo libre
     screen-story.js        Lo básico y puzles · screen-pve.js  Partida rápida (y rivales)
-    screen-modes.js        reto diario, contrarreloj, torneo y desafíos · resume.js  continuar
+    screen-modes.js        reto diario, contrarreloj y desafíos · resume.js  continuar
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
@@ -154,15 +154,18 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
   pantalla de carga.
-- **Modos** (menú → Más modos): reto diario (mismo tablero y mazo para todos cada día; récord del día y
-  racha de días), contrarreloj (5 hoyos generados; puntos por turnos y rapidez), torneo de 9 hoyos contra los
-  mismos rivales (conservan cara y humor) y 6 desafíos con reglas especiales (solo naranjas, sin palo 3, hoyo
-  inquieto, mar de arena, atajos, multitud). Lo básico tiene 8 niveles y 6 puzles de "gana en 1 turno".
+- **Menú:** título, tarjeta del reto diario (mismo tablero y mazo para todos cada día; récord del día y racha
+  de días) y debajo Lo básico y Modos de juego.
+- **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
+  configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
+  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
+  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena, atajos, multitud). Lo básico tiene
+  8 niveles y 6 puzles de "gana en 1 turno".
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en
   Partida rápida. Tras cada jugada un bot explica por qué la ha hecho.
 - **Ayudas:** consejo del caddie (misma IA que los bots; queda anotado), deshacer en Lo básico y en fácil,
   "¿Por qué he perdido?" con el momento clave (antes / después) y un consejo.
-- **Música** minimalista con toque cartoon: se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene
+- **Música** minimalista y suave (timbres redondos, filtro y eco ligeros): se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene
   su celebración (de portal, carambola, el hoyo se la traga, robo, tiro largo, zigzag, a la primera).
 - **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
 - **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final

@@ -28,6 +28,8 @@ async function fresh(seed = {}) {
 }
 const app = fn => page.evaluate(fn);
 const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
+// Partida rápida vive en Modos de juego
+const openQuick = async () => { await click('#modesBtn'); await sleep(300); await click('[data-mode="quick"]'); await sleep(300); };
 const confirmIfAsked = async () => { await sleep(250); if (await page.$('#dialog[open]')) { await page.click('#dialog[open] button[value="ok"]'); await sleep(200); } };
 
 before(async () => {
@@ -46,10 +48,11 @@ const it = (name, fn) => test(name, { skip: !CHROME && 'sin Chrome' }, async () 
 
 it('guardado: salir al menú guarda y "Continuar partida" retoma el mismo estado', async () => {
   await fresh();
-  await click('#pveBtn'); await sleep(300);
+  await openQuick();
   await click('#pvePlay'); await sleep(900);
   const s0 = await app(() => JSON.stringify(window.chaoticGolf.app.game.serialize().S.balls));
   await click('#menuBtn'); await sleep(400);
+  await click('#modesBack'); await sleep(300);
   assert.equal(await app(() => document.getElementById('continueBtn').hidden), false);
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(900);
   await click('#continueBtn'); await sleep(600);
@@ -60,7 +63,7 @@ it('guardado: salir al menú guarda y "Continuar partida" retoma el mismo estado
 it('pausa: la máquina no juega mientras la partida está en pausa', async () => {
   await fresh();
   await app(() => { window.chaoticGolf.app.pveCfg = { color: 0, size: 'm', opps: 3, humans: 1, diff: 'normal' }; });
-  await click('#pveBtn'); await sleep(300);
+  await openQuick();
   await click('#pvePlay'); await sleep(200);
   // que empiece un bot
   await app(() => { const { app, ctl } = window.chaoticGolf; const S = app.game.S; S.turn = (S.human + 1) % S.nPlayers; ctl.render(); });
@@ -76,7 +79,7 @@ it('pausa: la máquina no juega mientras la partida está en pausa', async () =>
 it('multijugador local: no se ven cartas ajenas y se pasa el dispositivo', async () => {
   await fresh();
   await app(() => { window.chaoticGolf.app.pveCfg = { color: 1, size: 's', opps: 0, humans: 2, diff: 'normal' }; });
-  await click('#pveBtn'); await sleep(300);
+  await openQuick();
   await click('#pvePlay'); await sleep(600);
   assert.ok(await page.$('#passScreen.visible'));
   assert.equal(await app(() => document.querySelectorAll('#hands .card:not(.back)').length), 0);
@@ -112,12 +115,10 @@ it('deshacer: en Lo básico devuelve la pelota a donde estaba', async () => {
 it('reto diario: el mismo tablero y el mismo mazo en dos cargas', async () => {
   await fresh();
   const take = async () => {
-    await click('#modesBtn'); await sleep(400);
-    await click('[data-mode="daily"]'); await confirmIfAsked(); await sleep(700);
+    await click('#dailyCard'); await confirmIfAsked(); await sleep(700);
     const r = await app(() => JSON.stringify({ deck: window.chaoticGolf.app.game.S.deck, hole: window.chaoticGolf.app.game.S.hole, balls: window.chaoticGolf.app.game.S.balls }));
     await click('#menuBtn'); await sleep(300);
     await app(() => localStorage.removeItem('chaoticgolf_save_daily'));
-    await click('#modesBack'); await sleep(300);
     return r;
   };
   const a = await take();

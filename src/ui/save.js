@@ -1,6 +1,6 @@
 // Guardado automático de la partida en curso: uno por modo ("ranura"), así empezar una partida
 // de un modo no pisa la que tengas a medias en otro. Ranuras: story (Lo básico), puzzle, daily,
-// rush (contrarreloj), pve (partida rápida), tour (torneo) y challenge (desafío).
+// rush (contrarreloj), pve (partida rápida) y challenge (desafío).
 // Se guarda tras cada jugada, al salir al menú y al ocultar la página; se borra al terminar.
 // El menú ofrece "Continuar partida" con la más reciente; cada pantalla, la suya.
 import { app } from './app.js';
@@ -9,9 +9,9 @@ import { stats, setStats } from './controller.js';
 const KEY = slot => 'chaoticgolf_save_' + slot;
 const OLD_KEY = 'chaoticgolf_save'; // formato anterior: un único guardado
 const VERSION = 1;
-export const SLOTS = ['story', 'puzzle', 'daily', 'rush', 'pve', 'tour', 'challenge'];
+export const SLOTS = ['story', 'puzzle', 'daily', 'rush', 'pve', 'challenge'];
 export const slotOf = (mode = app.mode, variant = app.variant) => variant || mode;
-export const VS_SLOTS = ['pve', 'tour', 'challenge']; // contra la máquina (al continuar arranca la IA)
+export const VS_SLOTS = ['pve', 'challenge']; // contra la máquina (al continuar arranca la IA)
 
 const finished = S => S.winner !== null && !S.jaque;
 

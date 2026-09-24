@@ -148,7 +148,7 @@ export const hideStoryTip = () => $('storyTip').classList.remove('visible');
 export function updateMenuBtn() {
   const v = app.variant;
   $('menuBtn').textContent = app.mode === 'test' ? t('nav.toEditor')
-    : ['daily', 'rush', 'tour', 'challenge'].includes(v) ? t('nav.toModes')
+    : ['rush', 'challenge'].includes(v) || (app.mode === 'pve' && !v) ? t('nav.toModes')
     : app.mode === 'story' ? t('nav.toLevels') : t('nav.toMenu');
 }
 

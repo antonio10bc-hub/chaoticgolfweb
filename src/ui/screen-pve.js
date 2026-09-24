@@ -1,5 +1,5 @@
 // Partida rápida: configuración (personas, colores, tablero, rivales y dificultad), "Repetir la
-// última" y el arranque de partidas contra la máquina (también lo usan torneo y desafíos).
+// última" y el arranque de partidas contra la máquina (también lo usan los desafíos).
 import { app } from './app.js';
 import { $, $$, esc } from './dom.js';
 import { Game, PLAYER_COLORS } from '../engine/game.js';
@@ -17,6 +17,7 @@ import { loadProfile, saveProfile, cleanName, MAX_NAME } from './profile.js';
 import { PERSONAS, personaById, assignPersonas, faceSVG } from './persona.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
+import { openModes } from './screen-modes.js';
 
 export const PVE_SIZES = {
   s: { cols: 5, rows: 5, par: 2 },
@@ -29,32 +30,44 @@ export const STYLE_COLOR = { aggro: '#f26d6d', trick: '#9b6dd6', cautious: '#5b8
 
 export function openPveSetup() { app.pveCfg.color = loadProfile().color; buildPveSetup(); showScreen('pve'); }
 
-// límites de la mesa: de 2 a 6 jugadores; con una sola persona, al menos 1 bot
+// límites de la mesa: de 2 a 6 jugadores. "Contra la máquina": 1 persona y de 1 a 5 bots;
+// "Multijugador local": de 2 a 4 personas y, si se quiere, bots
 function clampPve(cfg) {
-  cfg.humans = Math.min(4, Math.max(1, cfg.humans || 1));
+  if (cfg.kind !== 'local' && cfg.kind !== 'bots') cfg.kind = (cfg.humans || 1) > 1 ? 'local' : 'bots';
+  if (cfg.kind === 'bots') cfg.humans = 1;
+  else cfg.humans = Math.min(4, Math.max(2, cfg.humans || 2));
   cfg.opps = Math.max(cfg.humans > 1 ? 0 : 1, Math.min(6 - cfg.humans, cfg.opps ?? 2));
   if (!['easy', 'normal', 'hard'].includes(cfg.diff)) cfg.diff = 'normal';
   cfg.rivals = Array.isArray(cfg.rivals) ? cfg.rivals.slice(0, 5) : [];
 }
 
 // ficha de un rival: su cara, su nombre y su personalidad (o "al azar")
+// con flechas a los lados para pasar al anterior / siguiente personaje
 export function rivalChip(id, i) {
   const pr = personaById(id);
   const ava = pr
     ? `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`
     : `<span class="avatar rivalRandom" aria-hidden="true">?</span>`;
-  return `<button class="pveOpt rival${pr ? ' picked' : ''}" data-rival="${i}" title="${esc(t('pve.rivalCycle'))}">${ava}` +
-    `<b>${esc(pr ? pr.name : t('pve.rivalRandom'))}</b><small>${esc(pr ? t('persona.style.' + pr.style) : t('pve.rivalAny'))}</small></button>`;
+  return `<div class="pveOpt rival${pr ? ' picked' : ''}">` +
+    `<button class="rivalArrow" data-rival="${i}" data-dir="-1" aria-label="${esc(t('pve.rivalPrev'))}"><svg class="i" aria-hidden="true"><use href="#i-arrow-l"/></svg></button>` +
+    `<span class="rivalBody">${ava}<b>${esc(pr ? pr.name : t('pve.rivalRandom'))}</b><small>${esc(pr ? t('persona.style.' + pr.style) : t('pve.rivalAny'))}</small></span>` +
+    `<button class="rivalArrow" data-rival="${i}" data-dir="1" aria-label="${esc(t('pve.rivalNext'))}"><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button></div>`;
 }
 
 function buildPveSetup() {
   const cfg = app.pveCfg;
   clampPve(cfg);
+  const local = cfg.kind === 'local';
+  $$('#pveKind .pveOpt').forEach(b => { const on = cfg.kind === b.dataset.kind; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  $('pveHumansRow').hidden = !local;
   $$('#pveHumans .pveOpt').forEach(b => { const on = cfg.humans === +b.dataset.h; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  $('pveOppsH').textContent = t(local ? 'pve.oppsLocal' : 'pve.opps');
   $$('#pveDiff .pveOpt').forEach(b => { const on = cfg.diff === b.dataset.diff; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
   $$('#pveOpps .pveOpt').forEach(b => {
     const n = +b.dataset.n;
-    b.disabled = (n === 0 && cfg.humans === 1) || n + cfg.humans > 6;
+    // contra la máquina, al menos un bot; y nunca más de 6 en la mesa (sin huecos en la fila)
+    b.disabled = n + cfg.humans > 6;
+    b.hidden = (n === 0 && !local) || b.disabled;
   });
   $('pveDiffRow').hidden = cfg.opps === 0;
   $('pveRivalsRow').hidden = cfg.opps === 0;
@@ -123,17 +136,12 @@ export function dressVsGame({ game, people, rivals }) {
 
 /* ---------- "Repetir la última" (partida rápida con la misma configuración) ---------- */
 const LAST_PVE = 'chaoticgolf_lastpve';
-function lastPve() { try { const c = JSON.parse(localStorage.getItem(LAST_PVE)); return c && PVE_SIZES[c.size] ? c : null; } catch (e) { return null; } }
-function cfgSub(c) {
+export function lastPve() { try { const c = JSON.parse(localStorage.getItem(LAST_PVE)); return c && PVE_SIZES[c.size] ? c : null; } catch (e) { return null; } }
+export function cfgSub(c) {
   const sz = PVE_SIZES[c.size], parts = [`${sz.cols}×${sz.rows}`];
   if (c.humans > 1) parts.push(t('pve.peopleN', { n: c.humans }));
   if (c.opps) parts.push(t(c.opps > 1 ? 'pve.botsN' : 'pve.botN', { n: c.opps }), t('pve.diff' + c.diff[0].toUpperCase() + c.diff.slice(1)));
   return parts.join(' · ');
-}
-export function updateRepeatBtn() {
-  const c = lastPve();
-  $('repeatBtn').hidden = !c;
-  if (c) $('repeatSub').textContent = cfgSub(c);
 }
 export async function repeatLastPve() {
   const c = lastPve();
@@ -160,11 +168,9 @@ export function startPveMatch() {
 }
 
 export function bindPve() {
-  $('pveBtn').addEventListener('click', openPveSetup);
   $('pveContinue').addEventListener('click', () => resumeGame('pve'));
-  $('repeatBtn').addEventListener('click', repeatLastPve);
   $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave('pve')) startPveMatch(); });
-  $('pveBack').addEventListener('click', () => showScreen('menu'));
+  $('pveBack').addEventListener('click', openModes);
   // nombres del perfil: se guardan al escribir
   $('pveScreen').addEventListener('input', e => {
     const inp = e.target.closest('.pveName');
@@ -178,12 +184,14 @@ export function bindPve() {
     const c = e.target.closest('[data-color]'), s = e.target.closest('[data-size]'), n = e.target.closest('#pveOpps [data-n]');
     const h = e.target.closest('#pveHumans [data-h]'), d = e.target.closest('#pveDiff [data-diff]');
     const cy = e.target.closest('[data-cycle]'), rv = e.target.closest('[data-rival]');
-    if (rv) { // rival: al azar → cada personaje del catálogo (sin repetir los ya elegidos) → al azar
-      const i = +rv.dataset.rival, cfg = app.pveCfg, others = cfg.rivals.filter((_, j) => j !== i);
+    if (rv) { // rival: al azar ↔ cada personaje del catálogo (sin repetir los ya elegidos), en los dos sentidos
+      const i = +rv.dataset.rival, dir = +rv.dataset.dir || 1, cfg = app.pveCfg, others = cfg.rivals.filter((_, j) => j !== i);
       const ids = [null, ...PERSONAS.map(p => p.id).filter(id => !others.includes(id))];
-      cfg.rivals[i] = ids[(ids.indexOf(cfg.rivals[i] ?? null) + 1) % ids.length];
+      cfg.rivals[i] = ids[(ids.indexOf(cfg.rivals[i] ?? null) + dir + ids.length) % ids.length];
       buildPveSetup(); return;
     }
+    const k = e.target.closest('#pveKind [data-kind]');
+    if (k) { app.pveCfg.kind = k.dataset.kind; if (k.dataset.kind === 'local' && app.pveCfg.opps > 2) app.pveCfg.opps = 0; buildPveSetup(); return; }
     if (cy) { // multijugador local: cada persona cambia su color (sin repetir el de otra)
       const prof = loadProfile(), i = +cy.dataset.cycle, used = prof.people.slice(0, app.pveCfg.humans).map((pp, j) => j !== i && pp.color % PVE_COLORS.length);
       let ci = prof.people[i].color;
@@ -198,5 +206,5 @@ export function bindPve() {
     else return;
     buildPveSetup();
   });
-  MODE_NAV.pve = { back: () => showScreen('menu'), restart: () => { if (app.lastPveCfg) app.pveCfg = { ...app.lastPveCfg }; startPveMatch(); } };
+  MODE_NAV.pve = { back: openModes, restart: () => { if (app.lastPveCfg) app.pveCfg = { ...app.lastPveCfg }; startPveMatch(); } };
 }

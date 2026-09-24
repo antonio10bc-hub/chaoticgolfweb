@@ -3,7 +3,7 @@
 export const app = {
   game: null,            // Game en curso (src/engine/game.js)
   mode: 'free',          // 'free' (testing tool) | 'test' (probar desde editor) | 'story' (en solitario) | 'pve' (con bots)
-  variant: null,         // subtipo: en solitario 'puzzle' | 'daily' | 'rush'; con bots 'tour' | 'challenge'; null = el normal
+  variant: null,         // subtipo: en solitario 'puzzle' | 'daily' | 'rush'; con bots 'challenge'; null = el normal
   run: null,             // datos del subtipo en curso (hoyo del torneo, puntos del contrarreloj, fecha del reto…)
   levelIndex: null,      // índice del nivel en juego (modo historia)
   level: null,           // nivel en juego (historia / prueba)

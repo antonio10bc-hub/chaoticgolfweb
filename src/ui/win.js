@@ -16,7 +16,7 @@ import { humansOf, multiHuman, displayName } from './players.js';
 import { recordEnd, turnsLabel } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
-import { openModes, startDaily, rushHoleDone, startRushHole, startRush, tourHoleDone, startTourHole, startTour, tourName, challengeDone, startChallenge, modeStore, RUSH_KEY, TOUR_KEY, streakLabel } from './screen-modes.js';
+import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, modeStore, RUSH_KEY, streakLabel } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
 
@@ -86,7 +86,7 @@ export function showWin() {
       chips = recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '') +
         recChip(streakLabel(rec.dailyStreak || 1));
-      btns = btn('daily', t('modes.again'), true) + btn('modes', t('win.modes'));
+      btns = btn('daily', t('modes.again'), true) + btn('menuHome', t('win.menu'));
       break;
     case 'rush': {
       const r = rushHoleDone();
@@ -96,17 +96,6 @@ export function showWin() {
         chips += r.newBest ? recChip(t('stats.newBest'), true) : recChip(t('modes.rush.best', { n: r.best }));
         btns = btn('rushNew', t('modes.again'), true) + btn('modes', t('win.modes'));
       } else btns = btn('rushNext', t('win.nextHole', { n: app.run.hole + 2 }), true) + btn('modes', t('win.modes'));
-      break;
-    }
-    case 'tour': {
-      const r = tourHoleDone(S.winners);
-      $('winMsg').textContent = (r.last ? t('win.tourEnd') + ' ' : `${t('modes.holeN', { n: app.run.hole + 1, total: app.run.total })} · `) + msg;
-      chips = `<div class="winTable">${r.table.map(([id, v], i) => `<span class="${id === 'me' ? 'me' : ''}${r.champs.includes(id) && r.last ? ' champ' : ''}">` +
-        `<b>${i + 1}.</b> ${esc(tourName(id))} <i>${v}</i></span>`).join('')}</div>`;
-      if (r.last) {
-        chips += recChip(r.champs.includes('me') ? t('win.tourChampion') : t('win.tourWinner', { names: joinAnd(r.champs.map(tourName)) }), r.champs.includes('me'));
-        btns = btn('tourNew', t('modes.tour.start'), true) + btn('modes', t('win.modes'));
-      } else btns = btn('tourNext', t('win.nextHole', { n: app.run.hole + 2 }), true) + btn('modes', t('win.tourLater'));
       break;
     }
     case 'challenge':
@@ -128,7 +117,7 @@ export function showWin() {
       btns = btn('free', t('win.newGame'), true);
   }
   // fichas con el color del ganador en las partidas con varios jugadores
-  const winnerChips = !solo && slot !== 'tour' ? S.winners.map(i => `<span class="winChip" style="background:${pColor(i)}">${esc(displayName(i))}</span>`).join('') : '';
+  const winnerChips = !solo ? S.winners.map(i => `<span class="winChip" style="background:${pColor(i)}">${esc(displayName(i))}</span>`).join('') : '';
   $('winChips').innerHTML = winnerChips + chips;
   box.style.borderColor = solo ? 'transparent' : pColor(S.winners[0]);
   box.style.boxShadow = '';
@@ -151,7 +140,7 @@ export function showWin() {
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
   if (slot === 'story' && (stats?.turnos || 0) === 0) unlock('holeInOne');
-  if ((kind === 'pve' || kind === 'tour' || kind === 'challenge') && !lost && S.aiLevel === 'hard') unlock('winHard');
+  if ((kind === 'pve' || kind === 'challenge') && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
 
@@ -162,6 +151,24 @@ export function showWin() {
   if (fx) setTimeout(() => sfx(fx.sound), 250);
   sfx(lost ? 'lose' : 'win');
   musicMood(lost ? 'calm' : 'win');
+}
+
+// contrarreloj: se ha acabado el tiempo (la serie termina con lo sumado)
+export function showRushTimeUp({ sum, newBest, hole, best }) {
+  $('winMsg').textContent = t('win.rushTimeUp');
+  $('winIcon').innerHTML = `<svg class="i"><use href="#i-timer"/></svg>`;
+  $('winOverlay').classList.add('lost');
+  $('winStyle').innerHTML = '';
+  $('winChips').innerHTML = `<span class="winRec">${esc(t('win.rushReached', { n: hole }))}</span>` +
+    `<span class="winRec${newBest ? ' new' : ''}">${esc((newBest ? t('stats.newBest') + ' · ' : '') + t('win.rushTotal', { n: sum }))}</span>` +
+    (!newBest ? `<span class="winRec">${esc(t('modes.rush.best', { n: best }))}</span>` : '');
+  $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winWhy').innerHTML = '';
+  $('winOverlay').querySelector('.box').style.borderColor = 'transparent';
+  $('winBtns').innerHTML = `<button data-act="rushNew" class="btn-primary btn-lg">${esc(t('modes.again'))}</button><button data-act="modes" class="btn-light">${esc(t('win.modes'))}</button>`;
+  $('winOverlay').classList.add('visible');
+  $('winBtns').querySelector('button')?.focus();
+  sfx('lose');
+  musicMood('calm');
 }
 
 // puzle: se ha terminado el turno sin embocar
@@ -219,8 +226,7 @@ export function bindWin() {
       case 'daily': hideWin(); startDaily(); break;
       case 'rushNext': hideWin(); startRushHole(modeStore.get(RUSH_KEY)); break;
       case 'rushNew': hideWin(); startRush(true); break;
-      case 'tourNext': hideWin(); startTourHole(modeStore.get(TOUR_KEY)); break;
-      case 'tourNew': hideWin(); startTour(true); break;
+      case 'menuHome': leaveToMenu(); break;
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
     }
   });

@@ -1,14 +1,14 @@
 // Estadísticas globales del jugador (todas sus partidas en este dispositivo):
 // partidas empezadas y ganadas por modo, totales de la mesa, el mejor resultado de cada nivel,
-// la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj,
-// los torneos y los desafíos y puzles superados.
+// la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj
+// y los desafíos y puzles superados.
 import { t } from '../i18n/index.js';
 
 const KEY = 'chaoticgolf_stats';
 const VERSION = 1;
 // "1 turno" / "3 turnos"
 export const turnsLabel = n => n === 1 ? t('stats.turn1') : t('stats.turnsShort', { n });
-export const REC_MODES = ['story', 'puzzle', 'daily', 'rush', 'pve', 'local', 'tour', 'challenge'];
+export const REC_MODES = ['story', 'puzzle', 'daily', 'rush', 'pve', 'local', 'challenge'];
 
 const zeros = () => Object.fromEntries(REC_MODES.map(m => [m, 0]));
 const blank = () => ({
@@ -20,7 +20,6 @@ const blank = () => ({
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
   daily: { days: {}, streak: 0, bestStreak: 0, last: null }, // fecha -> { best, strokes }
   rush: { best: 0, runs: 0 },
-  tour: { champion: 0 },
   challenges: {}, // id -> true
 });
 
@@ -30,7 +29,7 @@ export function loadRecords() {
     if (d && d.version === VERSION) {
       const b = blank();
       return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals },
-        pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush }, tour: { ...b.tour, ...d.tour },
+        pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush },
         puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }

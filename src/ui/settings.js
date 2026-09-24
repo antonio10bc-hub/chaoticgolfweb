@@ -86,7 +86,6 @@ function statsHTML() {
   const modes = `<div class="stTotals">` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t('stats.dailyStreak'))} <b>${dl.streak}</b> · ${esc(t('stats.bestStreak'))} <b>${dl.bestStreak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg>${esc(t('modes.rush.title'))} <b>${r.rush.best || 0}</b> pts</div>` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('modes.tour.titles', { n: r.tour.champion }))}</div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('modes.challengesH'))} <b>${nCh}/6</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.puzzlesH'))} <b>${nPz}</b></div></div>`;
   return `<section><h4>${esc(t('stats.byMode'))}</h4><div class="stCards">${cards}</div></section>
