@@ -155,7 +155,7 @@ export function bindStory() {
     if (b) playLevelCard(b);
   });
   // navegación y reinicio de estos modos (puzles y tus niveles vuelven a Modos de juego)
-  MODE_NAV.story = { back: () => (isUserLevelIdx(app.levelIndex) ? openModes() : openStory()), restart: replayLevel };
-  MODE_NAV.puzzle = { back: openModes, restart: replayLevel };
+  MODE_NAV.story = { back: () => (isUserLevelIdx(app.levelIndex) ? openModes('special') : openStory()), restart: replayLevel };
+  MODE_NAV.puzzle = { back: () => openModes('special'), restart: replayLevel };
   MODE_NAV.test = { back: () => showScreen('editor'), restart: replayLevel };
 }

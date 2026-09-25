@@ -30,7 +30,7 @@ async function fresh(seed = {}) {
 const app = fn => page.evaluate(fn);
 const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
 // Partida rápida vive en Modos de juego
-const openQuick = async () => { await click('#modesBtn'); await sleep(300); await click('[data-mode="quick"]'); await confirmIfAsked(); await sleep(300); };
+const openQuick = async () => { await click('#modesBtn'); await sleep(300); await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300); };
 const confirmIfAsked = async () => { await sleep(250); if (await page.$('#dialog[open]')) { await page.click('#dialog[open] button[value="ok"]'); await sleep(200); } };
 
 before(async () => {
@@ -191,6 +191,27 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
   await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => !t.out); ctl.clickCell(t.x, t.y); });
   await sleep(200);
   assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
+});
+
+it('modos de juego: dos pestañas (una a la vez), barajas con estadísticas y dos bloqueadas', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(400);
+  const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
+  assert.equal(await vis(), 'quick');
+  assert.equal(await app(() => document.querySelectorAll('.deckCard').length), 3);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 2);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked [data-mode]').length), 0); // bloqueadas: nada que pulsar
+  await click('[data-mtab="special"]'); await sleep(700);
+  assert.equal(await vis(), 'special');
+  assert.ok(await page.$('.mdPanel[data-panel="special"] [data-mode="rushNew"]'));
+  // se recuerda la pestaña
+  await click('#modesBack'); await sleep(300); await click('#modesBtn'); await sleep(400);
+  assert.equal(await vis(), 'special');
+  // una partida rápida cuenta en su baraja
+  await click('[data-mtab="quick"]'); await sleep(600);
+  await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300);
+  await click('#pvePlay'); await confirmIfAsked(); await sleep(500);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_stats')).decks.classic.p), 1);
 });
 
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {

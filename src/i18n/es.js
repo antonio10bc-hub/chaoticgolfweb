@@ -274,6 +274,13 @@ export default {
     driftDuel: { name: 'Hoyo nervioso', desc: 'Duelo en 5×5 con el hoyo moviéndose cada turno.' },
     fingerFest: { name: 'Dedos ágiles', desc: 'El mazo está lleno de dedos: todo es serpentear.' },
   },
+  decks: {
+    lead: 'Cada baraja tiene las cartas de siempre más su propio tipo de cartas especiales.',
+    classic: { name: 'Baraja clásica', desc: 'Las cartas de siempre: palos, dedo, hoyo, búnker, portal y las reacciones naranjas. Contra bots o en multijugador local.' },
+    water: { name: 'Baraja de agua', desc: 'Las cartas base y unas cartas especiales de agua.' },
+    minigolf: { name: 'Baraja de minigolf', desc: 'Las cartas base y unas cartas especiales de minigolf.' },
+    soon: 'Próximamente', played: 'Jugadas', won: 'Victorias', pct: 'Ganadas',
+  },
   save: { saved: 'Guardado', restored: 'Partida recuperada', title: 'Partida guardada', replaceOk: 'Empezar nueva',
     confirmReplace: 'Tienes una partida guardada. Si empiezas otra, la guardada se perderá.' },
 
@@ -389,8 +396,9 @@ export default {
   },
 
   modes: {
+    tabs: { quick: 'Partidas rápidas', special: 'Juegos especiales' },
     weekly: { title: 'Desafío semanal', daysLeft: 'quedan {n} días', lastDay: 'último día', best: 'Tu mejor: {turns}', noBest: 'Aún sin superar esta semana' },
-    title: 'Modos de juego', sub: 'Partida rápida, contrarreloj, desafíos, puzles y tus niveles',
+    title: 'Modos de juego', sub: 'Elige una baraja o un juego especial',
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',

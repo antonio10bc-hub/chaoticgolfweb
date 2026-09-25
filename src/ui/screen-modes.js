@@ -27,6 +27,8 @@ import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from 
 import { openEditor } from './editor.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
+import { DECKS } from '../content/decks.js';
+import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
 import { modeIntro } from './mode-intro.js';
 import { syncMenuBall } from './menu-ball.js';
@@ -343,20 +345,57 @@ setInterval(() => {
 }, 250);
 
 /* =============== pantalla de Modos =============== */
-export function openModes() {
+// Dos pestañas que se deslizan en horizontal (también con el dedo): Partidas rápidas (una tarjeta
+// por baraja) y Juegos especiales (contrarreloj, desafíos, semanal, puzles y tus niveles).
+// Solo se ve una a la vez; se recuerda la última.
+const TAB_KEY = 'chaoticgolf_modesTab', TABS = ['quick', 'special'];
+let modesTab = (() => { try { return TABS.includes(localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : 'quick'; } catch (e) { return 'quick'; } })();
+// pestaña de la partida en curso (para volver a su sitio)
+const tabOfGame = () => app.mode === 'pve' && !app.variant ? 'quick' : 'special';
+
+// emblema del mazo: tres cartas apiladas con el dorso del color de la baraja
+const EMBLEM = {
+  club: '<path d="M34 16 26 42" stroke="#F1F1DC" stroke-width="3.4" stroke-linecap="round"/><path d="M22 41h9" stroke="#F1F1DC" stroke-width="4" stroke-linecap="round"/><circle cx="37" cy="41" r="3.4" fill="#F1F1DC"/>',
+  drop: '<path d="M30 14c6 9 11 15 11 21a11 11 0 0 1-22 0c0-6 5-12 11-21z" fill="#F1F1DC"/><path d="M25 35a5 5 0 0 0 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".45"/>',
+  mill: '<path d="M30 30 30 46M24 46h12" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round"/><g fill="#F1F1DC"><path d="M30 30 22 18l5-2z"/><path d="M30 30 42 22l2 5z"/><path d="M30 30 38 42l-5 2z"/><path d="M30 30 18 38l-2-5z"/></g><circle cx="30" cy="30" r="3" fill="currentColor"/>',
+};
+const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true" style="color:${dk.color}">` +
+  `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".35" transform="rotate(-12 31 31)"/>` +
+  `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".6" transform="rotate(-5 31 31)"/>` +
+  `<rect x="13" y="7" width="34" height="46" rx="6" fill="${dk.color}"/><rect x="16.5" y="10.5" width="27" height="39" rx="4" fill="none" stroke="rgba(241,241,220,.45)" stroke-width="1.4"/>` +
+  `<g transform="translate(0 0)">${EMBLEM[dk.emblem]}</g></svg>`;
+
+export function openModes(tab) {
   hideWin();
   aiStop();
+  if (TABS.includes(tab)) modesTab = tab;
   const R = loadRecords();
   const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge'), wsave = loadSave('weekly');
-  const rush = store.get(RUSH_KEY), last = lastPve();
-  const btn = (act, label, main = true) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}">${esc(label)}</button>`;
+  const rush = store.get(RUSH_KEY);
+  const btn = (act, label, main = true, dis = false) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}"${dis ? ' disabled' : ''}>${esc(label)}</button>`;
   const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
   const stat = (icon, txt) => `<span class="mdStat"><svg class="i" aria-hidden="true"><use href="#${icon}"/></svg>${esc(txt)}</span>`;
-  const quickCard = `<article class="modeCard quick">
-      <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></span><div><h3>${esc(t('pve.title'))}</h3><small>${esc(t('modes.quick.kinds'))}</small></div></div>
-      <p>${esc(t('modes.quick.sub'))}</p>
-      ${last ? `<div class="mdStats">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</div>` : ''}
-      <div class="mdBtns">${qsave ? cont('resume:pve') : ''}${btn('quick', t('modes.quick.setup'), !qsave)}${last ? btn('repeat', t('menu.repeat'), false) : ''}</div></article>`;
+
+  /* ---- partidas rápidas: una tarjeta por baraja ---- */
+  const deckCard = dk => {
+    const st = R.decks[dk.id] || { p: 0, w: 0 }, last = !dk.locked && lastPve(dk.id);
+    const saved = !dk.locked && qsave && (qsave.pveCfg?.deck || 'classic') === dk.id;
+    const pct = st.p ? Math.round(100 * st.w / st.p) + '%' : '—';
+    const btns = dk.locked
+      ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
+      : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '');
+    return `<article class="deckCard${dk.locked ? ' locked' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
+      `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
+      `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
+      `<p>${esc(t('decks.' + dk.id + '.desc'))}</p>` +
+      (last ? `<div class="mdStats">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</div>` : '') + `</div>` +
+      `<dl class="dkStats"><div><dt>${esc(t('decks.played'))}</dt><dd>${st.p}</dd></div><div><dt>${esc(t('decks.won'))}</dt><dd>${st.w}</dd></div>` +
+      `<div><dt>${esc(t('decks.pct'))}</dt><dd>${pct}</dd></div></dl>` +
+      `<div class="dkBtns">${btns}</div></article>`;
+  };
+  const quickPanel = `<p class="mdLead">${esc(t('decks.lead'))}</p><div class="deckList">${DECKS.map(deckCard).join('')}</div>`;
+
+  /* ---- juegos especiales ---- */
   const rushCard = `<article class="modeCard rush">
       <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3><small>${esc(t('modes.rush.holes', { n: RUSH_HOLES }))}</small></div></div>
       <p>${esc(t('modes.rush.sub'))}</p>
@@ -376,36 +415,88 @@ export function openModes() {
     `<b>${esc(t('weekly.' + rule.id + '.name'))}</b><small>${esc(t('weekly.' + rule.id + '.desc'))}</small>` +
     `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span></div>` +
     (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
-  $('modesGrid').innerHTML =
-    `<div class="mdRow">${quickCard}${rushCard}</div>` +
+  const specialPanel = rushCard +
     `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>` +
     puzzlesSectionHTML() + yoursSectionHTML();
+
+  const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
+    `<svg class="i" aria-hidden="true"><use href="#${id === 'quick' ? 'i-bolt' : 'i-trophy'}"/></svg>${esc(t('modes.tabs.' + id))}</button>`;
+  $('modesGrid').innerHTML =
+    `<div class="mdTabs" role="tablist" aria-label="${esc(t('modes.title'))}"><span class="mdTabInd" aria-hidden="true"></span>${TABS.map(tabBtn).join('')}</div>` +
+    `<div class="mdViewport"><div class="mdTrack">` +
+    `<section class="mdPanel" id="mdPanel-quick" role="tabpanel" aria-labelledby="mdTab-quick" data-panel="quick">${quickPanel}</section>` +
+    `<section class="mdPanel" id="mdPanel-special" role="tabpanel" aria-labelledby="mdTab-special" data-panel="special">${specialPanel}</section>` +
+    `</div></div>`;
+  setModesTab(modesTab, { instant: true });
   showScreen('modes');
 }
 
+// cambia de pestaña: el indicador y el contenido se deslizan; la pestaña que no se ve no ocupa sitio
+let tabTimer = null;
+function setModesTab(tab, { instant = false, focus = false } = {}) {
+  const grid = $('modesGrid'), track = grid.querySelector('.mdTrack');
+  if (!track || !TABS.includes(tab)) return;
+  const changed = tab !== modesTab;
+  modesTab = tab;
+  try { localStorage.setItem(TAB_KEY, tab); } catch (e) { /* sin storage */ }
+  document.body.dataset.modesTab = tab; // (el creador de niveles solo se ofrece en Juegos especiales)
+  grid.dataset.tab = tab;
+  grid.querySelectorAll('[data-mtab]').forEach(b => { const on = b.dataset.mtab === tab; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+  if (focus) grid.querySelector(`[data-mtab="${tab}"]`)?.focus();
+  const panels = [...track.children];
+  clearTimeout(tabTimer);
+  panels.forEach(p => p.classList.remove('off')); // los dos a la vista mientras se desliza
+  track.classList.toggle('instant', instant || REDUCED);
+  track.style.transform = tab === 'special' ? 'translateX(calc(-100% - var(--mdGap)))' : 'none';
+  if (changed && !instant && window.scrollY > 0) window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+  if (changed && !instant) sfx('select');
+  tabTimer = setTimeout(() => panels.forEach(p => p.classList.toggle('off', p.dataset.panel !== tab)), instant || REDUCED ? 0 : 480);
+}
+
+// deslizar con el dedo entre pestañas (solo gestos claramente horizontales)
+function bindModesSwipe() {
+  let x0 = null, y0 = 0, t0 = 0;
+  const grid = $('modesGrid');
+  grid.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || !e.target.closest('.mdViewport')) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  grid.addEventListener('touchend', e => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6 || Date.now() - t0 > 700) return;
+    const i = TABS.indexOf(modesTab) + (dx < 0 ? 1 : -1);
+    if (TABS[i]) setModesTab(TABS[i]);
+  }, { passive: true });
+}
+
 // "Nueva partida": si hay una partida rápida guardada, se avisa y, al aceptar, se borra
-async function newQuick() {
+async function newQuick(deck = 'classic') {
   if (loadSave('pve')) {
     if (!await confirmDialog(t('modes.quick.replace'), t('save.replaceOk'), true, t('save.title'))) return;
     clearSave('pve');
   }
-  openPveSetup();
+  openPveSetup(deck);
 }
 
 export function bindModes() {
-  $('modesBtn').addEventListener('click', openModes);
+  $('modesBtn').addEventListener('click', () => openModes());
+  bindModesSwipe();
   $('modesBack').addEventListener('click', () => showScreen('menu'));
   $('dailyCard').addEventListener('click', () => { if ($('dailyCard').dataset.resume) resumeGame('daily'); else startDaily(); });
   $('modesGrid').addEventListener('click', e => {
     const lv = e.target.closest('[data-level], [data-puzzle]'); // puzles y tus niveles
     if (lv) { playLevelCard(lv); return; }
+    const tb = e.target.closest('[data-mtab]');
+    if (tb) { setModesTab(tb.dataset.mtab); return; }
     const b = e.target.closest('[data-mode]');
     if (!b) return;
     const [act, arg] = b.dataset.mode.split(':');
     switch (act) {
       case 'resume': resumeGame(arg); break;
-      case 'quick': newQuick(); break;
-      case 'repeat': repeatLastPve(); break;
+      case 'quick': newQuick(arg); break;
+      case 'repeat': repeatLastPve(arg); break;
       case 'rush': startRush(false); break;
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
@@ -414,8 +505,15 @@ export function bindModes() {
     }
   });
   MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); startDailyGame(); } };
-  MODE_NAV.rush = { back: openModes, restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
-  MODE_NAV.challenge = { back: openModes, restart: () => startChallenge(app.run?.id) };
-  MODE_NAV.weekly = { back: openModes, restart: () => { clearSave('weekly'); startWeeklyGame(app.run?.week); } };
+  // teclado: flechas entre pestañas
+  $('modesGrid').addEventListener('keydown', e => {
+    if (!e.target.closest('[data-mtab]') || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    e.preventDefault();
+    const i = TABS.indexOf(modesTab) + (e.key === 'ArrowRight' ? 1 : -1);
+    if (TABS[i]) setModesTab(TABS[i], { focus: true });
+  });
+  MODE_NAV.rush = { back: () => openModes('special'), restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
+  MODE_NAV.challenge = { back: () => openModes('special'), restart: () => startChallenge(app.run?.id) };
+  MODE_NAV.weekly = { back: () => openModes('special'), restart: () => { clearSave('weekly'); startWeeklyGame(app.run?.week); } };
 }
-export { store as modeStore, RUSH_KEY };
+export { store as modeStore, RUSH_KEY, tabOfGame };

@@ -17,6 +17,7 @@ import { PERSONAS, personaById, assignPersonas, faceSVG } from './persona.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
+import { deckById } from '../content/decks.js';
 
 export const PVE_SIZES = {
   s: { cols: 5, rows: 5, par: 2 },
@@ -27,12 +28,19 @@ export const PVE_COLORS = [...PLAYER_COLORS, '#e8833a'];
 // color de muestra de cada personalidad (en la elección de rivales)
 export const STYLE_COLOR = { aggro: '#f26d6d', trick: '#9b6dd6', cautious: '#5b8def', chaos: '#f2b705' };
 
-export function openPveSetup() { app.pveCfg.color = loadProfile().color; buildPveSetup(); showScreen('pve'); }
+// deck: la baraja elegida en Modos de juego (su nombre y color, arriba de la configuración)
+export function openPveSetup(deck = app.pveCfg.deck || 'classic') {
+  app.pveCfg.color = loadProfile().color;
+  app.pveCfg.deck = deckById(deck).locked ? 'classic' : deck;
+  buildPveSetup();
+  showScreen('pve');
+}
 
 // límites de la mesa: de 2 a 6 jugadores. "Contra la máquina": 1 persona y de 1 a 5 bots;
 // "Multijugador local": de 2 a 4 personas y, si se quiere, bots
 function clampPve(cfg) {
   if (cfg.kind !== 'local' && cfg.kind !== 'bots') cfg.kind = (cfg.humans || 1) > 1 ? 'local' : 'bots';
+  if (deckById(cfg.deck).id !== cfg.deck || deckById(cfg.deck).locked) cfg.deck = 'classic';
   if (cfg.kind === 'bots') cfg.humans = 1;
   else cfg.humans = Math.min(4, Math.max(2, cfg.humans || 2));
   cfg.opps = Math.max(cfg.humans > 1 ? 0 : 1, Math.min(6 - cfg.humans, cfg.opps ?? 2));
@@ -58,6 +66,9 @@ export function rivalChip(id, i, R = loadRecords(), nemesis = nemesisId(R)) {
 function buildPveSetup() {
   const cfg = app.pveCfg;
   clampPve(cfg);
+  const dk = deckById(cfg.deck);
+  $('pveDeckTag').textContent = t('decks.' + dk.id + '.name');
+  $('pveDeckTag').style.setProperty('--dk', dk.color);
   const local = cfg.kind === 'local';
   $$('#pveKind .pveOpt').forEach(b => { const on = cfg.kind === b.dataset.kind; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
   $('pveHumansRow').hidden = !local;
@@ -138,16 +149,20 @@ export function dressVsGame({ game, people, rivals }) {
 }
 
 /* ---------- "Repetir la última" (partida rápida con la misma configuración) ---------- */
-const LAST_PVE = 'chaoticgolf_lastpve';
-export function lastPve() { try { const c = JSON.parse(localStorage.getItem(LAST_PVE)); return c && PVE_SIZES[c.size] ? c : null; } catch (e) { return null; } }
+// la última configuración de cada baraja (la clásica conserva la clave de siempre)
+const LAST_PVE = 'chaoticgolf_lastpve', lastKey = deck => deck && deck !== 'classic' ? LAST_PVE + '_' + deck : LAST_PVE;
+export function lastPve(deck = 'classic') {
+  try { const c = JSON.parse(localStorage.getItem(lastKey(deck))); return c && PVE_SIZES[c.size] ? { ...c, deck } : null; } catch (e) { return null; }
+}
 export function cfgSub(c) {
   const sz = PVE_SIZES[c.size], parts = [`${sz.cols}×${sz.rows}`];
   if (c.humans > 1) parts.push(t('pve.peopleN', { n: c.humans }));
+  // (la baraja no se repite aquí: la tarjeta de cada baraja ya dice cuál es)
   if (c.opps) parts.push(t(c.opps > 1 ? 'pve.botsN' : 'pve.botN', { n: c.opps }), t('pve.diff' + c.diff[0].toUpperCase() + c.diff.slice(1)));
   return parts.join(' · ');
 }
-export async function repeatLastPve() {
-  const c = lastPve();
+export async function repeatLastPve(deck = 'classic') {
+  const c = lastPve(deck);
   if (!c || !await confirmReplaceSave('pve')) return;
   app.pveCfg = { ...app.pveCfg, ...c };
   startPveMatch();
@@ -160,19 +175,19 @@ export function startPveMatch() {
   const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps) });
   startGame(made.game, 'pve');
   dressVsGame(made);
-  try { localStorage.setItem(LAST_PVE, JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }
+  try { localStorage.setItem(lastKey(cfg.deck), JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }
   updateMenuBtn();
   musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();
-  recordStart(cfg.humans > 1 ? 'local' : 'pve');
+  recordStart(cfg.humans > 1 ? 'local' : 'pve', cfg.deck || 'classic');
   aiStart(900); // si abre la máquina, que juegue (cancelable si se sale antes)
 }
 
 export function bindPve() {
   $('pveContinue').addEventListener('click', () => resumeGame('pve'));
   $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave('pve')) startPveMatch(); });
-  $('pveBack').addEventListener('click', openModes);
+  $('pveBack').addEventListener('click', () => openModes('quick'));
   // nombres del perfil: se guardan al escribir
   $('pveScreen').addEventListener('input', e => {
     const inp = e.target.closest('.pveName');
@@ -208,5 +223,5 @@ export function bindPve() {
     else return;
     buildPveSetup();
   });
-  MODE_NAV.pve = { back: openModes, restart: () => { if (app.lastPveCfg) app.pveCfg = { ...app.lastPveCfg }; startPveMatch(); } };
+  MODE_NAV.pve = { back: () => openModes('quick'), restart: () => { if (app.lastPveCfg) app.pveCfg = { ...app.lastPveCfg }; startPveMatch(); } };
 }

@@ -271,6 +271,13 @@ export default {
     driftDuel: { name: 'Jittery hole', desc: 'A duel on 5×5 with the hole moving every turn.' },
     fingerFest: { name: 'Nimble fingers', desc: 'The deck is full of fingers: it’s all about zigzagging.' },
   },
+  decks: {
+    lead: 'Every deck has the usual cards plus its own kind of special cards.',
+    classic: { name: 'Classic deck', desc: 'The usual cards: clubs, finger, hole, bunker, portal and the orange reactions. Against bots or in local multiplayer.' },
+    water: { name: 'Water deck', desc: 'The base cards plus some special water cards.' },
+    minigolf: { name: 'Minigolf deck', desc: 'The base cards plus some special minigolf cards.' },
+    soon: 'Coming soon', played: 'Played', won: 'Wins', pct: 'Win rate',
+  },
   save: { saved: 'Saved', restored: 'Game restored', title: 'Saved game', replaceOk: 'Start new',
     confirmReplace: 'You have a saved game. Starting a new one will discard it.' },
 
@@ -386,8 +393,9 @@ export default {
   },
 
   modes: {
+    tabs: { quick: 'Quick games', special: 'Special games' },
     weekly: { title: 'Weekly challenge', daysLeft: '{n} days left', lastDay: 'last day', best: 'Your best: {turns}', noBest: 'Not beaten this week yet' },
-    title: 'Game modes', sub: 'Quick game, time attack, challenges, puzzles and your levels',
+    title: 'Game modes', sub: 'Pick a deck or a special game',
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',

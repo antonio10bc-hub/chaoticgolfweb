@@ -16,7 +16,7 @@ import { humansOf, multiHuman, displayName, isBot } from './players.js';
 import { recordEnd, turnsLabel } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
-import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, streakLabel, dailyShareText, shareText } from './screen-modes.js';
+import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText, shareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
 
@@ -53,7 +53,8 @@ export function showWin() {
   // historial contra cada rival (con una persona contra la máquina)
   const rivals = mode === 'pve' && !multi ? [...Array(S.nPlayers).keys()].filter(p => isBot(p) && S.personas?.[p])
     .map(p => ({ id: S.personas[p], winner: S.winners.includes(p) })) : [];
-  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals });
+  const deck = slot === 'pve' ? app.lastPveCfg?.deck || 'classic' : null; // partida rápida: estadísticas de su baraja
+  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals, deck });
   $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
   $('winOverlay').classList.toggle('lost', lost);
 
@@ -300,7 +301,7 @@ export function bindWin() {
       case 'pve': startPveMatch(); break;
       case 'menu': leaveToMenu(); break;
       case 'free': newFreeGame(); break;
-      case 'modes': hideWin(); openModes(); break;
+      case 'modes': hideWin(); openModes(tabOfGame()); break;
       case 'daily': hideWin(); startDaily(); break;
       case 'rushNext': hideWin(); startRushHole(modeStore.get(RUSH_KEY)); break;
       case 'rushNew': hideWin(); startRush(true); break;

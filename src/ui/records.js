@@ -27,7 +27,10 @@ const blank = () => ({
   rivals: {},     // personaje -> { w, l, beat } (tus victorias y derrotas contra él; beat: veces que ganó él)
   history: {},    // fecha -> { p, w } (partidas terminadas y ganadas ese día)
   cards: {},      // carta -> veces que la has jugado
+  decks: {},      // baraja de la partida rápida -> { p: jugadas, w: victorias (tuyas o de alguna persona en local) }
 });
+// antes de existir, todas las partidas rápidas eran de la baraja clásica
+const seedDecks = d => ({ classic: { p: (d.played?.pve || 0) + (d.played?.local || 0), w: (d.won?.pve || 0) + (d.won?.local || 0) } });
 
 export function loadRecords() {
   try {
@@ -37,6 +40,7 @@ export function loadRecords() {
       return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals },
         pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush },
         weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
+        decks: d.decks ? { ...d.decks } : seedDecks(d),
         puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }
@@ -47,10 +51,15 @@ export const resetRecords = () => saveRecords(blank());
 export const updateRecords = fn => { const d = loadRecords(); fn(d); saveRecords(d); return d; };
 
 // una partida nueva (no al continuar una guardada)
-export function recordStart(kind) {
+// deck: baraja de la partida rápida (sus propias estadísticas)
+export function recordStart(kind, deck = null) {
   if (!REC_MODES.includes(kind)) return;
-  updateRecords(d => { d.played[kind]++; });
+  updateRecords(d => {
+    d.played[kind]++;
+    if (deck) { const k = d.decks[deck] = d.decks[deck] || { p: 0, w: 0 }; k.p++; }
+  });
 }
+export const deckStats = id => loadRecords().decks[id] || { p: 0, w: 0 };
 
 // día anterior a una fecha "AAAA-MM-DD"
 function prevDay(key) {
@@ -77,10 +86,11 @@ export const dailyToday = date => loadRecords().daily.days[date] || null;
 // fin de partida: suma los totales, la victoria y los récords del modo.
 // Devuelve lo necesario para anunciarlo en el resumen final.
 // rivals: [{ id, winner }] — los personajes de la mesa (con una persona contra la máquina)
-export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [] }) {
+export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [], deck = null }) {
   if (!REC_MODES.includes(kind)) return {};
   const d = loadRecords();
   if (won) d.won[kind]++;
+  if (deck && won) { const k = d.decks[deck] = d.decks[deck] || { p: 0, w: 0 }; k.w++; }
   if (stats) for (const k of Object.keys(d.totals)) d.totals[k] += stats[k] || 0;
   // evolución: partidas terminadas y ganadas por día (últimos 90 días)
   const today = dateKey(), h = d.history[today] = d.history[today] || { p: 0, w: 0 };

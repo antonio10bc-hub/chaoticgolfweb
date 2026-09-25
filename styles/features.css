@@ -794,8 +794,8 @@ html.reduceMotion #rushTimer.danger, html.reduceMotion #game.urgent #boardWrap {
 }
 
 /* tarjetas de Partida rápida y Contrarreloj en Modos: con su propio fondo */
-#modesGrid > .mdRow > .modeCard { background-image: var(--grain); background-color: var(--cream); border: none; padding: 18px; box-shadow: 0 24px 60px rgba(10,25,10,.3); border-radius: 20px; }
-#modesGrid > .mdRow > .modeCard .mdHead h3 { font-size: 21px; }
+#modesGrid > .mdRow > .modeCard, .mdPanel > .modeCard { background-image: var(--grain); background-color: var(--cream); border: none; padding: 18px; box-shadow: 0 24px 60px rgba(10,25,10,.3); border-radius: 20px; }
+#modesGrid > .mdRow > .modeCard .mdHead h3, .mdPanel > .modeCard .mdHead h3 { font-size: 21px; }
 
 /* reto diario: los dos rivales del día (cara a cara) y "contra X e Y · dificultad" */
 .dRivals { position: relative; padding: 0; background: rgba(36,36,36,.14); }
@@ -1000,4 +1000,76 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
   #storyScreen .lvlCard.done .lsTxt { display: none; }          /* completado: solo el tic */
   #storyScreen .lvlCard.done .lvlState { padding: 3px 6px; }
   #storyScreen .lvlSaved { top: 6px; bottom: auto; }
+}
+
+/* ---------- Modos de juego: dos pestañas que se deslizan ---------- */
+#modesGrid { --mdGap: 40px; }
+.mdTabs { position: relative; align-self: center; display: grid; grid-template-columns: 1fr 1fr; width: min(460px, 100%); padding: 5px; border-radius: 999px;
+  background: rgba(20,40,20,.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.mdTabs button { position: relative; z-index: 1; --b-bg: transparent; --b-line: transparent; --b-fg: var(--cream); border-radius: 999px;
+  padding: 11px 12px; font-size: 15px; font-weight: 500; gap: 8px; justify-content: center; transition: color .3s; }
+.mdTabs button .i { width: 17px; height: 17px; }
+.mdTabs button[aria-selected="true"] { --b-fg: var(--ink); }
+.mdTabs button:hover { background-color: transparent; }
+.mdTabs button:not([aria-selected="true"]):hover { --b-fg: #fff; }
+.mdTabInd { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 999px;
+  background-image: var(--grain); background-color: var(--cream); box-shadow: 0 4px 14px rgba(10,25,10,.25);
+  transition: transform .45s cubic-bezier(.3,1.25,.5,1); }
+#modesGrid[data-tab="special"] .mdTabInd { transform: translateX(100%); }
+.mdViewport { overflow: clip; overflow-clip-margin: 90px; } /* (el margen deja respirar las sombras; Chrome solo lo aplica con clip en los dos ejes) */
+.mdTrack { display: flex; gap: var(--mdGap); align-items: flex-start; transition: transform .48s cubic-bezier(.65,0,.25,1); will-change: transform; }
+.mdTrack.instant { transition: none; }
+.mdPanel { flex: 0 0 100%; min-width: 0; display: flex; flex-direction: column; gap: 20px; transition: opacity .35s; }
+.mdPanel.off { visibility: hidden; height: 0; overflow: hidden; }
+#modesGrid[data-tab="quick"] .mdPanel[data-panel="special"], #modesGrid[data-tab="special"] .mdPanel[data-panel="quick"] { opacity: .25; }
+.mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.85); font-size: 14px; }
+html.reduceMotion .mdTrack, html.reduceMotion .mdTabInd { transition: none; }
+/* el creador de niveles, solo con Juegos especiales a la vista */
+body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display: none; }
+
+/* ---------- tarjeta de baraja (lista vertical) ---------- */
+.deckList { display: flex; flex-direction: column; gap: 14px; }
+.deckCard { --dk: var(--grass-dark); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pic main stats" "pic btns stats";
+  align-items: center; column-gap: 20px; row-gap: 12px; padding: 18px 22px 18px 18px; border-radius: 20px;
+  background-image: var(--grain); background-color: var(--cream); box-shadow: 0 24px 60px rgba(10,25,10,.3);
+  animation: btnUp .4s var(--ease-out) backwards; }
+.deckCard:nth-child(2) { animation-delay: .06s; } .deckCard:nth-child(3) { animation-delay: .12s; }
+.dkPic { grid-area: pic; position: relative; width: 92px; height: 92px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--dk) 14%, transparent); }
+.dkArt { width: 74px; height: 74px; overflow: visible; }
+.dkMain { grid-area: main; min-width: 0; }
+.dkMain h3 { margin: 0 0 4px; font-size: 21px; font-weight: 600; letter-spacing: -.02em; color: var(--ink); }
+.dkMain p { margin: 0; font-size: 13.5px; line-height: 1.4; color: var(--ink-soft); }
+.dkMain .mdStats { margin-top: 8px; }
+.dkBtns { grid-area: btns; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.dkStats { grid-area: stats; display: grid; grid-template-columns: repeat(3, auto); gap: 4px; margin: 0; padding: 10px 6px; border-radius: 14px;
+  background: color-mix(in srgb, var(--dk) 9%, transparent); align-self: stretch; align-content: center; }
+.dkStats div { display: flex; flex-direction: column; align-items: center; min-width: 64px; padding: 0 6px; }
+.dkStats div + div { border-left: 1px solid color-mix(in srgb, var(--dk) 22%, transparent); }
+.dkStats dt { order: 2; font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); margin-top: 3px; }
+.dkStats dd { order: 1; margin: 0; font-size: 24px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* bloqueada: apagada, con candado y "Próximamente" */
+.deckCard.locked { background-color: #E6E6D0; }
+.deckCard.locked .dkArt { filter: grayscale(.55); opacity: .7; }
+.deckCard.locked .dkMain h3, .deckCard.locked .dkStats dd { color: var(--ink-soft); }
+.dkLock { position: absolute; right: -6px; bottom: -6px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--ink); color: var(--cream); border: 3px solid #E6E6D0; }
+.dkLock .i { width: 15px; height: 15px; }
+.dkSoon { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  color: var(--dk); background: color-mix(in srgb, var(--dk) 14%, transparent); }
+.dkSoon .i { width: 14px; height: 14px; }
+/* nombre de la baraja arriba de la configuración de la partida */
+.pveDeckTag { display: inline-flex; margin-bottom: 8px; padding: 3px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--cream); background: var(--dk, var(--grass-dark)); }
+.pveDeckTag:empty { display: none; }
+@media (max-width: 640px) {
+  #modesGrid { --mdGap: 24px; }
+  .mdTabs button { font-size: 13.5px; padding: 10px 6px; gap: 6px; }
+  .deckCard { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "pic main" "stats stats" "btns btns"; column-gap: 14px; padding: 14px 14px 14px 12px; }
+  .dkPic { width: 64px; height: 64px; border-radius: 14px; align-self: start; }
+  .dkArt { width: 52px; height: 52px; }
+  .dkMain h3 { font-size: 18px; }
+  .dkMain p { font-size: 12.5px; }
+  .dkStats { grid-template-columns: repeat(3, 1fr); padding: 8px 4px; }
+  .dkStats dd { font-size: 20px; }
 }

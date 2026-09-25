@@ -166,8 +166,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
-- **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
-  configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
+- **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
+  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): Baraja clásica, y Baraja de agua y
+  de minigolf aún bloqueadas ("Próximamente"). Cada una con su color, su última partida, "Repetir" y sus
+  estadísticas (jugadas, victorias y %: `records.decks`). Dentro, primero se elige contra la máquina o
+  multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
   especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de
   portales de colores —cada portal conecta con el de su color: `tile.pair`—, multitud con 7 en la mesa) y el **desafío

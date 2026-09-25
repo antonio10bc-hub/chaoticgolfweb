@@ -242,5 +242,5 @@ export function bindEditor() {
       toast(t('editor.imported', { n: levels.length }));
     } catch (e) { toast(t('editor.badJson')); }
   });
-  $('edMenu').addEventListener('click', () => openModes()); // el creador vive en Modos de juego
+  $('edMenu').addEventListener('click', () => openModes('special')); // el creador vive en Juegos especiales
 }

@@ -85,7 +85,7 @@ try {
   await page.evaluate(() => window.chaoticGolf.app.pveCfg = { color: 2, size: 'm', opps: 3 });
   await page.evaluate(() => document.getElementById('storyBack').click());
   await click('#modesBtn'); await sleep(300); await shot('05a-modos');
-  await click('[data-mode="quick"]'); await confirmIfAsked(); await sleep(300); await shot('05-pve-setup');
+  await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300); await shot('05-pve-setup');
   await click('#pvePlay'); await confirmIfAsked(); await sleep(800); // sustituye la partida guardada (si la hay)
   const t0 = Date.now(); let aiTurns = 0, lastTurn = -1, shots = 0, humanActs = 0;
   while (Date.now() - t0 < PVE_SECONDS * 1000) {
@@ -119,7 +119,7 @@ try {
 
   console.log('multijugador local');
   await page.evaluate(() => { window.chaoticGolf.app.pveCfg = { color: 1, size: 's', opps: 0, humans: 2, diff: 'normal' }; });
-  await click('#modesBtn'); await sleep(300); await click('[data-mode="quick"]'); await confirmIfAsked(); await sleep(300);
+  await click('#modesBtn'); await sleep(300); await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300);
   await click('#pvePlay'); await confirmIfAsked(); await sleep(700);
   if (!await page.$('#passScreen.visible')) problems.push('multijugador local: no aparece "pasa el dispositivo"');
   if (await page.evaluate(() => document.querySelectorAll('#hands .card:not(.back)').length)) problems.push('multijugador local: se ven cartas antes de pasar el dispositivo');
@@ -133,7 +133,8 @@ try {
 
   console.log('creador de niveles');
   await page.evaluate(() => { document.querySelectorAll('.screen, #winOverlay').forEach(() => {}); });
-  await click('#modesBtn'); await sleep(300); // el creador vive en Modos de juego
+  await click('#modesBtn'); await sleep(300); // el creador vive en Modos de juego → Juegos especiales
+  await click('[data-mtab="special"]'); await sleep(700);
   await click('#editorBtn'); await sleep(300);
   await click('#edTools [data-tool="bunker"]');
   await click('#edBoard .cell[data-x="1"][data-y="1"]');
