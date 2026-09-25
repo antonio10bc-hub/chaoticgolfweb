@@ -397,6 +397,7 @@ export default {
 
   modes: {
     tabs: { quick: 'Partidas rápidas', special: 'Juegos especiales' },
+    specialLead: 'Retos con sus propias reglas: contra el reloj, desafíos, puzles y tus niveles.',
     weekly: { title: 'Desafío semanal', daysLeft: 'quedan {n} días', lastDay: 'último día', best: 'Tu mejor: {turns}', noBest: 'Aún sin superar esta semana' },
     title: 'Modos de juego', sub: 'Elige una baraja o un juego especial',
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },

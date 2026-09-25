@@ -394,6 +394,7 @@ export default {
 
   modes: {
     tabs: { quick: 'Quick games', special: 'Special games' },
+    specialLead: 'Challenges with their own rules: against the clock, challenges, puzzles and your levels.',
     weekly: { title: 'Weekly challenge', daysLeft: '{n} days left', lastDay: 'last day', best: 'Your best: {turns}', noBest: 'Not beaten this week yet' },
     title: 'Game modes', sub: 'Pick a deck or a special game',
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },

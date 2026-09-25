@@ -415,7 +415,7 @@ export function openModes(tab) {
     `<b>${esc(t('weekly.' + rule.id + '.name'))}</b><small>${esc(t('weekly.' + rule.id + '.desc'))}</small>` +
     `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span></div>` +
     (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
-  const specialPanel = rushCard +
+  const specialPanel = `<p class="mdLead">${esc(t('modes.specialLead'))}</p>` + rushCard +
     `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>` +
     puzzlesSectionHTML() + yoursSectionHTML();
 
@@ -431,26 +431,41 @@ export function openModes(tab) {
   showScreen('modes');
 }
 
-// cambia de pestaña: el indicador y el contenido se deslizan; la pestaña que no se ve no ocupa sitio
-let tabTimer = null;
+// cambia de pestaña: el indicador se desliza; el contenido sale con un fundido corto hacia un lado
+// y el nuevo entra desde el otro, con sus tarjetas escalonadas. Nunca se ven las dos a la vez
+// (así el cambio de altura entre secciones queda oculto y no hay saltos).
+let tabSeq = 0;
 function setModesTab(tab, { instant = false, focus = false } = {}) {
   const grid = $('modesGrid'), track = grid.querySelector('.mdTrack');
   if (!track || !TABS.includes(tab)) return;
-  const changed = tab !== modesTab;
+  const prev = modesTab, dir = TABS.indexOf(tab) >= TABS.indexOf(prev) ? 1 : -1;
   modesTab = tab;
   try { localStorage.setItem(TAB_KEY, tab); } catch (e) { /* sin storage */ }
   document.body.dataset.modesTab = tab; // (el creador de niveles solo se ofrece en Juegos especiales)
   grid.dataset.tab = tab;
   grid.querySelectorAll('[data-mtab]').forEach(b => { const on = b.dataset.mtab === tab; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
   if (focus) grid.querySelector(`[data-mtab="${tab}"]`)?.focus();
-  const panels = [...track.children];
-  clearTimeout(tabTimer);
-  panels.forEach(p => p.classList.remove('off')); // los dos a la vista mientras se desliza
-  track.classList.toggle('instant', instant || REDUCED);
-  track.style.transform = tab === 'special' ? 'translateX(calc(-100% - var(--mdGap)))' : 'none';
-  if (changed && !instant && window.scrollY > 0) window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
-  if (changed && !instant) sfx('select');
-  tabTimer = setTimeout(() => panels.forEach(p => p.classList.toggle('off', p.dataset.panel !== tab)), instant || REDUCED ? 0 : 480);
+  const panels = [...track.children], to = panels.find(p => p.dataset.panel === tab);
+  const from = panels.find(p => !p.classList.contains('off') && p !== to);
+  const seq = ++tabSeq;
+  panels.forEach(p => p.getAnimations().forEach(a => a.cancel()));
+  const show = () => panels.forEach(p => p.classList.toggle('off', p !== to));
+  if (instant || REDUCED || !from || !to.animate) { show(); return; }
+  sfx('select');
+  const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-26 * dir}px)` }],
+    { duration: 150, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  out.onfinish = () => {
+    if (seq !== tabSeq) return;
+    show();
+    out.cancel();
+    if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
+    to.animate([{ opacity: 0, transform: `translateX(${30 * dir}px)` }, { opacity: 1, transform: 'none' }],
+      { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    // las tarjetas llegan escalonadas (sutil)
+    const items = to.querySelectorAll(':scope > *, :scope .deckCard, :scope .chCard, :scope .lvlCard');
+    [...items].slice(0, 14).forEach((el, k) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 320, delay: 40 + k * 28, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+  };
 }
 
 // deslizar con el dedo entre pestañas (solo gestos claramente horizontales)

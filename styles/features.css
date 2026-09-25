@@ -25,7 +25,7 @@ body[data-screen="menu"]:not(.loading) .mBottom { animation: fadeIn .5s .8s both
 @keyframes dotDrop { from { transform: translateY(-1.2em) scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* ---------- transición entre pantallas ---------- */
-.screenIn { animation: screenIn .32s var(--ease-out) both; }
+.screenIn { animation: screenIn .32s var(--ease-out) backwards; } /* (backwards: al terminar no deja transform y los botones fijos siguen fijos) */
 #gameScreen.screenIn { animation: screenFade .35s var(--ease-out) both; }
 @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes screenFade { from { opacity: 0; } to { opacity: 1; } }
@@ -1014,16 +1014,13 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 .mdTabs button:not([aria-selected="true"]):hover { --b-fg: #fff; }
 .mdTabInd { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 999px;
   background-image: var(--grain); background-color: var(--cream); box-shadow: 0 4px 14px rgba(10,25,10,.25);
-  transition: transform .45s cubic-bezier(.3,1.25,.5,1); }
+  transition: transform .42s cubic-bezier(.35,1.15,.45,1); }
 #modesGrid[data-tab="special"] .mdTabInd { transform: translateX(100%); }
-.mdViewport { overflow: clip; overflow-clip-margin: 90px; } /* (el margen deja respirar las sombras; Chrome solo lo aplica con clip en los dos ejes) */
-.mdTrack { display: flex; gap: var(--mdGap); align-items: flex-start; transition: transform .48s cubic-bezier(.65,0,.25,1); will-change: transform; }
-.mdTrack.instant { transition: none; }
-.mdPanel { flex: 0 0 100%; min-width: 0; display: flex; flex-direction: column; gap: 20px; transition: opacity .35s; }
-.mdPanel.off { visibility: hidden; height: 0; overflow: hidden; }
-#modesGrid[data-tab="quick"] .mdPanel[data-panel="special"], #modesGrid[data-tab="special"] .mdPanel[data-panel="quick"] { opacity: .25; }
+.mdTrack { display: block; }
+.mdPanel { display: flex; flex-direction: column; gap: 20px; }
+.mdPanel.off { display: none; }
 .mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.85); font-size: 14px; }
-html.reduceMotion .mdTrack, html.reduceMotion .mdTabInd { transition: none; }
+html.reduceMotion .mdTabInd { transition: none; }
 /* el creador de niveles, solo con Juegos especiales a la vista */
 body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display: none; }
 
@@ -1073,3 +1070,47 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
   .dkStats { grid-template-columns: repeat(3, 1fr); padding: 8px 4px; }
   .dkStats dd { font-size: 20px; }
 }
+
+/* ---------- configuración de la partida rápida: en horizontal (cabe en pantalla en PC) ----------
+   cabecera · tres columnas (quién juega · la mesa · rivales) · barra inferior con Volver y Jugar */
+@media (min-width: 901px) {
+  #pveScreen { align-items: center; padding: 20px 24px 70px; }
+  #pveCard { width: min(1160px, 96vw); padding: 24px 28px 18px; margin: auto; }
+  .pveHead { display: grid; grid-template-columns: auto 1fr; align-items: end; column-gap: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--cream-line); }
+  .pveHead .pveDeckTag { grid-column: 1 / -1; justify-self: start; }
+  .pveHead h2 { margin: 0; }
+  #pveCard .pveHead .sub { margin: 0 0 3px; max-width: 62ch; }
+  .pveCols { display: grid; grid-template-columns: 1.05fr 1fr 1fr; gap: 0; }
+  .pveCols:has(#pveRivalsRow[hidden]) { grid-template-columns: 1fr 1fr; }
+  .pveCols:has(#pveRivalsRow[hidden]) .rivalsCol { display: none; }
+  .pveCol { min-width: 0; padding: 4px 24px 6px; }
+  .pveCol:first-child { padding-left: 0; }
+  .pveCol:last-child { padding-right: 0; }
+  .pveCol + .pveCol { border-left: 1px solid var(--cream-line); }
+  #pveCard .pveCol > h4:first-child, #pveCard .pveCol > div:first-child > h4:first-child { margin-top: 14px; }
+  .pveCol.who .pveKind { margin-top: 14px; }
+  #pveCard .pveOpts { flex-wrap: nowrap; gap: 8px; }
+  #pveCard .pveOpts .pveOpt { flex: 1 1 0; min-width: 0; }
+  #pveCard #pveColors { flex-wrap: wrap; }
+  #pveCard #pveColors .pveColor { flex: 0 0 auto; }
+  /* rivales: uno por fila (cara, nombre y personalidad en línea; flechas a los lados) */
+  #pveCard #pveRivals { flex-direction: column; gap: 6px; }
+  #pveCard .pveOpt.rival { flex: 0 0 auto; min-width: 0; padding: 5px 6px; }
+  #pveCard .rivalBody { flex-direction: row; justify-content: flex-start; gap: 10px; text-align: left; padding: 0 4px; }
+  #pveCard .rivalBody .avatar { width: 32px; height: 32px; flex: 0 0 auto; }
+  #pveCard .rivalBody b { font-size: 14px; }
+  #pveCard .rivalBody small { margin-left: auto; font-size: 11.5px; }
+  #pveCard .rivalBody .rvRec, #pveCard .rivalBody .rvNemesis { flex: 0 0 auto; }
+  #pveCard .rivalArrow { width: 28px; height: 28px; }
+  /* barra inferior */
+  .pveFoot { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--cream-line); }
+  #pveCard #pveBack { width: auto; margin: 0; }
+  .pveFootMain { display: flex; align-items: center; gap: 10px; }
+  #pveCard #pveContinue { width: auto; margin: 0; min-width: 240px; }
+  #pveCard #pvePlay { width: auto; min-width: 220px; margin: 0; padding: 12px 26px; }
+}
+@media (min-width: 901px) {
+  #pveCard .optBots { gap: 2px; max-width: 100%; }
+  #pveCard .optBots i { width: 8px; height: 8px; flex: 0 0 auto; box-shadow: 1px 1px 0 var(--shadow); }
+}
+@media (min-width: 901px) { #pveCard .pveOpt.opp, #pveCard .pveOpt.hum { padding-inline: 4px; } }

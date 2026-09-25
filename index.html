@@ -156,9 +156,13 @@
 
 <div id="pveScreen">
   <div id="pveCard" role="form" aria-labelledby="pveTitle">
+   <header class="pveHead">
     <span id="pveDeckTag" class="pveDeckTag"></span>
     <h2 id="pveTitle" data-i18n="pve.title">Partida contra la máquina</h2>
     <div class="sub" data-i18n="pve.sub">Configura tu partida: los jugadores se sientan al azar y empieza quien esté a la derecha del centro.</div>
+   </header>
+   <div class="pveCols">
+    <section class="pveCol who">
     <div class="pveKind" id="pveKind" role="group">
       <button class="pveOpt kind sel" data-kind="bots"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg><b data-i18n="pve.kindBots">Contra la máquina</b><small data-i18n="pve.kindBotsSub">tú contra los bots</small></button>
       <button class="pveOpt kind" data-kind="local"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg><b data-i18n="pve.kindLocal">Multijugador local</b><small data-i18n="pve.kindLocalSub">os pasáis el móvil</small></button>
@@ -175,6 +179,8 @@
     <h4 id="pveColorH" data-i18n="pve.color">Tu nombre y tu color</h4>
     <div id="pvePeople"></div>
     <div class="pveOpts" id="pveColors"></div>
+    </section>
+    <section class="pveCol table">
     <h4 data-i18n="pve.size">Tamaño del tablero</h4>
     <div class="pveOpts" id="pveSizes">
       <button class="pveOpt size" data-size="s"><span class="optGrid s" aria-hidden="true"></span><b data-i18n="pve.sizeSName">Pequeño</b><small>5×5</small></button>
@@ -190,10 +196,6 @@
       <button class="pveOpt opp" data-n="4"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>4</b></button>
       <button class="pveOpt opp" data-n="5"><span class="optBots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><b>5</b></button>
     </div>
-    <div id="pveRivalsRow">
-      <h4 data-i18n="pve.rivals">Rivales</h4>
-      <div class="pveOpts" id="pveRivals"></div>
-    </div>
     <div id="pveDiffRow">
       <h4 data-i18n="pve.diff">Dificultad de la máquina</h4>
       <div class="pveOpts" id="pveDiff">
@@ -202,9 +204,21 @@
         <button class="pveOpt diff" data-diff="hard"><b data-i18n="pve.diffHard">Difícil</b><small data-i18n="pve.diffHardSub">piensa 2 cartas</small></button>
       </div>
     </div>
+    </section>
+    <section class="pveCol rivalsCol">
+    <div id="pveRivalsRow">
+      <h4 data-i18n="pve.rivals">Rivales</h4>
+      <div class="pveOpts" id="pveRivals"></div>
+    </div>
+    </section>
+   </div>
+   <footer class="pveFoot">
+    <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver a Modos de juego</button>
+    <span class="pveFootMain">
     <button id="pveContinue" class="mBtn continue" hidden><span class="cTxt"><span data-i18n="menu.continue">Continuar partida</span><small id="pveContinueSub"></small></span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
     <button id="pvePlay" class="btn-primary btn-lg"><span data-i18n="pve.play">Jugar</span><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>
-    <button id="pveBack" class="btn-text" data-i18n="pve.back">← Volver a Modos de juego</button>
+    </span>
+   </footer>
   </div>
 </div>
 
