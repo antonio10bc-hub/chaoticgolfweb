@@ -316,10 +316,11 @@ export class Game {
         this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
       });
       if (!this.inBoard(nx, ny)) {
-        this.anim({ t: 'fall', p: pid, x: nx, y: ny });
+        this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
         this.resetBallToSpawn(ball);
         this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
         this.log('log.ballFell', { b, x: ball.x, y: ball.y });
+        this.emergeFromPortal(ball, dx, dy);
         this.finishMoveChecks(ball); // si el hoyo ocupa su posición inicial, la pelota entra (JAQUE)
         return;
       }
@@ -395,6 +396,28 @@ export class Game {
       if (s <= 0) { this.log('log.cantLeaveTrap', { b: playerTag(ball.player) }); return; }
     }
     this.moveBallRaw(ball, dirKey, s);
+  }
+
+  // regla: si la pelota vuelve tras caerse a una casilla con portal, lo atraviesa y sale una
+  // casilla más allá del otro portal, en la dirección en la que se cayó (como el hoyo).
+  // Si esa casilla está fuera del tablero u ocupada por otra pelota, se queda sobre el otro portal.
+  emergeFromPortal(ball, dx, dy) {
+    const S = this.S, pid = 'b' + ball.player, b = playerTag(ball.player);
+    let guard = 0, moved = false;
+    while (isPortal(this.tileAt(ball.x, ball.y)) && guard++ < 10) {
+      const here = this.tileAt(ball.x, ball.y);
+      const other = S.tiles.find(t => isPortal(t) && t !== here);
+      if (!other) break;
+      if (!moved) this.log('log.ballInitPortal', { b });
+      moved = true;
+      this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
+      const ex = other.x + dx, ey = other.y + dy, occ = this.ballAt(ex, ey);
+      if (this.inBoard(ex, ey) && (!occ || occ === ball)) { ball.x = ex; ball.y = ey; }
+      else { ball.x = other.x; ball.y = other.y; break; } // no puede volver a caerse: se queda en el portal
+    }
+    if (!moved) return;
+    this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+    this.log('log.ballEmerges', { b, x: ball.x, y: ball.y });
   }
 
   resetBallToSpawn(ball) {
@@ -711,10 +734,11 @@ export class Game {
       this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
     });
     if (!this.inBoard(nx, ny)) {
-      this.anim({ t: 'fall', p: pid, x: nx, y: ny });
+      this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
       this.resetBallToSpawn(ball);
       this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });
+      this.emergeFromPortal(ball, dx, dy);
       return this.endSerpent();
     }
     const hit = this.ballAt(nx, ny);

@@ -75,8 +75,9 @@
       <circle cx="740" cy="30" r="44" fill="#3E7240"/><circle cx="728" cy="18" r="24" fill="#4A8248"/>
     </g>
     <!-- bandera con sombra larga -->
-    <path d="M636 262 L738 346" stroke="rgba(20,40,20,.3)" stroke-width="7" stroke-linecap="round"/>
-    <path d="M738 346 l30 -4 l-14 28 z" fill="rgba(20,40,20,.3)"/>
+    <!-- (proyección de la bandera: cada punto a altura h sobre la base cae en base + h·(0.9, 0.74) + su desplazamiento lateral) -->
+    <g opacity=".3"><path d="M636 262 L736 345" stroke="#142814" stroke-width="7" stroke-linecap="round"/>
+    <path d="M737 343 L772 330 L703 315 Z" fill="#142814"/></g>
     <ellipse cx="636" cy="264" rx="15" ry="10" fill="#242424"/>
     <path d="M636 264 V150" stroke="#F1F1DC" stroke-width="6" stroke-linecap="round"/>
     <path d="M639 152 L690 170 L639 190 Z" fill="#E8873A"/>

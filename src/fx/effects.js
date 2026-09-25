@@ -1,7 +1,7 @@
 // Efectos decorativos basados en DOM (todo es cosmético: nunca toca el estado del juego).
 import { JUICE, REDUCED, CONFETTI_C } from './juice.js';
 import { fxRand, fxSpawn, fxCount } from './particles.js';
-import { cellCenterPx } from '../ui/geometry.js';
+import { cellCenterPx, cellStep, GAP } from '../ui/geometry.js';
 import { $, $$, restartClass } from '../ui/dom.js';
 import { app } from '../ui/app.js';
 import { sfx } from '../audio/sfx.js';
@@ -89,6 +89,38 @@ export function fxComboText(px, py, n) {
   d.style.left = px + 'px'; d.style.top = (py - 12) + 'px';
   fxGetDomLayer().appendChild(d);
   setTimeout(() => d.remove(), JUICE.comboMs);
+}
+
+// caída del tablero: el borde por el que sale la pieza destella, un resplandor de su color entra
+// desde ese lado y una onda se abre hacia dentro (todo dentro del tablero: nada se recorta)
+export function fxEdgeFall(x, y, color) {
+  const S = app.game?.S;
+  if (!S) return;
+  const dir = y < 0 ? 'up' : y >= S.rows ? 'down' : x < 0 ? 'left' : 'right';
+  const s = cellStep(), bw = S.cols * s.w - GAP, bh = S.rows * s.h - GAP;
+  const cx = Math.max(0, Math.min(S.cols - 1, x)), cy = Math.max(0, Math.min(S.rows - 1, y));
+  const c = cellCenterPx(cx, cy);
+  const pt = { up: [c.px, 0], down: [c.px, bh], left: [0, c.py], right: [bw, c.py] }[dir];
+  const layer = fxGetDomLayer();
+  const glow = document.createElement('div');
+  glow.className = 'edgeGlow' + (REDUCED ? ' still' : '');
+  glow.dataset.dir = dir;
+  glow.style.setProperty('--ec', color);
+  glow.style.setProperty('--fx', (dir === 'up' || dir === 'down' ? pt[0] : pt[1]) + 'px');
+  glow.style.setProperty('--bw', bw + 'px'); glow.style.setProperty('--bh', bh + 'px');
+  glow.style.setProperty('--depth', ((dir === 'up' || dir === 'down' ? s.h : s.w) * 1.3) + 'px');
+  layer.appendChild(glow);
+  setTimeout(() => glow.remove(), 900);
+  for (const cls of REDUCED ? ['edgeFall'] : ['edgeFall', 'edgeRipple']) {
+    const d = document.createElement('div');
+    d.className = cls + (REDUCED ? ' still' : '');
+    d.dataset.dir = dir;
+    d.style.left = pt[0] + 'px'; d.style.top = pt[1] + 'px';
+    d.style.setProperty('--ec', color);
+    d.style.setProperty('--len', ((dir === 'up' || dir === 'down' ? s.w : s.h) * 1.5) + 'px');
+    layer.appendChild(d);
+    setTimeout(() => d.remove(), 900);
+  }
 }
 
 // cadena de choques cortada (tope anti-bucle): eslabón roto flotando sobre la pelota

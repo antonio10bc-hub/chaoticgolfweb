@@ -213,3 +213,37 @@
   box-shadow: 4px 4px 0 var(--shadow);
 }
 #pieces.idle .piece.phole:not(.sunk) .cardOnCell { animation: none; }
+
+/* caída del tablero: el tramo del borde por el que sale la pieza destella y una onda sale hacia fuera */
+.edgeFall { position: absolute; width: var(--len); height: 6px; margin: -3px 0 0 calc(var(--len) / -2); border-radius: 999px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ec) 30%, #fff) 30%, color-mix(in srgb, var(--ec) 30%, #fff) 70%, transparent);
+  box-shadow: 0 0 10px 3px var(--ec), 0 0 22px 6px color-mix(in srgb, var(--ec) 55%, transparent);
+  animation: edgeFall .75s cubic-bezier(.2,.8,.3,1) both; }
+.edgeFall[data-dir="left"], .edgeFall[data-dir="right"] { width: 6px; height: var(--len); margin: calc(var(--len) / -2) 0 0 -3px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--ec) 30%, #fff) 30%, color-mix(in srgb, var(--ec) 30%, #fff) 70%, transparent); }
+@keyframes edgeFall { 0% { opacity: 0; scale: .2 1; } 22% { opacity: 1; scale: 1 1; } 100% { opacity: 0; scale: 1.35 .5; } }
+.edgeFall[data-dir="left"], .edgeFall[data-dir="right"] { animation-name: edgeFallV; }
+@keyframes edgeFallV { 0% { opacity: 0; scale: 1 .2; } 22% { opacity: 1; scale: 1 1; } 100% { opacity: 0; scale: .5 1.35; } }
+/* onda: media luna que se abre hacia dentro del tablero desde el punto de caída */
+.edgeRipple { position: absolute; width: var(--len); height: var(--len); margin: calc(var(--len) / -2) 0 0 calc(var(--len) / -2);
+  border-radius: 50%; border: 2.5px solid var(--ec); pointer-events: none; opacity: 0;
+  animation: edgeRipple .8s .05s ease-out both; }
+.edgeRipple[data-dir="up"] { clip-path: inset(50% 0 0 0); }
+.edgeRipple[data-dir="down"] { clip-path: inset(0 0 50% 0); }
+.edgeRipple[data-dir="left"] { clip-path: inset(0 0 0 50%); }
+.edgeRipple[data-dir="right"] { clip-path: inset(0 50% 0 0); }
+@keyframes edgeRipple { 0% { opacity: .9; transform: scale(.25); } 100% { opacity: 0; transform: scale(1.25); } }
+.edgeFall.still { animation: edgeFallStill .6s ease-out both; }
+@keyframes edgeFallStill { 0% { opacity: 1; } 100% { opacity: 0; } }
+/* resplandor del color de la pieza que entra desde el borde de la caída */
+.edgeGlow { position: absolute; pointer-events: none; mix-blend-mode: screen; animation: edgeGlow .8s ease-out both; }
+.edgeGlow[data-dir="up"] { left: 0; top: 0; width: var(--bw); height: var(--depth);
+  background: radial-gradient(ellipse calc(var(--depth) * 1.3) var(--depth) at var(--fx) 0, color-mix(in srgb, var(--ec) 75%, transparent), transparent 100%); }
+.edgeGlow[data-dir="down"] { left: 0; top: calc(var(--bh) - var(--depth)); width: var(--bw); height: var(--depth);
+  background: radial-gradient(ellipse calc(var(--depth) * 1.3) var(--depth) at var(--fx) 100%, color-mix(in srgb, var(--ec) 75%, transparent), transparent 100%); }
+.edgeGlow[data-dir="left"] { left: 0; top: 0; width: var(--depth); height: var(--bh);
+  background: radial-gradient(ellipse var(--depth) calc(var(--depth) * 1.3) at 0 var(--fx), color-mix(in srgb, var(--ec) 75%, transparent), transparent 100%); }
+.edgeGlow[data-dir="right"] { left: calc(var(--bw) - var(--depth)); top: 0; width: var(--depth); height: var(--bh);
+  background: radial-gradient(ellipse var(--depth) calc(var(--depth) * 1.3) at 100% var(--fx), color-mix(in srgb, var(--ec) 75%, transparent), transparent 100%); }
+@keyframes edgeGlow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+.edgeGlow.still { animation-duration: .6s; }

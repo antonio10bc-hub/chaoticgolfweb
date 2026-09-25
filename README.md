@@ -159,6 +159,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Menú:** título, tarjeta del reto diario (tablero pequeño contra 2 bots, igual para todos; cada día cambian
   los rivales, su personalidad y la dificultad; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
+  Con el reto del día completado sale un tic verde.
 - **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
   configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
@@ -170,6 +171,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   "¿Por qué he perdido?" con el momento clave (antes / después) y un consejo.
 - **Música** minimalista y suave (timbres redondos, filtro y eco ligeros): se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene
   su celebración (de portal, carambola, el hoyo se la traga, robo, tiro largo, zigzag, a la primera).
+- **Portal:** disco azul con anillos concéntricos que nacen en el centro y crecen sin salirse de la esfera.
+- **Caídas:** al salirse del tablero, el borde por el que cae la pieza destella con su color y una onda
+  entra desde ese lado.
 - **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
 - **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final
   (jugada más larga, quién te golpeó más, tu carta más usada).
@@ -199,6 +203,10 @@ obtenido. Si se cambia una regla **a propósito**, hay que cambiarla también en
 - **Bug corregido:** con dos portales y dos pelotas alineadas (`P2 · A · B · P1`) un golpe creaba un
   bucle de choques infinito y la página reventaba ("Maximum call stack size exceeded"), perdiendo la carta.
   Ahora la cadena se corta tras 12 choques y se avisa en el tablero ("¡Bucle cortado!") y en el historial.
+- **Regla nueva:** si una pelota se cae del tablero y su casilla de salida tiene ahora un portal, lo atraviesa
+  y aparece una casilla más allá del otro portal en la dirección de la caída (como ya hacía el hoyo). Si esa
+  casilla está fuera del tablero u ocupada, se queda sobre el otro portal. El oráculo da por buenas las
+  partidas grabadas que se desvían justo por esta regla (`NEW_RULES` en `tests/engine.golden.test.mjs`).
 - **IA nueva:** simula cada jugada posible con el motor real en lugar de aproximar las reglas.
   Personalidades `aggro` / `trick`, reacciones naranjas una vez por jugada, salva JAQUEs también con el
   palo reactivo y renueva la mano en vez de atascarse. Frente a un jugador aleatorio gana ~98 % de las

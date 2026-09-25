@@ -52,6 +52,27 @@ test('bucle de choques entre portales: se detiene en vez de reventar la pila (bu
   assert.match(g.S.log.join('\n'), /se detiene/);
 });
 
+test('caída sobre un portal: al volver a su casilla la pelota lo cruza y sale 1 más allá en la dirección de la caída', () => {
+  const g = level({ ball: { x: 1, y: 1 } });
+  g.S.balls[0].y = 0; // se ha movido; su casilla de salida (1,1) tiene ahora un portal
+  g.S.tiles.push({ type: 'portal', x: 1, y: 1 }, { type: 'portal', x: 3, y: 3 });
+  hand(g, 0, ['palo1']);
+  g.clickCard(0, 0);
+  g.clickCell(1, 0); // hacia arriba, fuera del tablero
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [3, 2]);
+  const ev = g.takeEvents().map(e => e.t);
+  assert.ok(ev.indexOf('fall') < ev.lastIndexOf('teleport'));
+});
+
+test('caída sobre un portal: si la salida está fuera del tablero, se queda en el otro portal', () => {
+  const g = level({ ball: { x: 1, y: 1 } });
+  g.S.balls[0].y = 0;
+  g.S.tiles.push({ type: 'portal', x: 1, y: 1 }, { type: 'portal', x: 3, y: 0 });
+  hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(1, 0);
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [3, 0]);
+});
+
 test('choque: el golpeado recibe los pasos restantes', () => {
   const g = level({ extraBalls: [{ x: 1, y: 0 }] });
   hand(g, 0, ['palo3']);

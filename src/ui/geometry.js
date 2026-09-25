@@ -1,7 +1,7 @@
 // Métrica de casillas: tamaño en CSS (--cell-w / --cell-h) y conversión a píxeles.
 import { $ } from './dom.js';
 
-const GAP = 4, RATIO = 73 / 52; // proporción carta de póker
+export const GAP = 4; const RATIO = 73 / 52; // proporción carta de póker
 
 // tamaño de casilla + hueco; se cachea para no forzar getComputedStyle en cada llamada
 // (solo cambia en setCellSize, que actualiza las variables CSS y la caché a la vez)

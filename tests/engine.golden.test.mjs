@@ -40,14 +40,24 @@ export function apply(game, a) {
 
 const state = g => hash(canonical(g.S, g.pending));
 
+// Reglas añadidas después del juego original: si una partida se desvía justo en el paso en que
+// se aplica una de ellas, se da por buena hasta ahí (cambio intencionado) y se deja de comparar.
+//   · ballInitPortal — la pelota que vuelve tras caerse a una casilla con portal lo atraviesa
+const NEW_RULES = ['log.ballInitPortal'];
+
 test(`el motor reproduce el juego original (${games.length} partidas)`, () => {
-  let actions = 0;
+  let actions = 0, diverged = 0;
   for (const [gi, G] of games.entries()) {
     const game = makeGame(G);
+    let newRule = false;
+    const log = game.log;
+    game.log = function (key, params) { if (NEW_RULES.includes(key)) newRule = true; return log.call(this, key, params); };
     assert.equal(state(game), G.init, `partida ${gi} (${G.setup.type}): estado inicial distinto`);
     for (const [si, st] of G.steps.entries()) {
+      newRule = false;
       apply(game, st.a);
       game.takeEvents();
+      if (state(game) !== st.h && newRule) { diverged++; break; }
       if (state(game) !== st.h) {
         assert.fail(`partida ${gi} (${G.setup.type}) paso ${si} ${JSON.stringify(st.a)}\n` +
           `  log esperado: ${JSON.stringify(st.log)}\n  log obtenido: ${JSON.stringify(game.S.log.slice(0, Math.max(1, st.log.length)).reverse())}`);
@@ -56,4 +66,5 @@ test(`el motor reproduce el juego original (${games.length} partidas)`, () => {
     }
   }
   assert.ok(actions > 10000);
+  assert.ok(diverged <= games.length * .02, `demasiadas partidas desviadas por reglas nuevas: ${diverged}`);
 });

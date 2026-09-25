@@ -36,7 +36,8 @@ html.reduceMotion *, html.reduceMotion *::before, html.reduceMotion *::after {
   transition-duration: .001ms !important;
 }
 html.reduceMotion #turnBanner { display: none; }
-html.reduceMotion .portalSwirl { animation: none !important; }
+html.reduceMotion .portalRing, html.reduceMotion .portalCore { animation: none !important; }
+html.reduceMotion .portalRing { opacity: .5; } html.reduceMotion .portalRing:nth-child(1) { transform: scale(.35); } html.reduceMotion .portalRing:nth-child(2) { transform: scale(.68); }
 
 /* ---------- avatares con cara (bots) y formas de accesibilidad ---------- */
 .avatar { position: relative; }
@@ -829,3 +830,11 @@ button:where(:not(#endTurnBtn)) { box-shadow: none !important; } /* (sin especif
 #modeChip[data-variant="challenge"] { background: var(--mode-challenge); }
 #modeChip[data-variant="daily"] { background: var(--mode-daily); color: var(--ink); }
 .themeFor { font-size: 11px; color: var(--ink-soft); font-weight: 400; }
+
+/* ---------- tarjeta del reto diario: tic de completado ---------- */
+.dHead { display: inline-flex; align-items: center; gap: 6px; }
+.dDone { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--grass-dark); color: var(--cream); flex: 0 0 auto; }
+.dDone .i { width: 11px; height: 11px; stroke-width: 3; }
+body[data-screen="menu"]:not(.loading) .dDone { animation: donePop .5s .7s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes donePop { from { transform: scale(0); } }

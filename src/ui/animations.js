@@ -9,7 +9,7 @@ import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
 import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, CONFETTI_C } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxZoomPulse, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxEdgeFall, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
 import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
@@ -118,6 +118,7 @@ async function playEvent(ev) {
       setPos(el, ev.x, ev.y, JUICE.fall.ms, 'ease-in');
       el.style.opacity = 0;
       fxSpawn(edge.px, edge.py, { n: JUICE.fall.poof, colors: ['#ffffff', '#e3ebdf'], size: 8, dist: 30, dur: 440 });
+      setTimeout(() => fxEdgeFall(ev.x, ev.y, trailCol), JUICE.fall.ms * .45); // al cruzar el borde
       sfx('fall');
       await wait(JUICE.fall.ms + 20);
       el.classList.remove('falling');

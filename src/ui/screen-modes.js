@@ -86,7 +86,9 @@ export function renderDailyCard() {
   const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name, diff: t('pve.diff' + diff[0].toUpperCase() + diff.slice(1)) });
   $('dailyCard').innerHTML =
     `<span class="dPreview dRivals">${rv.map(face).join('')}</span>` +
-    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><b>${esc(t('modes.daily.title'))}</b><span class="dVs">${esc(vs)}</span>` +
+    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><b>${esc(t('modes.daily.title'))}</b>` +
+    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done'))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
+    `</span><span class="dVs">${esc(vs)}</span>` +
     `<span class="dMeta"><span>${esc(status)}</span>${streak ? `<span class="dStreak"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(streakLabel(streak))}</span>` : ''}</span></span>` +
     `<span class="dPlay">${esc(saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play'))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
