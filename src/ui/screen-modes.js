@@ -231,17 +231,48 @@ function challengeExtra(ch) {
 function placeTiles(S, want, seed) {
   const r = mulberry32((seed ^ 0x7f4a7c15) >>> 0);
   const ballRow = S.balls[0].y, parX = S.parCells[0]?.x;
-  const ok = (x, y) => y > 0 && y < ballRow - 1 && x !== parX && !S.tiles.some(t => t.x === x && t.y === y)
-    && !(S.hole.x === x && S.hole.y === y) && !S.balls.some(b => b.x === x && b.y === y);
+  const taken = (x, y) => S.tiles.some(t => t.x === x && t.y === y) || (S.hole.x === x && S.hole.y === y) || S.balls.some(b => b.x === x && b.y === y);
+  const ok = (x, y) => y > 0 && y < ballRow - 1 && x !== parX && !taken(x, y);
   const put = tile => {
     for (let tries = 0; tries < 80; tries++) {
       const x = Math.floor(r() * S.cols), y = Math.floor(r() * S.rows);
       if (ok(x, y)) { S.tiles.push({ ...tile, x, y }); return; }
     }
   };
-  for (const [type, n] of Object.entries(want)) for (let i = 0; i < n; i++) {
-    if (type === 'portalPairs') { put({ type: 'portal', pair: i + 1 }); put({ type: 'portal', pair: i + 1 }); } // pareja A, B, C…
-    else put({ type });
+  for (const [type, n] of Object.entries(want)) {
+    if (type === 'portalPairs') placePortalPairs(S, n, r, taken, ballRow, parX);
+    else for (let i = 0; i < n; i++) put({ type });
+  }
+}
+// parejas de portales repartidas por todo el tablero: se divide en 6 zonas (a cada lado del PAR ×
+// arriba / centro / abajo) y cada zona recibe un portal, hacia su centro y con algo de azar. Cada
+// pareja une zonas opuestas (arriba-izq ↔ abajo-der, arriba-der ↔ abajo-izq, centro-izq ↔ centro-der),
+// así cada salto es un atajo de verdad. Nunca en la fila de salida ni justo delante, en la columna
+// del PAR ni pegados al hoyo.
+function placePortalPairs(S, pairs, r, taken, ballRow, parX) {
+  const valid = (x, y) => y !== ballRow && y !== ballRow - 1 && x !== parX && !taken(x, y)
+    && !(Math.abs(x - S.hole.x) <= 1 && Math.abs(y - S.hole.y) <= 1);
+  const cut = parX ?? Math.floor(S.cols / 2);
+  const cols = [[0, cut - 1], [cut + 1, S.cols - 1]];
+  const b1 = Math.round(S.rows / 3), b2 = Math.round(2 * S.rows / 3);
+  const rows = [[0, b1 - 1], [b1, b2 - 1], [b2, S.rows - 1]];
+  const zone = (c, rw) => {
+    const [x0, x1] = cols[c], [y0, y1] = rows[rw], cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const cells = [];
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (valid(x, y) && !S.tiles.some(t => t.x === x && t.y === y)) cells.push({ x, y });
+    if (!cells.length) return null;
+    // hacia el centro de la zona, con azar (sin que dos partidas se parezcan demasiado)
+    cells.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) + r() * 2.2) - (Math.hypot(b.x - cx, b.y - cy) + r() * 2.2));
+    return cells[0];
+  };
+  const PAIRS = [[[0, 0], [1, 2]], [[1, 0], [0, 2]], [[0, 1], [1, 1]]];
+  // qué letra (color) va en cada par de zonas: al azar
+  const order = PAIRS.map((_, k) => k).sort(() => r() - .5);
+  for (let k = 0; k < Math.min(pairs, PAIRS.length); k++) {
+    for (const [c, rw] of PAIRS[order[k]]) {
+      const cell = zone(c, rw);
+      if (cell) S.tiles.push({ type: 'portal', pair: k + 1, x: cell.x, y: cell.y }); // pareja A, B, C…
+    }
   }
 }
 export async function startChallenge(id) {
