@@ -180,7 +180,7 @@ export function startPveMatch() {
   musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();
-  recordStart(cfg.humans > 1 ? 'local' : 'pve', cfg.deck || 'classic');
+  recordStart(cfg.humans > 1 ? 'local' : 'pve', { deck: cfg.deck || 'classic' });
   aiStart(900); // si abre la máquina, que juegue (cancelable si se sale antes)
 }
 

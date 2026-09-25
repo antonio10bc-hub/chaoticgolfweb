@@ -54,7 +54,7 @@ export function showWin() {
   const rivals = mode === 'pve' && !multi ? [...Array(S.nPlayers).keys()].filter(p => isBot(p) && S.personas?.[p])
     .map(p => ({ id: S.personas[p], winner: S.winners.includes(p) })) : [];
   const deck = slot === 'pve' ? app.lastPveCfg?.deck || 'classic' : null; // partida rápida: estadísticas de su baraja
-  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals, deck });
+  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals, deck, challenge: slot === 'challenge' ? app.run?.id : null });
   $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
   $('winOverlay').classList.toggle('lost', lost);
 

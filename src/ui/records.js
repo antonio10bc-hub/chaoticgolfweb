@@ -28,7 +28,10 @@ const blank = () => ({
   history: {},    // fecha -> { p, w } (partidas terminadas y ganadas ese día)
   cards: {},      // carta -> veces que la has jugado
   decks: {},      // baraja de la partida rápida -> { p: jugadas, w: victorias (tuyas o de alguna persona en local) }
+  chStats: {},    // desafío -> { p: jugadas, w: victorias }
 });
+// antes de existir, de cada desafío solo se sabía si estaba superado: cuenta como 1 jugada y 1 victoria
+const seedChStats = d => Object.fromEntries(Object.keys(d.challenges || {}).filter(k => d.challenges[k]).map(k => [k, { p: 1, w: 1 }]));
 // antes de existir, todas las partidas rápidas eran de la baraja clásica
 const seedDecks = d => ({ classic: { p: (d.played?.pve || 0) + (d.played?.local || 0), w: (d.won?.pve || 0) + (d.won?.local || 0) } });
 
@@ -41,6 +44,7 @@ export function loadRecords() {
         pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush },
         weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
         decks: d.decks ? { ...d.decks } : seedDecks(d),
+        chStats: d.chStats ? { ...d.chStats } : seedChStats(d),
         puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }
@@ -51,12 +55,16 @@ export const resetRecords = () => saveRecords(blank());
 export const updateRecords = fn => { const d = loadRecords(); fn(d); saveRecords(d); return d; };
 
 // una partida nueva (no al continuar una guardada)
-// deck: baraja de la partida rápida (sus propias estadísticas)
-export function recordStart(kind, deck = null) {
+// sub: lo que tiene sus propias estadísticas — { deck } (baraja de la partida rápida),
+// { challenge } (cada desafío) o { week } (el desafío semanal de esa semana)
+export function recordStart(kind, { deck = null, challenge = null, week = null } = {}) {
   if (!REC_MODES.includes(kind)) return;
   updateRecords(d => {
     d.played[kind]++;
-    if (deck) { const k = d.decks[deck] = d.decks[deck] || { p: 0, w: 0 }; k.p++; }
+    const bump = (map, id) => { const k = map[id] = map[id] || { p: 0, w: 0 }; k.p = (k.p || 0) + 1; };
+    if (deck) bump(d.decks, deck);
+    if (challenge) bump(d.chStats, challenge);
+    if (week) bump(d.weekly.weeks, week);
   });
 }
 export const deckStats = id => loadRecords().decks[id] || { p: 0, w: 0 };
@@ -86,11 +94,14 @@ export const dailyToday = date => loadRecords().daily.days[date] || null;
 // fin de partida: suma los totales, la victoria y los récords del modo.
 // Devuelve lo necesario para anunciarlo en el resumen final.
 // rivals: [{ id, winner }] — los personajes de la mesa (con una persona contra la máquina)
-export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [], deck = null }) {
+export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [], deck = null, challenge = null }) {
   if (!REC_MODES.includes(kind)) return {};
   const d = loadRecords();
   if (won) d.won[kind]++;
-  if (deck && won) { const k = d.decks[deck] = d.decks[deck] || { p: 0, w: 0 }; k.w++; }
+  const win = (map, id) => { const k = map[id] = map[id] || { p: 0, w: 0 }; k.w = (k.w || 0) + 1; };
+  if (won && deck) win(d.decks, deck);
+  if (won && challenge) win(d.chStats, challenge);
+  if (won && kind === 'weekly' && week) win(d.weekly.weeks, week);
   if (stats) for (const k of Object.keys(d.totals)) d.totals[k] += stats[k] || 0;
   // evolución: partidas terminadas y ganadas por día (últimos 90 días)
   const today = dateKey(), h = d.history[today] = d.history[today] || { p: 0, w: 0 };
@@ -121,7 +132,7 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null, we
     best = { turns: day.best, strokes: day.strokes };
   }
   if (kind === 'weekly' && won && week) {
-    const wk = d.weekly.weeks[week] = d.weekly.weeks[week] || { best: null, strokes: null };
+    const wk = d.weekly.weeks[week] = { best: null, strokes: null, ...d.weekly.weeks[week] };
     newBest = wk.best != null && (turns < wk.best || (turns === wk.best && strokes < wk.strokes));
     if (wk.best == null || newBest) { wk.best = turns; wk.strokes = strokes; }
     best = { turns: wk.best, strokes: wk.strokes };

@@ -169,7 +169,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): Baraja clásica, y Baraja de agua y
   de minigolf aún bloqueadas ("Próximamente"). Cada una con su color, su última partida, "Repetir" y sus
-  estadísticas (jugadas, victorias y %: `records.decks`). Dentro, primero se elige contra la máquina o
+  estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
+  y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
   especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de

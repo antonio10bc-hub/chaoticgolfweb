@@ -278,7 +278,7 @@ function placePortalPairs(S, pairs, r, taken, ballRow, parX) {
 export async function startChallenge(id) {
   const ch = challengeById(id);
   if (!ch || !await modeIntro('challenge') || !await confirmReplaceSave('challenge')) return;
-  recordStart('challenge');
+  recordStart('challenge', { challenge: id });
   startVsGame({ cfg: ch.cfg, extra: challengeExtra(ch), tiles: ch.tiles, variant: 'challenge', run: { id } });
 }
 
@@ -321,7 +321,7 @@ function startWeeklyGame(week = weekKey()) {
 }
 export async function startWeekly() {
   if (!await modeIntro('weekly') || !await confirmReplaceSave('weekly')) return;
-  recordStart('weekly');
+  recordStart('weekly', { week: weekKey() });
   startWeeklyGame();
 }
 export function challengeDone(won) {
@@ -406,6 +406,10 @@ export function openModes(tab) {
   const btn = (act, label, main = true, dis = false) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}"${dis ? ' disabled' : ''}>${esc(label)}</button>`;
   const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
   const stat = (icon, txt) => `<span class="mdStat"><svg class="i" aria-hidden="true"><use href="#${icon}"/></svg>${esc(txt)}</span>`;
+  // mini estadísticas (jugadas · victorias · %), como las de las barajas pero en una línea
+  const mini = (s = {}) => { const p = s.p || 0, w = Math.min(s.w || 0, p || s.w || 0);
+    return `<span class="miniSt"><span><b>${p}</b> ${esc(t('decks.played').toLowerCase())}</span><span><b>${w}</b> ${esc(t('decks.won').toLowerCase())}</span>` +
+      `<span><b>${p ? Math.round(100 * Math.min(w, p) / p) + '%' : '—'}</b></span></span>`; };
 
   /* ---- partidas rápidas: una tarjeta por baraja ---- */
   const deckCard = dk => {
@@ -430,12 +434,12 @@ export function openModes(tab) {
   const rushCard = `<article class="modeCard rush">
       <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3><small>${esc(t('modes.rush.holes', { n: RUSH_HOLES }))}</small></div></div>
       <p>${esc(t('modes.rush.sub'))}</p>
-      <div class="mdStats">${stat('i-trophy', t('modes.rush.best', { n: R.rush.best || 0 }))}${rush ? stat('i-flag', t('modes.holeN', { n: rush.hole + 1, total: rush.total })) : ''}</div>
+      <div class="mdStats">${stat('i-trophy', t('modes.rush.best', { n: R.rush.best || 0 }))}${rush ? stat('i-flag', t('modes.holeN', { n: rush.hole + 1, total: rush.total })) : ''}${mini({ p: R.played.rush, w: R.won.rush })}</div>
       <div class="mdBtns">${rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
   const chCards = CHALLENGES.map(ch => {
     const done = R.challenges[ch.id];
     return `<article class="chCard${done ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
-      `<div class="chTxt"><b>${esc(t('challenges.' + ch.id + '.name'))}</b><small>${esc(t('challenges.' + ch.id + '.desc'))}</small></div>` +
+      `<div class="chTxt"><b>${esc(t('challenges.' + ch.id + '.name'))}</b><small>${esc(t('challenges.' + ch.id + '.desc'))}</small>${mini(R.chStats[ch.id])}</div>` +
       (done ? `<span class="chDone"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
       (csave?.run?.id === ch.id ? cont('resume:challenge') : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
   }).join('');
@@ -444,7 +448,7 @@ export function openModes(tab) {
   const weeklyCard = `<article class="chCard weekly${wbest ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
     `<div class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}</small>` +
     `<b>${esc(t('weekly.' + rule.id + '.name'))}</b><small>${esc(t('weekly.' + rule.id + '.desc'))}</small>` +
-    `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span></div>` +
+    `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span>${mini(R.weekly.weeks[wk])}</div>` +
     (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
   const specialPanel = `<p class="mdLead">${esc(t('modes.specialLead'))}</p>` + rushCard +
     `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>` +
