@@ -15,7 +15,6 @@ import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { aiStart, aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
-import { refreshGivePlayer } from './debug.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
@@ -28,6 +27,7 @@ import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { confirmDialog } from './dialog.js';
 import { modeIntro } from './mode-intro.js';
+import { syncMenuBall } from './menu-ball.js';
 import { resumeGame } from './resume.js';
 import { stats } from './controller.js';
 
@@ -58,7 +58,6 @@ function startVsGame({ cfg, extra = {}, tiles = null, variant, run, seed, rivals
   startGame(made.game, 'pve', { variant, run });
   dressVsGame(made);
   if (tiles) placeTiles(app.game.S, tiles, made.game.seed ?? 1);
-  refreshGivePlayer();
   updateMenuBtn();
   musicScene('game', { newGame: true });
   showScreen('game');
@@ -103,6 +102,7 @@ export function renderDailyCard() {
   $('dailyCard').classList.toggle('done', !!today?.best);
   $('dailyCard').dataset.resume = saved ? '1' : '';
   syncBadge();
+  syncMenuBall(!!today?.best, date); // reto completado: la bola de la ilustración rueda al hoyo
 }
 // ¿queda el reto de hoy por completar?
 export const dailyPending = () => !loadRecords().daily.days[dailyDate()]?.best;

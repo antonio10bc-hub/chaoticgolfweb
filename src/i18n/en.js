@@ -226,7 +226,7 @@ export default {
   editor: {
     title: 'LEVEL EDITOR', level: 'Level', slotLabel: 'Slot', file: 'File',
     load: 'Load level from slot', save: 'Save level to slot', deleteSlot: 'Delete level in slot',
-    export: 'Export levels', import: 'Import levels', toMenu: '← Main menu',
+    export: 'Export levels', import: 'Import levels', toMenu: '← Main menu', toModes: '← Game modes',
     nameH: 'Name', name: 'Title',
     toolH: 'Tool (click on the board)', parN: 'PAR number',
     sizeH: 'Board size', cols: 'Columns', rows: 'Rows', resize: 'Apply size',
@@ -271,20 +271,8 @@ export default {
     driftDuel: { name: 'Jittery hole', desc: 'A duel on 5×5 with the hole moving every turn.' },
     fingerFest: { name: 'Nimble fingers', desc: 'The deck is full of fingers: it’s all about zigzagging.' },
   },
-  save: { restored: 'Game restored', title: 'Saved game', replaceOk: 'Start new',
+  save: { saved: 'Saved', restored: 'Game restored', title: 'Saved game', replaceOk: 'Start new',
     confirmReplace: 'You have a saved game. Starting a new one will discard it.' },
-  debug: {
-    gameH: 'Game (applies on restart)', players: 'Players', par: 'Par',
-    seedLabel: 'Seed (empty = random)', seedUse: 'Use this game’s seed',
-    deckH: 'Deck (copies of each card)', reset: 'Apply and restart game',
-    liveH: 'Live tools', undo: 'Undo last action', player: 'Player', card: 'Card',
-    give: 'Give card', draw: 'Draw 1 (active player)', skip: 'Skip turn', god: 'Free mode: move pieces',
-    stateH: 'Deck state',
-    godHint: 'Click a ball / hole / bunker / portal and then the destination square. Press the button again to exit.',
-    godPicked: 'Picked: {kind}. Click the destination square.',
-    art: 'Bitmap art: {n}/{total} PNGs loaded (assets/art/)', seed: 'Seed: {seed}', empty: '(empty)',
-    perf: 'FPS: {fps}<br>Particles: {n}',
-  },
 
   /* ---------- local multiplayer, bots, settings, stats and tutorial ---------- */
   hotseat: {

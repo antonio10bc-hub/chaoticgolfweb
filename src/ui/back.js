@@ -27,9 +27,7 @@ const OVERLAYS = [
   [() => $('settingsOverlay').classList.contains('visible'), () => $('setBox').querySelector('[data-set-act="close"]').click()],
   [() => $('pauseOverlay').classList.contains('visible'), () => $('pauseOverlay').querySelector('[data-pause="resume"]').click()],
   [() => $('logPanel').classList.contains('open'), () => $('logPanel').classList.remove('open')],
-  [() => $('sndPanel').classList.contains('open'), () => $('sndPanel').classList.remove('open')],
   [() => $('deckPop').classList.contains('open'), () => $('deckPop').classList.remove('open')],
-  [() => $('debugPanel').classList.contains('visible'), () => $('debugPanel').classList.remove('visible')],
 ];
 const overlayOpen = () => OVERLAYS.some(([open]) => open());
 

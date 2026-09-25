@@ -110,7 +110,7 @@ try {
   await page.evaluate(() => document.getElementById('modesBack').click()); await sleep(200);
 
   console.log('ajustes y estadísticas');
-  await click('#settingsBtn'); await sleep(300);
+  await click('#sndCfgBtn'); await sleep(300); // el botón redondo: ajustes y estadísticas en pestañas
   await click('#setBox [data-speed="fast"]'); await click('#setBox [data-course-opt="night"]'); await sleep(200);
   await shot('07c-ajustes');
   await click('[data-tab="stats"]'); await sleep(200); await shot('07d-estadisticas');
@@ -133,6 +133,7 @@ try {
 
   console.log('creador de niveles');
   await page.evaluate(() => { document.querySelectorAll('.screen, #winOverlay').forEach(() => {}); });
+  await click('#modesBtn'); await sleep(300); // el creador vive en Modos de juego
   await click('#editorBtn'); await sleep(300);
   await click('#edTools [data-tool="bunker"]');
   await click('#edBoard .cell[data-x="1"][data-y="1"]');
@@ -146,14 +147,14 @@ try {
   await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
   await click('#edExport'); await sleep(300); await shot('10-exportar');
   await page.keyboard.press('Escape'); await sleep(200);
-  await click('#edMenu');
+  await click('#edMenu'); await sleep(300); // vuelve a Modos de juego
+  if (await page.evaluate(() => window.chaoticGolf.app.screen) !== 'modes') problems.push('el creador no vuelve a Modos de juego');
+  await click('#modesBack'); await sleep(200);
 
-  console.log('panel de debug');
+  console.log('teclado');
   await click('#storyBtn'); await sleep(300);
   await click('.lvlCard[data-level="0"]'); await confirmIfAsked(); await sleep(700);
-  await click('#debugBtn'); await sleep(300);
-  await click('#dbgUndo');
-  await shot('11-testing-tool');
+  await shot('11-teclado');
   // teclado: foco en el tablero y flechas
   await page.focus('#board .cell[tabindex="0"]');
   await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowDown');

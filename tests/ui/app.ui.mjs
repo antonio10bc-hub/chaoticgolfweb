@@ -175,6 +175,24 @@ it('reto diario: texto para compartir con un cuadrado por turno', async () => {
   assert.ok(txt.includes('💥 1 · 🌀 1 · 🕳️ 1'));
 });
 
+it('menú vivo: con el reto de hoy completado, la bola rueda al hoyo una sola vez', async () => {
+  const d = new Date(), k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const z = { story: 0, puzzle: 0, daily: 0, rush: 0, pve: 0, local: 0, challenge: 0, weekly: 0 };
+  await fresh({ chaoticgolf_stats: { version: 1, played: z, won: z, totals: {}, levels: {}, puzzles: {}, pve: {}, daily: { days: { [k]: { best: 3, strokes: 5 } }, streak: 1, bestStreak: 1, last: k }, rush: {}, challenges: {} } });
+  await sleep(2600);
+  assert.equal(await app(() => document.getElementById('menuBall').style.opacity), '0');
+  assert.equal(await app(() => localStorage.getItem('chaoticgolf_menuBall')), k);
+});
+
+it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
+  await fresh();
+  await click('#storyBtn'); await sleep(300);
+  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => !t.out); ctl.clickCell(t.x, t.y); });
+  await sleep(200);
+  assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
+});
+
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);

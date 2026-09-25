@@ -10,7 +10,7 @@ import { ART } from '../art.js';
 import { startGame, fitBoard, render } from './controller.js';
 import { hideWin } from './win.js';
 import { aiStop } from './ai-driver.js';
-import { readDebugSettings, refreshGivePlayer } from './debug.js';
+import { CARDS } from '../content/cards/index.js';
 import { fitEditorBoard, edRender, ED } from './editor.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
@@ -64,11 +64,11 @@ export function showScreen(s) {
   requestAnimationFrame(() => document.querySelector(`#${s}Screen ${focusTarget}`)?.focus({ preventScroll: true }));
 }
 
-/* ---------- modo libre (partida del panel de debug) ---------- */
+/* ---------- modo libre (partida de fondo al arrancar) ---------- */
+const FREE_CFG = { players: 4, par: 5, cols: 7, rows: 9 };
 export function newFreeGame() {
-  const cfg = readDebugSettings();
+  const cfg = { ...FREE_CFG, counts: Object.fromEntries(Object.entries(CARDS).map(([k, d]) => [k, d.copies])) };
   startGame(Game.free(cfg, { seed: cfg.seed }), 'free');
-  refreshGivePlayer();
   updateMenuBtn();
   fitBoard();
   render();

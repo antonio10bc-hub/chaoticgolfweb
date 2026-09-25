@@ -6,7 +6,6 @@ import { Game, PLAYER_COLORS } from '../engine/game.js';
 import { mulberry32 } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { aiStart } from './ai-driver.js';
-import { refreshGivePlayer } from './debug.js';
 import { updateMenuBtn } from './hud.js';
 import { t } from '../i18n/index.js';
 import { saveGame, loadSave } from './save.js';
@@ -162,7 +161,6 @@ export function startPveMatch() {
   startGame(made.game, 'pve');
   dressVsGame(made);
   try { localStorage.setItem(LAST_PVE, JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }
-  refreshGivePlayer();
   updateMenuBtn();
   musicScene('game', { newGame: true });
   showScreen('game');

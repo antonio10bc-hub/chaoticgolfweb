@@ -7,7 +7,6 @@ import { loadLevels, loadProgress } from '../storage.js';
 import { startGame } from './controller.js';
 import { hideWin } from './win.js';
 import { aiStop } from './ai-driver.js';
-import { refreshGivePlayer } from './debug.js';
 import { ED } from './editor.js';
 import { t } from '../i18n/index.js';
 import { saveGame, loadSave } from './save.js';
@@ -28,7 +27,6 @@ export function startLevel(level, mode, idx = null, { variant = null, run = null
   const builtIn = mode === 'story' && idx !== null && (variant === 'puzzle' || (!variant && idx < app.storyLevels.length));
   startGame(Game.fromLevel(level, seed != null ? { seed } : undefined), mode, { levelIndex: idx, level: { ...level, builtIn }, variant, run });
   applyOwnLook(app.game.S, [0], [loadProfile()]); // tu color y tu nombre también en los niveles
-  refreshGivePlayer();
   musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();

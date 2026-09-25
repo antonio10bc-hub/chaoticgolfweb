@@ -48,7 +48,7 @@ export function bindPause() {
     switch (b.dataset.pause) {
       case 'resume': resumePlay(); break;
       case 'rules': $('rulesBtn').click(); break;
-      case 'settings': $('moreSettings').click(); break;
+      case 'settings': $('sndCfgBtn').click(); break;
       case 'log': resumePlay(); $('logPanel').classList.add('open'); break;
       case 'menu': clearPause(); $('menuBtn').click(); break;
     }

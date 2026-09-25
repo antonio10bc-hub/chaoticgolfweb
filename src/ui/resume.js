@@ -4,7 +4,6 @@ import { app } from './app.js';
 import { Game } from '../engine/game.js';
 import { startGame } from './controller.js';
 import { aiStart } from './ai-driver.js';
-import { refreshGivePlayer } from './debug.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t } from '../i18n/index.js';
 import { loadSave, latestSave, applySaveExtras, VS_SLOTS } from './save.js';
@@ -35,7 +34,6 @@ export function resumeGame(slot) {
   applySaveExtras(d);
   // multijugador local: por privacidad, al volver se pasa el dispositivo antes de enseñar manos
   app.viewer = humansOf().length > 1 ? null : d.game.S.human;
-  refreshGivePlayer();
   updateMenuBtn();
   showScreen('game');
   toast(t('save.restored'));

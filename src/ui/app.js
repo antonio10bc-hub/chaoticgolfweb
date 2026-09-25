@@ -17,7 +17,7 @@ export const app = {
   tipShown: {},          // bocadillos de tutorial ya mostrados en la partida actual
   storyLevels: [],       // niveles integrados de Lo básico (cargados de JSON)
   puzzleLevels: [],      // puzles de "gana en 1 turno"
-  pveShowHands: false,   // debug: ver las cartas de los contrincantes
+  pveShowHands: false,   // ver las cartas de los contrincantes (siempre tapadas)
   pveCfg: { color: 0, size: 'm', opps: 2, humans: 1, diff: 'normal' },
   lastPveCfg: null,      // configuración de la partida PVE en curso (para Reiniciar)
   ai: { acting: false, thinkingOf: null },

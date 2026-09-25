@@ -35,7 +35,7 @@ src/
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
     autoplay.js            partidas bot-contra-bot instantáneas (simulador y tests)
-  ui/                      pantallas, tablero, manos, HUD, editor, debug, orquestador de la IA
+  ui/                      pantallas, tablero, manos, HUD, editor, orquestador de la IA
     controller.js          une motor e interfaz: acción → eventos → efectos → render
     screens.js             navegación, salir / reiniciar, modo libre
     screen-story.js        Lo básico y puzles · screen-pve.js  Partida rápida (y rivales)
@@ -145,13 +145,15 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
-- **Guardado:** uno por modo. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
+- **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
-- **Ajustes:** perfil (nombre y color), sonido y pista de música (con fundido menú ↔ partida), idioma,
+- **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; pestañas Ajustes y Estadísticas):
+  sonido y pista de música (con fundido menú ↔ partida), idioma,
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
   contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
-  modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa.
+  modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa. El nombre y el color se eligen
+  en Partida rápida. El Creador de Niveles está en Modos de juego.
 - **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
@@ -159,7 +161,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Menú:** título, tarjeta del reto diario (tablero pequeño contra 2 bots, igual para todos; cada día cambian
   los rivales, su personalidad y la dificultad; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
-  Con el reto del día completado sale un tic verde; con la app instalada, un punto en su icono avisa de que
+  Con el reto del día completado sale un tic verde (y, la primera vez que vuelves al menú, la bola de la
+  ilustración rueda hasta el hoyo: `src/ui/menu-ball.js`); con la app instalada, un punto en su icono avisa de que
   el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
@@ -204,8 +207,8 @@ original (`tests/oracle/original.html`, la versión de un solo archivo) con el h
 texto. Si un cambio altera una regla sin querer, el test dice la partida, el paso y el log esperado frente al
 obtenido. Si se cambia una regla **a propósito**, hay que cambiarla también en el oráculo y regenerar.
 
-**Semillas:** cada partida tiene una semilla (panel `dbg` → "Estado del mazo"). Escribirla en
-"Semilla" y pulsar "Aplicar y reiniciar" reproduce exactamente el mismo reparto, útil para reproducir bugs.
+**Semillas:** cada partida tiene una semilla (`chaoticGolf.app.game.seed` en la consola). `Game.pve(cfg,
+{ seed })` con la misma semilla reproduce exactamente el mismo reparto, útil para reproducir bugs.
 
 ## Cambios de comportamiento respecto al original
 

@@ -39,19 +39,17 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .dlgBtns button:last-child { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
 .dlgBtns button.danger:last-child { --b-bg: var(--accent-deep); --b-line: var(--accent-deep); --b-fg: var(--cream); }
 
-/* campos de texto del creador y del debug */
-#edName, #dbgSeed {
+/* campos de texto del creador */
+#edName {
   width: 150px; background: #fff; color: var(--ink); border: 1px solid var(--cream-line);
   border-radius: 999px; padding: 3px 10px; font-size: 12.5px;
 }
-#dbgSeed { width: 110px; text-align: right; }
 
 /* pantallas estrechas (móvil): editor y paneles */
 @media (max-width: 640px) {
   .mContent { width: 100%; }
   #edLayout { flex-direction: column; }
   #edPanel, #edPanelL { width: 100%; max-height: none; }
-  #debugPanel { width: 100%; }
 }
 
 /* títulos semánticos (<h1>) con la misma métrica que el <div> original */

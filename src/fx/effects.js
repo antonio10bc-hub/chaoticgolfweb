@@ -1,6 +1,6 @@
 // Efectos decorativos basados en DOM (todo es cosmético: nunca toca el estado del juego).
 import { JUICE, REDUCED, CONFETTI_C } from './juice.js';
-import { fxRand, fxSpawn, fxCount } from './particles.js';
+import { fxRand, fxSpawn } from './particles.js';
 import { cellCenterPx, cellStep, GAP } from '../ui/geometry.js';
 import { $, $$, restartClass } from '../ui/dom.js';
 import { app } from '../ui/app.js';
@@ -160,20 +160,6 @@ export function fxAmbientStart() {
     });
   }, JUICE.ambientMs);
 }
-
-// perf HUD del panel debug (FPS + partículas activas); solo mide con el panel abierto
-let perfFrames = 0, perfLast = 0, perfRaf = 0;
-function fxPerfTick(ts) {
-  perfFrames++;
-  if (ts - perfLast >= 500) {
-    const fps = Math.round(perfFrames * 1000 / (ts - perfLast));
-    perfFrames = 0; perfLast = ts;
-    const hud = $('perfHud');
-    if (hud) hud.innerHTML = t('debug.perf', { fps, n: fxCount() });
-  }
-  perfRaf = $('debugPanel').classList.contains('visible') ? requestAnimationFrame(fxPerfTick) : 0;
-}
-export function fxPerfWatch() { if (!perfRaf) { perfFrames = 0; perfLast = performance.now(); perfRaf = requestAnimationFrame(fxPerfTick); } }
 
 // confeti de celebración en un punto de la pantalla (capa fija)
 function fxConfettiAt(clientX, clientY, n, colors = CONFETTI_C) {

@@ -915,3 +915,24 @@ body[data-screen="menu"]:not(.loading) .dDone { animation: donePop .5s .7s cubic
   .hbLbl.rv { flex-wrap: wrap; white-space: normal; row-gap: 2px; }
   .hbVal { min-width: 38px; }
 }
+
+/* ---------- Ajustes: cada opción con su etiqueta encima y sus opciones en un control segmentado ---------- */
+.setRow.seg { flex-direction: column; align-items: stretch; gap: 7px; margin: 14px 0; }
+.setRow.seg > span:first-child { font-weight: 500; }
+.setRow.seg .segBtns { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; padding: 3px; border-radius: 12px;
+  background: rgba(36,36,36,.07); }
+.setRow.seg .segBtns button { --b-bg: transparent; --b-line: transparent; border-radius: 9px; padding: 8px 6px; font-size: 13px; }
+.setRow.seg .segBtns button:hover { background-color: rgba(255,255,255,.6); }
+.setRow.seg .segBtns button[aria-pressed="true"] { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+#modesBottom { display: none; }
+body[data-screen="modes"] #modesBottom { display: flex; animation: fadeIn .3s both; }
+
+/* ---------- aviso de guardado (barra de la partida) ---------- */
+#gameBar > .barSide:first-child { position: relative; }
+.saveTick { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 8px; border-radius: 999px; white-space: nowrap;
+  background: rgba(241,241,220,.94); color: var(--grass-dark); font-size: 12px; font-weight: 600; pointer-events: none;
+  opacity: 0; transform: translateY(-3px); transition: opacity .3s, transform .3s var(--ease-out); }
+.saveTick .i { width: 13px; height: 13px; stroke-width: 2.6; }
+.saveTick.show { opacity: 1; transform: none; }
+@media (max-width: 760px) { .saveTick { position: absolute; left: 0; top: calc(100% + 6px); z-index: 5; padding: 3px 9px 3px 7px; font-size: 11px; } }
+html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }

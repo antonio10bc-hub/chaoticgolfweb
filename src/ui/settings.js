@@ -16,9 +16,7 @@ import { storyLevelAt } from './screen-story.js';
 import * as ctl from './controller.js';
 import { pauseGame, resumePlay } from './pause.js';
 import { ensureGuard } from './back.js';
-import { loadProfile, saveProfile, MAX_NAME } from './profile.js';
 import { achievementsHTML } from './achievements.js';
-import { PVE_COLORS } from './screen-pve.js';
 
 let tab = 'settings', lastFocus = null;
 
@@ -31,22 +29,16 @@ const toggle = (id, on, label, sub = '') =>
 function settingsHTML() {
   const themeBtn = th => `<button class="themeOpt" data-course-opt="${th}" aria-pressed="${currentTheme() === th}">` +
     `<span class="sw ${th}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(t('settings.theme_' + th))}</b></button>`;
-  const prof = loadProfile();
   return `
-  <section><h4>${esc(t('settings.profileH'))}</h4>
-    <div class="setRow"><span>${esc(t('settings.name'))}</span><input class="setName" id="setName" maxlength="${MAX_NAME}" value="${esc(prof.name)}" placeholder="${esc(t('pve.namePh'))}"></div>
-    <div class="setRow col"><span>${esc(t('settings.color'))}</span><div class="setColors">${PVE_COLORS.map((c, i) =>
-      `<button class="pveColor${prof.color === i ? ' sel' : ''}" style="background:${c}" data-prof-color="${i}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${prof.color === i}"></button>`).join('')}</div></div>
-  </section>
   <section><h4>${esc(t('settings.soundH'))}</h4>
     <label class="setRange"><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg><span>${esc(t('sound.sfx'))}</span><input type="range" id="setSfx" min="0" max="100" value="${Math.round(SFX.sfxVol * 100)}"></label>
     <label class="setRange"><svg class="i" aria-hidden="true"><use href="#i-music"/></svg><span>${esc(t('sound.music'))}</span><input type="range" id="setMus" min="0" max="100" value="${Math.round(SFX.musVol * 100)}"></label>
     ${toggle('setMusOn', MUSIC.on, t('sound.musicOn'), t('settings.musicSub'))}
-    <div class="setRow"><span>${esc(t('settings.track'))}</span>${seg('track', TRACKS, prefs.track, o => t('settings.track_' + o))}</div>
+    <div class="setRow seg"><span>${esc(t('settings.track'))}</span>${seg('track', TRACKS, prefs.track, o => t('settings.track_' + o))}</div>
   </section>
   <section><h4>${esc(t('settings.gameH'))}</h4>
-    <div class="setRow"><span>${esc(t('settings.speed'))}</span>${seg('speed', ['slow', 'normal', 'fast'], prefs.speed)}</div>
-    <div class="setRow"><span>${esc(t('lang.label'))}</span><span class="segBtns">${['es', 'en'].map(l => `<button class="btn-sm" data-lang="${l}" aria-pressed="${l === getLang()}">${esc(t('lang.' + l))}</button>`).join('')}</span></div>
+    <div class="setRow seg"><span>${esc(t('settings.speed'))}</span>${seg('speed', ['slow', 'normal', 'fast'], prefs.speed)}</div>
+    <div class="setRow seg"><span>${esc(t('lang.label'))}</span><span class="segBtns">${['es', 'en'].map(l => `<button class="btn-sm" data-lang="${l}" aria-pressed="${l === getLang()}">${esc(t('lang.' + l))}</button>`).join('')}</span></div>
     <div class="setRow col"><span>${esc(t('settings.theme'))}${currentThemeSlot() !== 'default' ? ` <small class="themeFor">· ${esc(t('settings.themeFor_' + currentThemeSlot()))}</small>` : ''}</span><div class="themeOpts">${THEMES.map(themeBtn).join('')}</div></div>
     ${toggle('setBotFast', prefs.botFast, t('settings.botFast'), t('settings.botFastSub'))}
     ${toggle('setHints', prefs.hints, t('settings.hints'), t('settings.hintsSub'))}
@@ -103,7 +95,6 @@ export function openSettings(which = 'settings') {
   paint();
   $('settingsOverlay').classList.add('visible');
   $('setBox').querySelector('.setTabs button[aria-selected="true"]')?.focus({ preventScroll: true });
-  $('sndPanel').classList.remove('open');
   if (app.screen === 'game') pauseGame('settings'); // en partida, mientras se ajusta, la máquina espera
   ensureGuard();
 }
@@ -128,17 +119,9 @@ export function repaintSettings() { if (settingsOpen()) paint(); paintSpeedBtns(
 function paintSpeedBtns() {
   document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', b.dataset.speed === prefs.speed));
 }
-const syncSoundPanel = () => {
-  $('sfxVol').value = Math.round(SFX.sfxVol * 100);
-  $('musVol').value = Math.round(SFX.musVol * 100);
-  $('musOn').checked = MUSIC.on;
-};
 
 export function bindSettings() {
   paintSpeedBtns();
-  $('settingsBtn').addEventListener('click', () => openSettings('settings'));
-  $('statsBtn').addEventListener('click', () => openSettings('stats'));
-  $('moreSettings').addEventListener('click', () => openSettings('settings'));
   const ov = $('settingsOverlay');
   ov.addEventListener('click', async e => {
     if (e.target === ov) { closeSettings(); return; }
@@ -146,8 +129,6 @@ export function bindSettings() {
     if (tb) { tab = tb.dataset.tab; paint(); return; }
     const th = e.target.closest('[data-course-opt]');
     if (th) { setTheme(th.dataset.courseOpt); musicRefresh(); paint(); if (app.game) ctl.render(); return; }
-    const pc = e.target.closest('[data-prof-color]');
-    if (pc) { const prof = loadProfile(); prof.color = +pc.dataset.profColor; saveProfile(prof); app.pveCfg.color = prof.color; paint(); return; }
     const tr = e.target.closest('[data-track]');
     if (tr) { setPref('track', tr.dataset.track); musicRefresh(); paint(); return; }
     const a = e.target.closest('[data-set-act]');
@@ -158,19 +139,18 @@ export function bindSettings() {
     if (a.dataset.setAct === 'resetPrefs' && await confirmDialog(t('settings.resetConfirm'), t('settings.reset'), true)) {
       resetPrefs();
       Object.assign(SFX, { muted: false, sfxVol: .45, musVol: .55 }); MUSIC.on = true;
-      sfxApplyVolumes(); sndSave(); musicStart(); musicRefresh(); syncSoundPanel();
+      sfxApplyVolumes(); sndSave(); musicStart(); musicRefresh();
       paint(); paintSpeedBtns();
       if (app.game) { ctl.fitBoard(); ctl.render(); }
     }
   });
   ov.addEventListener('input', e => {
-    if (e.target.id === 'setName') { const prof = loadProfile(); prof.name = e.target.value.slice(0, MAX_NAME); saveProfile(prof); }
-    if (e.target.id === 'setSfx') { SFX.sfxVol = e.target.value / 100; sfxApplyVolumes(); sndSave(); syncSoundPanel(); }
-    if (e.target.id === 'setMus') { SFX.musVol = e.target.value / 100; sfxApplyVolumes(); sndSave(); syncSoundPanel(); }
+    if (e.target.id === 'setSfx') { SFX.sfxVol = e.target.value / 100; sfxApplyVolumes(); sndSave(); }
+    if (e.target.id === 'setMus') { SFX.musVol = e.target.value / 100; sfxApplyVolumes(); sndSave(); }
   });
   ov.addEventListener('change', e => {
     const id = e.target.id, on = e.target.checked;
-    if (id === 'setMusOn') { MUSIC.on = on; if (on) musicStart(); else musicStop(); sndSave(); syncSoundPanel(); }
+    if (id === 'setMusOn') { MUSIC.on = on; if (on) musicStart(); else musicStop(); sndSave(); }
     if (id === 'setHints') setPref('hints', on);
     if (id === 'setReduce') setPref('reduce', on);
     if (id === 'setShapes') setPref('shapes', on);

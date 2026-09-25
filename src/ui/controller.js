@@ -11,7 +11,6 @@ import { renderHands, resetDealAnim } from './hands.js';
 import { playQueue } from './animations.js';
 import * as hud from './hud.js';
 import { showWin, hideWin } from './win.js';
-import { renderDebugState, updateGodHint } from './debug.js';
 import { aiKick, aiStop } from './ai-driver.js';
 import { fxPlayCard, fxDiscardCard, fxBadCard, fxRewind, fxZoomShake } from '../fx/effects.js';
 import { blockedReason } from './reasons.js';
@@ -182,7 +181,7 @@ function dispatch(fn) {
   if (resolved) { app.lastPlayAt = Date.now(); app.playSeq++; }
   if (resolved && app.reacting != null && !g.pending) app.reacting = null; // la reacción del invitado ha terminado
   render();
-  saveGame(); // guardado automático de la partida en curso
+  saveGame({ flash: resolved || turnEnded }); // guardado automático (con aviso breve tras una jugada)
   if (resolved || turnEnded) tutorialEvent(turnEnded ? 'turnEnded' : 'resolved');
   if (won) { botsGameOver(g.S.winners); showWin(); }
   // puzle: el turno ha terminado sin embocar
@@ -213,7 +212,7 @@ export function clickCard(p, idx) {
 export function clickCell(x, y) {
   if (app.animating) return false;
   const g = app.game;
-  if (g.godMode) { const r = dispatch(gg => gg.clickCell(x, y)); updateGodHint(); return r; }
+  if (g.godMode) return dispatch(gg => gg.clickCell(x, y));
   if (!g.pending) return false;
   if (app.mode === 'pve' && !app.ai.acting) { // en PVE solo se decide la acción propia (la de quien tiene el dispositivo)
     const pd = g.pending, me = viewer();
@@ -262,8 +261,6 @@ function noteWinStyle(g, events, actor, cardKey, jaqueBefore) {
     if (style) app.winStyle[p] = style; else delete app.winStyle[p];
   }
 }
-// herramientas de debug
-export const debugAction = fn => app.game ? dispatch(g => { const r = fn(g); return r === undefined ? true : r; }) : false;
 
 // en solitario no hay ventana de reacción: la victoria se confirma sola tras la animación
 export function maybeSoloWin() {
@@ -282,7 +279,6 @@ export function render() {
   renderBoard();
   renderPieces();
   renderHands();
-  renderDebugState();
   hud.renderHud();
   turnCheck();
   if (hud.modeChip()) requestAnimationFrame(() => { if (app.game === g) { fitBoard(); render(); } }); // etiqueta del modo (torneo, contrarreloj…)

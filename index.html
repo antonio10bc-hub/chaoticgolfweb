@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="styles/game.css">
 <link rel="stylesheet" href="styles/hands.css">
 <link rel="stylesheet" href="styles/hud.css">
-<link rel="stylesheet" href="styles/debug.css">
 <link rel="stylesheet" href="styles/screens.css">
 <link rel="stylesheet" href="styles/editor.css">
 <link rel="stylesheet" href="styles/fx.css">
@@ -45,6 +44,8 @@
   </defs>
 
   <!-- ilustración aérea del hoyo (menú, fondos) -->
+  <!-- bola de la ilustración (aparte: en el menú rueda al hoyo al completar el reto diario) -->
+  <symbol id="aerialBall" viewBox="0 0 1000 700"><circle cx="572" cy="366" r="9" fill="rgba(20,40,20,.3)"/><circle cx="566" cy="360" r="9" fill="#fff"/></symbol>
   <symbol id="aerial" viewBox="0 0 1000 700">
     <rect width="1000" height="700" fill="url(#mow)"/>
     <!-- zonas de rough más oscuras -->
@@ -81,9 +82,6 @@
     <ellipse cx="636" cy="264" rx="15" ry="10" fill="#242424"/>
     <path d="M636 264 V150" stroke="#F1F1DC" stroke-width="6" stroke-linecap="round"/>
     <path d="M639 152 L690 170 L639 190 Z" fill="#E8873A"/>
-    <!-- bola -->
-    <circle cx="566" cy="360" r="9" fill="rgba(20,40,20,.3)" transform="translate(6 6)"/>
-    <circle cx="566" cy="360" r="9" fill="#fff"/>
     <!-- grano -->
     <rect width="1000" height="700" filter="url(#grainF)" opacity=".07"/>
   </symbol>
@@ -134,7 +132,7 @@
 </svg>
 
 <div id="scene" aria-hidden="true">
-<svg id="menuScene" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#aerial"/></svg>
+<svg id="menuScene" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#aerial"/><use href="#aerialBall"/></svg>
 </div>
 
 <div id="menuScreen">
@@ -150,13 +148,8 @@
     </div>
     <p class="mTag" data-i18n="menu.tag">Golf de cartas. Caótico. Con JAQUE.</p>
   </main>
-  <div class="mArt" aria-hidden="true"><svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice"><use href="#aerial"/></svg></div>
+  <div class="mArt" aria-hidden="true"><svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice"><use href="#aerial"/><g id="menuBall"><use href="#aerialBall"/></g></svg></div>
  </div>
-  <nav class="mBottom">
-  <button id="editorBtn" class="cornerBtn" data-i18n-title="menu.editorTitle"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.editor">creador de niveles</span></button>
-  <button id="statsBtn" class="cornerBtn" data-i18n-title="stats.title"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="menu.stats">estadísticas</span></button>
-  <button id="settingsBtn" class="cornerBtn" data-i18n-title="settings.title"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg><span data-i18n="menu.settings">ajustes</span></button>
-  </nav>
 </div>
 
 <div id="pveScreen">
@@ -227,6 +220,7 @@
     <div class="barSide">
       <button id="menuBtn" class="btn-ghost btn-sm btn-icon" data-i18n="nav.toMenu">← Menú</button>
       <button id="resetBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="game.resetTitle" title="Empezar la partida de cero"><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg><span class="lbl" data-i18n="game.resetShort">Reiniciar</span></button>
+      <span id="saveTick" class="saveTick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg><span data-i18n="save.saved">Guardado</span></span>
     </div>
     <div id="turnPill" aria-live="polite"></div>
     <div id="modeChip" hidden></div>
@@ -305,7 +299,7 @@
       <h4 data-i18n="editor.file">Archivo</h4>
       <button id="edExport" class="dbtn" data-i18n="editor.export">Exportar niveles</button>
       <button id="edImport" class="dbtn" data-i18n="editor.import">Importar niveles</button>
-      <button id="edMenu" class="dbtn danger" data-i18n="editor.toMenu">← Menú principal</button>
+      <button id="edMenu" class="dbtn danger" data-i18n="editor.toModes">← Modos de juego</button>
     </div>
     <div id="edMain">
       <div id="edBoardWrap"><div id="edBoard"></div></div>
@@ -348,47 +342,14 @@
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="turnBanner" aria-hidden="true"></div>
 <button id="sfxBtn" data-i18n-title="sound.toggleTitle" title="Sonido: activar / silenciar"><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg></button>
-<button id="sndCfgBtn" data-i18n-title="sound.settingsTitle" title="Ajustes de sonido" aria-controls="sndPanel" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
-<div id="sndPanel">
-  <label class="muteRow"><input type="checkbox" id="muteAll"> <svg class="i" aria-hidden="true"><use href="#i-mute"/></svg><span data-i18n="sound.muteAll">Silenciar todo</span></label>
-  <label><svg class="i" aria-hidden="true"><use href="#i-sound"/></svg><span data-i18n="sound.sfx">SFX</span> <input type="range" id="sfxVol" min="0" max="100" value="45"></label>
-  <label><svg class="i" aria-hidden="true"><use href="#i-music"/></svg><span data-i18n="sound.music">Música</span> <input type="range" id="musVol" min="0" max="100" value="55"></label>
-  <label class="mus"><input type="checkbox" id="musOn" checked> <span data-i18n="sound.musicOn">Música ambiental</span></label>
-  <div class="langRow speedRow"><span data-i18n="settings.speed">Velocidad</span><span class="langBtns speedBtns"><button class="btn-sm" data-speed="slow" data-i18n="settings.slow">Lenta</button><button class="btn-sm" data-speed="normal" data-i18n="settings.normal">Normal</button><button class="btn-sm" data-speed="fast" data-i18n="settings.fast">Rápida</button></span></div>
-  <div class="langRow"><span data-i18n="lang.label">Idioma</span><span class="langBtns"><button class="btn-sm" data-lang="es">ES</button><button class="btn-sm" data-lang="en">EN</button></span></div>
-  <label class="mus" data-i18n-title="sound.peekTitle"><input type="checkbox" id="peekHands"> <svg class="i" aria-hidden="true"><use href="#i-eye"/></svg><span data-i18n="sound.peek">Ver cartas rivales</span></label>
-  <button id="moreSettings" class="btn-light btn-sm"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg><span data-i18n="settings.more">Más ajustes…</span></button>
-</div>
+<button id="sndCfgBtn" data-i18n-title="settings.title" data-i18n-aria="settings.title" title="Ajustes"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg></button>
+<!-- junto a los botones redondos, solo en Modos de juego -->
+<nav id="modesBottom" class="mBottom">
+  <button id="editorBtn" class="cornerBtn" data-i18n-title="menu.editorTitle"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span data-i18n="menu.editor">creador de niveles</span></button>
+</nav>
 
 <div id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="setTitle"><div class="setBox" id="setBox"></div></div>
 
-<button id="debugBtn" title="debug" aria-controls="debugPanel" aria-expanded="false">dbg</button>
-<div id="debugPanel">
-  <h2>DEBUG</h2>
-  <h4 data-i18n="debug.gameH">Partida (aplica al reiniciar)</h4>
-  <div class="drow"><label for="dbgPlayers" data-i18n="debug.players">Jugadores</label><input type="number" id="dbgPlayers" min="1" max="6" value="4"></div>
-  <div class="drow"><label for="dbgPar" data-i18n="debug.par">Par</label><input type="number" id="dbgPar" min="1" max="5" value="5"></div>
-  <div class="drow"><label for="dbgCols" data-i18n="editor.cols">Columnas</label><input type="number" id="dbgCols" min="3" max="25" value="7"></div>
-  <div class="drow"><label for="dbgRows" data-i18n="editor.rows">Filas</label><input type="number" id="dbgRows" min="5" max="25" value="9"></div>
-  <div class="drow"><label for="dbgSeed" data-i18n="debug.seedLabel">Semilla (vacío = al azar)</label><input type="text" id="dbgSeed" inputmode="numeric" placeholder="—"></div>
-  <button id="dbgSeedUse" class="dbtn" data-i18n="debug.seedUse">Usar la semilla de esta partida</button>
-  <h4 data-i18n="debug.deckH">Mazo (copias de cada carta)</h4>
-  <div id="dbgDeck"></div>
-  <button id="dbgReset" class="dbtn danger" data-i18n="debug.reset">Aplicar y reiniciar partida</button>
-  <h4 data-i18n="debug.liveH">Herramientas en vivo</h4>
-  <button id="dbgUndo" class="dbtn" data-i18n="debug.undo">Deshacer última acción</button>
-  <div class="drow"><label for="dbgGivePlayer" data-i18n="debug.player">Jugador</label><select id="dbgGivePlayer"></select></div>
-  <div class="drow"><label for="dbgGiveCard" data-i18n="debug.card">Carta</label><select id="dbgGiveCard"></select></div>
-  <button id="dbgGiveBtn" class="dbtn" data-i18n="debug.give">Dar carta</button>
-  <button id="dbgDraw" class="dbtn" data-i18n="debug.draw">Robar 1 (jugador activo)</button>
-  <button id="dbgSkip" class="dbtn" data-i18n="debug.skip">Saltar turno</button>
-  <button id="dbgGod" class="dbtn" aria-pressed="false" data-i18n="debug.god">Modo libre: mover cartas</button>
-  <div id="godHint"></div>
-  <h4 data-i18n="debug.stateH">Estado del mazo</h4>
-  <div id="dbgState"></div>
-  <h4>Perf</h4>
-  <div id="perfHud" style="font-size:12px; opacity:.85">FPS: —<br>Partículas: —</div>
-</div>
 
 <div id="winOverlay" role="dialog" aria-modal="true" aria-labelledby="winMsg"><div class="box">
   <div class="winIcon" id="winIcon" aria-hidden="true"><svg class="i"><use href="#i-trophy"/></svg></div>

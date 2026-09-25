@@ -229,7 +229,7 @@ export default {
   editor: {
     title: 'CREADOR DE NIVELES', level: 'Nivel', slotLabel: 'Slot', file: 'Archivo',
     load: 'Cargar nivel del slot', save: 'Guardar nivel en slot', deleteSlot: 'Borrar nivel del slot',
-    export: 'Exportar niveles', import: 'Importar niveles', toMenu: '← Menú principal',
+    export: 'Exportar niveles', import: 'Importar niveles', toMenu: '← Menú principal', toModes: '← Modos de juego',
     nameH: 'Nombre', name: 'Título',
     toolH: 'Herramienta (click en el tablero)', parN: 'Número del PAR',
     sizeH: 'Tamaño del tablero', cols: 'Columnas', rows: 'Filas', resize: 'Aplicar tamaño',
@@ -274,20 +274,8 @@ export default {
     driftDuel: { name: 'Hoyo nervioso', desc: 'Duelo en 5×5 con el hoyo moviéndose cada turno.' },
     fingerFest: { name: 'Dedos ágiles', desc: 'El mazo está lleno de dedos: todo es serpentear.' },
   },
-  save: { restored: 'Partida recuperada', title: 'Partida guardada', replaceOk: 'Empezar nueva',
+  save: { saved: 'Guardado', restored: 'Partida recuperada', title: 'Partida guardada', replaceOk: 'Empezar nueva',
     confirmReplace: 'Tienes una partida guardada. Si empiezas otra, la guardada se perderá.' },
-  debug: {
-    gameH: 'Partida (aplica al reiniciar)', players: 'Jugadores', par: 'Par',
-    seedLabel: 'Semilla (vacío = al azar)', seedUse: 'Usar la semilla de esta partida',
-    deckH: 'Mazo (copias de cada carta)', reset: 'Aplicar y reiniciar partida',
-    liveH: 'Herramientas en vivo', undo: 'Deshacer última acción', player: 'Jugador', card: 'Carta',
-    give: 'Dar carta', draw: 'Robar 1 (jugador activo)', skip: 'Saltar turno', god: 'Modo libre: mover cartas',
-    stateH: 'Estado del mazo',
-    godHint: 'Click en pelota / hoyo / búnker / portal y luego en la casilla destino. Vuelve a pulsar el botón para salir.',
-    godPicked: 'Cogido: {kind}. Click en la casilla destino.',
-    art: 'Arte bitmap: {n}/{total} PNG cargados (assets/art/)', seed: 'Semilla: {seed}', empty: '(vacío)',
-    perf: 'FPS: {fps}<br>Partículas: {n}',
-  },
 
   /* ---------- multijugador local, bots, ajustes, estadísticas y tutorial ---------- */
   hotseat: {

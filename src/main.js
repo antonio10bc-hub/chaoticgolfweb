@@ -29,7 +29,6 @@ import { bindModes, openModes } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
-import { bindDebug, buildDebugPanel } from './ui/debug.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
 import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
@@ -65,7 +64,6 @@ bindModes();
 bindAssist();
 bindZoom();
 bindEditor();
-bindDebug();
 bindSoundPanel();
 bindSettings();
 bindTutorial();
@@ -110,7 +108,7 @@ window.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
   if (rulesOpen()) { closeRules(); return; }
   if (app.paused === 'user') { resumePlay(); return; }
-  for (const [id, cls] of [['deckPop', 'open'], ['sndPanel', 'open'], ['logPanel', 'open'], ['debugPanel', 'visible']]) {
+  for (const [id, cls] of [['deckPop', 'open'], ['logPanel', 'open']]) {
     if ($(id).classList.contains(cls)) { $(id).classList.remove(cls); return; }
   }
   if (app.screen === 'game' && app.game?.pending && !app.ai.acting) ctl.cancel();
@@ -130,7 +128,6 @@ document.addEventListener('click', e => {
   if (!b || b.dataset.lang === getLang()) return;
   setLang(b.dataset.lang); saveLang(b.dataset.lang); paintLangBtns();
   applyStaticTexts();
-  buildDebugPanel();
   repaintSettings();
   if (app.game) { ctl.render(); }
   if (app.screen === 'story') openStory();
@@ -143,9 +140,8 @@ document.addEventListener('click', e => {
 paintLangBtns();
 fxAmbientStart();
 
-buildDebugPanel();
 
-// arranque: niveles de historia + partida libre de fondo (testing tool) + arte
+// arranque: niveles de historia + partida libre de fondo + arte
 // (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía)
 (async () => {
   const t0 = performance.now();

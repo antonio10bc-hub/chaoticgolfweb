@@ -2,12 +2,14 @@
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
+import { cardArtHTML } from './card-art.js';
 import { TILES } from '../content/tiles/index.js';
 import { ASSETS } from '../art.js';
 import { clone } from '../engine/game.js';
 import { fitCells } from './geometry.js';
 import { loadLevels, saveLevels, loadProgress, saveProgress, exportLevels, normalizeLevels, isValidLevel, LEVELS_VERSION } from '../storage.js';
 import { showScreen } from './screens.js';
+import { openModes } from './screen-modes.js';
 import { startLevel } from './screen-story.js';
 import { toast } from './hud.js';
 import { confirmDialog, showTextDialog, askTextDialog } from './dialog.js';
@@ -56,7 +58,8 @@ function buildEdTools() {
 
 function buildEdDeckInputs() {
   $('edDeck').innerHTML = Object.entries(CARDS).map(([k, def]) =>
-    `<div class="drow ${def.color}"><label for="ed_${k}">${esc(def.name)}</label>` +
+    `<div class="drow ${def.color}">` + `<span class="deckMini ${def.color}" aria-hidden="true">${cardArtHTML(def)}</span>` +
+    `<label for="ed_${k}">${esc(def.name)}</label>` +
     `<input type="number" id="ed_${k}" data-card="${k}" min="0" max="30" value="${ED.level.deckCounts[k] ?? 0}"></div>`).join('');
 }
 
@@ -239,5 +242,5 @@ export function bindEditor() {
       toast(t('editor.imported', { n: levels.length }));
     } catch (e) { toast(t('editor.badJson')); }
   });
-  $('edMenu').addEventListener('click', () => showScreen('menu'));
+  $('edMenu').addEventListener('click', () => openModes()); // el creador vive en Modos de juego
 }

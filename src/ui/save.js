@@ -15,7 +15,7 @@ export const VS_SLOTS = ['pve', 'challenge', 'daily', 'weekly']; // contra la m√
 
 const finished = S => S.winner !== null && !S.jaque;
 
-export function saveGame() {
+export function saveGame({ flash = false } = {}) {
   const g = app.game, slot = slotOf();
   if (!g || !SLOTS.includes(slot)) return;
   if (finished(g.S)) { clearSave(slot); return; } // partida terminada: nada que continuar
@@ -25,7 +25,20 @@ export function saveGame() {
     pveCfg: app.lastPveCfg, lastActor: app.lastActor, stats, viewer: app.viewer,
     game: g.serialize(),
   };
-  try { localStorage.setItem(KEY(slot), JSON.stringify(data)); } catch (e) { /* sin storage o lleno */ }
+  try { localStorage.setItem(KEY(slot), JSON.stringify(data)); } catch (e) { return; /* sin storage o lleno */ }
+  if (flash) flashSaved();
+}
+
+// "Guardado": un aviso breve en la barra de la partida (como mucho uno cada pocos segundos:
+// se guarda tras cada jugada, tambi√©n de los bots, y no debe parpadear todo el rato)
+let lastFlash = 0, flashT = null;
+function flashSaved() {
+  const el = document.getElementById('saveTick'), now = Date.now();
+  if (!el || app.screen !== 'game' || now - lastFlash < 4000) return;
+  lastFlash = now;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(flashT);
+  flashT = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
 function migrate() {
