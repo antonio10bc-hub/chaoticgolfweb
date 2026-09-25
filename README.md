@@ -169,7 +169,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
   configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
-  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena, atajos, multitud) y el **desafío
+  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de
+  portales de colores —cada portal conecta con el de su color: `tile.pair`—, multitud con 7 en la mesa) y el **desafío
   semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
   Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí).

@@ -940,3 +940,21 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 /* ---------- Modos de juego: puzles y tus niveles (mismas tarjetas que Lo básico) ---------- */
 #modesGrid .lvlSection { box-shadow: 0 24px 60px rgba(10,25,10,.3); }
 .noLevels { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; grid-column: 1 / -1; }
+
+/* ---------- Atajos: cada pareja de portales con su color (y su letra en la etiqueta) ---------- */
+.tile-portal.pair2 { --pt-d: #5B3A8C; --pt-m: #6A4A9E; --pt-c: #7B5AB0; --pt-l: #CDB8EC; }
+.tile-portal.pair3 { --pt-d: #1E6B63; --pt-m: #257A71; --pt-c: #2E8A80; --pt-l: #A6DDD5; }
+.tile-portal.pair1 .sub, .tile-portal.pair2 .sub, .tile-portal.pair3 .sub { font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- asientos: nunca se recortan; con 5 o más rivales, compactos (sus cartas, en un contador) ---------- */
+#seats { justify-content: safe center; }
+.seatCnt { display: none; }
+@media (min-width: 761px) {
+  #seats.many { gap: 6px; }
+  #seats.many .seat { padding: 6px 12px 6px 8px; gap: 9px; }
+  #seats.many .avatar { width: 30px; height: 30px; font-size: 11px; }
+  #seats.many .seatCards { display: none; }
+  #seats.many .seatStatus { display: flex; align-items: center; gap: 8px; }
+  #seats.many .seatCnt { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
+  #seats.many .seatCnt .i { width: 12px; height: 12px; }
+}

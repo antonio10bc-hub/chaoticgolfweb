@@ -242,8 +242,9 @@ function routeHTML(st, S, me) {
   const grid = [];
   for (let x = 1; x < S.cols; x++) grid.push(`M${x * U} 0V${H}`);
   for (let y = 1; y < S.rows; y++) grid.push(`M0 ${y * U}H${W}`);
+  const PT = { 2: ['#5B3A8C', '#CDB8EC'], 3: ['#1E6B63', '#A6DDD5'] }; // colores de las parejas de Atajos
   const tiles = S.tiles.map(tl => tl.type === 'portal'
-    ? `<circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .36}" fill="#2D4F7C"/><circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .16}" fill="#A9C3E6"/>`
+    ? `<circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .36}" fill="${(PT[tl.pair] || ['#2D4F7C'])[0]}"/><circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .16}" fill="${(PT[tl.pair] || [0, '#A9C3E6'])[1]}"/>`
     : `<ellipse cx="${c(tl.x)}" cy="${c(tl.y)}" rx="${U * .4}" ry="${U * .3}" fill="#ECE6CC"/>`).join('');
   const hole = `<circle cx="${c(S.hole.x)}" cy="${c(S.hole.y)}" r="${U * .3}" fill="#242424"/>`;
   const line = pts => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;

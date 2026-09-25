@@ -41,4 +41,4 @@ export function avatarHTML(p, cls = '') {
   return `<span class="avatar${cls ? ' ' + cls : ''}${bot ? ' hasFace' : ''}" style="--pc:${pColor(p)}"${bot ? ` data-face="${p}"` : ''}>` +
     (bot ? faceSVG(p) : playerTag(p)) + shapeHTML(p) + `</span>`;
 }
-export const shapeHTML = p => `<svg class="shp" aria-hidden="true"><use href="#shp-${p % 6}"/></svg>`;
+export const shapeHTML = p => `<svg class="shp" aria-hidden="true"><use href="#shp-${p % 7}"/></svg>`;

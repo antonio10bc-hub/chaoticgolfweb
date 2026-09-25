@@ -10,6 +10,7 @@
 // También: el texto para compartir el resultado del reto diario y el aviso en el icono de la app.
 // La serie del contrarreloj se guarda aparte de la partida, para poder dejarla entre hoyos.
 import { app } from './app.js';
+import { CARDS } from '../content/cards/index.js';
 import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
@@ -205,9 +206,10 @@ export const CHALLENGES = [
   { id: 'onlyOrange', icon: 'i-bolt', cfg: { opps: 1, size: 's', diff: 'normal' }, extra: { counts: ORANGE_DECK, rules: { onlyOrange: true }, par: 1 } },
   { id: 'noPalo3', icon: 'i-club', cfg: { opps: 2, size: 'm', diff: 'normal' }, extra: { counts: 'noPalo3' } },
   { id: 'holeDrift', icon: 'i-hole', cfg: { opps: 2, size: 'm', diff: 'normal' }, extra: { rules: { holeDrift: true } } },
-  { id: 'bunkers', icon: 'i-sand', cfg: { opps: 2, size: 'm', diff: 'normal' }, tiles: { bunker: 7 } },
-  { id: 'portals', icon: 'i-spiral', cfg: { opps: 2, size: 'l', diff: 'normal' }, tiles: { portal: 2, bunker: 2 } },
-  { id: 'crowd', icon: 'i-users', cfg: { opps: 5, size: 'l', diff: 'hard' } },
+  { id: 'bunkers', icon: 'i-sand', cfg: { opps: 2, size: 'm', diff: 'normal' }, tiles: { bunker: 14 } },
+  // atajos: 3 parejas de portales de colores (cada uno conecta con el de su color); sin cartas de portal
+  { id: 'portals', icon: 'i-spiral', cfg: { opps: 2, size: 'l', diff: 'normal' }, extra: { counts: 'noPortals' }, tiles: { portalPairs: 3, bunker: 2 } },
+  { id: 'crowd', icon: 'i-users', cfg: { opps: 6, size: 'l', diff: 'hard' } }, // 7 en la mesa: tú y 6 bots
 ];
 const challengeById = id => CHALLENGES.find(c => c.id === id);
 function challengeExtra(ch) {
@@ -218,6 +220,7 @@ function challengeExtra(ch) {
     noPalo3: base,
     longDrive: { ...base, palo1: 0, palo2: 4, palo3: 10 },       // solo tiros largos
     fingers: { ...base, palo1: 4, palo2: 4, palo3: 2, dedo: 8 },  // el dedo manda
+    noPortals: Object.fromEntries(Object.entries(CARDS).map(([k, d]) => [k, k === 'portal' ? 0 : d.copies])), // atajos
   };
   if (typeof ex.counts === 'string') ex.counts = DECKS[ex.counts];
   return ex;
@@ -228,11 +231,15 @@ function placeTiles(S, want, seed) {
   const ballRow = S.balls[0].y, parX = S.parCells[0]?.x;
   const ok = (x, y) => y > 0 && y < ballRow - 1 && x !== parX && !S.tiles.some(t => t.x === x && t.y === y)
     && !(S.hole.x === x && S.hole.y === y) && !S.balls.some(b => b.x === x && b.y === y);
-  for (const [type, n] of Object.entries(want)) for (let i = 0; i < n; i++) {
+  const put = tile => {
     for (let tries = 0; tries < 80; tries++) {
       const x = Math.floor(r() * S.cols), y = Math.floor(r() * S.rows);
-      if (ok(x, y)) { S.tiles.push({ type, x, y }); break; }
+      if (ok(x, y)) { S.tiles.push({ ...tile, x, y }); return; }
     }
+  };
+  for (const [type, n] of Object.entries(want)) for (let i = 0; i < n; i++) {
+    if (type === 'portalPairs') { put({ type: 'portal', pair: i + 1 }); put({ type: 'portal', pair: i + 1 }); } // pareja A, B, C…
+    else put({ type });
   }
 }
 export async function startChallenge(id) {

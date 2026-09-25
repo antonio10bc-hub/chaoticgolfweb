@@ -169,6 +169,7 @@ function renderSeats(g, owner) {
   const list = [];
   for (let p = 0; p < S.nPlayers; p++) if (p !== owner) list.push(p);
   $('table').classList.toggle('noSeats', !list.length);
+  seats.classList.toggle('many', list.length >= 5); // mesas grandes (Multitud): asientos compactos
   seats.innerHTML = list.map(p => {
     const col = pColor(p), active = p === S.turn && S.winner === null;
     const thinking = app.ai.thinkingOf === p;
@@ -187,7 +188,8 @@ function renderSeats(g, owner) {
     return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
       avatarHTML(p) +
       `<div class="seatBody"><div class="seatName">${esc(displayName(p))}${tag}</div>` +
-      `<div class="seatStatus">${esc(status)}${dots}</div>` +
+      `<div class="seatStatus">${esc(status)}${dots}<span class="seatCnt" title="${esc(t('seat.cardsN', { n: S.hands[p].length }))}">` +
+      `<svg class="i" aria-hidden="true"><use href="#i-hand"/></svg>${S.hands[p].length}</span></div>` +
       `<div class="seatCards">${cards || `<span class="noCards">${esc(t('seat.noCards'))}</span>`}</div>${react}</div></div>`;
   }).join('');
 }

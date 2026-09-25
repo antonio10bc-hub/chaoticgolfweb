@@ -73,12 +73,13 @@ export const ASSETS = {
   ballHTML: pl => ART['ball.' + (pl + 1)]
     ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">${playerTag(pl)}</div></div>`
     : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">${playerTag(pl)}</span>` +
-      `<svg class="shp" aria-hidden="true"><use href="#shp-${pl % 6}"/></svg></div></div>`, // forma por jugador (accesibilidad)
-  tileHTML: (type, extra = '') => {
-    const d = tileDef(type);
-    return ART[d.tileArt]
+      `<svg class="shp" aria-hidden="true"><use href="#shp-${pl % 7}"/></svg></div></div>`, // forma por jugador (accesibilidad)
+  // tile.pair (portales de colores del desafío Atajos): color de la pareja y su letra (A, B, C)
+  tileHTML: (type, extra = '', tile = null) => {
+    const d = tileDef(type), pr = tile?.pair ? ` pair${tile.pair}` : '', letter = tile?.pair ? ' ' + 'ABCDEF'[tile.pair - 1] : '';
+    return ART[d.tileArt] && !pr
       ? `<div class="cardOnCell artCard${extra}"><img class="fill" src="${ART[d.tileArt]}" alt=""></div>`
-      : `<div class="cardOnCell ${d.tileClass}${extra}">${d.pic}<div class="sub">${t(`tiles.${type}.label`)}</div></div>`;
+      : `<div class="cardOnCell ${d.tileClass}${pr}${extra}">${d.pic}<div class="sub">${t(`tiles.${type}.label`)}${letter}</div></div>`;
   },
   trapBadgeHTML: () => `<div class="badge"><svg class="i" aria-hidden="true"><use href="#i-sand"/></svg></div>`,
   parLabelHTML: n => `<div class="parLabel">PAR ${n}</div>`,

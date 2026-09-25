@@ -43,6 +43,14 @@ test('portales: no cuentan como casilla y se sigue en la misma dirección', () =
   assert.ok(g.takeEvents().some(e => e.t === 'teleport'));
 });
 
+test('parejas de portales (Atajos): cada portal lleva al de su pareja, no a cualquiera', () => {
+  const g = level({ tiles: [{ type: 'portal', x: 1, y: 0, pair: 1 }, { type: 'portal', x: 4, y: 4, pair: 2 },
+    { type: 'portal', x: 2, y: 3, pair: 1 }, { type: 'portal', x: 0, y: 4, pair: 2 }] });
+  hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(1, 0); // entra por el A de (1,0) y sale por el A de (2,3), un paso más allá
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [3, 3]);
+});
+
 test('bucle de choques entre portales: se detiene en vez de reventar la pila (bug del original)', () => {
   const g = Game.fromLevel({ cols: 4, rows: 5, hole: { x: 0, y: 4 }, ball: { x: 1, y: 0 }, parCells: [],
     tiles: [{ type: 'portal', x: 0, y: 0 }, { type: 'portal', x: 3, y: 0 }], extraBalls: [{ x: 2, y: 0 }], deckCounts: { palo1: 5 } }, { seed: 3 });

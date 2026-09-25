@@ -55,7 +55,7 @@ export function renderBoard() {
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     if (tile) { // pelotas y hoyo viven en la capa de piezas; aquí solo losetas y avisos
       const pop = justPlaced && justPlaced.x === x && justPlaced.y === y ? ' tilePop' : '';
-      html += ASSETS.tileHTML(tile.type, pop);
+      html += ASSETS.tileHTML(tile.type, pop, tile);
       if (tileDef(tile.type).trap && (ball || g.isHole(x, y))) html += ASSETS.trapBadgeHTML();
       aria.push(t(`tiles.${tile.type}.name`));
       if (pop) { // nubecilla de polvo al colocar la loseta (decorativo)

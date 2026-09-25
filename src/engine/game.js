@@ -289,10 +289,17 @@ export class Game {
 
   // avanza por portales encadenados desde (nx,ny) (los portales no cuentan como casilla);
   // onCross(nx, ny, other) se llama en cada salto. Devuelve la casilla resultante.
+  // el portal que conecta con `here`: el otro de su pareja (tile.pair; sin pareja, todos son la misma,
+  // como en el juego original, donde solo hay dos)
+  portalPartner(here) {
+    const pr = here.pair ?? 0;
+    return this.S.tiles.find(t => isPortal(t) && t !== here && (t.pair ?? 0) === pr);
+  }
+
   crossPortals(nx, ny, dx, dy, onCross) {
     let guard = 0, here;
     while (this.inBoard(nx, ny) && isPortal(here = this.tileAt(nx, ny)) && guard++ < 10) {
-      const other = this.S.tiles.find(t => isPortal(t) && t !== here);
+      const other = this.portalPartner(here);
       if (other) {
         onCross(nx, ny, other);
         nx = other.x + dx; ny = other.y + dy;
@@ -406,7 +413,7 @@ export class Game {
     let guard = 0, moved = false;
     while (isPortal(this.tileAt(ball.x, ball.y)) && guard++ < 10) {
       const here = this.tileAt(ball.x, ball.y);
-      const other = S.tiles.find(t => isPortal(t) && t !== here);
+      const other = this.portalPartner(here);
       if (!other) break;
       if (!moved) this.log('log.ballInitPortal', { b });
       moved = true;
@@ -460,7 +467,7 @@ export class Game {
           let guard2 = 0;
           while (isPortal(this.tileAt(hx, hy)) && guard2++ < 10) {
             const here = this.tileAt(hx, hy);
-            const other = S.tiles.find(t => isPortal(t) && t !== here);
+            const other = this.portalPartner(here);
             if (!other) break;
             this.log('log.holeInitPortal');
             this.anim({ t: 'teleport', p: 'hole', x: other.x, y: other.y });
