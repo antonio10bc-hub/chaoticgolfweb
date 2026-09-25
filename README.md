@@ -181,6 +181,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí).
   Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
+- **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
+  como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
+  quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.
+  En el reto diario, además, "Copiar resultado" (el texto estilo Wordle).
 - **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
   modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en

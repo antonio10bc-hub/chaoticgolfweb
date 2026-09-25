@@ -32,6 +32,7 @@ import { trackMoment, resetMoments } from './why-lost.js';
 import { redrawCaddie, clearCaddie, paintAssist } from './assist.js';
 import { showPuzzleFail } from './win.js';
 import { musicMood } from '../audio/sfx.js';
+import { piecesBefore, notePlay } from './share-play.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -76,6 +77,7 @@ export function startGame(game, mode, { levelIndex = null, level = null, variant
   app.lastPlayAt = Date.now();
   prevTurn = -1; jaqueShown = false;
   app.passFor = null; app.reacting = null;
+  app.finalPlay = null;
   app.winStyle = {}; app.undo = null; app.caddie = null; app.lastWhy = null; // cómo ganó cada uno · deshacer · consejo del caddie
   resetMoments();
   clearPause();
@@ -107,6 +109,7 @@ function dispatch(fn) {
   const jaqueBefore = g.S.jaque && g.S.winner !== null;
   const turnBefore = g.S.turn;
   const before = app.mode === 'pve' ? g.clone({ lite: true }) : null; // para explicar la jugada y el momento clave
+  const pre = piecesBefore(g); // (para compartir la jugada final)
   const ok = fn(g);
   const events = g.takeEvents();
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
@@ -164,6 +167,7 @@ function dispatch(fn) {
     }
   }
   if (!app.animQueue.length) app.animLead = 0; // la espera solo tiene sentido si hay algo que animar
+  notePlay(g, pre, events, cardKey, actor ?? app.lastActor); // la última jugada con movimiento (compartir al final)
   // la jugada que más casillas ha movido (pelotas en cadena y hoyo incluidos)
   if (moves && (actor ?? app.lastActor) != null && moves > stats.longest.n) stats.longest = { n: moves, p: actor ?? app.lastActor };
   // cómo ha entrado cada pelota (para celebrar la victoria a su manera)

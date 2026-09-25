@@ -214,6 +214,21 @@ it('modos de juego: dos pestañas (una a la vez), barajas con estadísticas y do
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_stats')).decks.classic.p), 1);
 });
 
+it('final de partida: "Compartir" genera la imagen de la jugada final', async () => {
+  await fresh();
+  await click('#storyBtn'); await sleep(300);
+  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls[0];
+    b.x = S.hole.x; b.y = S.hole.y + 1; S.hands[0] = ['palo1', 'palo1']; ctl.render();
+    ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.dir === 'up'); ctl.clickCell(t.x, t.y); });
+  await page.waitForSelector('#winOverlay.visible', { timeout: 10000 }); await sleep(500);
+  await click('#winBtns [data-act="share"]'); await sleep(1500);
+  const img = await app(() => { const i = document.querySelector('.sharePreview'); return i && i.complete ? [i.naturalWidth, i.naturalHeight] : null; });
+  assert.deepEqual(img, [1080, 1350]);
+  assert.ok(await page.$('[data-share="download"]'));
+  await page.keyboard.press('Escape'); await sleep(200);
+});
+
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(300); // los puzles viven en Modos de juego

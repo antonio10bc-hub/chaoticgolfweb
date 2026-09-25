@@ -16,9 +16,10 @@ import { humansOf, multiHuman, displayName, isBot } from './players.js';
 import { recordEnd, turnsLabel } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
-import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText, shareText } from './screen-modes.js';
+import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
+import { openShareDialog } from './share-play.js';
 
 export const hideWin = () => $('winOverlay').classList.remove('visible');
 
@@ -91,7 +92,7 @@ export function showWin() {
       chips = lost ? recChip(streakLabel(rec.dailyStreak || 1)) : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '') +
         recChip(streakLabel(rec.dailyStreak || 1));
-      btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('share', t('share.button')) + btn('menuHome', t('win.menu'));
+      btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('menuHome', t('win.menu'));
       if (mode === 'pve') app.shareText = dailyShareText({ won: !lost, turns, st: stats, S, date: app.run.date });
       break;
     case 'weekly':
@@ -156,6 +157,12 @@ export function showWin() {
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
 
+  // compartir la jugada final (todos los modos): imagen con el tablero y el recorrido; en el reto
+  // diario, también el resultado en texto
+  app.shareInfo = mode !== 'free' && app.finalPlay ? { title: $('winMsg').textContent, meta: shareMeta(slot, turns, lost),
+    text: slot === 'daily' && mode === 'pve' ? app.shareText : null } : null;
+  if (slot !== 'daily') app.shareText = null;
+  if (app.shareInfo) btns += `<button data-act="share" class="btn-light winShare"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg>${esc(t('share.button'))}</button>`;
   $('winBtns').innerHTML = btns;
   $('winOverlay').classList.add('visible');
   $('winBtns').querySelector('button')?.focus();
@@ -283,6 +290,14 @@ function burst(x, y, R, r, n = 8) {
   return d + 'Z';
 }
 
+// línea de contexto de la imagen: modo y turnos
+function shareMeta(slot, turns, lost) {
+  const modeName = { story: t('story.title'), puzzle: t('story.puzzlesH'), daily: t('modes.daily.title'), rush: t('modes.rush.title'),
+    challenge: app.run?.id ? t('challenges.' + app.run.id + '.name') : t('modes.challenge.title'), weekly: t('modes.weekly.title'),
+    pve: multiHuman() ? t('pve.localTitle') : t('decks.' + (app.lastPveCfg?.deck || 'classic') + '.name'), test: t('menu.editorTitle') }[slot] || '';
+  return [modeName, lost ? '' : turnsLabel(turns)].filter(Boolean).join(' · ');
+}
+
 export function bindWin() {
   $('winOverlay').addEventListener('click', e => {
     const b = e.target.closest('button[data-act]');
@@ -308,7 +323,7 @@ export function bindWin() {
       case 'menuHome': leaveToMenu(); break;
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
       case 'weekly': hideWin(); startWeekly(); break;
-      case 'share': shareText(app.shareText || ''); break;
+      case 'share': if (app.shareInfo) openShareDialog(app.shareInfo); break;
     }
   });
 }

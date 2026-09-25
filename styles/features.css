@@ -1121,3 +1121,13 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
 .miniSt > span + span::before { content: '·'; margin-right: 8px; color: var(--cream-line); font-weight: 700; }
 .chTxt .miniSt { margin-top: 4px; }
 .mdStats .miniSt { margin-left: auto; padding: 3px 10px; border-radius: 999px; background: rgba(45,79,124,.08); }
+
+/* ---------- compartir la jugada final ---------- */
+.winShare { gap: 7px; }
+.winShare .i { width: 15px; height: 15px; }
+#dialog:has(.shareBox) { width: min(460px, 94vw); }
+.shareBox { align-items: center; text-align: center; }
+.sharePreview { display: block; width: 100%; max-height: min(56vh, 520px); object-fit: contain; border-radius: 14px; box-shadow: 0 12px 30px rgba(10,25,10,.25); }
+.shareBtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+.shareBtns button { flex: 1 1 auto; }
+.shareBox .dlgBtns { justify-content: center; }
