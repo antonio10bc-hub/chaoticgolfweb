@@ -196,7 +196,7 @@ export default {
   story: {
     title: 'Lo básico', sub: 'Aprende a jugar hoyo a hoyo', builtIn: 'Niveles', yours: 'Tus niveles',
     play: 'Jugar', completed: 'Completado', next: '¡Siguiente!', untitled: 'Sin título',
-    none: 'Aún no has creado niveles.<br>Hazlo en el Creador de Niveles.',
+    none: 'Aún no has creado niveles.', openEditor: 'Abrir el creador',
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',
     inProgress: 'A medias',
     puzzlesH: 'Puzles: gana en 1 turno', puzzlesSub: 'Con estas cartas y en un solo turno, mete la bola. Si terminas el turno sin embocar, vuelve a intentarlo.', puzzleChip: 'Puzle · gana en 1 turno',
@@ -390,7 +390,7 @@ export default {
 
   modes: {
     weekly: { title: 'Desafío semanal', daysLeft: 'quedan {n} días', lastDay: 'último día', best: 'Tu mejor: {turns}', noBest: 'Aún sin superar esta semana' },
-    title: 'Modos de juego', sub: 'Partida rápida, contrarreloj y desafíos',
+    title: 'Modos de juego', sub: 'Partida rápida, contrarreloj, desafíos, puzles y tus niveles',
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',

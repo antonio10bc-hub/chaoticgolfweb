@@ -171,8 +171,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
   especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena, atajos, multitud) y el **desafío
   semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
-  La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). Lo básico tiene
-  8 niveles y 6 puzles de "gana en 1 turno".
+  La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
+  Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí).
+  Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
 - **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
   modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).

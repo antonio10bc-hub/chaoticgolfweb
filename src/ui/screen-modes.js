@@ -22,7 +22,8 @@ import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel 
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
-import { startLevel } from './screen-story.js';
+import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
+import { openEditor } from './editor.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { confirmDialog } from './dialog.js';
@@ -370,7 +371,8 @@ export function openModes() {
     (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
   $('modesGrid').innerHTML =
     `<div class="mdRow">${quickCard}${rushCard}</div>` +
-    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>`;
+    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>` +
+    puzzlesSectionHTML() + yoursSectionHTML();
   showScreen('modes');
 }
 
@@ -388,6 +390,8 @@ export function bindModes() {
   $('modesBack').addEventListener('click', () => showScreen('menu'));
   $('dailyCard').addEventListener('click', () => { if ($('dailyCard').dataset.resume) resumeGame('daily'); else startDaily(); });
   $('modesGrid').addEventListener('click', e => {
+    const lv = e.target.closest('[data-level], [data-puzzle]'); // puzles y tus niveles
+    if (lv) { playLevelCard(lv); return; }
     const b = e.target.closest('[data-mode]');
     if (!b) return;
     const [act, arg] = b.dataset.mode.split(':');
@@ -399,6 +403,7 @@ export function bindModes() {
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
       case 'weekly': startWeekly(); break;
+      case 'editor': openEditor(); break;
     }
   });
   MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); startDailyGame(); } };

@@ -936,3 +936,7 @@ body[data-screen="modes"] #modesBottom { display: flex; animation: fadeIn .3s bo
 .saveTick.show { opacity: 1; transform: none; }
 @media (max-width: 760px) { .saveTick { position: absolute; left: 0; top: calc(100% + 6px); z-index: 5; padding: 3px 9px 3px 7px; font-size: 11px; } }
 html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
+
+/* ---------- Modos de juego: puzles y tus niveles (mismas tarjetas que Lo básico) ---------- */
+#modesGrid .lvlSection { box-shadow: 0 24px 60px rgba(10,25,10,.3); }
+.noLevels { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; grid-column: 1 / -1; }

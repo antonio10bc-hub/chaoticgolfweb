@@ -195,8 +195,9 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
 
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
   await fresh();
-  await click('#storyBtn'); await sleep(300);
-  await click('[data-puzzle="0"]'); await sleep(900);
+  await click('#modesBtn'); await sleep(300); // los puzles viven en Modos de juego
+  assert.equal(await app(() => document.querySelectorAll('#lvlGrid [data-puzzle]').length), 0);
+  await click('#modesGrid [data-puzzle="0"]'); await sleep(900);
   assert.equal(await app(() => window.chaoticGolf.app.variant), 'puzzle');
   await click('#endTurnBtn');
   await page.waitForSelector('#winOverlay.visible', { timeout: 5000 });

@@ -193,7 +193,7 @@ export default {
   story: {
     title: 'The basics', sub: 'Learn to play one hole at a time', builtIn: 'Levels', yours: 'Your levels',
     play: 'Play', completed: 'Completed', next: 'Next!', untitled: 'Untitled',
-    none: 'You haven’t created any levels yet.<br>Make one in the Level Editor.',
+    none: 'You haven’t created any levels yet.', openEditor: 'Open the level editor',
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',
     inProgress: 'In progress',
     puzzlesH: 'Puzzles: win in 1 turn', puzzlesSub: 'With these cards and in a single turn, sink the ball. If you end the turn without sinking it, try again.', puzzleChip: 'Puzzle · win in 1 turn',
@@ -387,7 +387,7 @@ export default {
 
   modes: {
     weekly: { title: 'Weekly challenge', daysLeft: '{n} days left', lastDay: 'last day', best: 'Your best: {turns}', noBest: 'Not beaten this week yet' },
-    title: 'Game modes', sub: 'Quick game, time attack and challenges',
+    title: 'Game modes', sub: 'Quick game, time attack, challenges, puzzles and your levels',
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',

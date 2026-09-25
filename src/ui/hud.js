@@ -147,8 +147,10 @@ export const hideStoryTip = () => $('storyTip').classList.remove('visible');
 
 export function updateMenuBtn() {
   const v = app.variant;
+  // puzles y niveles del creador viven en Modos de juego
+  const fromModes = app.mode === 'story' && (v === 'puzzle' || (!v && app.levelIndex != null && app.levelIndex >= app.storyLevels.length));
   $('menuBtn').textContent = app.mode === 'test' ? t('nav.toEditor')
-    : ['rush', 'challenge', 'weekly'].includes(v) || (app.mode === 'pve' && !v) ? t('nav.toModes')
+    : ['rush', 'challenge', 'weekly'].includes(v) || (app.mode === 'pve' && !v) || fromModes ? t('nav.toModes')
     : app.mode === 'story' ? t('nav.toLevels') : t('nav.toMenu');
 }
 

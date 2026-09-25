@@ -1,4 +1,5 @@
-// Pantalla de Lo básico: niveles integrados, los del creador y los puzles de "gana en 1 turno".
+// Pantalla de Lo básico: los niveles integrados. Los puzles de "gana en 1 turno" y los niveles del
+// creador ("Tus niveles") se muestran en Modos de juego, con las mismas tarjetas (secciones de aquí).
 // También arranca cualquier nivel en solitario (y el "probar" del editor).
 import { app } from './app.js';
 import { $, esc } from './dom.js';
@@ -17,10 +18,15 @@ import { loadProfile } from './profile.js';
 import { showScreen, levelName, confirmReplaceSave, MODE_NAV, newFreeGame } from './screens.js';
 import { applyOwnLook } from './screen-pve.js';
 import { resumeGame } from './resume.js';
+import { openModes } from './screen-modes.js';
 
 // nivel de Lo básico por índice global: primero los integrados, luego los del creador
 export const storyLevelAt = i => i < app.storyLevels.length ? app.storyLevels[i] : loadLevels()[i - app.storyLevels.length];
 export const puzzleAt = i => app.puzzleLevels[i] || null;
+// ¿es un nivel del creador? (van a continuación de los integrados y viven en Modos de juego)
+export const isUserLevelIdx = i => i != null && i >= app.storyLevels.length;
+// ¿la partida en curso vuelve a Modos de juego? (puzles y niveles del creador)
+export const levelFromModes = () => app.mode === 'story' && (app.variant === 'puzzle' || (!app.variant && isUserLevelIdx(app.levelIndex)));
 
 // arranca un nivel en solitario. variant: null (Lo básico / editor) | 'puzzle' | 'rush'
 export function startLevel(level, mode, idx = null, { variant = null, run = null, seed } = {}) {
@@ -52,18 +58,11 @@ export function openStory() {
   hideWin();
   aiStop();
   const prog = loadProgress();
-  const userLevels = loadLevels();
-  const storySave = loadSave('story'), puzzleSave = loadSave('puzzle');
-  const puzzlesDone = loadRecords().puzzles;
+  const saved = loadSave('story'), storySave = saved && !isUserLevelIdx(saved.levelIndex) ? saved : null;
   // el siguiente nivel sugerido: el primero sin completar
-  const total = app.storyLevels.length + userLevels.length;
-  let next = -1;
-  for (let i = 0; i < total; i++) if (!prog[i]) { next = i; break; }
-  const nextPuzzle = app.puzzleLevels.findIndex((_, i) => !puzzlesDone[i]);
+  const next = app.storyLevels.findIndex((_, i) => !prog[i]);
   const card = (i, L) => levelCard(i, L, { done: prog[i], next: i === next, best: levelBest(i),
     saved: storySave && storySave.levelIndex === i, attr: `data-level="${i}"` });
-  const pcard = (i, L) => levelCard(i, L, { done: puzzlesDone[i], next: i === nextPuzzle,
-    saved: puzzleSave && puzzleSave.levelIndex === i, attr: `data-puzzle="${i}"` });
   // progreso de Lo básico: "3 de 4 completados" + barra
   const nb = app.storyLevels.length, done = app.storyLevels.filter((_, i) => prog[i]).length;
   $('storyProgress').innerHTML = nb ? `<div class="spText"><b>${esc(t('story.progress', { n: done, total: nb }))}</b>` +
@@ -74,15 +73,38 @@ export function openStory() {
     ? `<button class="mBtn continue" data-resume="story"><span class="cTxt"><span>${esc(t('menu.continue'))}</span>` +
       `<small>${esc(t('story.level', { n: (storySave.levelIndex ?? 0) + 1 }))}${storySave.level ? ' · ' + esc(levelName(storySave.level)) : ''}</small></span>` +
       `<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button>` : '';
-  const pDone = app.puzzleLevels.filter((_, i) => puzzlesDone[i]).length;
   $('lvlGrid').innerHTML =
-    `<div class="lvlSection"><h3>${t('story.builtIn')}</h3><div class="lvlRow">${app.storyLevels.map((L, i) => card(i, L)).join('')}</div></div>` +
-    (app.puzzleLevels.length ? `<div class="lvlSection puzzles"><h3>${t('story.puzzlesH')} <span class="lvlCount">${pDone}/${app.puzzleLevels.length}</span></h3>` +
-      `<p class="lvlSub">${esc(t('story.puzzlesSub'))}</p><div class="lvlRow">${app.puzzleLevels.map((L, i) => pcard(i, L)).join('')}</div></div>` : '') +
-    `<div class="lvlSection"><h3>${t('story.yours')}</h3><div class="lvlRow">${userLevels.length
-      ? userLevels.map((L, j) => card(app.storyLevels.length + j, L)).join('')
-      : `<div class="noLevels">${t('story.none')}</div>`}</div></div>`;
+    `<div class="lvlSection"><h3>${t('story.builtIn')}</h3><div class="lvlRow">${app.storyLevels.map((L, i) => card(i, L)).join('')}</div></div>`;
   showScreen('story');
+}
+
+/* ---------- secciones de Modos de juego: puzles y tus niveles ---------- */
+export function puzzlesSectionHTML() {
+  if (!app.puzzleLevels.length) return '';
+  const done = loadRecords().puzzles, sv = loadSave('puzzle');
+  const next = app.puzzleLevels.findIndex((_, i) => !done[i]);
+  const nDone = app.puzzleLevels.filter((_, i) => done[i]).length;
+  return `<section class="lvlSection puzzles"><h3>${esc(t('story.puzzlesH'))} <span class="lvlCount">${nDone}/${app.puzzleLevels.length}</span></h3>` +
+    `<p class="lvlSub">${esc(t('story.puzzlesSub'))}</p><div class="lvlRow">` +
+    app.puzzleLevels.map((L, i) => levelCard(i, L, { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"` })).join('') +
+    `</div></section>`;
+}
+export function yoursSectionHTML() {
+  const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story'), base = app.storyLevels.length;
+  return `<section class="lvlSection yours"><h3>${esc(t('story.yours'))}</h3><div class="lvlRow">` + (levels.length
+    ? levels.map((L, j) => { const i = base + j; return levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"` }); }).join('')
+    : `<div class="noLevels">${esc(t('story.none'))} <button class="btn-light btn-sm" data-mode="editor">${esc(t('story.openEditor'))}</button></div>`) +
+    `</div></section>`;
+}
+// tarjeta de nivel pulsada (Lo básico o Modos): continúa el nivel a medias o lo empieza
+export async function playLevelCard(b) {
+  const puzzle = b.dataset.puzzle !== undefined;
+  const i = +(puzzle ? b.dataset.puzzle : b.dataset.level), L = puzzle ? puzzleAt(i) : storyLevelAt(i);
+  if (!L) return;
+  const slot = puzzle ? 'puzzle' : 'story';
+  const sv = loadSave(slot);
+  if (sv && sv.levelIndex === i) { resumeGame(slot); return; } // el nivel a medias: se continúa
+  if (await confirmReplaceSave(slot)) startLevel(L, 'story', i, { variant: puzzle ? 'puzzle' : null });
 }
 
 export function replayLevel() {
@@ -95,10 +117,16 @@ export function replayLevel() {
 export function nextLevel() {
   const i = app.levelIndex + 1;
   if (app.variant === 'puzzle') { const P = puzzleAt(i); if (P) { hideWin(); startLevel(P, 'story', i, { variant: 'puzzle' }); } return; }
-  const L = storyLevelAt(i);
+  const L = hasNextLevel() && storyLevelAt(i);
   if (L) { hideWin(); startLevel(L, 'story', i); }
 }
-export const hasNextLevel = () => app.variant === 'puzzle' ? !!puzzleAt(app.levelIndex + 1) : app.levelIndex !== null && !!storyLevelAt(app.levelIndex + 1);
+// el siguiente de su grupo: tras el último de Lo básico no se salta a tus niveles
+export const hasNextLevel = () => {
+  const i = app.levelIndex;
+  if (app.variant === 'puzzle') return !!puzzleAt(i + 1);
+  if (i === null) return false;
+  return isUserLevelIdx(i) ? !!storyLevelAt(i + 1) : i + 1 < app.storyLevels.length;
+};
 
 // miniatura del tablero de un nivel (casillas, PAR, losetas, hoyo, pelota y obstáculos)
 export function levelPreviewSVG(L) {
@@ -122,19 +150,12 @@ export function bindStory() {
   $('storyBtn').addEventListener('click', openStory);
   $('storyBack').addEventListener('click', () => showScreen('menu'));
   $('storyContinue').addEventListener('click', e => { if (e.target.closest('[data-resume]')) resumeGame('story'); });
-  $('lvlGrid').addEventListener('click', async e => {
+  $('lvlGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-level], [data-puzzle]');
-    if (!b) return;
-    const puzzle = b.dataset.puzzle !== undefined;
-    const i = +(puzzle ? b.dataset.puzzle : b.dataset.level), L = puzzle ? puzzleAt(i) : storyLevelAt(i);
-    if (!L) return;
-    const slot = puzzle ? 'puzzle' : 'story';
-    const sv = loadSave(slot);
-    if (sv && sv.levelIndex === i) { resumeGame(slot); return; } // el nivel a medias: se continúa
-    if (await confirmReplaceSave(slot)) startLevel(L, 'story', i, { variant: puzzle ? 'puzzle' : null });
+    if (b) playLevelCard(b);
   });
-  // navegación y reinicio de estos modos
-  MODE_NAV.story = { back: openStory, restart: replayLevel };
-  MODE_NAV.puzzle = { back: openStory, restart: replayLevel };
+  // navegación y reinicio de estos modos (puzles y tus niveles vuelven a Modos de juego)
+  MODE_NAV.story = { back: () => (isUserLevelIdx(app.levelIndex) ? openModes() : openStory()), restart: replayLevel };
+  MODE_NAV.puzzle = { back: openModes, restart: replayLevel };
   MODE_NAV.test = { back: () => showScreen('editor'), restart: replayLevel };
 }

@@ -14,7 +14,7 @@ import { stats } from './controller.js';
 import { clearSave, slotOf } from './save.js';
 import { humansOf, multiHuman, displayName, isBot } from './players.js';
 import { recordEnd, turnsLabel } from './records.js';
-import { replayLevel, nextLevel, openStory, hasNextLevel } from './screen-story.js';
+import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
 import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, streakLabel, dailyShareText, shareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
@@ -78,12 +78,13 @@ export function showWin() {
         saveProgress(prog);
         if (app.storyLevels.length && app.storyLevels.every((_, i) => prog[i])) unlock('basicsAll');
       }
-      btns = (hasNextLevel() ? btn('next', t('win.next'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('levels', t('win.levels'));
+      btns = (hasNextLevel() ? btn('next', t('win.next'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) +
+        (levelFromModes() ? btn('modes', t('win.modes')) : btn('levels', t('win.levels')));
       break;
     }
     case 'puzzle':
       chips = recChip(t('win.puzzleChip'), true);
-      btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('levels', t('win.levels'));
+      btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('modes', t('win.modes'));
       break;
     case 'daily':
       chips = lost ? recChip(streakLabel(rec.dailyStreak || 1)) : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
