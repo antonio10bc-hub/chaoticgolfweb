@@ -20,6 +20,7 @@ export function saveSub(d) {
     case 'daily': return t('modes.daily.title');
     case 'rush': return `${t('modes.rush.title')} · ${t('modes.holeN', { n: (r.hole ?? 0) + 1, total: r.total || 5 })}`;
     case 'challenge': return `${t('modes.challenge.title')} · ${t('challenges.' + r.id + '.name')}`;
+    case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;
   }
   const S = d.game.S, nh = (S.humans || [S.human]).length, nb = S.nPlayers - nh;
   if (nh > 1) return `${t('pve.localTitle')} · ${t('pve.peopleN', { n: nh })}${nb ? ' + ' + t(nb > 1 ? 'pve.botsN' : 'pve.botN', { n: nb }) : ''}`;

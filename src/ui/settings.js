@@ -5,8 +5,10 @@ import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { t, getLang } from '../i18n/index.js';
 import { prefs, setPref, resetPrefs, THEMES, TRACKS, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
+import { resetModeIntros } from './mode-intro.js';
+import { chartsHTML } from './stats-charts.js';
 import { SFX, MUSIC, sfx, sfxApplyVolumes, musicStart, musicStop, musicRefresh, sndSave } from '../audio/sfx.js';
-import { loadRecords, resetRecords, REC_MODES, turnsLabel } from './records.js';
+import { loadRecords, resetRecords, turnsLabel } from './records.js';
 import { resetTutorial } from './tutorial.js';
 import { confirmDialog } from './dialog.js';
 import { levelName } from './screens.js';
@@ -65,10 +67,6 @@ function settingsHTML() {
 
 function statsHTML() {
   const r = loadRecords();
-  const pct = (w, p) => p ? Math.round(100 * w / p) + '%' : '—';
-  const cards = REC_MODES.map(m => `<div class="stCard"><small>${esc(t('stats.mode_' + m))}</small>` +
-    `<b>${r.played[m]}</b><span>${esc(t('stats.played'))}</span>` +
-    `<div class="stWin"><span>${esc(t(['story', 'puzzle', 'rush'].includes(m) ? 'stats.completed' : 'stats.won'))}: <b>${r.won[m]}</b></span><span>${pct(r.won[m], r.played[m])}</span></div></div>`).join('');
   const tot = r.totals;
   const totals = [['i-club', tot.golpes, 'win.stats.strokes'], ['i-hole', tot.hundidas, 'win.stats.sunk'],
     ['i-burst', tot.colisiones, 'win.stats.collisions'], ['i-spiral', tot.portales, 'win.stats.portals'], ['i-out', tot.caidas, 'win.stats.falls']]
@@ -88,7 +86,7 @@ function statsHTML() {
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg>${esc(t('modes.rush.title'))} <b>${r.rush.best || 0}</b> pts</div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('modes.challengesH'))} <b>${nCh}/6</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.puzzlesH'))} <b>${nPz}</b></div></div>`;
-  return `<section><h4>${esc(t('stats.byMode'))}</h4><div class="stCards">${cards}</div></section>
+  return `${chartsHTML(r)}
   <section><h4>${esc(t('stats.quickH'))}</h4>${quick}</section>
   <section><h4>${esc(t('stats.modesH'))}</h4>${modes}</section>
   <section><h4>${esc(t('ach.title'))}</h4>${achievementsHTML()}</section>
@@ -155,7 +153,7 @@ export function bindSettings() {
     const a = e.target.closest('[data-set-act]');
     if (!a) return;
     if (a.dataset.setAct === 'close') closeSettings();
-    if (a.dataset.setAct === 'tutorial') { resetTutorial(); a.disabled = true; a.textContent = t('settings.tutorialDone'); }
+    if (a.dataset.setAct === 'tutorial') { resetTutorial(); resetModeIntros(); a.disabled = true; a.textContent = t('settings.tutorialDone'); }
     if (a.dataset.setAct === 'resetStats' && await confirmDialog(t('stats.resetConfirm'), t('stats.reset'), true)) { resetRecords(); paint(); }
     if (a.dataset.setAct === 'resetPrefs' && await confirmDialog(t('settings.resetConfirm'), t('settings.reset'), true)) {
       resetPrefs();

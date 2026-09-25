@@ -6,6 +6,8 @@
 //   · Contrarreloj — 5 hoyos generados de dificultad creciente, cada uno con su cuenta atrás:
 //                    puntos por turnos y por el tiempo que sobra; si se acaba el tiempo, se acaba la serie.
 //   · Desafíos     — partidas contra la máquina con reglas especiales.
+//   · Desafío semanal — cada semana, una regla especial nueva (igual para todos) y su récord.
+// También: el texto para compartir el resultado del reto diario y el aviso en el icono de la app.
 // La serie del contrarreloj se guarda aparte de la partida, para poder dejarla entre hoyos.
 import { app } from './app.js';
 import { $, esc } from './dom.js';
@@ -14,7 +16,7 @@ import { startGame } from './controller.js';
 import { aiStart, aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
 import { refreshGivePlayer } from './debug.js';
-import { updateMenuBtn } from './hud.js';
+import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
 import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel } from './records.js';
@@ -25,6 +27,7 @@ import { startLevel } from './screen-story.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { confirmDialog } from './dialog.js';
+import { modeIntro } from './mode-intro.js';
 import { resumeGame } from './resume.js';
 import { stats } from './controller.js';
 
@@ -49,11 +52,12 @@ export function dailySetup(date = dailyDate()) {
   const second = rest[Math.floor(r() * rest.length)];
   return { diff, rivals: [first.id, second.id], seed: seedOf('daily:' + date) };
 }
-function startDailyGame(date = dailyDate()) {
-  const d = dailySetup(date);
-  const made = createVsGame({ humans: 1, opps: 2, size: 's', diff: d.diff }, { rivals: d.rivals, seed: d.seed });
-  startGame(made.game, 'pve', { variant: 'daily', run: { date } });
+// arranca una partida contra la máquina de un modo (reto diario, desafíos, semanal)
+function startVsGame({ cfg, extra = {}, tiles = null, variant, run, seed, rivals = [] }) {
+  const made = createVsGame({ humans: 1, ...cfg }, { extra, rivals, seed });
+  startGame(made.game, 'pve', { variant, run });
   dressVsGame(made);
+  if (tiles) placeTiles(app.game.S, tiles, made.game.seed ?? 1);
   refreshGivePlayer();
   updateMenuBtn();
   musicScene('game', { newGame: true });
@@ -61,7 +65,12 @@ function startDailyGame(date = dailyDate()) {
   saveGame();
   aiStart(900);
 }
+function startDailyGame(date = dailyDate()) {
+  const d = dailySetup(date);
+  startVsGame({ cfg: { opps: 2, size: 's', diff: d.diff }, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date } });
+}
 export async function startDaily() {
+  if (!await modeIntro('daily')) return;
   if (!await confirmReplaceSave('daily')) return;
   const date = dailyDate();
   recordDailyPlayed(date); // jugar hoy ya cuenta para la racha
@@ -93,9 +102,49 @@ export function renderDailyCard() {
     `<span class="dPlay">${esc(saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play'))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
   $('dailyCard').dataset.resume = saved ? '1' : '';
+  syncBadge();
 }
 // ¿queda el reto de hoy por completar?
 export const dailyPending = () => !loadRecords().daily.days[dailyDate()]?.best;
+// aviso en el icono de la app instalada (API de insignias): un punto mientras el reto de hoy esté pendiente
+function syncBadge() {
+  try {
+    if (!('setAppBadge' in navigator)) return;
+    (dailyPending() ? navigator.setAppBadge() : navigator.clearAppBadge()).catch(() => {});
+  } catch (e) { /* sin soporte */ }
+}
+
+// resultado del reto diario para compartir, estilo Wordle: un cuadrado por turno tuyo
+// (🟩 te acercas al hoyo, 🟨 igual, 🟥 te alejas) y ⛳ al embocar
+export function dailyShareText({ won, turns, st, S, date }) {
+  const d = st?.dists || [], sq = [];
+  for (let i = 1; i < d.length && sq.length < 24; i++) sq.push(d[i] < d[i - 1] ? '🟩' : d[i] === d[i - 1] ? '🟨' : '🟥');
+  if (won) sq.push('⛳');
+  const r = st?.route || [], count = k => r.filter(p => k.includes(p[2])).length;
+  const rivals = [...Array(S.nPlayers).keys()].filter(p => S.personas?.[p]).map(p => S.playerNames[p]);
+  const { diff } = dailySetup(date);
+  const R = loadRecords();
+  const [y, m, dd] = date.split('-').map(Number);
+  const day = new Date(y, m - 1, dd).toLocaleDateString(locale(), { day: 'numeric', month: 'short' });
+  return [
+    `Chaotic Golf · ${t('modes.daily.title')} · ${day}`,
+    won ? `⛳ ${t('share.won', { turns: turnsLabel(turns) })}` : `❌ ${t('share.lost')}`,
+    sq.join(''),
+    `💥 ${count('hH')} · 🌀 ${count('t')} · 🕳️ ${count('f')}`,
+    `🆚 ${rivals.join(t('share.and'))} · ${t('pve.diff' + diff[0].toUpperCase() + diff.slice(1))}`,
+    `🔥 ${streakLabel(R.daily.streak || 1)}`,
+    location.origin + location.pathname,
+  ].filter(Boolean).join('\n');
+}
+// en el móvil, la hoja de compartir del sistema; si no, al portapapeles
+export async function shareText(text) {
+  const touch = window.matchMedia('(pointer: coarse)').matches;
+  try {
+    if (touch && navigator.share) { await navigator.share({ text }); return; }
+  } catch (e) { if (e?.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast(t('share.copied')); }
+  catch (e) { toast(t('share.failed'), 'warn'); }
+}
 
 /* =============== contrarreloj =============== */
 // puntos de un hoyo: menos turnos = más puntos, y 5 por cada segundo que sobra
@@ -115,6 +164,7 @@ export function startRushHole(run = store.get(RUSH_KEY)) {
   startLevel(lvl, 'story', null, { variant: 'rush', run: { ...run, elapsed: 0, limit: RUSH_LIMITS[run.hole] || 90 }, seed: run.seeds[run.hole] ^ 0x5bd1e995 });
 }
 export async function startRush(fresh) {
+  if (!await modeIntro('rush')) return;
   if (!await confirmReplaceSave('rush')) return;
   if (fresh) store.set(RUSH_KEY, null);
   if (fresh || !store.get(RUSH_KEY)) recordStart('rush');
@@ -161,8 +211,14 @@ export const CHALLENGES = [
 const challengeById = id => CHALLENGES.find(c => c.id === id);
 function challengeExtra(ch) {
   const ex = { ...(ch.extra || {}) };
-  if (ex.counts === 'noPalo3') ex.counts = { palo1: 6, palo2: 8, palo3: 0, dedo: 2, hoyoUp: 2, hoyoDown: 2, hoyoLeft: 2, hoyoRight: 2, bunker: 1, portal: 1,
+  const base = { palo1: 6, palo2: 8, palo3: 0, dedo: 2, hoyoUp: 2, hoyoDown: 2, hoyoLeft: 2, hoyoRight: 2, bunker: 1, portal: 1,
     oPalo1: 2, oHoyoUp: 1, oHoyoDown: 1, oHoyoLeft: 1, oHoyoRight: 1, no: 2 };
+  const DECKS = {
+    noPalo3: base,
+    longDrive: { ...base, palo1: 0, palo2: 4, palo3: 10 },       // solo tiros largos
+    fingers: { ...base, palo1: 4, palo2: 4, palo3: 2, dedo: 8 },  // el dedo manda
+  };
+  if (typeof ex.counts === 'string') ex.counts = DECKS[ex.counts];
   return ex;
 }
 // losetas de salida de un desafío, en casillas libres lejos de la salida y de la columna de PAR
@@ -180,19 +236,52 @@ function placeTiles(S, want, seed) {
 }
 export async function startChallenge(id) {
   const ch = challengeById(id);
-  if (!ch || !await confirmReplaceSave('challenge')) return;
-  const ex = challengeExtra(ch);
-  const made = createVsGame({ humans: 1, ...ch.cfg }, { extra: ex });
-  startGame(made.game, 'pve', { variant: 'challenge', run: { id } });
-  dressVsGame(made);
-  if (ch.tiles) placeTiles(app.game.S, ch.tiles, made.game.seed ?? 1);
+  if (!ch || !await modeIntro('challenge') || !await confirmReplaceSave('challenge')) return;
   recordStart('challenge');
-  refreshGivePlayer();
-  updateMenuBtn();
-  musicScene('game', { newGame: true });
-  showScreen('game');
-  saveGame();
-  aiStart(900);
+  startVsGame({ cfg: ch.cfg, extra: challengeExtra(ch), tiles: ch.tiles, variant: 'challenge', run: { id } });
+}
+
+/* =============== desafío semanal =============== */
+// cada semana (lunes a domingo) toca una de estas reglas; tablero, mazo y rivales iguales para todos
+export const WEEKLY = [
+  { id: 'tinyChaos', icon: 'i-users', cfg: { opps: 3, size: 's', diff: 'hard' } },
+  { id: 'portalMaze', icon: 'i-spiral', cfg: { opps: 2, size: 'm', diff: 'normal' }, extra: { rules: { holeDrift: true } }, tiles: { portal: 2 } },
+  { id: 'sandReflex', icon: 'i-sand', cfg: { opps: 1, size: 's', diff: 'normal' }, extra: { counts: ORANGE_DECK, rules: { onlyOrange: true }, par: 1 }, tiles: { bunker: 3 } },
+  { id: 'longDrive', icon: 'i-club', cfg: { opps: 2, size: 'l', diff: 'normal' }, extra: { counts: 'longDrive' } },
+  { id: 'duel', icon: 'i-trophy', cfg: { opps: 1, size: 'l', diff: 'hard' } },
+  { id: 'bunkerCrowd', icon: 'i-sand', cfg: { opps: 4, size: 'l', diff: 'normal' }, tiles: { bunker: 5 } },
+  { id: 'driftDuel', icon: 'i-hole', cfg: { opps: 1, size: 's', diff: 'hard' }, extra: { rules: { holeDrift: true } } },
+  { id: 'fingerFest', icon: 'i-hand', cfg: { opps: 2, size: 'm', diff: 'normal' }, extra: { counts: 'fingers' } },
+];
+// semana ISO "AAAA-Www"
+export function weekKey(d = new Date()) {
+  const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const wd = u.getUTCDay() || 7;
+  u.setUTCDate(u.getUTCDate() + 4 - wd);
+  const y = u.getUTCFullYear(), w = Math.ceil(((u - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+  return `${y}-W${String(w).padStart(2, '0')}`;
+}
+const weekDaysLeft = () => 8 - (new Date().getDay() || 7); // incluido hoy
+export function weeklySetup(week = weekKey()) {
+  const r = mulberry32(seedOf('weeklyBots:' + week));
+  const rule = WEEKLY[seedOf('weekly:' + week) % WEEKLY.length];
+  // rivales: sin repetir y, mientras se pueda, de personalidades distintas
+  const pool = [...PERSONAS], rivals = [], styles = new Set();
+  while (rivals.length < rule.cfg.opps && pool.length) {
+    const fresh = pool.filter(p => !styles.has(p.style));
+    const from = fresh.length ? fresh : pool, pick = from[Math.floor(r() * from.length)];
+    rivals.push(pick.id); styles.add(pick.style); pool.splice(pool.indexOf(pick), 1);
+  }
+  return { rule, rivals, seed: seedOf('weeklyGame:' + week) };
+}
+function startWeeklyGame(week = weekKey()) {
+  const { rule, rivals, seed } = weeklySetup(week);
+  startVsGame({ cfg: rule.cfg, extra: challengeExtra(rule), tiles: rule.tiles, variant: 'weekly', run: { id: rule.id, week }, seed, rivals });
+}
+export async function startWeekly() {
+  if (!await modeIntro('weekly') || !await confirmReplaceSave('weekly')) return;
+  recordStart('weekly');
+  startWeeklyGame();
 }
 export function challengeDone(won) {
   const id = app.run?.id;
@@ -208,6 +297,7 @@ export function modeChipText() {
     case 'daily': return `${t('modes.daily.title')} · ${new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
     case 'rush': return `${t('modes.holeN', { n: r.hole + 1, total: r.total })} · ${t('modes.rush.pts', { n: (r.scores || []).reduce((a, b) => a + b, 0) })}`;
     case 'challenge': return t('challenges.' + r.id + '.name');
+    case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;
     case 'puzzle': return t('story.puzzleChip');
   }
   return '';
@@ -249,7 +339,7 @@ export function openModes() {
   hideWin();
   aiStop();
   const R = loadRecords();
-  const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge');
+  const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge'), wsave = loadSave('weekly');
   const rush = store.get(RUSH_KEY), last = lastPve();
   const btn = (act, label, main = true) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}">${esc(label)}</button>`;
   const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
@@ -272,9 +362,15 @@ export function openModes() {
       (csave?.run?.id === ch.id ? cont('resume:challenge') : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
   }).join('');
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
+  const wk = weekKey(), { rule } = weeklySetup(wk), wbest = R.weekly.weeks[wk]?.best, left = weekDaysLeft();
+  const weeklyCard = `<article class="chCard weekly${wbest ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
+    `<div class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}</small>` +
+    `<b>${esc(t('weekly.' + rule.id + '.name'))}</b><small>${esc(t('weekly.' + rule.id + '.desc'))}</small>` +
+    `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span></div>` +
+    (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
   $('modesGrid').innerHTML =
     `<div class="mdRow">${quickCard}${rushCard}</div>` +
-    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3><div class="chGrid">${chCards}</div></section>`;
+    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>`;
   showScreen('modes');
 }
 
@@ -302,10 +398,12 @@ export function bindModes() {
       case 'rush': startRush(false); break;
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
+      case 'weekly': startWeekly(); break;
     }
   });
   MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); startDailyGame(); } };
   MODE_NAV.rush = { back: openModes, restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
   MODE_NAV.challenge = { back: openModes, restart: () => startChallenge(app.run?.id) };
+  MODE_NAV.weekly = { back: openModes, restart: () => { clearSave('weekly'); startWeeklyGame(app.run?.week); } };
 }
 export { store as modeStore, RUSH_KEY };

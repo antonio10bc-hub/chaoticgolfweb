@@ -174,6 +174,9 @@ export default {
   },
   fx: { combo: '¡Combo x{n}!', chainStop: '¡Bucle cortado!' },
   win: {
+    weeklyDone: '¡Desafío semanal superado!', weeklyBest: '¡Récord de la semana!', weeklyToday: 'tu mejor esta semana: {turns}',
+    route: { title: 'Tu recorrido', aria: 'Mapa del recorrido de tu pelota ({n} pasos)', start: 'salida', hit: 'golpeas', hitBy: 'te golpean',
+      portal: 'portal', fall: 'caída', sink: 'embocada' },
     levelDone: '¡Nivel completado!', youWon: '¡Has ganado!',
     tieWithYou: 'Empate entre {names} — ¡te llevas parte de la gloria!',
     tie: 'Empate entre {names}', one: '{names} mete la pelota en el hoyo y gana',
@@ -201,6 +204,7 @@ export default {
     tips: { hit: '¡Cuidado con chocarte!', bunker: '¡Resta 1 al palo que uses!', portal: '¡Los portales no cuentan como casilla!' },
   },
   pve: {
+    rivalRecord: 'Tú {w} – {l}', rivalRecordTitle: 'Le has ganado {w} y te ha ganado {l}', nemesis: 'Némesis',
     title: 'Partida rápida',
     sub: 'Tú contra la máquina. Los asientos se sortean y empieza quien esté a la derecha del centro.',
     color: 'Tu nombre y tu color', size: 'Tamaño del tablero', opps: 'Contrincantes (máquina)',
@@ -253,6 +257,23 @@ export default {
     peek: 'Ver cartas rivales', peekTitle: 'Debug: muestra las manos de la máquina',
   },
   lang: { label: 'Idioma', es: 'Español', en: 'English' },
+  share: { button: 'Compartir', won: 'En {turns}', lost: 'Esta vez no', and: ' y ', copied: 'Resultado copiado: pégalo donde quieras', failed: 'No se ha podido copiar' },
+  intro: { go: '¡A jugar!',
+    daily: { title: 'Reto diario', points: 'Un tablero pequeño contra 2 bots, igual para todo el mundo.|Cada día cambian los rivales y la dificultad.|Gana en los menos turnos posibles y mantén tu racha de días.' },
+    rush: { title: 'Contrarreloj', points: '5 hoyos seguidos, cada uno con su cuenta atrás.|Menos turnos y más segundos de sobra, más puntos.|Si el tiempo llega a cero, se acaba la serie.' },
+    challenge: { title: 'Desafíos', points: 'Partidas contra la máquina con una regla especial.|Lee la regla antes de empezar: cambia la forma de jugar.|Supera los 6 para completarlos todos.' },
+    weekly: { title: 'Desafío semanal', points: 'Cada semana, una regla especial nueva.|El mismo tablero y los mismos rivales para todo el mundo.|Gana en los menos turnos posibles: es tu récord de la semana.' },
+  },
+  weekly: {
+    tinyChaos: { name: 'Caos en miniatura', desc: 'Tablero de 5×5 contra 3 bots en difícil.' },
+    portalMaze: { name: 'Laberinto', desc: 'Portales desde el principio y el hoyo se mueve cada turno.' },
+    sandReflex: { name: 'Arena y reflejos', desc: 'Solo cartas naranjas y búnkeres por todas partes.' },
+    longDrive: { name: 'Tiros largos', desc: 'Casi todo son palos de 3 en un campo grande.' },
+    duel: { name: 'Duelo', desc: 'Tú contra un bot en difícil, en campo grande.' },
+    bunkerCrowd: { name: 'Playa abarrotada', desc: 'Cuatro rivales y el campo lleno de búnkeres.' },
+    driftDuel: { name: 'Hoyo nervioso', desc: 'Duelo en 5×5 con el hoyo moviéndose cada turno.' },
+    fingerFest: { name: 'Dedos ágiles', desc: 'El mazo está lleno de dedos: todo es serpentear.' },
+  },
   save: { restored: 'Partida recuperada', title: 'Partida guardada', replaceOk: 'Empezar nueva',
     confirmReplace: 'Tienes una partida guardada. Si empiezas otra, la guardada se perderá.' },
   debug: {
@@ -289,6 +310,7 @@ export default {
   },
   preview: { tapAgain: 'Toca otra vez' },
   settings: {
+    themeFor_weekly: 'en el Desafío semanal',
     title: 'Ajustes', more: 'Más ajustes…',
     soundH: 'Sonido', musicSub: 'Pistas generativas; cambian con fundido entre el menú y la partida',
     track: 'Música de partida', track_auto: 'Auto', track_fairway: 'Campo', track_breeze: 'Brisa', track_lounge: 'Salón',
@@ -312,6 +334,12 @@ export default {
     resetConfirm: '¿Restablecer todos los ajustes a sus valores por defecto?',
   },
   stats: {
+    mode_weekly: 'Desafío semanal',
+    ch: { won: 'Ganadas', lost: 'Perdidas', evolution: 'Tu evolución · últimos 14 días', byMode: 'Victorias por modo',
+      byRival: 'Contra cada rival', byCard: 'Tus cartas más usadas', dayTip: '{day}: {p} partidas, {w} ganadas',
+      evolutionAria: 'Partidas ganadas y perdidas en los últimos 14 días', modeTip: '{w} de {p}',
+      noHistory: 'Juega unas partidas y aquí verás tu evolución.', noGames: 'Aún no has terminado ninguna partida.',
+      noRivals: 'Juega contra la máquina para ver tu balance con cada rival.', noCards: 'Aún no has jugado ninguna carta.' },
     title: 'Estadísticas', byMode: 'Partidas', totals: 'En total', bestH: 'Mejores resultados (Lo básico)',
     mode_story: 'Lo básico', mode_puzzle: 'Puzles', mode_daily: 'Reto diario', mode_rush: 'Contrarreloj', mode_challenge: 'Desafíos', mode_pve: 'Partida rápida', mode_local: 'Multijugador local',
     played: 'jugadas', won: 'Ganadas', completed: 'Completadas',
@@ -373,6 +401,7 @@ export default {
   },
 
   modes: {
+    weekly: { title: 'Desafío semanal', daysLeft: 'quedan {n} días', lastDay: 'último día', best: 'Tu mejor: {turns}', noBest: 'Aún sin superar esta semana' },
     title: 'Modos de juego', sub: 'Partida rápida, contrarreloj y desafíos',
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',

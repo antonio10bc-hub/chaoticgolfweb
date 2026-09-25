@@ -12,11 +12,11 @@ import { sfx, musicMood } from '../audio/sfx.js';
 import { t, joinAnd } from '../i18n/index.js';
 import { stats } from './controller.js';
 import { clearSave, slotOf } from './save.js';
-import { humansOf, multiHuman, displayName } from './players.js';
+import { humansOf, multiHuman, displayName, isBot } from './players.js';
 import { recordEnd, turnsLabel } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
-import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, modeStore, RUSH_KEY, streakLabel } from './screen-modes.js';
+import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, streakLabel, dailyShareText, shareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
 
@@ -43,14 +43,17 @@ export function showWin() {
   const lost = mode === 'pve' && !humansOf().some(h => S.winners.includes(h));
   let msg;
   if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
-  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone' }[slot] || 'win.youWon');
+  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
   $('winMsg').textContent = msg;
 
   // estadísticas globales y récords del modo
   const kind = mode === 'pve' ? (slot === 'pve' ? (multi ? 'local' : 'pve') : slot) : slot;
-  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date });
+  // historial contra cada rival (con una persona contra la máquina)
+  const rivals = mode === 'pve' && !multi ? [...Array(S.nPlayers).keys()].filter(p => isBot(p) && S.personas?.[p])
+    .map(p => ({ id: S.personas[p], winner: S.winners.includes(p) })) : [];
+  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals });
   $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
   $('winOverlay').classList.toggle('lost', lost);
 
@@ -60,7 +63,7 @@ export function showWin() {
   $('winStyle').innerHTML = fx ? `<span class="wsChip ${style}"><svg class="i" aria-hidden="true"><use href="#${fx.icon}"/></svg>${esc(t('win.style.' + style))}</span>` : '';
 
   const box = $('winOverlay').querySelector('.box');
-  const turns = (slot === 'daily' && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
+  const turns = ((slot === 'daily' || slot === 'weekly') && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
   let chips = '', btns = '';
   const btn = (act, label, main = false) => `<button data-act="${act}" class="${main ? 'btn-primary btn-lg' : 'btn-light'}">${esc(label)}</button>`;
   const recChip = (txt, isNew = false) => `<span class="winRec${isNew ? ' new' : ''}">${esc(txt)}</span>`;
@@ -86,7 +89,13 @@ export function showWin() {
       chips = lost ? recChip(streakLabel(rec.dailyStreak || 1)) : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '') +
         recChip(streakLabel(rec.dailyStreak || 1));
-      btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('menuHome', t('win.menu'));
+      btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('share', t('share.button')) + btn('menuHome', t('win.menu'));
+      if (mode === 'pve') app.shareText = dailyShareText({ won: !lost, turns, st: stats, S, date: app.run.date });
+      break;
+    case 'weekly':
+      chips = lost ? '' : recChip((rec.newBest ? t('win.weeklyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
+        (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.weeklyToday', { turns: turnsLabel(rec.best.turns) })) : '');
+      btns = btn('weekly', lost ? t('win.retry') : t('modes.again'), true) + btn('modes', t('win.modes'));
       break;
     case 'rush': {
       const r = rushHoleDone();
@@ -132,6 +141,7 @@ export function showWin() {
     ['i-out', st.caidas, t('win.stats.falls')],
   ].map(([i, v, l]) => `<div class="st"><svg class="i" aria-hidden="true"><use href="#${i}"/></svg><b>${v}</b>${l}</div>`).join('') : '';
   $('winSummary').innerHTML = summaryHTML(st, mode === 'pve' ? (multi ? null : S.human) : 0);
+  $('winRoute').innerHTML = routeHTML(st, S, mode === 'pve' ? (multi ? null : S.human) : mode === 'story' || mode === 'test' ? 0 : null);
 
   // ¿por qué he perdido? (con una persona contra la máquina)
   const why = lost && !multi ? keyMomentHTML() : '';
@@ -140,7 +150,7 @@ export function showWin() {
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
   if (slot === 'story' && (stats?.turnos || 0) === 0) unlock('holeInOne');
-  if (['pve', 'challenge', 'daily'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
+  if (['pve', 'challenge', 'daily', 'weekly'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
 
@@ -162,7 +172,7 @@ export function showRushTimeUp({ sum, newBest, hole, best }) {
   $('winChips').innerHTML = `<span class="winRec">${esc(t('win.rushReached', { n: hole }))}</span>` +
     `<span class="winRec${newBest ? ' new' : ''}">${esc((newBest ? t('stats.newBest') + ' · ' : '') + t('win.rushTotal', { n: sum }))}</span>` +
     (!newBest ? `<span class="winRec">${esc(t('modes.rush.best', { n: best }))}</span>` : '');
-  $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winWhy').innerHTML = '';
+  $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winRoute').innerHTML = ''; $('winWhy').innerHTML = '';
   $('winOverlay').querySelector('.box').style.borderColor = 'transparent';
   $('winBtns').innerHTML = `<button data-act="rushNew" class="btn-primary btn-lg">${esc(t('modes.again'))}</button><button data-act="modes" class="btn-light">${esc(t('win.modes'))}</button>`;
   $('winOverlay').classList.add('visible');
@@ -179,7 +189,7 @@ export function showPuzzleFail() {
   $('winOverlay').classList.add('lost');
   $('winStyle').innerHTML = '';
   $('winChips').innerHTML = `<span class="winRec">${esc(t('win.puzzleFailSub'))}</span>`;
-  $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winWhy').innerHTML = '';
+  $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winRoute').innerHTML = ''; $('winWhy').innerHTML = '';
   $('winOverlay').querySelector('.box').style.borderColor = 'transparent';
   $('winBtns').innerHTML = `<button data-act="replay" class="btn-primary btn-lg">${esc(t('win.retry'))}</button><button data-act="levels" class="btn-light">${esc(t('win.levels'))}</button>`;
   $('winOverlay').classList.add('visible');
@@ -202,6 +212,72 @@ function summaryHTML(st, me) {
   if (st.undos) tiles.push(['i-rewind', t('win.sum.undos'), t('win.sum.undosV', { n: st.undos })]);
   return tiles.map(([i, h, v]) => `<div class="sumTile"><svg class="i" aria-hidden="true"><use href="#${i}"/></svg>` +
     `<span><small>${esc(h)}</small><b>${esc(v)}</b></span></div>`).join('');
+}
+
+// mini-mapa del recorrido de tu pelota: el camino (con saltos de portal discontinuos), la salida,
+// los choques, las caídas por el borde y dónde embocó; losetas y hoyo tal como acabó la partida
+const U = 20;
+function routeHTML(st, S, me) {
+  const r = st?.route;
+  if (me == null || !r || r.filter(p => p[2] === 'm').length < 2) return '';
+  const W = S.cols * U, H = S.rows * U, c = v => v * U + U / 2;
+  const clampX = x => Math.max(1, Math.min(W - 1, x)), clampY = y => Math.max(1, Math.min(H - 1, y));
+  const col = pColor(me);
+  let segs = [], cur = [], jumps = [], marks = [];
+  const flush = () => { if (cur.length > 1) segs.push(cur); cur = []; };
+  let last = null;
+  for (const [x, y, k] of r) {
+    const px = c(x), py = c(y);
+    if (k === 'o') { cur = [[px, py]]; marks.push(['start', px, py]); }
+    else if (k === 'm') cur.push([px, py]);
+    else if (k === 't') { flush(); if (last) jumps.push([last[0], last[1], px, py]); cur = [[px, py]]; marks.push(['portal', px, py]); }
+    else if (k === 'f') { const ex = clampX(px), ey = clampY(py); cur.push([ex, ey]); flush(); marks.push(['fall', ex, ey]); }
+    else if (k === 'a') { flush(); cur = [[px, py]]; marks.push(['back', px, py]); }
+    else if (k === 'h' || k === 'H') marks.push([k === 'h' ? 'hit' : 'hitBy', px, py]);
+    else if (k === 's') marks.push(['sink', px, py]);
+    if (k !== 'h' && k !== 'H' && k !== 's') last = k === 'f' ? null : [px, py];
+  }
+  flush();
+  const grid = [];
+  for (let x = 1; x < S.cols; x++) grid.push(`M${x * U} 0V${H}`);
+  for (let y = 1; y < S.rows; y++) grid.push(`M0 ${y * U}H${W}`);
+  const tiles = S.tiles.map(tl => tl.type === 'portal'
+    ? `<circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .36}" fill="#2D4F7C"/><circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .16}" fill="#A9C3E6"/>`
+    : `<ellipse cx="${c(tl.x)}" cy="${c(tl.y)}" rx="${U * .4}" ry="${U * .3}" fill="#ECE6CC"/>`).join('');
+  const hole = `<circle cx="${c(S.hole.x)}" cy="${c(S.hole.y)}" r="${U * .3}" fill="#242424"/>`;
+  const line = pts => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const jump = ([x1, y1, x2, y2]) => `<path d="M${x1} ${y1}L${x2} ${y2}" stroke="#A9C3E6" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round"/>`;
+  const mark = ([k, x, y]) => ({
+    start: `<circle cx="${x}" cy="${y}" r="5" fill="#F1F1DC" stroke="${col}" stroke-width="2.5"/>`,
+    back: `<circle cx="${x}" cy="${y}" r="3.5" fill="${col}"/>`,
+    portal: '',
+    fall: `<path d="M${x - 5} ${y - 5}L${x + 5} ${y + 5}M${x + 5} ${y - 5}L${x - 5} ${y + 5}" stroke="#F1F1DC" stroke-width="5" stroke-linecap="round"/><path d="M${x - 5} ${y - 5}L${x + 5} ${y + 5}M${x + 5} ${y - 5}L${x - 5} ${y + 5}" stroke="#D9603A" stroke-width="2.6" stroke-linecap="round"/>`,
+    hit: `<path d="${burst(x, y, 7, 3.2)}" fill="#F2B705" stroke="#F1F1DC" stroke-width="1.2"/>`,
+    hitBy: `<path d="${burst(x, y, 7, 3.2)}" fill="#F1F1DC" stroke="#242424" stroke-width="1.4"/>`,
+    sink: `<circle cx="${x}" cy="${y}" r="6.5" fill="none" stroke="#F1F1DC" stroke-width="2.4"/>`,
+  }[k] || '');
+  // leyenda con los mismos símbolos que el mapa (el portal: el salto discontinuo)
+  const kinds = new Set(marks.map(m => m[0]));
+  const sw = inner => `<svg class="rtSw" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5" fill="#4F8A4B"/>${inner}</svg>`;
+  const swatch = k => k === 'portal' ? sw(`<path d="M3 15L17 5" stroke="#A9C3E6" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>`)
+    : k === 'sink' ? sw(`<circle cx="10" cy="10" r="4" fill="#242424"/>${mark([k, 10, 10])}`) : sw(mark([k, 10, 10]));
+  const legend = ['start', 'hit', 'hitBy', 'portal', 'fall', 'sink']
+    .filter(k => kinds.has(k)).map(k => `<span class="rtLg">${swatch(k)}${esc(t('win.route.' + k))}</span>`).join('');
+  return `<h4>${esc(t('win.route.title'))}</h4><div class="rtWrap">` +
+    `<svg class="rtMap" viewBox="-4 -4 ${W + 8} ${H + 8}" role="img" aria-label="${esc(t('win.route.aria', { n: r.filter(p => p[2] === 'm').length }))}">` +
+    `<rect x="-4" y="-4" width="${W + 8}" height="${H + 8}" rx="8" fill="#F1F1DC"/><rect width="${W}" height="${H}" rx="4" fill="#4F8A4B"/>` +
+    `<path d="${grid.join('')}" stroke="rgba(241,241,220,.13)" stroke-width="1"/>` +
+    tiles + hole + jumps.map(jump).join('') + segs.map(line).join('') + marks.map(mark).join('') +
+    `</svg><div class="rtLegend">${legend}</div></div>`;
+}
+// estrella de choque (n puntas)
+function burst(x, y, R, r, n = 8) {
+  let d = '';
+  for (let i = 0; i < n * 2; i++) {
+    const a = Math.PI * i / n - Math.PI / 2, rr = i % 2 ? r : R;
+    d += (i ? 'L' : 'M') + (x + rr * Math.cos(a)).toFixed(1) + ' ' + (y + rr * Math.sin(a)).toFixed(1);
+  }
+  return d + 'Z';
 }
 
 export function bindWin() {
@@ -228,6 +304,8 @@ export function bindWin() {
       case 'rushNew': hideWin(); startRush(true); break;
       case 'menuHome': leaveToMenu(); break;
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
+      case 'weekly': hideWin(); startWeekly(); break;
+      case 'share': shareText(app.shareText || ''); break;
     }
   });
 }

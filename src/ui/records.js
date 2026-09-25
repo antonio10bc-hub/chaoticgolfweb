@@ -1,14 +1,16 @@
 // Estadísticas globales del jugador (todas sus partidas en este dispositivo):
 // partidas empezadas y ganadas por modo, totales de la mesa, el mejor resultado de cada nivel,
-// la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj
-// y los desafíos y puzles superados.
+// la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj,
+// los desafíos y puzles superados, el desafío semanal (récord de cada semana), el historial contra
+// cada rival (y quién te gana más: tu némesis), partidas por día (evolución) y cartas más usadas.
 import { t } from '../i18n/index.js';
+import { dateKey } from '../content/levels/generate.js';
 
 const KEY = 'chaoticgolf_stats';
 const VERSION = 1;
 // "1 turno" / "3 turnos"
 export const turnsLabel = n => n === 1 ? t('stats.turn1') : t('stats.turnsShort', { n });
-export const REC_MODES = ['story', 'puzzle', 'daily', 'rush', 'pve', 'local', 'challenge'];
+export const REC_MODES = ['story', 'puzzle', 'daily', 'rush', 'pve', 'local', 'challenge', 'weekly'];
 
 const zeros = () => Object.fromEntries(REC_MODES.map(m => [m, 0]));
 const blank = () => ({
@@ -21,6 +23,10 @@ const blank = () => ({
   daily: { days: {}, streak: 0, bestStreak: 0, last: null }, // fecha -> { best, strokes }
   rush: { best: 0, runs: 0 },
   challenges: {}, // id -> true
+  weekly: { weeks: {} },  // semana "AAAA-Www" -> { best, strokes }
+  rivals: {},     // personaje -> { w, l, beat } (tus victorias y derrotas contra él; beat: veces que ganó él)
+  history: {},    // fecha -> { p, w } (partidas terminadas y ganadas ese día)
+  cards: {},      // carta -> veces que la has jugado
 });
 
 export function loadRecords() {
@@ -30,6 +36,7 @@ export function loadRecords() {
       const b = blank();
       return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals },
         pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush },
+        weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
         puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }
@@ -69,13 +76,26 @@ export const dailyToday = date => loadRecords().daily.days[date] || null;
 
 // fin de partida: suma los totales, la victoria y los récords del modo.
 // Devuelve lo necesario para anunciarlo en el resumen final.
-export function recordEnd(kind, { won, stats, levelIndex = null, date = null }) {
+// rivals: [{ id, winner }] — los personajes de la mesa (con una persona contra la máquina)
+export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [] }) {
   if (!REC_MODES.includes(kind)) return {};
   const d = loadRecords();
   if (won) d.won[kind]++;
   if (stats) for (const k of Object.keys(d.totals)) d.totals[k] += stats[k] || 0;
-  // reto diario contra bots: cuentan tus turnos, no los de toda la mesa
-  const turns = (kind === 'daily' && stats?.misTurnos ? stats.misTurnos : stats?.turnos || 0) + 1, strokes = stats?.golpes || 0;
+  // evolución: partidas terminadas y ganadas por día (últimos 90 días)
+  const today = dateKey(), h = d.history[today] = d.history[today] || { p: 0, w: 0 };
+  h.p++; if (won) h.w++;
+  const days = Object.keys(d.history).sort();
+  while (days.length > 90) delete d.history[days.shift()];
+  for (const [k, n] of Object.entries(stats?.cardsUsed || {})) d.cards[k] = (d.cards[k] || 0) + n;
+  for (const r of rivals) {
+    const rv = d.rivals[r.id] = d.rivals[r.id] || { w: 0, l: 0, beat: 0 };
+    if (won) rv.w++; else rv.l++;
+    if (r.winner) rv.beat++;
+  }
+  // reto diario y semanal contra bots: cuentan tus turnos, no los de toda la mesa
+  const own = (kind === 'daily' || kind === 'weekly') && stats?.misTurnos;
+  const turns = (own ? stats.misTurnos : stats?.turnos || 0) + 1, strokes = stats?.golpes || 0;
   let newBest = false, best = null;
   if (kind === 'story' && won && levelIndex != null && stats) {
     const prev = d.levels[levelIndex];
@@ -89,6 +109,14 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null }) 
     newBest = day.best != null && (turns < day.best || (turns === day.best && strokes < day.strokes));
     if (day.best == null || newBest) { day.best = turns; day.strokes = strokes; }
     best = { turns: day.best, strokes: day.strokes };
+  }
+  if (kind === 'weekly' && won && week) {
+    const wk = d.weekly.weeks[week] = d.weekly.weeks[week] || { best: null, strokes: null };
+    newBest = wk.best != null && (turns < wk.best || (turns === wk.best && strokes < wk.strokes));
+    if (wk.best == null || newBest) { wk.best = turns; wk.strokes = strokes; }
+    best = { turns: wk.best, strokes: wk.strokes };
+    const ks = Object.keys(d.weekly.weeks).sort();
+    while (ks.length > 26) delete d.weekly.weeks[ks.shift()];
   }
   // partida rápida: racha de victorias seguidas y victoria más rápida (en turnos propios)
   let streak = 0, newFastest = false;
@@ -106,3 +134,10 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null }) 
   return { newBest, best, streak, newFastest, fastest: d.pve.fastest, dailyStreak: d.daily.streak };
 }
 export const levelBest = i => loadRecords().levels[i] || null;
+
+// tu némesis: el personaje que más veces te ha ganado (al menos 2)
+export function nemesisId(R = loadRecords()) {
+  let best = null;
+  for (const [id, r] of Object.entries(R.rivals)) if (r.beat >= 2 && (!best || r.beat > R.rivals[best].beat)) best = id;
+  return best;
+}

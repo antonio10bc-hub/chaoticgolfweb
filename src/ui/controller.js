@@ -41,8 +41,22 @@ const resetStats = () => {
     misTurnos: 0,                  // turnos propios (partida rápida con una persona)
     longest: { n: 0, p: null },    // jugada que más casillas movió y de quién
     hitsOnMe: {},                  // quién golpeó tu pelota: jugador -> veces
-    cardsUsed: {} };               // cartas que has jugado: clave -> veces
+    cardsUsed: {},                 // cartas que has jugado: clave -> veces
+    route: [],                     // recorrido de tu pelota: [x, y, tipo] (o salida, m paso, t portal, f caída, a reaparece, h choca, H la golpean, s emboca)
+    dists: [] };                   // distancia de tu pelota al hoyo al acabar cada turno tuyo (el primero, al empezar)
 };
+const ROUTE_MAX = 400;
+const dist = (g, p) => { const b = g.S.balls.find(bb => bb.player === p); return b ? Math.abs(b.x - g.S.hole.x) + Math.abs(b.y - g.S.hole.y) : 0; };
+function noteRoute(g, me, ev) {
+  const r = stats.route, last = r[r.length - 1], tag = 'b' + me;
+  if (r.length >= ROUTE_MAX) return;
+  if (ev.p === tag) {
+    const k = { move: 'm', teleport: 't', fall: 'f', appear: 'a' }[ev.t];
+    if (k) r.push([ev.x, ev.y, k]);
+    else if (ev.t === 'sink' && last) r.push([last[0], last[1], 's']);
+    else if (ev.t === 'impact' && last) r.push([last[0], last[1], 'h']);
+  } else if (ev.t === 'impact' && ev.target === tag && last) r.push([last[0], last[1], 'H']);
+}
 // jugador "tú" para el resumen: la persona en partida rápida con una sola persona, o el nivel
 const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
@@ -69,6 +83,8 @@ export function startGame(game, mode, { levelIndex = null, level = null, variant
   musicMood('calm');
   resetMoods(); clearBubbles();
   resetStats();
+  const me = meSeat(game), b = me != null && game.S.balls.find(bb => bb.player === me);
+  if (b) { stats.route.push([b.x, b.y, 'o']); stats.dists.push(dist(game, me)); }
   resetDealAnim();
   clearPieces();
   hideWin();
@@ -101,6 +117,7 @@ function dispatch(fn) {
     if (ANIM.has(ev.t)) {
       app.animQueue.push(ev);
       if (STAT_OF[ev.t]) stats[STAT_OF[ev.t]]++;
+      if (me != null && stats.route) noteRoute(g, me, ev);
       if (ev.t === 'move') moves++;
       if (ev.t === 'impact' && me != null && ev.target === 'b' + me && ev.p !== ev.target) { // te han golpeado
         const by = +ev.p.slice(1);
@@ -139,7 +156,11 @@ function dispatch(fn) {
       case 'tip': hud.storyTip(ev.key); break;
       case 'notice': hud.toast(ev.text); break;
       case 'resolved': resolved = true; break;
-      case 'turnEnded': turnEnded = true; stats.turnos++; if (app.mode === 'pve' && !isBot(turnBefore)) stats.misTurnos++; break;
+      case 'turnEnded':
+        turnEnded = true; stats.turnos++;
+        if (app.mode === 'pve' && !isBot(turnBefore)) stats.misTurnos++;
+        if (me != null && turnBefore === me && stats.dists) stats.dists.push(dist(g, me));
+        break;
       case 'win': won = true; break;
     }
   }

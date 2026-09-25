@@ -7,7 +7,7 @@ export const THEMES = ['classic', 'autumn', 'snow', 'night', 'ocean', 'ember', '
 // cada modo tiene su color de campo por defecto para reconocerlo de un vistazo (se puede cambiar
 // en Ajustes y cada modo recuerda el suyo): contrarreloj azul, desafíos rojo, reto diario naranja
 // y el resto (Lo básico, partida rápida…) verde
-export const MODE_THEME = { rush: 'ocean', challenge: 'ember', daily: 'sunset' };
+export const MODE_THEME = { rush: 'ocean', challenge: 'ember', weekly: 'ember', daily: 'sunset' };
 export const TRACKS = ['auto', 'fairway', 'breeze', 'lounge'];
 const DEFAULTS = {
   speed: 'normal', theme: 'classic', themes: {}, reduce: false, shapes: false, hints: true, track: 'auto',

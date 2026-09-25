@@ -21,7 +21,8 @@ let server, browser, page, errors = [];
 async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
-    { chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }, ...seed });
+    { chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
+      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
@@ -128,6 +129,50 @@ it('reto diario: tablero pequeño contra 2 bots, igual (semilla, rivales, dificu
   const a = await take();
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(800);
   assert.equal(await take(), a);
+});
+
+it('primera vez en un modo: la presentación sale una sola vez', async () => {
+  await fresh({ chaoticgolf_intros: {} });
+  await click('#modesBtn'); await sleep(300);
+  await click('[data-mode="rushNew"]'); await sleep(400);
+  assert.ok(await page.$('#dialog[open] .intro.rush'));
+  await page.click('#dialog[open] button[value="ok"]'); await sleep(900);
+  assert.equal(await app(() => window.chaoticGolf.app.variant), 'rush');
+  await click('#menuBtn'); await sleep(400);
+  await app(() => { localStorage.removeItem('chaoticgolf_save_rush'); localStorage.removeItem('chaoticgolf_rush'); });
+  await click('#modesBack'); await sleep(300); await click('#modesBtn'); await sleep(300);
+  await click('[data-mode="rushNew"]'); await sleep(600);
+  assert.equal(await page.$('#dialog[open] .intro'), null); // ya vista: arranca directamente
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
+});
+
+it('desafío semanal: misma regla, semilla y rivales en dos cargas', async () => {
+  await fresh();
+  const take = async () => {
+    await click('#modesBtn'); await sleep(300);
+    await click('[data-mode="weekly"]'); await confirmIfAsked(); await sleep(500);
+    const r = await app(() => { const { app } = window.chaoticGolf; return JSON.stringify({ v: app.variant, id: app.run.id, week: app.run.week, seed: app.game.seed, personas: app.game.S.personas }); });
+    await click('#menuBtn'); await sleep(300);
+    await app(() => localStorage.removeItem('chaoticgolf_save_weekly'));
+    return r;
+  };
+  const a = await take();
+  assert.equal(JSON.parse(a).v, 'weekly');
+  await page.reload({ waitUntil: 'networkidle0' }); await sleep(800);
+  assert.equal(await take(), a);
+});
+
+it('reto diario: texto para compartir con un cuadrado por turno', async () => {
+  await fresh();
+  await click('#dailyCard'); await confirmIfAsked(); await sleep(400);
+  const txt = await app(async () => {
+    const m = await import('/src/ui/screen-modes.js'), { app } = window.chaoticGolf;
+    return m.dailyShareText({ won: true, turns: 4, S: app.game.S, date: app.run.date,
+      st: { dists: [5, 3, 3, 4, 2], route: [[0, 0, 'o'], [0, 1, 'm'], [0, 1, 'h'], [1, 1, 't'], [1, -1, 'f']] } });
+  });
+  assert.match(txt, /^Chaotic Golf/);
+  assert.ok(txt.includes('🟩🟨🟥🟩⛳'));
+  assert.ok(txt.includes('💥 1 · 🌀 1 · 🕳️ 1'));
 });
 
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {

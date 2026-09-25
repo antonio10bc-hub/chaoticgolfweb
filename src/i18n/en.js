@@ -171,6 +171,9 @@ export default {
   },
   fx: { combo: 'Combo x{n}!', chainStop: 'Loop broken!' },
   win: {
+    weeklyDone: 'Weekly challenge beaten!', weeklyBest: 'Record of the week!', weeklyToday: 'your best this week: {turns}',
+    route: { title: 'Your route', aria: 'Map of your ball’s route ({n} steps)', start: 'start', hit: 'you hit', hitBy: 'you got hit',
+      portal: 'portal', fall: 'fell off', sink: 'holed' },
     levelDone: 'Level complete!', youWon: 'You won!',
     tieWithYou: 'Tie between {names} — you share the glory!',
     tie: 'Tie between {names}', one: '{names} sinks the ball and wins',
@@ -198,6 +201,7 @@ export default {
     tips: { hit: 'Watch out for collisions!', bunker: 'Subtract 1 from the club you use!', portal: 'Portals don’t count as a square!' },
   },
   pve: {
+    rivalRecord: 'You {w} – {l}', rivalRecordTitle: 'You beat them {w} times, they beat you {l}', nemesis: 'Nemesis',
     title: 'Quick game',
     sub: 'You against the bots. Seats are drawn at random and whoever sits right of the centre starts.',
     color: 'Your name and colour', size: 'Board size', opps: 'Opponents (bots)',
@@ -250,6 +254,23 @@ export default {
     peek: 'Show bots’ cards', peekTitle: 'Debug: shows the bots’ hands',
   },
   lang: { label: 'Language', es: 'Español', en: 'English' },
+  share: { button: 'Share', won: 'In {turns}', lost: 'Not this time', and: ' and ', copied: 'Result copied: paste it anywhere', failed: 'Couldn’t copy it' },
+  intro: { go: 'Let’s play!',
+    daily: { title: 'Daily challenge', points: 'A small board against 2 bots, the same for everyone.|The rivals and the difficulty change every day.|Win in as few turns as you can and keep your streak going.' },
+    rush: { title: 'Time attack', points: '5 holes in a row, each with its own countdown.|Fewer turns and more seconds to spare, more points.|If time runs out, the run is over.' },
+    challenge: { title: 'Challenges', points: 'Games against the bots with one special rule.|Read the rule before you start: it changes how you play.|Beat all 6 to complete them.' },
+    weekly: { title: 'Weekly challenge', points: 'A new special rule every week.|The same board and rivals for everyone.|Win in as few turns as you can: that’s your record of the week.' },
+  },
+  weekly: {
+    tinyChaos: { name: 'Tiny chaos', desc: 'A 5×5 board against 3 bots on hard.' },
+    portalMaze: { name: 'Maze', desc: 'Portals from the start and the hole moves every turn.' },
+    sandReflex: { name: 'Sand and reflexes', desc: 'Only orange cards and bunkers everywhere.' },
+    longDrive: { name: 'Long drives', desc: 'Almost everything is a 3-club, on a big course.' },
+    duel: { name: 'Duel', desc: 'You against one bot on hard, on a big course.' },
+    bunkerCrowd: { name: 'Crowded beach', desc: 'Four rivals and a course full of bunkers.' },
+    driftDuel: { name: 'Jittery hole', desc: 'A duel on 5×5 with the hole moving every turn.' },
+    fingerFest: { name: 'Nimble fingers', desc: 'The deck is full of fingers: it’s all about zigzagging.' },
+  },
   save: { restored: 'Game restored', title: 'Saved game', replaceOk: 'Start new',
     confirmReplace: 'You have a saved game. Starting a new one will discard it.' },
   debug: {
@@ -286,6 +307,7 @@ export default {
   },
   preview: { tapAgain: 'Tap again' },
   settings: {
+    themeFor_weekly: 'in the Weekly challenge',
     title: 'Settings', more: 'More settings…',
     soundH: 'Sound', musicSub: 'Generative tracks; they crossfade between the menu and the game',
     track: 'In-game music', track_auto: 'Auto', track_fairway: 'Fairway', track_breeze: 'Breeze', track_lounge: 'Lounge',
@@ -309,6 +331,12 @@ export default {
     resetConfirm: 'Reset all settings to their defaults?',
   },
   stats: {
+    mode_weekly: 'Weekly challenge',
+    ch: { won: 'Won', lost: 'Lost', evolution: 'Your progress · last 14 days', byMode: 'Wins by mode',
+      byRival: 'Against each rival', byCard: 'Your most played cards', dayTip: '{day}: {p} games, {w} won',
+      evolutionAria: 'Games won and lost over the last 14 days', modeTip: '{w} of {p}',
+      noHistory: 'Play a few games and your progress will show up here.', noGames: 'You haven’t finished any game yet.',
+      noRivals: 'Play against the bots to see your record with each rival.', noCards: 'You haven’t played any card yet.' },
     title: 'Stats', byMode: 'Games', totals: 'All-time', bestH: 'Best results (The basics)',
     mode_story: 'The basics', mode_puzzle: 'Puzzles', mode_daily: 'Daily challenge', mode_rush: 'Time attack', mode_challenge: 'Challenges', mode_pve: 'Quick game', mode_local: 'Local multiplayer',
     played: 'played', won: 'Won', completed: 'Completed',
@@ -370,6 +398,7 @@ export default {
   },
 
   modes: {
+    weekly: { title: 'Weekly challenge', daysLeft: '{n} days left', lastDay: 'last day', best: 'Your best: {turns}', noBest: 'Not beaten this week yet' },
     title: 'Game modes', sub: 'Quick game, time attack and challenges',
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',

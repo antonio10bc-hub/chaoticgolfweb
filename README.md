@@ -159,14 +159,23 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Menú:** título, tarjeta del reto diario (tablero pequeño contra 2 bots, igual para todos; cada día cambian
   los rivales, su personalidad y la dificultad; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
-  Con el reto del día completado sale un tic verde.
+  Con el reto del día completado sale un tic verde; con la app instalada, un punto en su icono avisa de que
+  el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
+  compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
+  alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** Partida rápida (primero se elige contra la máquina o multijugador local, cada uno con su
   configuración), contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
-  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena, atajos, multitud). Lo básico tiene
+  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena, atajos, multitud) y el **desafío
+  semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
+  La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). Lo básico tiene
   8 niveles y 6 puzles de "gana en 1 turno".
+- **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
+- **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
+  modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en
-  Partida rápida. Tras cada jugada un bot explica por qué la ha hecho.
+  Partida rápida, con tu balance contra cada uno y tu **némesis** (el que más te gana). Tras cada jugada un
+  bot explica por qué la ha hecho.
 - **Ayudas:** consejo del caddie (misma IA que los bots; queda anotado), deshacer en Lo básico y en fácil,
   "¿Por qué he perdido?" con el momento clave (antes / después) y un consejo.
 - **Música** minimalista y suave (timbres redondos, filtro y eco ligeros): se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene

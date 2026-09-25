@@ -10,7 +10,7 @@ import { refreshGivePlayer } from './debug.js';
 import { updateMenuBtn } from './hud.js';
 import { t } from '../i18n/index.js';
 import { saveGame, loadSave } from './save.js';
-import { recordStart } from './records.js';
+import { recordStart, loadRecords, nemesisId } from './records.js';
 import { musicScene } from '../audio/sfx.js';
 import { humansOf, isBot } from './players.js';
 import { loadProfile, saveProfile, cleanName, MAX_NAME } from './profile.js';
@@ -41,16 +41,18 @@ function clampPve(cfg) {
   cfg.rivals = Array.isArray(cfg.rivals) ? cfg.rivals.slice(0, 5) : [];
 }
 
-// ficha de un rival: su cara, su nombre y su personalidad (o "al azar")
-// con flechas a los lados para pasar al anterior / siguiente personaje
-export function rivalChip(id, i) {
-  const pr = personaById(id);
+// ficha de un rival: su cara, su nombre y su personalidad (o "al azar"), tu balance contra él
+// y si es tu némesis; con flechas a los lados para pasar al anterior / siguiente personaje
+export function rivalChip(id, i, R = loadRecords(), nemesis = nemesisId(R)) {
+  const pr = personaById(id), rec = pr && R.rivals[pr.id];
+  const extra = pr && rec ? `<span class="rvRec" title="${esc(t('pve.rivalRecordTitle', { w: rec.w, l: rec.l }))}">${esc(t('pve.rivalRecord', { w: rec.w, l: rec.l }))}</span>` +
+    (nemesis === pr.id ? `<span class="rvNemesis">${esc(t('pve.nemesis'))}</span>` : '') : '';
   const ava = pr
     ? `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`
     : `<span class="avatar rivalRandom" aria-hidden="true">?</span>`;
   return `<div class="pveOpt rival${pr ? ' picked' : ''}">` +
     `<button class="rivalArrow" data-rival="${i}" data-dir="-1" aria-label="${esc(t('pve.rivalPrev'))}"><svg class="i" aria-hidden="true"><use href="#i-arrow-l"/></svg></button>` +
-    `<span class="rivalBody">${ava}<b>${esc(pr ? pr.name : t('pve.rivalRandom'))}</b><small>${esc(pr ? t('persona.style.' + pr.style) : t('pve.rivalAny'))}</small></span>` +
+    `<span class="rivalBody">${ava}<b>${esc(pr ? pr.name : t('pve.rivalRandom'))}</b><small>${esc(pr ? t('persona.style.' + pr.style) : t('pve.rivalAny'))}</small>${extra}</span>` +
     `<button class="rivalArrow" data-rival="${i}" data-dir="1" aria-label="${esc(t('pve.rivalNext'))}"><svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button></div>`;
 }
 
@@ -71,7 +73,8 @@ function buildPveSetup() {
   });
   $('pveDiffRow').hidden = cfg.opps === 0;
   $('pveRivalsRow').hidden = cfg.opps === 0;
-  $('pveRivals').innerHTML = Array.from({ length: cfg.opps }, (_, i) => rivalChip(cfg.rivals[i], i)).join('');
+  const R = loadRecords(), nem = nemesisId(R);
+  $('pveRivals').innerHTML = Array.from({ length: cfg.opps }, (_, i) => rivalChip(cfg.rivals[i], i, R, nem)).join('');
   $('pveColorH').textContent = t(cfg.humans > 1 ? 'pve.colorFirst' : 'pve.color');
   $('pveCard').classList.toggle('local', cfg.humans > 1);
   $('pveCard').querySelector('.sub').textContent = t(cfg.humans > 1 ? (cfg.opps ? 'pve.subLocalBots' : 'pve.subLocal') : 'pve.sub');
