@@ -43,7 +43,7 @@ export function startLevel(level, mode, idx = null, { variant = null, run = null
 // tarjeta de nivel (miniatura, número, nombre y estado)
 function levelCard(i, L, { done, next, best, saved, attr }) {
   const state = done ? 'done' : next ? 'next' : '';
-  const label = done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${t('story.completed')}` : next ? t('story.next') : t('story.play');
+  const label = done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="lsTxt">${t('story.completed')}</span>` : next ? t('story.next') : t('story.play');
   return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${i * 60}ms" ${attr}` +
     ` aria-label="${esc(t('story.levelAria', { n: i + 1, name: levelName(L) }))}${done ? ` · ${esc(t('story.done'))}` : ''}">` +
     `<span class="lvlNum">${i + 1}</span>` +
