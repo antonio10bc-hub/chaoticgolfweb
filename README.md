@@ -161,7 +161,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
   pantalla de carga.
 - **Menú:** título, tarjeta del reto diario (tablero pequeño contra 2 bots, igual para todos; cada día cambian
-  los rivales, su personalidad y la dificultad; récord del día en turnos propios y racha de días) y debajo
+  los rivales, su personalidad y la dificultad, y hay **una sola mecánica** pensada para el 5×5 —portales, catapultas,
+  arenero, río pequeño, caja con agujeros, bloque, charca, esquina o palo iridiscente—, en un orden fijo que nunca la
+  repite dos días seguidos; algún día el tablero crece una o dos filas o columnas: `dailyChallenge` en
+  `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
   Con el reto del día completado sale un tic verde (y, la primera vez que vuelves al menú, la bola de la
   ilustración rueda hasta el hoyo: `src/ui/menu-ball.js`); con la app instalada, un punto en su icono avisa de que

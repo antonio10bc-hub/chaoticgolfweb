@@ -358,7 +358,7 @@ export default {
     image: 'Share picture', copyImg: 'Copy picture', download: 'Download', copyText: 'Copy result', imgCopied: 'Picture copied: paste it anywhere',
     caption: 'Look how I finished my game of Chaotic Golf!', won: 'In {turns}', lost: 'Not this time', and: ' and ', copied: 'Result copied: paste it anywhere', failed: 'Couldn’t copy it' },
   intro: { go: 'Let’s play!',
-    daily: { title: 'Daily challenge', points: 'A small board against 2 bots, the same for everyone.|The rivals and the difficulty change every day.|Win in as few turns as you can and keep your streak going.' },
+    daily: { title: 'Daily challenge', points: 'A small board against 2 bots, the same for everyone.|A different mechanic every day: portals, catapults, a river, a box with holes…|Win in as few turns as you can and keep your streak going.' },
     rush: { title: 'Time attack', points: '5 holes in a row, each with its own countdown.|Fewer turns and more seconds to spare, more points.|If time runs out, the run is over.' },
     challenge: { title: 'Challenges', points: 'Games against the bots with one special rule.|Read the rule before you start: it changes how you play.|There are 18: warm-up, intermediate and expert.' },
     weekly: { title: 'Weekly challenge', points: 'A new special rule every week.|The same board and rivals for everyone.|Win in as few turns as you can: that’s your record of the week.' },
@@ -511,6 +511,7 @@ export default {
     loop: { name: 'Infinite loop', desc: 'Trigger a collision loop between portals.' },
   },
 
+  dailyFeat: { portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
   modes: {
     chStat: '{w} wins out of {p} games',
     groups: { warmup: 'Warm-up', mid: 'Intermediate', expert: 'Expert' },
@@ -520,7 +521,7 @@ export default {
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',
-    daily: { title: 'Daily challenge', sub: 'A small board against 2 bots, the same for everyone. New rivals and difficulty every day.', vs: 'vs {a} and {b} · {diff}',
+    daily: { title: 'Daily challenge', sub: 'A small board against 2 bots, the same for everyone. A new mechanic and new rivals every day.', vs: 'vs {a} and {b} · {diff}',
       bestToday: 'Your best today: {turns}', done: 'Completed today', notYet: 'Not completed yet', streak: 'Streak: {n} days', streak1: 'Streak: 1 day' },
     rush: { title: 'Time attack', holes: '{n} generated holes', sub: 'Every hole has its own countdown: fewer turns and more time to spare, more points. If time runs out, the run is over.',
       best: 'Record: {n} pts', continue: 'Continue · hole {n}', pts: '{n} pts' },

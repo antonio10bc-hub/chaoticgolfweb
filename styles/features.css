@@ -806,6 +806,10 @@ html.reduceMotion #rushTimer.danger, html.reduceMotion #game.urgent #boardWrap {
 .dRivals .avatar:first-child { left: 4px; top: 5px; }
 .dRivals .avatar:last-child { right: 4px; bottom: 5px; }
 .dVs { font-size: 12.5px; font-weight: 500; margin-top: 1px; }
+/* la mecánica del día, junto al título */
+.dFeat { display: inline-flex; align-items: center; gap: 4px; margin-left: 4px; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
+  background: rgba(36,36,36,.12); color: inherit; white-space: nowrap; }
+.dFeat .i { width: 13px; height: 13px; }
 .mDaily .dMeta { opacity: .75; }
 @media (max-width: 420px) { .dRivals .avatar { width: 28px; height: 28px; } }
 @media (max-width: 420px) { .mDaily { gap: 10px; padding-right: 12px; } .dTxt b { font-size: 16.5px; } .dVs { font-size: 12px; } }

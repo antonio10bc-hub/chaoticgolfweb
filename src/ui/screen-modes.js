@@ -28,7 +28,7 @@ import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
-import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles } from '../content/challenges.js';
+import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, dailyChallenge } from '../content/challenges.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
@@ -56,7 +56,8 @@ export function dailySetup(date = dailyDate()) {
   const first = PERSONAS[Math.floor(r() * PERSONAS.length)];
   const rest = PERSONAS.filter(p => p.style !== first.style);
   const second = rest[Math.floor(r() * rest.length)];
-  return { diff, rivals: [first.id, second.id], seed: seedOf('daily:' + date) };
+  const seed = seedOf('daily:' + date);
+  return { diff, rivals: [first.id, second.id], seed, ch: dailyChallenge(date, seed) }; // (ch: la mecánica del día y su campo)
 }
 // arranca una partida contra la máquina de un modo (reto diario, desafíos, semanal)
 function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = [] }) {
@@ -72,7 +73,8 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
 }
 function startDailyGame(date = dailyDate()) {
   const d = dailySetup(date);
-  startVsGame({ cfg: { opps: 2, size: 's', diff: d.diff }, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date } });
+  const { extra } = challengeCfg(d.ch);
+  startVsGame({ cfg: { opps: 2, diff: d.diff }, extra, ch: d.ch, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date, feature: d.ch.feature } });
 }
 export async function startDaily() {
   if (!await modeIntro('daily')) return;
@@ -95,14 +97,14 @@ export function renderDailyCard() {
   const narrow = window.matchMedia('(max-width: 420px)').matches; // en el móvil, fecha corta
   const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' });
   const status = today?.best ? t('modes.daily.bestToday', { turns: turnsLabel(today.best) }) : t('modes.daily.notYet');
-  const { diff, rivals } = dailySetup(date), rv = rivals.map(personaById);
+  const { diff, rivals, ch } = dailySetup(date), rv = rivals.map(personaById);
   const face = pr => `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`;
   const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name, diff: t('pve.diff' + diff[0].toUpperCase() + diff.slice(1)) });
   $('dailyCard').innerHTML =
     `<span class="dPreview dRivals">${rv.map(face).join('')}</span>` +
     `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><b>${esc(t('modes.daily.title'))}</b>` +
     (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done'))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
-    `</span><span class="dVs">${esc(vs)}</span>` +
+    `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg>${esc(t('dailyFeat.' + ch.feature))}</span></span><span class="dVs">${esc(vs)}</span>` + // (la mecánica del día)
     `<span class="dMeta"><span>${esc(status)}</span>${streak ? `<span class="dStreak"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(streakLabel(streak))}</span>` : ''}</span></span>` +
     `<span class="dPlay">${esc(saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play'))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
@@ -257,7 +259,7 @@ const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 export function modeChipText() {
   const r = app.run;
   switch (app.variant) {
-    case 'daily': return `${t('modes.daily.title')} · ${new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
+    case 'daily': return `${t('modes.daily.title')} · ${r?.feature ? t('dailyFeat.' + r.feature) : new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
     case 'rush': return `${t('modes.holeN', { n: r.hole + 1, total: r.total })} · ${t('modes.rush.pts', { n: (r.scores || []).reduce((a, b) => a + b, 0) })}`;
     case 'challenge': return t('challenges.' + r.id + '.name');
     case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;

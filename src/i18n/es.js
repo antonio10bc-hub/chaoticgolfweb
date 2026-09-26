@@ -361,7 +361,7 @@ export default {
     image: 'Compartir imagen', copyImg: 'Copiar imagen', download: 'Descargar', copyText: 'Copiar resultado', imgCopied: 'Imagen copiada: pégala donde quieras',
     caption: '¡Mira cómo he terminado mi partida de Chaotic Golf!', won: 'En {turns}', lost: 'Esta vez no', and: ' y ', copied: 'Resultado copiado: pégalo donde quieras', failed: 'No se ha podido copiar' },
   intro: { go: '¡A jugar!',
-    daily: { title: 'Reto diario', points: 'Un tablero pequeño contra 2 bots, igual para todo el mundo.|Cada día cambian los rivales y la dificultad.|Gana en los menos turnos posibles y mantén tu racha de días.' },
+    daily: { title: 'Reto diario', points: 'Un tablero pequeño contra 2 bots, igual para todo el mundo.|Cada día, una mecánica distinta: portales, catapultas, un río, una caja con agujeros…|Gana en los menos turnos posibles y mantén tu racha de días.' },
     rush: { title: 'Contrarreloj', points: '5 hoyos seguidos, cada uno con su cuenta atrás.|Menos turnos y más segundos de sobra, más puntos.|Si el tiempo llega a cero, se acaba la serie.' },
     challenge: { title: 'Desafíos', points: 'Partidas contra la máquina con una regla especial.|Lee la regla antes de empezar: cambia la forma de jugar.|Hay 18: de calentamiento, intermedios y expertos.' },
     weekly: { title: 'Desafío semanal', points: 'Cada semana, una regla especial nueva.|El mismo tablero y los mismos rivales para todo el mundo.|Gana en los menos turnos posibles: es tu récord de la semana.' },
@@ -514,6 +514,7 @@ export default {
     loop: { name: 'Bucle infinito', desc: 'Provoca un bucle de choques entre portales.' },
   },
 
+  dailyFeat: { portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },
@@ -523,7 +524,7 @@ export default {
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',
-    daily: { title: 'Reto diario', sub: 'Tablero pequeño contra 2 bots, igual para todo el mundo. Cada día, rivales y dificultad nuevos.', vs: 'contra {a} y {b} · {diff}',
+    daily: { title: 'Reto diario', sub: 'Tablero pequeño contra 2 bots, igual para todo el mundo. Cada día, una mecánica y rivales nuevos.', vs: 'contra {a} y {b} · {diff}',
       bestToday: 'Tu mejor hoy: {turns}', done: 'Completado hoy', notYet: 'Aún no lo has completado', streak: 'Racha: {n} días', streak1: 'Racha: 1 día' },
     rush: { title: 'Contrarreloj', holes: '{n} hoyos generados', sub: 'Cada hoyo tiene su cuenta atrás: menos turnos y más tiempo de sobra, más puntos. Si se acaba el tiempo, se acaba la serie.',
       best: 'Récord: {n} pts', continue: 'Seguir · hoyo {n}', pts: '{n} pts' },

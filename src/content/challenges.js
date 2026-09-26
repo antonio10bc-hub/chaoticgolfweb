@@ -236,3 +236,52 @@ export function challengeTiles(ch, S, seed) {
 }
 export const challengeById = id => CHALLENGES.find(c => c.id === id);
 export const weeklyById = id => WEEKLY.find(c => c.id === id);
+
+/* ---------- reto diario: tablero pequeño y una sola mecánica cada día ---------- */
+// El tablero es el de siempre (5×5, PAR 2) y, algún día, una o dos filas o columnas más (sizes: los
+// tamaños posibles de esa mecánica; el primero es el normal). Cada mecánica está pensada para lo poco
+// que cabe: una pieza que decide la partida. Se turnan en un orden fijo (nunca dos días igual seguidos).
+const S5 = { cols: 5, rows: 5, par: 2 };
+export const DAILY_FEATURES = [
+  // portales: de la banda de la salida a la de arriba, junto al hoyo (atajo lateral)
+  { id: 'portal', icon: 'i-spiral', sizes: [S5, { cols: 7, rows: 5, par: 2 }], mirror: true,
+    layout: C => [{ type: 'portal', pair: 1, x: C.cols - 1, y: C.by }, { type: 'portal', pair: 1, x: 0, y: C.hy + 1 }] },
+  // catapultas: una delante de cada salida lateral, girando en sentidos opuestos: cuando una apunta al
+  // centro o arriba es un atajo; si no, te saca del tablero (hay que elegir el turno)
+  { id: 'launcher', icon: 'i-launch', sizes: [S5, { cols: 5, rows: 6, par: 2 }],
+    layout: (C, v) => { const r = v.rot(); return [{ type: 'launcher', x: C.cx - 1, y: C.by - 1, rot: r }, { type: 'launcher', x: C.cx + 1, y: C.by - 1, rot: (r + 2) % 4 }]; } },
+  // arenero: justo delante del hoyo, en la calle del PAR: el camino recto se atasca
+  { id: 'bunker', icon: 'i-sand', sizes: [S5],
+    layout: C => [{ type: 'bunker', x: C.cx, y: C.hy + 1, onPar: true }] },
+  // río pequeño: baja por una banda desde la fila del hoyo; si el hoyo cae en él, la corriente lo
+  // acerca a las pelotas
+  { id: 'river', icon: 'i-wave', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    layout: C => [...col('river', C.cols - 1, C.hy, C.hy + 1)] },
+  // caja con agujeros: un túnel en diagonal al hoyo: sales por un lado al azar, muy cerca de él
+  { id: 'tunnel', icon: 'i-tunnel', sizes: [S5], mirror: true,
+    layout: C => [{ type: 'tunnel', x: C.cx + 1, y: C.hy + 1 }] },
+  // bloque junto al hoyo: un tiro por la fila del hoyo que se pasa rebota y vuelve a entrar
+  { id: 'block', icon: 'i-block', sizes: [S5, { cols: 6, rows: 5, par: 2 }], mirror: true,
+    layout: C => [{ type: 'block', x: C.cx + 1, y: C.hy }] },
+  // charca: dos casillas de lago a un lado del hoyo: empujar el hoyo dentro lo devuelve a su sitio
+  { id: 'lake', icon: 'i-drop', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    layout: C => [{ type: 'lake', x: C.cx - 1, y: C.hy }, { type: 'lake', x: C.cx - 2, y: C.hy }] },
+  // esquina: en lo alto de una banda; lo que sube por ella gira hacia el hoyo
+  { id: 'corner', icon: 'i-prism', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    layout: C => [{ type: 'corner', x: 0, y: C.hy, rot: 0 }] },
+  // palo iridiscente: tres en el mazo; en un tablero tan pequeño, las demás pelotas son los topes
+  { id: 'iri', icon: 'i-prism', sizes: [S5], deck: 'dailyIri' },
+];
+DECKS.daily = () => ({ ...defaultCounts(), bunker: 0, portal: 0 }); // (solo la pieza del día en el campo)
+DECKS.dailyIri = () => ({ ...DECKS.daily(), paloIri: 3 });
+const DAILY_ORDER = ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'];
+// número de día desde el 1 de enero de 2026 (fechas "AAAA-MM-DD" en hora local)
+const dayNumber = date => { const [y, m, d] = date.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 0, 1)) / 864e5); };
+// el reto del día como un desafío más (tamaño, mazo, reglas y campo)
+export function dailyChallenge(date, seed) {
+  const n = dayNumber(date), id = DAILY_ORDER[((n % DAILY_ORDER.length) + DAILY_ORDER.length) % DAILY_ORDER.length];
+  const f = DAILY_FEATURES.find(x => x.id === id), r = mulberry32((seed ^ 0x6a09e667) >>> 0);
+  // uno de cada cuatro días (si la mecánica lo admite), el tablero crece un poco
+  const board = f.sizes.length > 1 && r() < .25 ? f.sizes[1 + Math.floor(r() * (f.sizes.length - 1))] : f.sizes[0];
+  return { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror };
+}
