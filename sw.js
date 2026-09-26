@@ -2,7 +2,7 @@
 // Estrategia "primero red": online siempre se sirve la última versión (nada de
 // cachés rancias al desarrollar); cada respuesta buena se guarda, y sin red se
 // sirve la copia guardada. Subir CACHE si se quiere vaciar la caché antigua.
-const CACHE = 'chaoticgolf-v26';
+const CACHE = 'chaoticgolf-v27';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'assets/icons/icon.svg'];
 
 self.addEventListener('install', e => {

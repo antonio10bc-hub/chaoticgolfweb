@@ -28,6 +28,7 @@ import { openEditor } from './editor.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
+import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
 import { modeIntro } from './mode-intro.js';
@@ -418,7 +419,8 @@ export function openModes(tab) {
     const pct = st.p ? Math.round(100 * st.w / st.p) + '%' : '—';
     const btns = dk.locked
       ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
-      : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '');
+      : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '') +
+        (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '');
     return `<article class="deckCard${dk.locked ? ' locked' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
@@ -551,6 +553,7 @@ export function bindModes() {
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
       case 'weekly': startWeekly(); break;
+      case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
       case 'editor': openEditor(); break;
     }
   });

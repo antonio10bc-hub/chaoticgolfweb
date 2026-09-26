@@ -6,6 +6,7 @@ import { $, esc } from './dom.js';
 import { t, getLang } from '../i18n/index.js';
 import { prefs, setPref, resetPrefs, THEMES, TRACKS, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
 import { resetModeIntros } from './mode-intro.js';
+import { resetDeckIntros } from './deck-intro.js';
 import { chartsHTML } from './stats-charts.js';
 import { SFX, MUSIC, sfx, sfxApplyVolumes, musicStart, musicStop, musicRefresh, sndSave } from '../audio/sfx.js';
 import { loadRecords, resetRecords, turnsLabel } from './records.js';
@@ -134,7 +135,7 @@ export function bindSettings() {
     const a = e.target.closest('[data-set-act]');
     if (!a) return;
     if (a.dataset.setAct === 'close') closeSettings();
-    if (a.dataset.setAct === 'tutorial') { resetTutorial(); resetModeIntros(); a.disabled = true; a.textContent = t('settings.tutorialDone'); }
+    if (a.dataset.setAct === 'tutorial') { resetTutorial(); resetModeIntros(); resetDeckIntros(); a.disabled = true; a.textContent = t('settings.tutorialDone'); }
     if (a.dataset.setAct === 'resetStats' && await confirmDialog(t('stats.resetConfirm'), t('stats.reset'), true)) { resetRecords(); paint(); }
     if (a.dataset.setAct === 'resetPrefs' && await confirmDialog(t('settings.resetConfirm'), t('settings.reset'), true)) {
       resetPrefs();

@@ -18,6 +18,7 @@ import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
 import { deckById } from '../content/decks.js';
+import { deckIntro } from './deck-intro.js';
 import { defaultCounts } from '../content/cards/index.js';
 
 export const PVE_SIZES = {
@@ -164,7 +165,7 @@ export function cfgSub(c) {
 }
 export async function repeatLastPve(deck = 'classic') {
   const c = lastPve(deck);
-  if (!c || !await confirmReplaceSave('pve')) return;
+  if (!c || !await confirmReplaceSave('pve') || !await deckIntro(deck)) return;
   app.pveCfg = { ...app.pveCfg, ...c };
   startPveMatch();
 }
@@ -189,7 +190,8 @@ export function startPveMatch() {
 
 export function bindPve() {
   $('pveContinue').addEventListener('click', () => resumeGame('pve'));
-  $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave('pve')) startPveMatch(); });
+  // la primera vez con una baraja de cartas nuevas, antes se presentan (deck-intro.js)
+  $('pvePlay').addEventListener('click', async () => { if (await confirmReplaceSave('pve') && await deckIntro(app.pveCfg.deck)) startPveMatch(); });
   $('pveBack').addEventListener('click', () => openModes('quick'));
   // nombres del perfil: se guardan al escribir
   $('pveScreen').addEventListener('input', e => {

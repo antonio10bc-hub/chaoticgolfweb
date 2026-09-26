@@ -241,6 +241,39 @@ it('baraja de agua: sin búnkeres ni portales, con río y lago, y fondo de lago'
   assert.deepEqual(r, { scene: 'lake', bunker: 0, water: 10 });
 });
 
+it('menú: el botón de Lo básico dice cuántos llevas y, con todos, un tic', async () => {
+  await fresh({ chaoticgolf_progress: { 0: true, 1: true, 2: true } });
+  assert.equal(await app(() => document.getElementById('storyProg').textContent), '3/8');
+  await fresh({ chaoticgolf_progress: Object.fromEntries([0, 1, 2, 3, 4, 5, 6, 7].map(i => [i, true])) });
+  assert.ok(await app(() => document.getElementById('storyProg').classList.contains('all')));
+});
+
+it('Lo básico: salirse del tablero tiene su aviso en cualquier nivel', async () => {
+  await fresh();
+  await click('#storyBtn'); await sleep(300);
+  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls[0];
+    S.hands[0] = ['palo3', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.out); ctl.clickCell(t.x, t.y); });
+  await sleep(300);
+  assert.match(await app(() => document.getElementById('storyTip').textContent), /tablero/i);
+});
+
+it('baraja nueva: la primera vez presenta sus cartas con un tablero de ejemplo animado', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(400); await click('[data-mtab="quick"]'); await sleep(600);
+  await click('[data-mode="quick:water"]'); await confirmIfAsked(); await sleep(300);
+  await click('#pvePlay'); await sleep(500);
+  assert.equal(await app(() => document.querySelectorAll('#dialog[open] .dmCard .dmBoard animate').length > 0), true);
+  assert.equal(await app(() => document.querySelectorAll('#dialog[open] .dmCard').length), 2);
+  await page.click('#dialog[open] button[value="ok"]'); await sleep(700);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
+  // la segunda vez ya no
+  await click('#menuBtn'); await sleep(400);
+  await app(() => localStorage.removeItem('chaoticgolf_save_pve'));
+  await click('[data-mode="quick:water"]'); await sleep(300); await click('#pvePlay'); await sleep(500);
+  assert.equal(await page.$('#dialog[open] .deckIntro'), null);
+});
+
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(300); // los puzles viven en Modos de juego

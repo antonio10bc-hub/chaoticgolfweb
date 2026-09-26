@@ -132,9 +132,12 @@ export function toast(msg, kind = '') {
 }
 
 // bocadillos de tutorial: los define cada nivel de historia en su JSON ("tips")
+// Lo básico (y tus niveles): cada situación tiene su aviso (story.tips.<clave>) la primera vez que
+// pasa en la partida; el JSON de un nivel puede sustituir alguno con "tips"
 export function storyTip(key) {
-  if (app.mode !== 'story' || !app.level?.tips) return;
-  const textKey = app.level.tips[key];
+  if (app.mode !== 'story' || app.variant) return;
+  const own = app.level?.tips?.[key], def = 'story.tips.' + key;
+  const textKey = own || (t(def) !== def ? def : null);
   if (!textKey || app.tipShown[key]) return;
   app.tipShown[key] = true;
   const el = $('storyTip');

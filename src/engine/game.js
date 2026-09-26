@@ -13,7 +13,8 @@
      { t:'badCard', p, idx }     se ha pulsado una carta no jugable
      { t:'tilePlaced', x, y }    loseta colocada
      { t:'rewind' }              carta NO: el tablero se ha restaurado
-     { t:'tip', key }            momento didáctico (choque / búnker / portal)
+     { t:'tip', key }            momento didáctico (Lo básico): hit, chain, bunker, trapExit, portal, fall,
+                                 holeMove, holeFell, swallow, decoy, river, lake (textos en story.tips)
      { t:'resolved' }            una carta ha terminado de resolverse
      { t:'turnEnded' }           cambio de turno
      { t:'win' }                 victoria confirmada
@@ -329,6 +330,7 @@ export class Game {
     if (!this.inBoard(x, ey)) { // el río desemboca fuera del tablero: se cae
       ball.x = x; ball.y = y;
       this.anim({ t: 'fall', p: pid, x, y: ey, dir: 'down' });
+      this.tip('fall');
       this.resetBallToSpawn(ball);
       this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });
@@ -472,6 +474,7 @@ export class Game {
       });
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
+        this.tip('fall');
         this.resetBallToSpawn(ball);
         this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
         this.log('log.ballFell', { b, x: ball.x, y: ball.y });
@@ -485,7 +488,7 @@ export class Game {
         ball.x = cx; ball.y = cy;
         this.anim({ t: 'impact', p: pid, dir: dirKey, target: 'b' + hit.player });
         this.log('log.collision', { a: b, b: playerTag(hit.player), n: remaining });
-        this.tip('hit');
+        this.tip(this._chain ? 'chain' : 'hit'); // (golpeada que golpea a otra: carambola)
         this.moveBallTransfer(hit, dirKey, remaining);
         return;
       }
@@ -515,6 +518,7 @@ export class Game {
     const wb = S.balls.find(b => b.player === pl);
     if (wb && wb.decoy) { // pelota de obstáculo: no gana; se queda en el hoyo y desaparece para siempre
       this.log('log.decoyGone', { b: playerTag(wb.player) });
+      this.tip('decoy');
       return;
     }
     if (S.winner === null) {
@@ -603,6 +607,7 @@ export class Game {
   // si termina sobre una pelota, se la traga y ese jugador gana
   moveHole(dirKey, dist) {
     const S = this.S;
+    this.tip('holeMove');
     const { dx, dy } = DIRS[dirKey];
     let cx = S.hole.x, cy = S.hole.y;
     let remaining = dist;
@@ -616,6 +621,7 @@ export class Game {
         this.anim({ t: 'fall', p: 'hole', x: nx, y: ny });
         let hx = S.hole.initX, hy = S.hole.initY;
         this.log('log.holeFell', { x: hx, y: hy });
+        this.tip('holeFell');
         this.anim({ t: 'appear', p: 'hole', x: hx, y: hy });
         // regla: si en la casilla inicial del hoyo hay ahora un portal, el hoyo lo
         // atraviesa siguiendo la dirección de la caída (encadenando portales)
@@ -659,6 +665,7 @@ export class Game {
     if (b) {
       b.holed = true;
       this.log('log.holeSwallows', { b: playerTag(b.player) });
+      this.tip('swallow');
       this.anim({ t: 'sink', p: 'b' + b.player });
       this.registerWin(b.player);
     }
@@ -838,6 +845,7 @@ export class Game {
       if (!pd.extract && this.inTrap(pd.ball)) {
         steps -= 1;
         this.log('log.ballLeavesTrap', { b: playerTag(pd.ball.player), n: steps });
+        this.tip('trapExit');
       }
       this.moveBallRaw(pd.ball, tg.dir, steps);
       // si una colisión la deja sobre la casilla del hoyo, vuelve a caer dentro
@@ -873,6 +881,7 @@ export class Game {
     if (this.inTrap(pd.ball)) {
       steps -= 1;
       this.log('log.ballLeavesTrap', { b: playerTag(pd.ball.player), n: steps });
+      this.tip('trapExit');
     }
     this.consumeCard(pd.p, pd.idx);
     if (steps <= 0) { // un dedo de 1 no basta para salir de la trampa: la carta se pierde sin movimiento
@@ -900,6 +909,7 @@ export class Game {
     });
     if (!this.inBoard(nx, ny)) {
       this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
+      this.tip('fall');
       this.resetBallToSpawn(ball);
       this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });

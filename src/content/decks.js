@@ -3,10 +3,12 @@
 // `color`: color de la baraja (tarjeta, emblema y, cuando exista, el campo de juego).
 // `counts(base)`: el mazo de la baraja a partir de las copias por defecto de cada carta.
 // `scene`: fondo propio de la partida (clase en #gameScreen; ver styles/features.css).
+// `newCards`: las cartas especiales de la baraja. La primera vez que se juega, se presentan con un
+// tablero de ejemplo animado (src/ui/deck-intro.js; cada carta define su escena en `demo`).
 export const DECKS = [
   { id: 'classic', color: '#4F8A4B', emblem: 'club' },
   // agua: sin búnkeres ni portales; con río (corriente que baja) y lago (como caerse del tablero)
-  { id: 'water', color: '#1F8A8A', emblem: 'drop', scene: 'lake', counts: base => ({ ...base, bunker: 0, portal: 0, river: 5, lake: 5 }) },
+  { id: 'water', color: '#1F8A8A', emblem: 'drop', scene: 'lake', newCards: ['river', 'lake'], counts: base => ({ ...base, bunker: 0, portal: 0, river: 5, lake: 5 }) },
   { id: 'minigolf', color: '#7B4FB0', emblem: 'mill', locked: true },
 ];
 export const deckById = id => DECKS.find(d => d.id === id) || DECKS[0];

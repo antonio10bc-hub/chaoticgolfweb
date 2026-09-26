@@ -189,6 +189,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   caer dentro es como caerse del tablero (el hoyo vuelve a su casilla inicial). Si en la salida hay agua, el río
   arrastra o se va a la casilla libre más cercana. La partida tiene fondo de lago (el campo es una isla), la bola
   flota río abajo y hay chapuzón al caer al lago. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
+- **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
+  especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
+  de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el
+  botón "Cartas nuevas" de la tarjeta de la baraja. Sirve para cualquier baraja futura.
+- **Lo básico:** el botón del menú muestra tu progreso ("3/8") o un tic gris con todo completado. Cada situación
+  del tablero tiene su aviso la primera vez que pasa (choque, carambola, búnker, salir del búnker, portal,
+  salirse del tablero, mover el hoyo, el hoyo que se sale o se traga una pelota, pelotas de obstáculo…).
 - **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
   como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.

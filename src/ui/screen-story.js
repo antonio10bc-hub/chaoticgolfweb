@@ -107,6 +107,16 @@ export async function playLevelCard(b) {
   if (await confirmReplaceSave(slot)) startLevel(L, 'story', i, { variant: puzzle ? 'puzzle' : null });
 }
 
+// botón del menú: cuántos niveles de Lo básico llevas ("3/8") o, con todos, un tic gris
+export function paintStoryBtn() {
+  const el = $('storyProg'), n = app.storyLevels.length;
+  if (!el || !n) return;
+  const prog = loadProgress(), done = app.storyLevels.filter((_, i) => prog[i]).length, all = done === n;
+  el.classList.toggle('all', all);
+  el.innerHTML = all ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg>` : `${done}/${n}`;
+  $('storyBtn').setAttribute('aria-label', `${t('menu.story')} · ${all ? t('story.allDone') : t('story.progress', { n: done, total: n })}`);
+}
+
 export function replayLevel() {
   hideWin();
   if (app.mode === 'test') startLevel(ED.level, 'test');
