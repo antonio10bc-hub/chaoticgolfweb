@@ -76,7 +76,7 @@ export const clearCaddie = () => { app.caddie = null; };
 export function undoAllowed() {
   const g = app.game, S = g?.S;
   if (!S || !app.undo?.count || g.pending || app.animating || app.paused || (S.winner !== null && !S.jaque)) return false;
-  if (app.mode === 'test' && app.variant === 'lab') return false; // (el laboratorio tiene su propio deshacer)
+  if (app.mode === 'test') return false; // (al probar un nivel, las trampas tienen su propio deshacer)
   if (app.mode === 'story') return !app.variant;
   return app.mode === 'pve' && !app.variant && S.aiLevel === 'easy' && !multiHuman(); // no en el reto diario ni en desafíos
 }

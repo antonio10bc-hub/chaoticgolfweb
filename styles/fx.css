@@ -192,11 +192,11 @@
 @keyframes screenIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .cell.edFlash { animation: edFlashSoft .35s var(--ease-out); }
 @keyframes edFlashSoft { from { box-shadow: inset 0 0 0 3px var(--accent); } to { box-shadow: inset 0 0 0 0 transparent; } }
-.trailDot { width: 8px; height: 8px; margin: -4px 0 0 -4px; box-shadow: 2px 2px 0 var(--shadow); }
+.trailDot { width: 8px; height: 8px; margin: -4px 0 0 -4px; box-shadow: 0 1.2px 3.6px var(--shadow); }
 .comboText {
   font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: var(--ink);
   -webkit-text-stroke: 0; text-shadow: none;
-  background: var(--cream); padding: 4px 12px; border-radius: 999px; box-shadow: 4px 4px 0 var(--shadow);
+  background: var(--cream); padding: 4px 12px; border-radius: 999px; box-shadow: 0 2.4px 7.2px var(--shadow);
   animation: comboSoft .85s var(--ease-out) forwards;
 }
 @keyframes comboSoft {
@@ -208,7 +208,7 @@
 #rewindTag {
   display: flex; align-items: center; gap: 6px;
   background: rgba(36,36,36,.86); color: var(--cream); font-size: 12px; font-weight: 500; letter-spacing: .12em;
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: 0 2.4px 7.2px var(--shadow);
 }
 #pieces.idle .piece.phole:not(.sunk) .cardOnCell { animation: none; }
 

@@ -43,17 +43,17 @@ html.reduceMotion .portalRing { opacity: .5; } html.reduceMotion .portalRing:nth
 .avatar { position: relative; }
 .avatar.hasFace { padding: 0; }
 .avatar .face { width: 88%; height: 88%; display: block; }
-.avatar.lg { width: 76px; height: 76px; font-size: 22px; box-shadow: 5px 5px 0 var(--shadow), inset -5px -5px 0 rgba(0,0,0,.1), inset 5px 5px 0 rgba(255,255,255,.18); }
+.avatar.lg { width: 76px; height: 76px; font-size: 22px; box-shadow: 0 3px 9px var(--shadow), inset -5px -5px 0 rgba(0,0,0,.1), inset 5px 5px 0 rgba(255,255,255,.18); }
 .shp { display: none; }
 html.cbShapes .shp { display: block; }
 html.cbShapes .avatar .shp {
   position: absolute; right: -4px; bottom: -4px; width: 15px; height: 15px; padding: 2px;
-  color: var(--ink); background: var(--cream); border-radius: 50%; box-shadow: 1px 1px 0 var(--shadow);
+  color: var(--ink); background: var(--cream); border-radius: 50%; box-shadow: 0 1px 2px var(--shadow);
 }
 html.cbShapes .avatar.xs .shp { width: 11px; height: 11px; padding: 1.5px; right: -3px; bottom: -3px; }
 html.cbShapes .tile-ball .circ .shp {
   position: absolute; left: 50%; top: -2px; width: 34%; height: 34%; transform: translate(-50%, -30%);
-  color: var(--ink); background: #fff; border-radius: 50%; padding: 5%; box-shadow: 1px 1px 0 var(--shadow);
+  color: var(--ink); background: #fff; border-radius: 50%; padding: 5%; box-shadow: 0 1px 2px var(--shadow);
 }
 
 /* ---------- bocadillos de los bots ---------- */
@@ -62,7 +62,7 @@ html.cbShapes .tile-ball .circ .shp {
   position: fixed; left: 0; top: 0; z-index: 38; pointer-events: none;
   max-width: 180px; padding: 7px 12px; border-radius: 14px;
   background: #fff; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: -.005em; line-height: 1.2;
-  box-shadow: 0 0 0 1.5px var(--pc), 4px 4px 0 var(--shadow);
+  box-shadow: 0 0 0 1.5px var(--pc), 0 2.4px 7.2px var(--shadow);
   animation: bubbleIn .28s cubic-bezier(.3,1.5,.5,1) both;
 }
 .bubble::after { /* rabito hacia el avatar */
@@ -123,14 +123,14 @@ html.cbShapes .tile-ball .circ .shp {
   position: absolute; z-index: 9; pointer-events: none; transform: translate(-50%, -100%);
   display: flex; align-items: center; gap: 5px; white-space: nowrap;
   padding: 4px 10px 4px 7px; border-radius: 999px; background: var(--accent-deep); color: var(--cream);
-  font-size: 12.5px; font-weight: 600; box-shadow: 3px 3px 0 var(--shadow);
+  font-size: 12.5px; font-weight: 600; box-shadow: 0 1.8px 5.4px var(--shadow);
   animation: chainUp 1.6s var(--ease-out) forwards;
 }
 .chainStop.still { animation: none; }
 @keyframes chainUp { 0% { opacity: 0; translate: 0 6px; } 12% { opacity: 1; translate: 0 0; } 80% { opacity: 1; } 100% { opacity: 0; translate: 0 -14px; } }
 
 /* ---------- aviso tras un rato sin jugar ---------- */
-#hands .card.nudge { animation: nudge 1.6s ease-in-out infinite; box-shadow: 0 0 0 3px var(--accent), 4px 4px 0 var(--shadow); }
+#hands .card.nudge { animation: nudge 1.6s ease-in-out infinite; box-shadow: 0 0 0 3px var(--accent), 0 2.4px 7.2px var(--shadow); }
 @keyframes nudge { 0%, 70%, 100% { transform: translateY(0); } 80% { transform: translateY(-9px) rotate(-2deg); } 90% { transform: translateY(0) rotate(1deg); } }
 .hint.nudgeHint { background: rgba(232,135,58,.92); color: var(--ink); font-weight: 500; }
 
@@ -139,7 +139,7 @@ html.cbShapes .tile-ball .circ .shp {
   position: fixed; left: 0; top: 0; z-index: 42; width: min(330px, calc(100vw - 20px));
   padding: 14px 16px 12px; border-radius: 16px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
-  box-shadow: 0 0 0 1.5px var(--accent), var(--shadow-soft), 8px 8px 0 rgba(20,40,20,.2);
+  box-shadow: 0 0 0 1.5px var(--accent), var(--shadow-soft), 0 4.8px 14.4px rgba(20,40,20,.2);
   display: none;
 }
 #coach.visible { display: block; animation: coachIn .3s var(--ease-out); }
@@ -206,7 +206,7 @@ html.cbShapes .tile-ball .circ .shp {
 .setToggle { display: flex; align-items: center; gap: 12px; margin: 10px 0; cursor: pointer; }
 .setToggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .setToggle .sw { flex: 0 0 auto; width: 40px; height: 23px; border-radius: 999px; background: var(--cream-line); position: relative; transition: background-color .2s; }
-.setToggle .sw::after { content: ''; position: absolute; left: 3px; top: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 1px 1px 0 var(--shadow); transition: transform .2s var(--ease-out); }
+.setToggle .sw::after { content: ''; position: absolute; left: 3px; top: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px var(--shadow); transition: transform .2s var(--ease-out); }
 .setToggle input:checked + .sw { background: var(--grass-dark); }
 .setToggle input:checked + .sw::after { transform: translateX(17px); }
 .setToggle input:focus-visible + .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -240,7 +240,7 @@ html.cbShapes .tile-ball .circ .shp {
 .pveOpt.hum, .pveOpt.diff { flex: 1; min-width: 70px; }
 .pveOpt:disabled { opacity: .3; }
 .optPeople { display: flex; gap: 3px; height: 22px; align-items: flex-end; }
-.optPeople i { width: 10px; height: 16px; border-radius: 5px 5px 2px 2px; background: var(--accent); box-shadow: 2px 2px 0 var(--shadow); position: relative; }
+.optPeople i { width: 10px; height: 16px; border-radius: 5px 5px 2px 2px; background: var(--accent); box-shadow: 0 1.2px 3.6px var(--shadow); position: relative; }
 .optPeople i::before { content: ''; position: absolute; left: 1.5px; top: -7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .optBots:empty::after { content: '—'; color: var(--ink-soft); font-size: 14px; }
 .pveNote { display: none; margin-top: 8px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; }
@@ -257,12 +257,12 @@ html.cbShapes .tile-ball .circ .shp {
 .lvlBest { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
 .lvlBest .i { width: 12px; height: 12px; color: var(--accent); }
 .lvlSaved { position: absolute; top: 16px; right: 16px; z-index: 1; font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
-  padding: 3px 9px; border-radius: 999px; background: var(--accent); color: #fff; box-shadow: 2px 2px 0 var(--shadow); }
+  padding: 3px 9px; border-radius: 999px; background: var(--accent); color: #fff; box-shadow: 0 1.2px 3.6px var(--shadow); }
 .lvlCard.saved { --b-line: var(--accent); }
 
 /* ---------- resumen final: récord del nivel ---------- */
 .winRec { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 5px 14px; border-radius: 999px; border: 1px solid var(--cream-line); color: var(--ink-soft); }
-.winRec.new { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 3px 3px 0 var(--shadow); animation: recPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
+.winRec.new { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1.8px 5.4px var(--shadow); animation: recPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
 @keyframes recPop { from { transform: scale(.5); opacity: 0; } to { transform: none; opacity: 1; } }
 
 @media (max-width: 560px) {
@@ -407,8 +407,9 @@ html.paused #game .cell.selectable, html.paused #game .piece .turnMark, html.pau
 #logList .lgGroup div { border: 0; padding: 0; }
 #logList .lgHead { display: flex; align-items: center; gap: 7px; margin: 4px 0 4px; color: var(--ink); font-size: 12px; }
 #logList .lgHead b { font-weight: 600; }
-#logList .lg { --pc: var(--cream-line); display: flex; align-items: flex-start; gap: 7px; padding: 3px 0 3px 9px !important; margin-left: 10px;
-  border-left: 2px solid var(--pc) !important; color: var(--ink-soft); font-weight: 400; }
+#logList .lg { --pc: var(--cream-line); display: flex; align-items: flex-start; gap: 7px; padding: 3px 0 3px 0 !important; margin-left: 10px;
+  color: var(--ink-soft); font-weight: 400; }
+#logList .lg::before { content: ''; flex: 0 0 auto; width: 7px; height: 7px; margin-top: 6px; border-radius: 50%; background: var(--pc); } /* de quién es la jugada */
 #logList .lg .i { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 2px; color: var(--ink-soft); }
 #logList .lgGroup:first-child .lg:first-of-type { color: var(--ink); font-weight: 500; }
 #logList .lg.muted { border: 0 !important; margin: 10px 0; }
@@ -423,7 +424,7 @@ html.paused #game .cell.selectable, html.paused #game .piece .turnMark, html.pau
 .pveName:focus, .setName:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(163,193,115,.35); }
 .setName { width: min(240px, 100%); }
 .pvePerson { display: flex; gap: 10px; align-items: center; }
-.pveDot { flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: none; border-radius: 50%; box-shadow: 3px 3px 0 var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1); }
+.pveDot { flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: none; border-radius: 50%; box-shadow: 0 1.8px 5.4px var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1); }
 .pveDot:hover { transform: rotate(-20deg) scale(1.05); }
 .setColors { display: flex; gap: 8px; flex-wrap: wrap; }
 .setColors .pveColor { width: 34px; height: 34px; }
@@ -495,7 +496,7 @@ html.hiContrast .btn-ghost { --b-bg: rgba(36,36,36,.55); --b-line: #fff; --b-fg:
 html.hiContrast .hint { background: #151515; }
 html.hiContrast .seat { opacity: 1; border-color: var(--ink-line); }
 html.hiContrast .card.dimmed, html.hiContrast .card.unplayable { opacity: .75; filter: grayscale(.6); }
-html.hiContrast .tile-ball .circ { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ink), 4px 4px 0 var(--shadow); }
+html.hiContrast .tile-ball .circ { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ink), 0 2.4px 7.2px var(--shadow); }
 html.hiContrast :focus-visible { outline: 3px solid var(--accent-deep) !important; outline-offset: 2px; }
 html.hiContrast .pileLbl, html.hiContrast #lastPlay { text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 
@@ -548,7 +549,7 @@ html.leftHand #dockOwner { order: 1; }
 .piece.ghostPick::after, .piece.ghostCan::after {
   content: attr(data-pull); position: absolute; left: 50%; top: -6px; transform: translate(-50%, -100%);
   padding: 2px 9px; border-radius: 999px; white-space: nowrap; pointer-events: none;
-  background: var(--accent); color: var(--ink); font-size: 11px; font-weight: 600; box-shadow: 2px 2px 0 var(--shadow);
+  background: var(--accent); color: var(--ink); font-size: 11px; font-weight: 600; box-shadow: 0 1.2px 3.6px var(--shadow);
 }
 .piece.ghostCan::after { opacity: .85; }
 html.reduceMotion .piece.ghostCan .tile-ball .circ, html.reduceMotion .piece.ghostPick .tile-ball .circ { animation: none; }
@@ -608,20 +609,20 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 /* ---------- etiqueta del modo en la partida ---------- */
 #gameBar { position: relative; }
 #modeChip { position: absolute; left: 50%; top: calc(100% - 2px); transform: translateX(-50%); z-index: 31; white-space: nowrap;
-  padding: 3px 12px; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: 11.5px; font-weight: 500; box-shadow: 2px 2px 0 var(--shadow); }
+  padding: 3px 12px; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: 11.5px; font-weight: 500; box-shadow: 0 1.2px 3.6px var(--shadow); }
 
 /* ---------- rivales (partida rápida) ---------- */
 .pveOpt.rival { flex: 1; min-width: 92px; gap: 3px; }
 .pveOpt.rival .avatar { width: 36px; height: 36px; }
 .pveOpt.rival.picked { --b-line: var(--ink); }
-.rivalRandom { background: var(--cream-line); color: var(--ink-soft); font-size: 16px; font-weight: 600; box-shadow: 3px 3px 0 var(--shadow); }
+.rivalRandom { background: var(--cream-line); color: var(--ink-soft); font-size: 16px; font-weight: 600; box-shadow: 0 1.8px 5.4px var(--shadow); }
 #pveRivals { flex-wrap: wrap; }
 
 /* ---------- ayudas: consejo y deshacer ---------- */
 .assistBtns { display: flex; flex-direction: column; gap: 6px; }
 .assistBtns:not(:has(button:not([hidden]))) { display: none; }
 #caddieBtn .i { color: var(--accent); }
-#hands .card.caddiePick { box-shadow: 0 0 0 3px var(--accent), 0 0 0 7px rgba(232,135,58,.25), 4px 4px 0 var(--shadow); transform: translateY(-8px); }
+#hands .card.caddiePick { box-shadow: 0 0 0 3px var(--accent), 0 0 0 7px rgba(232,135,58,.25), 0 2.4px 7.2px var(--shadow); transform: translateY(-8px); }
 #board .cell.caddieCell { box-shadow: inset 0 0 0 3px var(--accent) !important; }
 #endTurnBtn.caddiePick { box-shadow: 0 0 0 4px var(--accent), 0 6px 16px rgba(20,40,20,.2); }
 @media (max-width: 760px) {
@@ -784,8 +785,8 @@ body[data-screen="menu"]:not(.loading) .mActions > .mDaily { animation: btnUp .4
   background: rgba(214,48,32,.42); mix-blend-mode: multiply;
   opacity: var(--urgency, 0); transition: opacity .6s linear;
 }
-#game.urgent #boardWrap { box-shadow: 0 0 0 4px rgba(214,48,32,.85), 14px 14px 0 rgba(20,40,20,.22); animation: rtGlow 1s ease-in-out infinite; }
-@keyframes rtGlow { 50% { box-shadow: 0 0 0 8px rgba(214,48,32,.35), 14px 14px 0 rgba(20,40,20,.22); } }
+#game.urgent #boardWrap { box-shadow: 0 0 0 4px rgba(214,48,32,.85), 0 8.4px 25.2px rgba(20,40,20,.22); animation: rtGlow 1s ease-in-out infinite; }
+@keyframes rtGlow { 50% { box-shadow: 0 0 0 8px rgba(214,48,32,.35), 0 8.4px 25.2px rgba(20,40,20,.22); } }
 html.reduceMotion #rushTimer.danger, html.reduceMotion #game.urgent #boardWrap { animation: none; }
 @media (max-width: 760px) {
   #rushTimer { font-size: 15px; padding: 3px 10px 3px 8px; margin-top: 3px; }
@@ -1114,7 +1115,7 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
 }
 @media (min-width: 901px) {
   #pveCard .optBots { gap: 2px; max-width: 100%; }
-  #pveCard .optBots i { width: 8px; height: 8px; flex: 0 0 auto; box-shadow: 1px 1px 0 var(--shadow); }
+  #pveCard .optBots i { width: 8px; height: 8px; flex: 0 0 auto; box-shadow: 0 1px 2px var(--shadow); }
 }
 @media (min-width: 901px) { #pveCard .pveOpt.opp, #pveCard .pveOpt.hum { padding-inline: 4px; } }
 
@@ -1137,6 +1138,20 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
 
 /* ---------- escena de lago (baraja de agua): el campo es una isla en un lago ---------- */
 #gameDecor .dWater { display: none; }
+/* probar un nivel del creador: la alfombrilla de corte gris azulada del taller (como el editor) */
+#gameScreen[data-scene="mat"] #game {
+  --mat-line: rgba(226,236,240,.075); --mat-line2: rgba(226,236,240,.15); --mat-ink: rgba(226,236,240,.66);
+  background-color: #3C4A55;
+  background-image:
+    repeating-linear-gradient(90deg, var(--mat-ink) 0 1px, transparent 1px 50px), repeating-linear-gradient(90deg, var(--mat-line2) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(var(--mat-ink) 0 1px, transparent 1px 50px), repeating-linear-gradient(var(--mat-line2) 0 1px, transparent 1px 10px),
+    linear-gradient(var(--mat-line2) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line2) 1px, transparent 1px),
+    linear-gradient(var(--mat-line) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+  background-size: 100% 9px, 100% 5px, 9px 100%, 5px 100%, 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: 0 0, 0 0, 0 0, 0 0, -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat;
+}
+#gameScreen[data-scene="mat"] #gameDecor > * { display: none; }
 #gameScreen[data-scene="lake"] #game {
   background-color: #3F8C9C;
   background-image: var(--grain),
@@ -1158,7 +1173,7 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
 @keyframes padBob { 50% { transform: translateY(6px) rotate(2deg); } }
 @keyframes ripple { 0% { transform: scale(.4); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
 /* orilla de arena alrededor del tablero */
-#gameScreen[data-scene="lake"] #boardWrap { box-shadow: 0 0 0 7px #E6D9A8, 0 0 0 16px rgba(230,217,168,.35), 14px 14px 0 16px rgba(20,50,60,.18); }
+#gameScreen[data-scene="lake"] #boardWrap { box-shadow: 0 0 0 7px #E6D9A8, 0 0 0 16px rgba(230,217,168,.35), 0 8.4px 25.2px 8px rgba(20,50,60,.18); }
 html.reduceMotion #gameScreen[data-scene="lake"] #game, html.reduceMotion #gameDecor .dWater { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { #gameScreen[data-scene="lake"] #game, #gameDecor .dWater { animation: none !important; } }
 
@@ -1217,7 +1232,7 @@ html.reduceMotion .deckCard.ultimate::before { animation: none; }
 #gameScreen[data-scene="mini"] #gameDecor .dBunker, #gameScreen[data-scene="mini"] #gameDecor .dTree { display: none; }
 #gameScreen[data-scene="mini"] #boardWrap { background-color: #C99257;
   background-image: var(--grain), repeating-linear-gradient(90deg, rgba(122,82,48,.18) 0 2px, transparent 2px 38px);
-  box-shadow: inset 0 0 0 3px #A8743F, 0 0 0 4px #7A5230, 14px 14px 0 4px rgba(20,40,20,.22); }
+  box-shadow: inset 0 0 0 3px #A8743F, 0 0 0 4px #7A5230, 0 8.4px 25.2px 2px rgba(20,40,20,.22); }
 
 /* ---------- escena Ultimate: iridiscente ---------- */
 #gameScreen[data-scene="prism"] #game {
@@ -1228,7 +1243,7 @@ html.reduceMotion .deckCard.ultimate::before { animation: none; }
 }
 @keyframes prismBg { to { background-position: 0 0, 100% 100%; } }
 #gameScreen[data-scene="prism"] #gameDecor .dBunker, #gameScreen[data-scene="prism"] #gameDecor .dTree { display: none; }
-#gameScreen[data-scene="prism"] #boardWrap { box-shadow: 0 0 0 3px rgba(255,255,255,.8), 0 0 0 7px #C39BFF, 0 0 40px 8px rgba(160,130,255,.45), 14px 14px 0 7px rgba(60,40,120,.18); }
+#gameScreen[data-scene="prism"] #boardWrap { box-shadow: 0 0 0 3px rgba(255,255,255,.8), 0 0 0 7px #C39BFF, 0 0 40px 8px rgba(160,130,255,.45), 0 8.4px 25.2px 3.5px rgba(60,40,120,.18); }
 html.reduceMotion #gameScreen[data-scene="prism"] #game { animation: none; }
 @media (prefers-reduced-motion: reduce) { #gameScreen[data-scene="prism"] #game, .deckCard.ultimate::before { animation: none; } }
 .dmAlso { margin: 2px 0 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }

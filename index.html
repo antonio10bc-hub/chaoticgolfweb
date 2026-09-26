@@ -338,9 +338,12 @@
       <button id="edMenu" class="btn-ghost btn-sm btn-icon" data-i18n="nav.toModes">← Modos</button>
       <button id="edLibBtn" class="btn-ghost btn-sm btn-icon" data-i18n-title="ed.libTitle" title="Mis niveles"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg><span class="lbl" data-i18n="ed.lib">Mis niveles</span></button>
     </div>
-    <div id="edPill">
-      <input id="edName" maxlength="40" autocomplete="off" spellcheck="false" data-i18n-placeholder="ed.namePh" placeholder="Nivel sin nombre" data-i18n-aria="ed.nameAria" aria-label="Nombre del nivel">
-      <span id="edStatus" aria-live="polite"></span>
+    <div id="edCenter">
+      <button id="edTest" class="btn-icon" data-i18n-title="ed.testTitle" title="Juega el nivel tal como lo verá otra persona"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg><span data-i18n="ed.test">Probar nivel</span></button>
+      <div id="edPill">
+        <input id="edName" maxlength="40" autocomplete="off" spellcheck="false" data-i18n-placeholder="ed.namePh" placeholder="Nivel sin nombre" data-i18n-aria="ed.nameAria" aria-label="Nombre del nivel">
+        <span id="edStatus" aria-live="polite"></span>
+      </div>
     </div>
     <div class="barSide right">
       <button id="edUndo" class="btn-ghost btn-sm btn-icon" data-i18n-title="ed.undoTitle" title="Deshacer (Ctrl+Z)" data-i18n-aria="ed.undo" aria-label="Deshacer"><svg class="i" aria-hidden="true"><use href="#i-undo"/></svg></button>
@@ -372,8 +375,6 @@
       </div>
       <div id="edDock">
         <button id="edDeckBtn" class="btn-light btn-icon" aria-controls="edDeckPanel" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-club"/></svg><span data-i18n="ed.cardsBtn">Cartas</span></button>
-        <button id="edLab" class="btn-light btn-icon" data-i18n-title="ed.labTitle" title="Juega el nivel con todas las cartas a mano, deshacer y mover piezas"><svg class="i" aria-hidden="true"><use href="#i-flask"/></svg><span data-i18n="ed.lab">Laboratorio</span></button>
-        <button id="edTest" class="btn-accent btn-lg btn-icon" data-i18n-title="ed.testTitle" title="Juega el nivel tal como lo verá otra persona"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg><span data-i18n="ed.test">Probar nivel</span></button>
       </div>
     </main>
     <aside id="edDeckPanel" class="edPanel" data-i18n-aria="ed.deckAria" aria-label="Cartas del nivel">

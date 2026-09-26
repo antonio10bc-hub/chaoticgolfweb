@@ -392,7 +392,6 @@ export function modeChipText() {
     case 'challenge': return t('challenges.' + r.id + '.name');
     case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;
     case 'puzzle': return t('story.puzzleChip');
-    case 'lab': return t('lab.chip');
   }
   return '';
 }
@@ -446,8 +445,7 @@ const EMBLEM = {
 };
 const IRI_DEF = '<defs><linearGradient id="iriDeck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#C39BFF"/></linearGradient></defs>';
 const deckArt = dk0 => { const dk = dk0.ultimate ? { ...dk0, color: 'url(#iriDeck)' } : dk0; return `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true" style="color:${dk0.color}">${dk0.ultimate ? IRI_DEF : ''}` +
-  `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".35" transform="rotate(-12 31 31)"/>` +
-  `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".6" transform="rotate(-5 31 31)"/>` +
+  // una sola carta (sin cartas desplazadas por detrás)
   `<rect x="13" y="7" width="34" height="46" rx="6" fill="${dk.color}"/><rect x="16.5" y="10.5" width="27" height="39" rx="4" fill="none" stroke="rgba(241,241,220,.45)" stroke-width="1.4"/>` +
   `<g transform="translate(0 0)">${EMBLEM[dk.emblem]}</g></svg>`; };
 

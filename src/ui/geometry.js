@@ -57,11 +57,11 @@ export function setPos(el, x, y, ms, ease) {
 
 // igual que fitCells pero con el hueco disponible ya medido (px). Si con la proporción de carta las
 // casillas quedan pequeñas (tableros de minigolf y Ultimate), se hacen más cuadradas y crecen
-export function fitCellsTo(cols, rows, availW, availH, max = 64) {
+export function fitCellsTo(cols, rows, availW, availH, max = 64, min = 24) {
   const fit = ratio => {
     const w = Math.floor((availW - GAP * (cols - 1)) / cols);
     const wByH = Math.floor(((availH - GAP * (rows - 1)) / rows) / ratio);
-    return Math.max(24, Math.min(max, w, wByH));
+    return Math.max(min, Math.min(max, w, wByH));
   };
   let ratio = RATIO, w = fit(RATIO);
   if (w < 44) { const w2 = fit(RATIO_BIG); if (w2 > w) { w = w2; ratio = RATIO_BIG; } }

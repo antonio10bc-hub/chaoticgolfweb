@@ -292,8 +292,7 @@ export default {
     toolsAria: 'Herramientas', boardAria: 'Tablero del nivel', deckAria: 'Cartas del nivel',
     colAdd: 'Añadir columna', colDel: 'Quitar columna', rowAdd: 'Añadir fila', rowDel: 'Quitar fila',
     cols: '{n} columnas', rows: '{n} filas',
-    lab: 'Laboratorio', labTitle: 'Juega el nivel con cualquier carta a mano, deshaciendo y moviendo piezas',
-    test: 'Probar nivel', testTitle: 'Juega el nivel tal como lo verá otra persona', cardsBtn: 'Cartas',
+    test: 'Probar nivel', testTitle: 'Juega el nivel con trampas: cualquier carta a mano, deshacer y mover piezas', cardsBtn: 'Cartas',
     newLevel: 'Nuevo nivel',
     groups: { basic: 'Básico', classic: 'Clásica', water: 'Agua', mini: 'Minigolf' },
     tools: { ball: 'Pelota', hole: 'Hoyo', par: 'PAR', decoy: 'Obstáculo', erase: 'Borrar', bunker: 'Búnker', portal: 'Portal',
@@ -345,9 +344,10 @@ export default {
     notNow: 'Ahora no', save: 'Guardar', saveAndPlay: 'Guardar y jugar',
   },
   lab: {
-    title: 'Laboratorio', chip: 'Laboratorio', hint: 'Toca una carta para añadirla a tu mano.',
+    title: 'Trampas', hint: 'Toca una carta para añadirla a tu mano.',
     undo: 'Deshacer', god: 'Mover piezas', clear: 'Vaciar mano', full: 'Mano llena ({n} cartas)',
-    godOn: 'Mover piezas: toca una pieza y luego su nuevo sitio', godPick: 'Toca una pelota, el hoyo o una pieza', godPlace: '{what}: toca su nuevo sitio',
+    godOn: 'Mover piezas: toca una pieza y luego su nuevo sitio', godPick: 'Toca una pelota, el hoyo o una pieza', godPlace: '{what}: toca su nuevo sitio (o la misma para soltarla)',
+    wheel: 'Con la rueda del ratón también eliges una pieza y la sueltas en otra casilla.', cantDrop: 'Ahí no se puede soltar: elige una casilla marcada',
   },
 
   sound: {

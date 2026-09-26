@@ -34,7 +34,7 @@ import { redrawCaddie, clearCaddie, paintAssist } from './assist.js';
 import { showPuzzleFail } from './win.js';
 import { musicMood } from '../audio/sfx.js';
 import { piecesBefore, notePlay } from './share-play.js';
-import { paintLab } from './lab.js';
+import { paintLab, labGodClick } from './lab.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -220,7 +220,7 @@ export function clickCard(p, idx) {
 export function clickCell(x, y) {
   if (app.animating) return false;
   const g = app.game;
-  if (g.godMode) return dispatch(gg => gg.clickCell(x, y));
+  if (g.godMode) { if (app.mode === 'test') { labGodClick(x, y); return true; } return dispatch(gg => gg.clickCell(x, y)); } // (trampas al probar: con su validación)
   if (!g.pending) return false;
   if (app.mode === 'pve' && !app.ai.acting) { // en PVE solo se decide la acción propia (la de quien tiene el dispositivo)
     const pd = g.pending, me = viewer();

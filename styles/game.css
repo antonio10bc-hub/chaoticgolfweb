@@ -26,9 +26,9 @@
   background: var(--pc, #888);
   color: #fff; font-weight: 600; font-size: 12.5px; letter-spacing: .02em;
   text-shadow: 0 1px 1px rgba(0,0,0,.25);
-  box-shadow: 3px 3px 0 var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1), inset 3px 3px 0 rgba(255,255,255,.18);
+  box-shadow: 0 1.8px 5.4px var(--shadow), inset -3px -3px 0 rgba(0,0,0,.1), inset 3px 3px 0 rgba(255,255,255,.18);
 }
-.avatar.xs { width: 22px; height: 22px; font-size: 9px; box-shadow: 2px 2px 0 var(--shadow); }
+.avatar.xs { width: 22px; height: 22px; font-size: 9px; box-shadow: 0 1.2px 3.6px var(--shadow); }
 
 /* ---------- barra superior ---------- */
 #gameBar {
@@ -68,7 +68,7 @@
   position: relative; max-width: 100%; max-height: 100%; overflow: auto;
   padding: 10px; border-radius: 18px;
   background-image: var(--grain); background-color: var(--cream);
-  box-shadow: 14px 14px 0 rgba(20,40,20,.22), var(--shadow-soft);
+  box-shadow: 0 8.4px 25.2px rgba(20,40,20,.22), var(--shadow-soft);
 }
 
 /* ---------- asientos (rivales) ---------- */
@@ -118,10 +118,11 @@
 .pileStack > i {
   position: absolute; inset: 0; border-radius: 9px;
   background: var(--card-back); border: 3px solid var(--cream);
-  box-shadow: 4px 4px 0 var(--shadow);
+  box-shadow: 0 2.4px 7.2px var(--shadow);
 }
-.pileStack > i:nth-child(1) { transform: translate(-4px, 3px) rotate(-5deg); }
-.pileStack > i:nth-child(2) { transform: translate(3px, 1px) rotate(4deg); }
+/* una sola carta a la vista (nada de cartas desplazadas por detrás): el grosor del mazo, en sombras suaves */
+.pileStack > i:nth-child(1), .pileStack > i:nth-child(2) { display: none; }
+.pileStack > i:nth-child(3) { box-shadow: 0 2px 3px rgba(20,40,20,.22), 0 6px 14px rgba(20,40,20,.2), 0 14px 26px rgba(20,40,20,.14); }
 #deckPile:hover .pileStack > i:nth-child(3) { transform: translateY(-4px); transition: transform .2s var(--ease-out); }
 #deckPile.empty .pileStack > i { opacity: .25; }
 #discardTop { display: flex; align-items: center; justify-content: center; border-radius: 10px; }
@@ -168,7 +169,7 @@
   padding: 7px 16px 8px; border-radius: 18px;
   background-image: var(--grain); background-color: var(--cream);
   border: 1.5px solid transparent;
-  box-shadow: var(--shadow-soft), 10px 10px 0 rgba(20,40,20,.18);
+  box-shadow: var(--shadow-soft), 0 6px 18px rgba(20,40,20,.18);
   transition: border-color .25s var(--ease-out), box-shadow .25s;
 }
 #dock.myTurn #dockRow { border-color: var(--accent); }
@@ -200,12 +201,12 @@
   display: block; position: absolute; left: 50%; top: -9px; z-index: 6;
   width: 12px; height: 12px; margin-left: -6px; border-radius: 50% 50% 50% 0;
   background: var(--accent); transform: rotate(-45deg);
-  box-shadow: -2px 2px 0 var(--shadow);
+  box-shadow: 0 1.2px 3.6px var(--shadow);
   animation: markBob 1.6s ease-in-out infinite;
 }
 .piece.isTurn .turnMark::after { content: ''; position: absolute; inset: 3.5px; border-radius: 50%; background: var(--cream); }
 @keyframes markBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
-.piece.isSel .circ { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--accent), 4px 4px 0 5px var(--shadow); }
+.piece.isSel .circ { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--accent), 0 2.4px 7.2px 2.5px var(--shadow); }
 .piece.acting { z-index: 7; }
 
 /* ---------- JAQUE ---------- */
@@ -238,7 +239,7 @@
   display: flex; align-items: center; gap: 14px;
   padding: 10px 26px 10px 10px; border-radius: 999px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
-  box-shadow: 0 0 0 1.5px var(--pc), var(--shadow-soft), 10px 10px 0 rgba(20,40,20,.2);
+  box-shadow: 0 0 0 1.5px var(--pc), var(--shadow-soft), 0 6px 18px rgba(20,40,20,.2);
   transform: translate(-50%, -50%); opacity: 0;
 }
 #turnBanner .avatar { width: 44px; height: 44px; font-size: 15px; }
@@ -278,7 +279,7 @@
   .seatStatus { margin-bottom: 3px; }
   #piles { display: none; }
   #gameDecor { display: none; }
-  #boardWrap { box-shadow: 8px 8px 0 rgba(20,40,20,.22), var(--shadow-soft); padding: 7px; }
+  #boardWrap { box-shadow: 0 4.8px 14.4px rgba(20,40,20,.22), var(--shadow-soft); padding: 7px; }
   #dock { padding: 0 8px 8px; }
   #actionBar { min-height: 30px; margin-bottom: 4px; }
   .hint { font-size: 12.5px; border-radius: 16px; }

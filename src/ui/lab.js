@@ -1,7 +1,8 @@
-// Laboratorio del creador de niveles: el nivel se juega con cualquier carta a mano. Tocar una carta
-// del panel la añade a tu mano; se puede deshacer cualquier jugada (también de turnos anteriores) y
-// mover piezas a mano (el modo libre del motor: toca una pieza y luego su nuevo sitio).
-// Es el modo 'test' con variante 'lab': termina, se reinicia y vuelve al editor igual que Probar.
+// Trampas al probar un nivel del creador (modo 'test'): el nivel se juega con cualquier carta a mano.
+//   · Mover piezas: toca una pelota, el hoyo o una pieza y luego su nuevo sitio (el modo libre del motor).
+//     Con la rueda del ratón (clic central) se hace lo mismo en cualquier momento, sin activar nada.
+//   · Tocar una carta del panel la añade a tu mano; deshacer vale para cualquier jugada (también de
+//     turnos anteriores) y "Vaciar mano" deja la mano a cero.
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS, CARD_KEYS } from '../content/cards/index.js';
@@ -11,7 +12,7 @@ import { labAction } from './controller.js';
 import { sfx } from '../audio/sfx.js';
 import { toast } from './hud.js';
 
-export const isLab = () => app.mode === 'test' && app.variant === 'lab';
+export const isLab = () => app.mode === 'test';
 const HAND_MAX = 8;
 const ORDER = () => [...CARD_KEYS.filter(k => CARDS[k].color !== 'orange'), ...CARD_KEYS.filter(k => CARDS[k].color === 'orange')];
 
@@ -19,14 +20,25 @@ let built = '';
 function build(el) {
   el.innerHTML = `<button class="labToggle btn-light btn-icon" data-lab="toggle" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-flask"/></svg><span>${esc(t('lab.title'))}</span></button>` +
     `<div class="labBody"><div class="labHead"><svg class="i" aria-hidden="true"><use href="#i-flask"/></svg><b>${esc(t('lab.title'))}</b></div>` +
+    `<button class="btn-light btn-sm btn-icon labGodBtn" data-lab="god" aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-hand"/></svg>${esc(t('lab.god'))}</button>` +
+    `<p class="labGod" aria-live="polite"></p>` +
     `<p class="labHint">${esc(t('lab.hint'))}</p><div class="labCards">` +
     ORDER().map(k => `<button class="labCard ${CARDS[k].color}" data-give="${k}" title="${esc(CARDS[k].name)}"><span class="ecArt">${cardArtHTML(CARDS[k])}</span><span class="ecName">${esc(CARDS[k].short || CARDS[k].name)}</span></button>`).join('') +
     `</div><div class="labActs">` +
     `<button class="btn-light btn-sm btn-icon" data-lab="undo"><svg class="i" aria-hidden="true"><use href="#i-undo"/></svg>${esc(t('lab.undo'))}</button>` +
     `<button class="btn-light btn-sm btn-icon" data-lab="clear"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>${esc(t('lab.clear'))}</button>` +
-    `<button class="btn-light btn-sm btn-icon" data-lab="god" aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-hand"/></svg>${esc(t('lab.god'))}</button>` +
-    `</div><p class="labGod" aria-live="polite"></p></div>`;
+    `</div></div>`;
   built = document.documentElement.lang || 'x';
+}
+
+// ¿se puede soltar lo elegido en (x,y)? (casilla vacía; la pelota también sobre un búnker o el hoyo)
+function canDrop(g, x, y) {
+  const gp = g.godPick;
+  if (!gp || !g.inBoard(x, y) || g.ballAt(x, y)) return false;
+  const tl = g.tileAt(x, y), hole = g.isHole(x, y);
+  if (gp.what === 'ball') return !hole && (!tl || tl.type === 'bunker');
+  if (gp.what === 'hole') return !tl || tl.type === 'bunker';
+  return !tl && !hole;
 }
 
 // se repinta tras cada render de la partida
@@ -48,11 +60,33 @@ export function paintLab() {
   god.disabled = busy || !!g.pending;
   god.setAttribute('aria-pressed', String(!!g.godMode));
   god.classList.toggle('on', !!g.godMode);
-  el.querySelector('.labGod').textContent = g.godMode ? t(g.godPick ? 'lab.godPlace' : 'lab.godPick', { what: g.godPick?.kind || '' }) : full ? t('lab.full', { n: HAND_MAX }) : '';
-  // la pieza elegida en el modo libre, marcada en el tablero
-  document.querySelectorAll('#board .cell.godPicked').forEach(c => c.classList.remove('godPicked'));
+  const what = g.godPick && (g.godPick.what === 'tile' ? t(`tiles.${g.godPick.ref.type}.name`) : g.godPick.kind);
+  const What = what ? what[0].toUpperCase() + what.slice(1) : '';
+  el.querySelector('.labGod').classList.toggle('act', !!(g.godPick || g.godMode));
+  el.querySelector('.labGod').textContent = g.godPick ? t('lab.godPlace', { what: What }) : g.godMode ? t('lab.godPick') : full ? t('lab.full', { n: HAND_MAX }) : t('lab.wheel');
+  // lo elegido, marcado en el tablero, y las casillas donde se puede soltar
+  document.querySelectorAll('#board .cell.godPicked, #board .cell.godTarget').forEach(c => c.classList.remove('godPicked', 'godTarget'));
   const gp = g.godPick, at = gp && (gp.what === 'hole' ? S.hole : gp.ref);
-  if (at) document.querySelector(`#board .cell[data-x="${at.x}"][data-y="${at.y}"]`)?.classList.add('godPicked');
+  if (!at) return;
+  document.querySelector(`#board .cell[data-x="${at.x}"][data-y="${at.y}"]`)?.classList.add('godPicked');
+  for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
+    if (canDrop(g, x, y)) document.querySelector(`#board .cell[data-x="${x}"][data-y="${y}"]`)?.classList.add('godTarget');
+  }
+}
+
+// elegir / soltar una pieza (botón central del ratón o "Mover piezas" activo)
+function godAt(x, y) {
+  const g = app.game;
+  if (!g || app.animating || g.pending) return;
+  if (g.godPick) {
+    const at = g.godPick.what === 'hole' ? g.S.hole : g.godPick.ref;
+    if (at.x === x && at.y === y) { g.godPick = null; sfx('select'); labAction(() => true); return; } // (la misma: se suelta)
+    if (!canDrop(g, x, y)) { sfx('bad'); toast(t('lab.cantDrop'), 'warn'); return; }
+    labAction(gg => gg.godClick(x, y));
+    sfx('woodTick');
+    return;
+  }
+  if (labAction(gg => gg.godClick(x, y))) sfx('select');
 }
 
 export function bindLab() {
@@ -71,4 +105,16 @@ export function bindLab() {
       case 'clear': labAction(g => { g.pushHistory(); g.S.hands[0] = []; return true; }); sfx('card'); break;
     }
   });
+  // la rueda del ratón (botón central) elige una pieza y la suelta en otra casilla
+  const board = $('board');
+  board.addEventListener('mousedown', e => { if (e.button === 1 && isLab()) e.preventDefault(); }); // (sin el desplazamiento automático)
+  board.addEventListener('auxclick', e => {
+    if (e.button !== 1 || !isLab()) return;
+    const c = e.target.closest('.cell');
+    if (!c) return;
+    e.preventDefault();
+    godAt(+c.dataset.x, +c.dataset.y);
+  });
 }
+// con "Mover piezas" activo, el clic normal hace lo mismo (lo usa el controlador)
+export const labGodClick = godAt;

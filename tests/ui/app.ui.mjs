@@ -347,16 +347,27 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
 });
 
-it('laboratorio: añade cualquier carta a la mano y deshace', async () => {
+it('probar nivel: con trampas (cartas a mano, deshacer y mover piezas con la rueda del ratón)', async () => {
   await fresh();
   await app(() => import('/src/ui/editor.js').then(m => m.openEditor())); await sleep(500);
-  await click('#edLab'); await sleep(800);
-  assert.equal(await app(() => window.chaoticGolf.app.variant), 'lab');
+  assert.equal(await page.$('#edLab'), null); // un solo botón: Probar nivel
+  await click('#edTest'); await sleep(800);
+  assert.equal(await app(() => window.chaoticGolf.app.mode), 'test');
+  assert.equal(await app(() => document.getElementById('labPanel').hidden), false);
   const n0 = await app(() => window.chaoticGolf.app.game.S.hands[0].length);
   await click('#labPanel [data-give="paloIri"]'); await sleep(200);
   assert.equal(await app(() => window.chaoticGolf.app.game.S.hands[0].at(-1)), 'paloIri');
   await click('#labPanel [data-lab="undo"]'); await sleep(200);
   assert.equal(await app(() => window.chaoticGolf.app.game.S.hands[0].length), n0);
+  // rueda del ratón: se elige la pelota y se suelta en una casilla libre
+  const cell = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#board .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
+  const b0 = await app(() => { const b = window.chaoticGolf.app.game.S.balls[0]; return [b.x, b.y]; });
+  const [bx, by] = await cell(...b0);
+  await page.mouse.click(bx, by, { button: 'middle' }); await sleep(200);
+  assert.ok(await app(() => document.querySelectorAll('#board .cell.godTarget').length > 5));
+  const [tx, ty] = await cell(0, 0);
+  await page.mouse.click(tx, ty, { button: 'middle' }); await sleep(300);
+  assert.deepEqual(await app(() => { const b = window.chaoticGolf.app.game.S.balls[0]; return [b.x, b.y]; }), [0, 0]);
   await click('#menuBtn'); await sleep(300);
   assert.equal(await app(() => window.chaoticGolf.app.screen), 'editor');
 });

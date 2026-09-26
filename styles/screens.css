@@ -103,21 +103,21 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 /* miniaturas de tablero: mini césped a franjas */
 .optGrid { width: 42px; height: 42px; border-radius: 7px;
   background-image: var(--grain), repeating-linear-gradient(135deg, var(--grass-dark) 0 5px, var(--grass-mid) 5px 10px);
-  box-shadow: 3px 3px 0 var(--shadow); position: relative; }
+  box-shadow: 0 1.8px 5.4px var(--shadow); position: relative; }
 .optGrid::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .optGrid.s::after { background-image: linear-gradient(90deg, rgba(241,241,220,.55) 1px, transparent 1px), linear-gradient(rgba(241,241,220,.55) 1px, transparent 1px); background-size: 8.4px 8.4px; }
 .optGrid.m::after { background-image: linear-gradient(90deg, rgba(241,241,220,.55) 1px, transparent 1px), linear-gradient(rgba(241,241,220,.55) 1px, transparent 1px); background-size: 6px 4.66px; }
 .optGrid.l::after { background-image: linear-gradient(90deg, rgba(241,241,220,.55) 1px, transparent 1px), linear-gradient(rgba(241,241,220,.55) 1px, transparent 1px); background-size: 4.66px 3.8px; }
 .optBots { display: flex; gap: 3px; height: 22px; align-items: center; }
-.optBots i { width: 13px; height: 13px; border-radius: 50%; background: var(--ink); box-shadow: 2px 2px 0 var(--shadow); opacity: .8; }
+.optBots i { width: 13px; height: 13px; border-radius: 50%; background: var(--ink); box-shadow: 0 1.2px 3.6px var(--shadow); opacity: .8; }
 /* selector de color de bola: círculos planos con brillo sutil y sombra corta diagonal */
 .pveColor {
   width: 42px; height: 42px; padding: 0; border-radius: 50%; border: none;
-  box-shadow: 4px 4px 0 var(--shadow), inset -4px -4px 0 rgba(0,0,0,.1), inset 4px 4px 0 rgba(255,255,255,.2);
+  box-shadow: 0 2.4px 7.2px var(--shadow), inset -4px -4px 0 rgba(0,0,0,.1), inset 4px 4px 0 rgba(255,255,255,.2);
   transition: transform .2s var(--ease-out), box-shadow .2s;
 }
 .pveColor:hover { transform: translateY(-2px); background-image: none; }
-.pveColor.sel { box-shadow: 0 0 0 3px var(--cream), 0 0 0 4.5px var(--ink), 4px 4px 0 4px var(--shadow), inset -4px -4px 0 rgba(0,0,0,.1); }
+.pveColor.sel { box-shadow: 0 0 0 3px var(--cream), 0 0 0 4.5px var(--ink), 0 2.4px 7.2px 2px var(--shadow), inset -4px -4px 0 rgba(0,0,0,.1); }
 .pveColor.sel::after {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / 52% no-repeat;
@@ -156,7 +156,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
   width: 100%; height: 118px; display: flex; align-items: center; justify-content: center;
   background-image: var(--grain); background-color: var(--grass-dark); border-radius: 10px; padding: 10px;
 }
-.lvlPreview svg { max-width: 100%; max-height: 100%; filter: drop-shadow(3px 3px 0 rgba(20,40,20,.25)); }
+.lvlPreview svg { max-width: 100%; max-height: 100%; filter: drop-shadow(0 2px 4px rgba(20,40,20,.25)); }
 .lvlName { font-size: 15px; font-weight: 500; line-height: 1.15; letter-spacing: -.01em; padding: 0 4px; min-height: 2.3em; display: flex; align-items: center; }
 .lvlState {
   align-self: flex-start; margin: 0 4px; display: inline-flex; align-items: center; gap: 5px;

@@ -36,7 +36,12 @@ body[data-screen="editor"] #sndCfgBtn { right: 16px; }
 body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; right: 14px; }
 #edBar button:disabled { opacity: .35; }
 #edSave.isSaved { --b-line: rgba(241,241,220,.3); }
-#edPill { display: flex; flex-direction: column; align-items: center; gap: 1px; width: min(440px, 34vw); min-width: 0;
+#edCenter { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* probar: en naranja, junto al nombre */
+#edTest { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--accent); padding: 9px 18px; font-size: 14px; white-space: nowrap; }
+#edTest:hover { background-color: color-mix(in srgb, var(--accent) 88%, #000); }
+#edTest:disabled:hover { background-color: var(--accent); }
+#edPill { display: flex; flex-direction: column; align-items: center; gap: 1px; width: min(300px, 25vw); min-width: 0;
   padding: 5px 18px 6px; border-radius: 999px; background-image: var(--grain); background-color: var(--cream); color: var(--ink); }
 #edName { width: 100%; border: none; background: none; text-align: center; font: inherit; font-size: 16px; font-weight: 500; letter-spacing: -.01em; color: var(--ink); padding: 1px 0; border-radius: 8px; }
 #edName::placeholder { color: var(--ink-soft); opacity: .8; }
@@ -106,7 +111,7 @@ body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; righ
 .edSize button:disabled { opacity: .3; }
 .edSize .szN { font-size: 11.5px; color: var(--mat-ink); white-space: nowrap; min-width: 4.5em; text-align: center; }
 .edSize.v .szN { min-width: 0; writing-mode: vertical-rl; transform: rotate(180deg); }
-#edDock { display: flex; gap: 12px; align-items: center; justify-content: center; padding-top: 6px; }
+#edDock { display: none; gap: 12px; align-items: center; justify-content: center; padding-top: 6px; } /* (solo en el móvil: el botón de cartas) */
 #edDock button:disabled { opacity: .45; }
 #edDeckBtn, #edDeckClose { display: none; }
 
@@ -123,10 +128,11 @@ body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; righ
 .edCards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px 6px; }
 .edCard { position: relative; min-width: 0; }
 .edCard .ecAdd { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 2px 4px; border-radius: 9px;
-  --b-bg: #FBFBF1; --b-line: var(--cream-line); border-top: 4px solid var(--ink); }
-.edCard.orange .ecAdd { border-top-color: var(--accent); }
-.edCard.on .ecAdd { --b-bg: #fff; --b-line: var(--ink-soft); border-top-color: var(--ink); }
-.edCard.orange.on .ecAdd { border-top-color: var(--accent); }
+  --b-bg: #FBFBF1; --b-line: color-mix(in srgb, var(--ink) 30%, transparent); border-width: 1.5px; }
+/* el tipo de carta (negra / naranja) va en el borde completo; con copias en el mazo, más marcado */
+.edCard.orange .ecAdd { --b-line: color-mix(in srgb, var(--accent) 45%, transparent); background-color: #FDF8EE; }
+.edCard.on .ecAdd { --b-bg: #fff; --b-line: var(--ink); border-width: 2px; }
+.edCard.orange.on .ecAdd { --b-line: var(--accent); background-color: #FFF6E6; }
 .edCard:not(.on) .ecArt { opacity: .5; }
 .edCards.pick .edCard .ecArt { opacity: 1; }
 .ecArt { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
@@ -142,8 +148,8 @@ body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; righ
 .edHand { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 10px 0 12px; }
 .edSlot { position: relative; min-width: 0; aspect-ratio: 3 / 4; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 3px 2px; }
 .edSlot.empty { border: 1.5px dashed var(--cream-line); }
-button.edSlot { --b-bg: #fff; --b-line: var(--ink-soft); border-top: 4px solid var(--ink); }
-button.edSlot.orange { border-top-color: var(--accent); }
+button.edSlot { --b-bg: #fff; --b-line: var(--ink); border-width: 2px; }
+button.edSlot.orange { --b-line: var(--accent); background-color: #FFF6E6; }
 .edSlot .ecArt { width: 24px; height: 24px; }
 .edSlot .ecName { font-size: 9px; }
 .edSlot i { position: absolute; top: -6px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); color: var(--cream); display: grid; place-items: center; }
@@ -209,17 +215,26 @@ button.edSlot.orange { border-top-color: var(--accent); }
 .labHint { font-size: 11.5px; line-height: 1.35; color: var(--ink-soft); margin: 4px 0 8px; }
 .labCards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
 .labCard { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 3px; border-radius: 8px; min-width: 0;
-  --b-bg: #FBFBF1; --b-line: var(--cream-line); border-top: 3px solid var(--ink); }
-.labCard.orange { border-top-color: var(--accent); }
+  --b-bg: #FBFBF1; --b-line: var(--ink); border-width: 1.5px; }
+.labCard.orange { --b-line: var(--accent); background-color: #FDF8EE; }
 .labCard .ecArt { width: 26px; height: 26px; }
 .labCard .ecName { font-size: 9.5px; }
+.labGodBtn { width: 100%; justify-content: center; gap: 7px; margin: 8px 0 2px; }
+.labGodBtn.on { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+.labGodBtn.on:hover { background-color: var(--ink); }
 .labActs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
 .labActs button { justify-content: center; gap: 6px; padding-left: 6px; padding-right: 6px; font-size: 12.5px; }
-.labActs [data-lab="god"] { grid-column: 1 / -1; }
+
 .labActs button.on { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
-.labGod { font-size: 11.5px; color: var(--accent-deep); margin-top: 6px; line-height: 1.35; }
+.labGod { font-size: 11.5px; color: var(--ink-soft); margin: 4px 0 2px; line-height: 1.35; }
+.labGod.act { color: var(--accent-deep); }
 .labGod:empty { display: none; }
 #board .cell.godPicked { box-shadow: inset 0 0 0 3px var(--accent); z-index: 3; }
+/* dónde se puede soltar lo elegido */
+#board .cell.godTarget { cursor: copy; }
+#board .cell.godTarget::after { content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
+  background: rgba(241,241,220,.55); box-shadow: 0 0 0 2px rgba(232,135,58,.45); pointer-events: none; z-index: 4; }
+#board .cell.godTarget:hover { box-shadow: inset 0 0 0 2.5px var(--accent); }
 
 /* ---- pantallas medianas ---- */
 @media (max-width: 1180px) {
@@ -234,13 +249,15 @@ button.edSlot.orange { border-top-color: var(--accent); }
   #edBar button { padding: 6px 10px; }
   #edBar .barSide { gap: 4px; }
   #edBar .barSide.right { padding-right: 42px; }
-  #edPill { grid-row: 2; grid-column: 1 / -1; width: 100%; padding: 4px 12px; border-radius: 16px; }
+  #edCenter { grid-row: 2; grid-column: 1 / -1; width: 100%; gap: 8px; }
+  #edPill { flex: 1; width: auto; padding: 4px 12px; border-radius: 16px; }
+  #edTest { padding: 8px 12px; font-size: 13.5px; }
+  #edDock { display: flex; }
   body[data-screen="editor"] #sfxBtn { display: none; }
   body[data-screen="editor"] #sndCfgBtn { right: 8px; top: 9px; width: 32px; height: 32px; }
   #edDock { gap: 8px; }
   #edDock button { padding: 8px 12px; font-size: 14px; }
   #edDock .btn-lg { padding: 9px 16px; font-size: 15px; }
-  #edLab span { display: none; }
   #edLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; padding: 4px 10px 10px 14px; gap: 8px; }
   #edMain { grid-row: 1; }
   #edToolsPanel { grid-row: 2; padding: 8px 10px; border-radius: 14px; overflow: visible; }

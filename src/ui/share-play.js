@@ -202,7 +202,7 @@ export async function buildShareImage({ title, meta }) {
   let tx = PAD + 12;
   if (def) {
     c.fillStyle = '#FBFBF1'; rr(c, PAD + 8, fy - 2, 96, 130, 14); c.fill();
-    c.fillStyle = def.color === 'orange' ? '#E8873A' : '#242424'; rr(c, PAD + 8, fy - 2, 96, 16, [14, 14, 0, 0]); c.fill();
+    c.strokeStyle = def.color === 'orange' ? '#E8873A' : '#242424'; c.lineWidth = 4; rr(c, PAD + 10, fy, 92, 126, 12); c.stroke(); // (el tipo, en el borde)
     const img = await cardImage(def);
     if (img) c.drawImage(img, PAD + 18, fy + 26, 76, 76);
     tx = PAD + 132;

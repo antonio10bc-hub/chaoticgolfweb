@@ -289,8 +289,7 @@ export default {
     toolsAria: 'Tools', boardAria: 'Level board', deckAria: 'Level cards',
     colAdd: 'Add column', colDel: 'Remove column', rowAdd: 'Add row', rowDel: 'Remove row',
     cols: '{n} columns', rows: '{n} rows',
-    lab: 'Lab', labTitle: 'Play the level with any card at hand, undoing and moving pieces',
-    test: 'Test level', testTitle: 'Play the level exactly as someone else will see it', cardsBtn: 'Cards',
+    test: 'Test level', testTitle: 'Play the level with cheats: any card at hand, undo and move pieces', cardsBtn: 'Cards',
     newLevel: 'New level',
     groups: { basic: 'Basics', classic: 'Classic', water: 'Water', mini: 'Mini golf' },
     tools: { ball: 'Ball', hole: 'Hole', par: 'PAR', decoy: 'Obstacle', erase: 'Erase', bunker: 'Bunker', portal: 'Portal',
@@ -342,9 +341,10 @@ export default {
     notNow: 'Not now', save: 'Save', saveAndPlay: 'Save and play',
   },
   lab: {
-    title: 'Lab', chip: 'Lab', hint: 'Tap a card to add it to your hand.',
+    title: 'Cheats', hint: 'Tap a card to add it to your hand.',
     undo: 'Undo', god: 'Move pieces', clear: 'Empty hand', full: 'Hand full ({n} cards)',
-    godOn: 'Move pieces: tap a piece, then its new square', godPick: 'Tap a ball, the hole or a piece', godPlace: '{what}: tap its new square',
+    godOn: 'Move pieces: tap a piece, then its new square', godPick: 'Tap a ball, the hole or a piece', godPlace: '{what}: tap its new square (or the same one to drop it)',
+    wheel: 'You can also pick a piece with the mouse wheel and drop it on another square.', cantDrop: 'It can’t go there: pick a marked square',
   },
 
   sound: {

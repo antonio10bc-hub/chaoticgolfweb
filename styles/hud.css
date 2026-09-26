@@ -31,12 +31,12 @@
   position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none;
   width: 260px; padding: 12px 14px; border-radius: 14px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink); font-size: 12.5px; line-height: 1.4;
-  box-shadow: var(--shadow-soft), 6px 6px 0 rgba(20,40,20,.18);
-  border-top: 4px solid var(--ink);
+  box-shadow: var(--shadow-soft), 0 3.6px 10.8px rgba(20,40,20,.18);
+  border: 2px solid var(--ink); /* el tipo de carta, en el borde completo */
   opacity: 0; transition: opacity .15s var(--ease-out);
 }
 #cardTip.visible { opacity: 1; }
-#cardTip.orange { border-top-color: var(--accent); }
+#cardTip.orange { border-color: var(--accent); }
 #cardTip b { display: block; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
 #cardTip .kind { display: inline-block; margin: 4px 0 7px; font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
   padding: 2px 8px; border-radius: 999px; border: 1px solid var(--ink-line); color: var(--ink-soft); }
@@ -53,7 +53,7 @@
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
   font-size: 17px; font-weight: 500; letter-spacing: -.01em; text-align: center;
   padding: 12px 22px; border-radius: 16px;
-  box-shadow: var(--shadow-soft), 8px 8px 0 rgba(20,40,20,.2);
+  box-shadow: var(--shadow-soft), 0 4.8px 14.4px rgba(20,40,20,.2);
   opacity: 0; pointer-events: none; transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
 }
 #storyTip::after {
@@ -73,7 +73,7 @@
   background-image: var(--grain); background-color: var(--cream);
   border-radius: 20px; padding: 56px 40px 30px; text-align: center;
   border: 1.5px solid transparent;
-  box-shadow: var(--shadow-soft), 14px 14px 0 rgba(20,40,20,.25);
+  box-shadow: var(--shadow-soft), 0 8.4px 25.2px rgba(20,40,20,.25);
   transition: border-color .25s;
 }
 #winOverlay.visible .box { animation: winPop .3s var(--ease-out); }
@@ -82,14 +82,14 @@
   width: 76px; height: 76px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: var(--accent); color: var(--cream);
-  box-shadow: 6px 6px 0 var(--shadow);
+  box-shadow: 0 3.6px 10.8px var(--shadow);
 }
 .winIcon .i { width: 36px; height: 36px; }
 #winOverlay.lost .winIcon { background: var(--grass-dark); }
 #winOverlay .msg { font-size: 30px; font-weight: 500; line-height: 1.1; letter-spacing: -.03em; margin-bottom: 16px; }
 #winChips { display: flex; gap: 8px; justify-content: center; margin: -4px 0 18px; flex-wrap: wrap; }
 #winChips:empty { display: none; }
-.winChip { color: #fff; font-weight: 500; font-size: 14px; border-radius: 999px; padding: 5px 16px; box-shadow: 3px 3px 0 var(--shadow); }
+.winChip { color: #fff; font-weight: 500; font-size: 14px; border-radius: 999px; padding: 5px 16px; box-shadow: 0 1.8px 5.4px var(--shadow); }
 #winStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; margin: 0 0 24px; }
 #winStats .st {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -130,7 +130,7 @@
   position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
   z-index: 48; width: 250px; cursor: default;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink); border-radius: 16px; padding: 12px 14px;
-  box-shadow: var(--shadow-soft), 6px 6px 0 rgba(20,40,20,.18); display: none;
+  box-shadow: var(--shadow-soft), 0 3.6px 10.8px rgba(20,40,20,.18); display: none;
   grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 12px; text-align: left;
 }
 #deckPop.open { display: grid; animation: popIn .2s var(--ease-out); }
@@ -153,7 +153,7 @@ body[data-screen="game"] #sndCfgBtn { top: 14px; bottom: auto; left: auto; right
 #sndPanel {
   position: fixed; left: 14px; bottom: 60px; z-index: 66; width: 230px;
   background-image: var(--grain); background-color: var(--cream); border-radius: 16px; padding: 12px 14px;
-  box-shadow: var(--shadow-soft), 6px 6px 0 rgba(20,40,20,.18); display: none; font-size: 12.5px;
+  box-shadow: var(--shadow-soft), 0 3.6px 10.8px rgba(20,40,20,.18); display: none; font-size: 12.5px;
 }
 body[data-screen="game"] #sndPanel { top: 60px; bottom: auto; left: auto; right: 14px; }
 @media (max-width: 760px) {

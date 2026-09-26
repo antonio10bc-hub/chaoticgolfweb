@@ -42,7 +42,7 @@ src/
     screen-modes.js        reto diario, contrarreloj y desafíos · resume.js  continuar
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero
-    editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y laboratorio
+    editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
@@ -194,8 +194,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   con reglas numeradas y +/− de columnas y filas en sus bordes; a la derecha el mazo (plantillas por baraja y cada
   carta con su número) o la mano inicial (puzles). Un nivel nuevo es de 12×9 con PAR 5 en el centro. Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,
   Ctrl+S. El estado dice si está listo para jugar o qué falta (mazo, portal sin pareja…). El borrador se guarda solo.
-  **Probar nivel** lo juega tal cual; **Laboratorio** (`src/ui/lab.js`) lo juega con cualquier carta a mano,
-  deshacer ilimitado y mover piezas a mano. En el móvil, las herramientas van en una tira y las cartas en una hoja.
+  **Probar nivel** (naranja, junto al nombre en la barra) lo juega sobre la misma alfombrilla del taller con el panel de **trampas** (`src/ui/lab.js`): cualquier carta a mano, deshacer ilimitado
+  y mover piezas (botón "Mover piezas", o con la rueda del ratón: clic central en una pieza y otro en una casilla
+  marcada, en cualquier momento). En el móvil, las herramientas van en una tira y las cartas en una hoja.
+- **Sin cuadrados desplazados:** ninguna pieza de la interfaz usa sombras duras desplazadas ni bordes gruesos en un
+  solo lado; la profundidad va en sombras suaves y el tipo de carta (negra / naranja) en el borde completo.
 - **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
   (`CG1…`, JSON compacto comprimido y validado al leerlo) o un enlace `…#nivel=CÓDIGO`. Quien abre el enlace ve
   "Te han pasado un nivel" (guardar / guardar y jugar); con el código, "Añadir código". Se guarda como recibido y

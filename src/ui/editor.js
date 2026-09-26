@@ -3,7 +3,7 @@
 //   · izquierda: las herramientas por baraja (con el dibujo real de cada pieza) y sus opciones
 //   · centro: el tablero con reglas numeradas y +/− de columnas y filas en sus bordes
 //   · derecha: el mazo del nivel (plantillas por baraja y cada carta con su número) o la mano inicial
-//   · abajo: Laboratorio (todas las cartas a mano, deshacer, mover piezas) y Probar nivel (tal cual)
+//   · abajo: Probar nivel (con trampas: cualquier carta a mano, deshacer y mover piezas; ver lab.js)
 // Se pinta arrastrando; clic derecho borra con cualquier herramienta. El borrador en curso se guarda
 // solo; "Guardar" lo lleva a Mis niveles (my-levels.js), desde donde se comparte con un código.
 import { app } from './app.js';
@@ -238,7 +238,7 @@ function paintStatus() {
   if (dirty()) parts.push(t('ed.st.unsaved'));
   el.textContent = parts.filter(Boolean).join(' · ');
   el.className = errors.length ? 'err' : warns.length ? 'warn' : 'ok';
-  $('edTest').disabled = $('edLab').disabled = !!errors.length;
+  $('edTest').disabled = !!errors.length;
   $('edTest').title = errors.length ? errors.join(' · ') : t('ed.testTitle');
   $('edUndo').disabled = !ED.undo.length; $('edRedo').disabled = !ED.redo.length;
   const sv = $('edSave'), clean = !dirty();
@@ -393,8 +393,9 @@ export function fitEditorBoard() {
   if (!st || !L) return;
   const r = st.getBoundingClientRect();
   // reglas (22px), controles de tamaño (46px), marco del tablero (16px) y el dock de abajo
-  const dock = $('edDock').getBoundingClientRect().height || 60;
-  fitCellsTo(L.cols, L.rows, Math.max(120, r.width - 22 - 56 - 22), Math.max(120, r.height - dock - 22 - 52 - 26), 60);
+  const dock = $('edDock').getBoundingClientRect().height; // (0 en el ordenador: solo existe en el móvil)
+  const narrow = innerWidth <= 900; // (móvil: reglas y botones de tamaño más estrechos, casillas que pueden ser más pequeñas)
+  fitCellsTo(L.cols, L.rows, Math.max(120, r.width - (narrow ? 18 + 46 : 22 + 56) - 24), Math.max(120, r.height - dock - (narrow ? 18 + 44 : 22 + 52) - 26), 60, narrow ? 16 : 24);
 }
 function refresh({ fit = true } = {}) {
   if (fit) fitEditorBoard();
@@ -424,10 +425,11 @@ async function leaveChanges() { // ¿se puede dejar el nivel en curso? (con camb
   if (!dirty() || (ED.idx == null && JSON.stringify(exportable(ED.level)) === JSON.stringify(exportable(normalize(defaultLevel()))))) return true;
   return confirmDialog(t('ed.discardMsg', { name: ED.level.name || t('story.untitled') }), t('ed.discard'), true, t('ed.discardTitle'));
 }
-function play(variant = null) {
+// probar: el nivel tal cual, con el panel de trampas (lab.js) para dar cartas, deshacer y mover piezas
+function play() {
   const { errors } = issues(ED.level);
   if (errors.length) { toast(t('ed.st.missing', { what: errors.join(' · ') }), 'warn'); return; }
-  startLevel(exportable(ED.level), 'test', null, { variant });
+  startLevel(exportable(ED.level), 'test');
 }
 
 // cambios en Mis niveles hechos fuera (eliminar / deshacer): el nivel abierto sigue apuntando al suyo
@@ -567,7 +569,6 @@ export function bindEditor() {
     shareLevelDialog(exportable(ED.level));
   });
   $('edTest').addEventListener('click', () => play());
-  $('edLab').addEventListener('click', () => play('lab'));
   $('edDeckBtn').addEventListener('click', () => { // móvil: las cartas en una hoja
     const open = $('edDeckPanel').classList.toggle('open');
     $('edDeckBtn').setAttribute('aria-expanded', String(open));

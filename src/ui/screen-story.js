@@ -185,5 +185,4 @@ export function bindStory() {
   MODE_NAV.story = { back: () => (isUserLevelIdx(app.levelIndex) ? openModes('special') : openStory()), restart: replayLevel };
   MODE_NAV.puzzle = { back: () => openModes('special'), restart: replayLevel };
   MODE_NAV.test = { back: () => showScreen('editor'), restart: replayLevel };
-  MODE_NAV.lab = MODE_NAV.test; // laboratorio del creador
 }

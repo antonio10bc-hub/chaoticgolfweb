@@ -53,7 +53,7 @@
   position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
   width: 9px; height: 9px; border-radius: 50%;
   background: var(--cream); opacity: .85;
-  box-shadow: 0 0 0 2px var(--pc, var(--cream-line)), 2px 2px 0 2px var(--shadow);
+  box-shadow: 0 0 0 2px var(--pc, var(--cream-line)), 0 1.2px 3.6px 1px var(--shadow);
   z-index: 1;
 }
 .spawnMark.holeMark {
@@ -94,7 +94,7 @@
     radial-gradient(circle at 31% 27%, rgba(255,255,255,.5) 0 12%, transparent 12.5%),
     radial-gradient(circle, rgba(0,0,0,.12) 0 .7px, transparent .8px);
   background-size: 100% 100%, 3.6px 3.6px;
-  box-shadow: 4px 4px 0 var(--shadow), inset -3px -3px 0 rgba(0,0,0,.14);
+  box-shadow: 0 2.4px 7.2px var(--shadow), inset -3px -3px 0 rgba(0,0,0,.14);
 }
 .ballStamp {
   display: flex; align-items: center; justify-content: center;
