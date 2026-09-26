@@ -38,4 +38,4 @@ export const corner = placeTile('corner', { copies: 0,
 export const tunnel = placeTile('tunnel', { copies: 0,
   demo: { cols: 5, rows: 5, hole: { x: 4, y: 0 }, ball: { x: 0, y: 2 }, tiles: [{ type: 'tunnel', x: 2, y: 2 }], card: 'palo3', dir: 'right' } });
 export const launcher = placeTile('launcher', { copies: 0,
-  demo: { cols: 7, rows: 5, hole: { x: 6, y: 0 }, ball: { x: 0, y: 3 }, tiles: [{ type: 'launcher', x: 1, y: 3, rot: 1 }], card: 'palo2', dir: 'right' } });
+  demo: { cols: 5, rows: 5, hole: { x: 4, y: 0 }, ball: { x: 0, y: 3 }, tiles: [{ type: 'launcher', x: 1, y: 3, rot: 1 }], card: 'palo2', dir: 'right' } });

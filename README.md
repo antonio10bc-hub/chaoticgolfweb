@@ -187,7 +187,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   herramientas por baraja con el dibujo real de cada pieza (pelota, hoyo, PAR, obstáculo, borrar; búnker, portal con
   parejas A/B/C; río, lago; bloque, esquina, túnel y lanzadera, con su giro) y sus opciones; en el centro el tablero
   con reglas numeradas y +/− de columnas y filas en sus bordes; a la derecha el mazo (plantillas por baraja y cada
-  carta con su número) o la mano inicial (puzles). Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,
+  carta con su número) o la mano inicial (puzles). Un nivel nuevo es de 12×9 con PAR 5 en el centro. Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,
   Ctrl+S. El estado dice si está listo para jugar o qué falta (mazo, portal sin pareja…). El borrador se guarda solo.
   **Probar nivel** lo juega tal cual; **Laboratorio** (`src/ui/lab.js`) lo juega con cualquier carta a mano,
   deshacer ilimitado y mover piezas a mano. En el móvil, las herramientas van en una tira y las cartas en una hoja.
@@ -203,12 +203,15 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   movimiento y la corriente lo baja hasta la casilla justo debajo del río; si hay otra pelota, la empuja 1 y
   ocupa su sitio; si el río acaba en el borde, se cae del tablero. **Lago**: crece pegando casillas por un lado;
   caer dentro es como caerse del tablero (el hoyo vuelve a su casilla inicial). Si en la salida hay agua, el río
-  arrastra o se va a la casilla libre más cercana. La partida tiene fondo de lago (el campo es una isla), la bola
+  arrastra o se va a la casilla libre más cercana. Si la salida la tapa una pieza de madera o un portal (Ultimate),
+  la corriente la lleva a través como un paso normal (túnel, esquina, portal; búnker y lanzadera se aplican igual);
+  contra un bloque (o la espalda de una esquina) rebota un par de veces y acaba en una casilla libre cercana al azar
+  (`riverThrough`, `holeRiverThrough`). La partida tiene fondo de lago (el campo es una isla), la bola
   flota río abajo y hay chapuzón al caer al lago. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
 - **Baraja de minigolf** (piezas de madera, `tiles/block|corner|tunnel|launcher.js`; campo 8 columnas más ancho):
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),
-  **Lanzadera** (quien pasa por encima vuela 5 casillas hacia su flecha; gira cada turno; nunca relanza hacia
+  **Lanzadera** (quien pasa por encima vuela 3 casillas hacia su flecha; gira cada turno; nunca relanza hacia
   una lanzadera ya usada en la jugada, tampoco a través de un río, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
   Las piezas no cuentan como casilla y nadie se queda encima; el hoyo las usa igual que una pelota
   (`nextCell`, `launchBall` / `launchHole` en el motor). Par 5. Las piezas que giran se colocan en dos pasos:
@@ -218,7 +221,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Ultimate Chaotic Golf**: las cartas de todas las barajas (`counts` las suma solas: una baraja nueva entra
   sin tocar nada), un campo enorme (+12 columnas y +4 filas), par 7, palos de 10 y el **palo iridiscente** (no se para
   nunca: rebota en los bloques, gira en las esquinas y sigue hasta chocar con otra pelota, que hereda el impulso y
-  hace lo mismo, o hasta caerse del tablero; si entra en un bucle sin fin, se corta; deja una estela iridiscente). Fondo iridiscente animado (manchas de color y un barrido de luz).
+  hace lo mismo, o hasta caerse del tablero; tras saltar una lanzadera sigue avanzando hacia donde volaba; si entra
+  en un bucle sin fin, se corta; deja una estela iridiscente). Fondo iridiscente animado (manchas de color y un barrido de luz).
 - **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
   especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el

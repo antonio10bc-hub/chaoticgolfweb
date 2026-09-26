@@ -182,24 +182,56 @@ test('túnel: sale por uno de sus 4 lados al azar y no gasta paso', () => {
   assert.ok(seen.size >= 3, 'sale por varios lados: ' + [...seen]);
 });
 
-test('lanzadera: se para, vuela 5 hacia su flecha y la flecha gira cada turno', () => {
+test('lanzadera: se para, vuela 3 hacia su flecha y la flecha gira cada turno', () => {
   const g = mg([{ type: 'launcher', x: 2, y: 3, rot: 0 }], { cols: 7, rows: 9, ball: { x: 1, y: 8 }, hole: { x: 6, y: 0 } });
   g.S.balls[0].x = 1; g.S.balls[0].y = 8; g.S.tiles[0].y = 8;
   hand(g, 0, ['palo3']);
-  g.clickCard(0, 0); g.clickCell(4, 8); // entra en la lanzadera (2,8) y vuela 5 hacia arriba → (2,3)
-  assert.deepEqual(at(g), [2, 3]);
+  g.clickCard(0, 0); g.clickCell(4, 8); // entra en la lanzadera (2,8) y vuela 3 hacia arriba → (2,5)
+  assert.deepEqual(at(g), [2, 5]);
   const rot = g.S.tiles[0].rot; g.endTurn();
   assert.equal(g.S.tiles[0].rot, (rot + 1) % 4);
 });
 
 test('lanzaderas enfrentadas: un solo rebote, sin ping-pong, y nadie se queda encima', () => {
-  const g = mg([{ type: 'launcher', x: 1, y: 3, rot: 1 }, { type: 'launcher', x: 6, y: 3, rot: 3 }], { cols: 8 });
+  const g = mg([{ type: 'launcher', x: 1, y: 3, rot: 1 }, { type: 'launcher', x: 4, y: 3, rot: 3 }], { cols: 8 });
   g.S.balls[0].x = 0; g.S.balls[0].y = 3;
   hand(g, 0, ['palo1']);
   g.clickCard(0, 0); g.clickCell(1, 3); // A → B → (vuelve a A: ya usada) → casilla libre junto a A
   const b = g.S.balls[0], on = g.S.tiles.find(t => t.x === b.x && t.y === b.y);
   assert.equal(on, undefined);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
+});
+
+test('palo iridiscente: tras saltar una lanzadera sigue avanzando (y la pelota golpeada hereda el impulso)', () => {
+  const g = mg([{ type: 'launcher', x: 3, y: 3, rot: 1 }], { cols: 12, extraBalls: [{ x: 9, y: 3 }] });
+  hand(g, 0, ['paloIri']);
+  g.clickCard(0, 0); g.clickCell(2, 3); // (2,3) → lanzadera (3,3) → vuela a (6,3) → sigue → choca en (8,3)
+  assert.deepEqual(g.S.balls.map(b => [b.x, b.y]), [[8, 3], [9, 3]]); // la otra sale disparada, se cae y vuelve a su sitio
+  assert.ok(g.S.logK.some(l => l[0] === 'ballLaunch') && g.S.logK.some(l => l[0] === 'collision'));
+});
+
+// un río en (3,1..3) cuya desembocadura (3,4) tapa una pieza; la pelota entra por (3,1)
+const riverInto = mouth => {
+  const g = mg([1, 2, 3].map(y => ({ type: 'river', x: 3, y })).concat(mouth), { cols: 7, rows: 9, ball: { x: 1, y: 1 } });
+  hand(g, 0, ['palo2']);
+  g.clickCard(0, 0); g.clickCell(3, 1);
+  return g;
+};
+test('río que desemboca en una esquina, un portal o un túnel: la corriente la lleva a través', () => {
+  assert.deepEqual(at(riverInto([{ type: 'corner', x: 3, y: 4, rot: 3 }])), [4, 4]); // la esquina la desvía a la derecha
+  assert.deepEqual(at(riverInto([{ type: 'portal', x: 3, y: 4, pair: 1 }, { type: 'portal', x: 0, y: 6, pair: 1 }])), [0, 7]); // sale por el otro portal
+  for (let i = 0; i < 6; i++) { // túnel: sale por un lado al azar, siempre a una casilla libre y sin agua
+    const g = riverInto([{ type: 'tunnel', x: 3, y: 4 }]), [x, y] = at(g);
+    assert.equal(g.S.tiles.find(t => t.x === x && t.y === y), undefined);
+  }
+});
+test('río que desemboca en un bloque: rebota y acaba en una casilla libre cercana', () => {
+  for (const mouth of [{ type: 'block', x: 3, y: 4 }, { type: 'corner', x: 3, y: 4, rot: 0 }]) { // (la espalda de la esquina también)
+    const g = riverInto([mouth]), [x, y] = at(g);
+    assert.ok(g.S.logK.some(l => l[0] === 'riverBlocked'));
+    assert.equal(g.S.tiles.find(t => t.x === x && t.y === y), undefined);
+    assert.equal(Math.abs(x - 3) + Math.abs(y - 3), 1); // junto al final del río
+  }
 });
 
 test('río que desemboca en la lanzadera que lanza a ese río: sin bucle', () => {

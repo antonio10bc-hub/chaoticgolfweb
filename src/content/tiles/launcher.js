@@ -1,5 +1,5 @@
 // Lanzadera (baraja de minigolf): un disco de madera con una flecha. Si la pelota (o el hoyo) pasa
-// por encima, pierde el resto del movimiento y sale volando 5 casillas hacia donde marca la flecha.
+// por encima, pierde el resto del movimiento y sale volando 3 casillas hacia donde marca la flecha.
 // Cada turno la flecha gira un cuarto de vuelta. `rot` (0-3): 0 arriba, 1 derecha, 2 abajo, 3 izquierda.
 import { WOOD } from './wood.js';
 export default {

@@ -38,7 +38,7 @@ const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
 export const ROT_DIRS = ['up', 'right', 'down', 'left'];
 const CORNER_TURN = [{ up: 'right', left: 'down' }, { up: 'left', right: 'down' }, { down: 'left', right: 'up' }, { down: 'right', left: 'up' }];
 const MAX_RUN = 150;     // tope de casillas del palo iridiscente (además del corte de bucles)
-const FLY = 5;           // casillas que vuela una pieza desde la lanzadera
+const FLY = 3;           // casillas que vuela una pieza desde la lanzadera
 // tope de choques encadenados: con portales puede formarse un bucle infinito
 // (P2 · A · B · P1: A golpea a B, B sale por P2 y vuelve a golpear a A…).
 // El juego original reventaba la pila en ese caso; aquí la cadena se detiene.
@@ -307,6 +307,23 @@ export class Game {
     }
     return null;
   }
+  // como nearestFree, pero entre las libres igual de cerca elige una al azar
+  nearestFreeRandom(x, y) {
+    const S = this.S;
+    for (let d = 1; d < S.cols + S.rows; d++) {
+      const all = [];
+      for (let oy = -d; oy <= d; oy++) for (let ox = -d; ox <= d; ox++) {
+        if (Math.abs(ox) + Math.abs(oy) === d && this.cellFree(x + ox, y + oy)) all.push({ x: x + ox, y: y + oy });
+      }
+      if (all.length) return all[Math.floor(this.rand() * all.length)];
+    }
+    return null;
+  }
+  // ¿quien llega a (x,y) yendo hacia dir rebota? (bloque, o la espalda de una esquina)
+  bouncesAt(x, y, dir) {
+    const tl = this.tileAt(x, y);
+    return isBlock(tl) || (isCorner(tl) && !CORNER_TURN[(tl.rot || 0) % 4][dir]);
+  }
   // fila de la desembocadura de un río que pasa por (x,y): la casilla justo debajo de su final
   riverMouth(x, y) {
     let yy = y;
@@ -354,12 +371,7 @@ export class Game {
       this.moveBallTransfer(hit, 'down', 1);
       if (this.ballAt(x, ey)) return; // no se ha podido mover: se queda al final del río
     }
-    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) { // (Ultimate) la salida la tapa una pieza: a la libre más cercana
-      const spot = this.nearestFree(x, ey) || { x, y };
-      ball.x = spot.x; ball.y = spot.y;
-      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
-      return;
-    }
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.riverThrough(ball, x, y, used); // (Ultimate)
     ball.x = x; ball.y = ey;
     this.anim({ t: 'drift', p: pid, x, y: ey, out: true });
     this.log('log.ballRiverOut', { b, x, y: ey });
@@ -371,6 +383,55 @@ export class Game {
         if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
       }
     }
+  }
+  // (Ultimate) la salida del río la tapa una pieza de madera o un portal: la corriente lleva la pelota a
+  // través como un paso normal (túnel, esquina, portal). Contra un bloque (o la espalda de una esquina) no
+  // hay paso: rebota un par de veces y acaba en una casilla libre cercana, al azar. (x,y): el final del río
+  riverThrough(ball, x, y, used) {
+    const pid = 'b' + ball.player, b = playerTag(ball.player), hops = this._riverHops || 0;
+    ball.x = x; ball.y = y;
+    const nc = this.bouncesAt(x, y + 1, 'down') || hops > 3 ? null : this.nextCell(x, y, 'down', pid, (px, py, other) => {
+      this.log('log.ballPortal', { b });
+      this.tip('portal');
+      this.anim({ t: 'move', p: pid, x: px, y: py });
+      this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
+    });
+    if (!nc || nc.stop || (nc.x === x && nc.y === y)) return this.riverBlocked(ball, x, y);
+    if (!this.inBoard(nc.x, nc.y)) { // (sale del tablero al otro lado de la pieza): se cae
+      this.anim({ t: 'fall', p: pid, x: nc.x, y: nc.y, dir: nc.dir });
+      this.tip('fall');
+      this.resetBallToSpawn(ball);
+      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+      this.log('log.ballFell', { b, x: ball.x, y: ball.y });
+      this.spawnWater(ball);
+      return;
+    }
+    const hit = this.ballAt(nc.x, nc.y);
+    if (hit && hit !== ball) { // otra pelota al otro lado: la empuja 1 y ocupa su sitio
+      this.anim({ t: 'impact', p: pid, dir: nc.dir, target: 'b' + hit.player });
+      this.log('log.riverPush', { a: b, b: playerTag(hit.player) });
+      this.moveBallTransfer(hit, nc.dir, 1);
+      if (this.ballAt(nc.x, nc.y)) return this.riverBlocked(ball, x, y, { bump: false });
+    }
+    ball.x = nc.x; ball.y = nc.y;
+    this.anim({ t: 'move', p: pid, x: nc.x, y: nc.y });
+    this.log('log.ballRiverOut', { b, x: nc.x, y: nc.y });
+    const tl = this.tileAt(nc.x, nc.y);
+    if (isWater(tl)) { this._riverHops = hops + 1; try { this.ballInWater(ball, used); } finally { this._riverHops = hops; } } // (portal a otro río o lago)
+    else if (isLauncher(tl)) {
+      if (!used.has(nc.x + ',' + nc.y)) this.launchBall(ball, used);
+      else { const spot = this.nearestFree(nc.x, nc.y); if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); } }
+    }
+  }
+  // la corriente empuja contra algo sólido: un par de rebotes y a una casilla libre cercana al azar
+  riverBlocked(ball, x, y, { bump = true } = {}) {
+    const pid = 'b' + ball.player;
+    ball.x = x; ball.y = y;
+    if (bump) for (let i = 0; i < 2; i++) this.anim({ t: 'bump', p: pid, x, y: y + 1, dir: 'down' });
+    this.log('log.riverBlocked', { b: playerTag(ball.player) });
+    this.tip('block');
+    const spot = this.nearestFreeRandom(x, y);
+    if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
   }
   // tras volver a la salida: si en ella hay agua, el río la arrastra (o la casilla libre más cercana);
   // si hay lago, a la casilla libre más cercana
@@ -398,13 +459,15 @@ export class Game {
   }
 
   /* ---- minigolf: la lanzadera ---- */
-  // la pelota está sobre una lanzadera: vuela 5 casillas hacia la flecha por encima de todo y, al
+  // la pelota está sobre una lanzadera: vuela 3 casillas hacia la flecha por encima de todo y, al
   // caer, se aplica lo que haya (hoyo, agua, búnker…). Si hay otra pelota, la golpea (1 casilla) y
   // ocupa su sitio; sobre una pieza de madera o un portal no se puede aterrizar: cae justo antes.
   // Si aterriza fuera del tablero, se cae. Otra lanzadera la vuelve a lanzar, pero nunca hacia una por la
   // que ya ha pasado en esta jugada (dos lanzaderas enfrentadas harían ping-pong): entonces, y si no hay
   // dónde aterrizar, cae en la casilla libre más cercana. Nadie se queda encima de una lanzadera.
-  launchBall(ball, used = new Set()) {
+  // untilHit (palo iridiscente): si golpea a otra pelota, esta hereda el impulso sin límite. Devuelve
+  // { landed, dir } si ha aterrizado en una casilla normal (sin chocar): el iridiscente sigue avanzando
+  launchBall(ball, used = new Set(), { untilHit = false } = {}) {
     const pid = 'b' + ball.player, b = playerTag(ball.player);
     const from = this.tileAt(ball.x, ball.y), dir = ROT_DIRS[(from?.rot || 0) % 4], { dx, dy } = DIRS[dir];
     const x0 = ball.x, y0 = ball.y;
@@ -428,21 +491,25 @@ export class Game {
     const hit = this.ballAt(tx, ty);
     if (hit && hit !== ball) {
       this.anim({ t: 'impact', p: pid, dir, target: 'b' + hit.player });
-      this.log('log.collision', { a: b, b: playerTag(hit.player), n: 1 });
-      this.moveBallTransfer(hit, dir, 1);
+      this.log('log.collision', { a: b, b: playerTag(hit.player), n: untilHit ? '∞' : 1 });
+      this.moveBallTransfer(hit, dir, untilHit ? MAX_RUN : 1, { untilHit });
       while ((this.ballAt(tx, ty) && this.ballAt(tx, ty) !== ball || blocked(tx, ty)) && !(tx === x0 && ty === y0)) { tx -= dx; ty -= dy; }
       this.anim({ t: 'move', p: pid, x: tx, y: ty });
+      ball.x = tx; ball.y = ty;
+      this.log('log.ballLands', { b, x: tx, y: ty });
+      return null; // (ha chocado: se acaba aquí)
     }
     ball.x = tx; ball.y = ty;
     this.log('log.ballLands', { b, x: tx, y: ty });
-    if (this.waterAt(tx, ty)) this.ballInWater(ball, used);
-    else if (isLauncher(this.tileAt(tx, ty))) {
-      if (!used.has(tx + ',' + ty)) this.launchBall(ball, used);
-      else { // (vuelve a una lanzadera ya usada, o no había dónde aterrizar): a la libre más cercana
-        const spot = this.nearestFree(tx, ty);
-        if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
-      }
+    if (this.waterAt(tx, ty)) { this.ballInWater(ball, used); return null; }
+    if (isLauncher(this.tileAt(tx, ty))) {
+      if (!used.has(tx + ',' + ty)) return this.launchBall(ball, used, { untilHit });
+      // (vuelve a una lanzadera ya usada, o no había dónde aterrizar): a la libre más cercana
+      const spot = this.nearestFree(tx, ty);
+      if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
+      return null;
     }
+    return { landed: true, dir };
   }
   // el hoyo sobre una lanzadera: vuela igual; devuelve dónde se asienta
   launchHole(x, y, used = new Set()) {
@@ -488,7 +555,7 @@ export class Game {
       this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
       return this.holeSpawnWater(S.hole.initX, S.hole.initY);
     }
-    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) { const spot = this.nearestFree(x, ey) || { x, y: yy }; this.anim({ t: 'appear', p: 'hole', x: spot.x, y: spot.y }); return [spot.x, spot.y]; }
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.holeRiverThrough(x, yy, used); // (Ultimate)
     this.anim({ t: 'drift', p: 'hole', x, y: ey, out: true });
     if (isLake(this.tileAt(x, ey))) return this.holeInWater(x, ey);
     if (isLauncher(this.tileAt(x, ey))) {
@@ -498,6 +565,38 @@ export class Game {
       return [spot.x, spot.y];
     }
     return [x, ey];
+  }
+  // el hoyo a través de la pieza o el portal que tapa la salida del río (igual que la pelota)
+  holeRiverThrough(x, y, used) {
+    const S = this.S, hops = this._riverHops || 0;
+    const nc = this.bouncesAt(x, y + 1, 'down') || hops > 3 ? null : this.nextCell(x, y, 'down', 'hole', (px, py, other) => {
+      this.log('log.holePortal');
+      this.anim({ t: 'move', p: 'hole', x: px, y: py });
+      this.anim({ t: 'teleport', p: 'hole', x: other.x, y: other.y });
+    });
+    if (!nc || nc.stop || (nc.x === x && nc.y === y)) {
+      for (let i = 0; i < 2; i++) this.anim({ t: 'bump', p: 'hole', x, y: y + 1, dir: 'down' });
+      this.log('log.holeRiverBlocked');
+      const spot = this.nearestFreeRandom(x, y) || { x, y };
+      this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y });
+      return [spot.x, spot.y];
+    }
+    if (!this.inBoard(nc.x, nc.y)) {
+      this.anim({ t: 'fall', p: 'hole', x: nc.x, y: nc.y });
+      this.log('log.holeFell', { x: S.hole.initX, y: S.hole.initY });
+      this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
+      return this.holeSpawnWater(S.hole.initX, S.hole.initY);
+    }
+    this.anim({ t: 'move', p: 'hole', x: nc.x, y: nc.y });
+    const tl = this.tileAt(nc.x, nc.y);
+    if (isWater(tl)) { this._riverHops = hops + 1; try { return this.holeInWater(nc.x, nc.y, used); } finally { this._riverHops = hops; } }
+    if (isLauncher(tl)) {
+      if (!used.has(nc.x + ',' + nc.y)) return this.launchHole(nc.x, nc.y, used);
+      const spot = this.nearestFree(nc.x, nc.y) || nc;
+      this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y });
+      return [spot.x, spot.y];
+    }
+    return [nc.x, nc.y];
   }
   holeSpawnWater(x, y) {
     const tl = this.tileAt(x, y);
@@ -674,7 +773,13 @@ export class Game {
       if (isLauncher(this.tileAt(cx, cy))) { // lanzadera: se acaba el movimiento y sale volando
         ball.x = cx; ball.y = cy;
         this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
-        this.launchBall(ball);
+        const fly = this.launchBall(ball, new Set(), { untilHit });
+        // el iridiscente no ha chocado con nada: tras aterrizar sigue avanzando hacia donde volaba
+        // (salvo si cae en el hoyo o en un búnker)
+        if (untilHit && fly?.landed && !this.isHole(ball.x, ball.y) && !this.trapAt(ball.x, ball.y)) {
+          cx = ball.x; cy = ball.y; dir = fly.dir;
+          continue;
+        }
         this.finishMoveChecks(ball);
         return;
       }

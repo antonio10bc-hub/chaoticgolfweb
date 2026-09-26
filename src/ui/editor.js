@@ -47,7 +47,7 @@ const PAIRS = [1, 2, 3], PAIR_LETTER = p => 'ABC'[p - 1];
 
 /* ---------- nivel ---------- */
 // plantilla: la disposición estándar (columna de PAR + hoyo) para 1 jugador
-function defaultLevel(cols = 7, rows = 9, par = 5) {
+function defaultLevel(cols = 12, rows = 9, par = 5) {
   const cx = Math.floor(cols / 2);
   const topPad = Math.max(0, Math.floor((rows - (par + 2)) / 2));
   const parCells = [];

@@ -11,7 +11,7 @@
 //   block / corner / tunnel — (minigolf, `device`) piezas de madera que no cuentan como casilla:
 //            el bloque hace rebotar, la esquina desvía 90° (o rebota por la espalda), el túnel
 //            saca por un lado al azar. Nadie se queda encima.
-//   launcher — (minigolf) al pasar por encima, vuela 5 casillas hacia su flecha; gira cada turno.
+//   launcher — (minigolf) al pasar por encima, vuela 3 casillas hacia su flecha; gira cada turno.
 //   rotates — se elige la orientación (`rot`) al colocarla; picFor(tile) la dibuja.
 // Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
