@@ -11,7 +11,12 @@
     "simulate": "node tools/simulate.mjs",
     "art-manifest": "node tools/build-art-manifest.mjs",
     "smoke": "node tools/smoke.mjs",
-    "test:ui": "node --test \"tests/ui/*.ui.mjs\""
+    "test:ui": "node --test \"tests/ui/*.ui.mjs\"",
+    "sim:challenges": "node tools/sim-challenges.mjs",
+    "sim:rush": "node tools/sim-rush.mjs",
+    "puzzles:audit": "node tools/puzzle-audit.mjs",
+    "puzzles:search": "node tools/puzzle-search.mjs",
+    "puzzles:show": "node tools/puzzle-show.mjs"
   },
   "devDependencies": {
     "jsdom": "^24.1.3",

@@ -284,6 +284,23 @@ npm run smoke                     # prueba de humo en Chrome real (capturas en s
 npm run golden                    # regenera el oráculo desde tests/oracle/original.html
 ```
 
+**Diseño de niveles** (equilibrar con datos antes de tocar un campo o un puzle):
+
+```bash
+npm run sim:challenges -- pinball,prism 60      # desafíos: campo en ASCII + rondas, ventaja por salida, uso de mecánicas
+npm run sim:challenges -- ch 60 0               # todos los desafíos (weekly: las semanales · base: partidas normales)
+npm run sim:challenges -- vars 80 1 mis-variantes.mjs   # probar variantes de un campo (export default [{ id, board, layout, … }])
+npm run sim:rush -- 200                          # contrarreloj: turnos por hoyo generado, hoyos sin terminar
+npm run puzzles:audit                            # puzles: soluciones, % de jugadas que ganan, cartas o piezas que sobran
+npm run puzzles:search -- lakeCorner 20000 5     # buscar puzles nuevos de un tema (candidatos en puzzle-candidates/)
+npm run puzzles:show -- lakeCorner 0             # ver un candidato: tablero y solución paso a paso
+```
+
+Objetivos usados: una partida normal de 7×9 dura ~6 rondas; desafíos de calentamiento ~4-6, intermedios ~6-8 y
+expertos ~7-10, sin colas largas ni una salida que gane de más. Puzles: cada carta hace falta (salvo alguna pista
+falsa a propósito en los difíciles), cada pieza cambia la solución o es una trampa, la solución no depende del azar;
+dificultad por el % de jugadas que ganan (calentamiento ~14 %, intermedio 2-6 %, experto <4 %).
+
 **El oráculo** (`tests/fixtures/golden.json.gz`) son ~44.000 acciones aleatorias grabadas en el juego
 original (`tests/oracle/original.html`, la versión de un solo archivo) con el hash del estado tras cada una.
 `tests/engine.golden.test.mjs` las repite sobre el motor y exige el mismo estado, log incluido, texto por
