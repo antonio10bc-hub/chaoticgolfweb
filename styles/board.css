@@ -134,3 +134,118 @@
   .portalRing, .portalCore { animation: none; }
   .portalRing { opacity: .5; } .portalRing:nth-child(1) { transform: scale(.35); } .portalRing:nth-child(2) { transform: scale(.68); }
 }
+
+/* ---------- agua (baraja de agua) ----------
+   río: agua clara que baja (chevrones en movimiento); lago: agua profunda y quieta con reflejos
+   y nenúfar. Las casillas vecinas del mismo tipo se unen por encima de la junta (wN/wS/wW/wE). */
+.cell.water { overflow: visible; }
+.cell.river { background-color: #5BB6D6; background-image: linear-gradient(90deg, rgba(20,80,110,.25), transparent 22%, transparent 78%, rgba(20,80,110,.25));
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.18); }
+.cell.lake { background-color: #2E7E8C; background-image: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,.14), transparent 60%);
+  box-shadow: inset 0 0 0 3px rgba(18,70,80,.35), inset 0 0 14px rgba(10,40,50,.35); border-radius: 12px; }
+.cell.water::before, .cell.water::after { content: ''; position: absolute; pointer-events: none; background: inherit; z-index: 0; }
+.cell.water.wS::after { left: 0; right: 0; bottom: -6px; height: 10px; background-color: inherit; }
+.cell.water.wE::before { top: 0; bottom: 0; right: -6px; width: 10px; background-color: inherit; }
+.cell.lake.wS::after, .cell.lake.wE::before { background-image: none; }
+.cell.river.wN { border-top-left-radius: 0; border-top-right-radius: 0; }
+.cell.river.wS { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.cell.lake.wN { border-top-left-radius: 0; border-top-right-radius: 0; } .cell.lake.wS { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.cell.lake.wW { border-top-left-radius: 0; border-bottom-left-radius: 0; } .cell.lake.wE { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+/* nacimiento (manantial) y desembocadura (espuma) del río */
+.cell.river.rSrc { background-image: radial-gradient(ellipse 60% 30% at 50% 0, rgba(255,255,255,.45), transparent 70%), linear-gradient(90deg, rgba(20,80,110,.25), transparent 22%, transparent 78%, rgba(20,80,110,.25)); }
+.cell.river.rEnd { background-image: radial-gradient(ellipse 70% 26% at 50% 100%, rgba(255,255,255,.55), transparent 70%), linear-gradient(90deg, rgba(20,80,110,.25), transparent 22%, transparent 78%, rgba(20,80,110,.25)); }
+.cell.water > * { position: relative; z-index: 1; }
+.tile-river, .tile-lake { background: transparent; width: 100%; height: 100%; }
+.tile-river .sub, .tile-lake .sub { color: rgba(241,251,255,.8); }
+.riverPic { overflow: hidden; }
+.riverFlow { animation: riverFlow 1.4s linear infinite; }
+@keyframes riverFlow { from { transform: translateY(0); } to { transform: translateY(46px); } }
+.lakeShine { transform-box: fill-box; transform-origin: center; animation: lakeShine 4.5s ease-in-out infinite; }
+.lakeShine.b { animation-delay: -2.2s; }
+@keyframes lakeShine { 50% { transform: scaleX(1.25); opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .riverFlow, .lakeShine { animation: none; } }
+html.reduceMotion .riverFlow, html.reduceMotion .lakeShine { animation: none; }
+.cardSvg .riverFlow { animation-name: riverFlowCard; }
+@keyframes riverFlowCard { from { transform: translateY(0); } to { transform: translateY(30px); } }
+/* (colores del agua en una variable: la casilla y sus puentes sobre la junta usan el mismo) */
+.cell.river { --wc: #5BB6D6; } .cell.lake { --wc: #2E7E8C; }
+.cell.river.selectable { --wc: #6FC3E0; } .cell.lake.selectable { --wc: #3A93A2; }
+#board .cell.water { background-color: var(--wc); }
+#board .cell.water.wS::after { background: var(--wc); left: 0; right: 0; bottom: -7px; height: 12px; }
+#board .cell.water.wE::before { background: var(--wc); top: 0; bottom: 0; right: -7px; width: 12px; }
+#board .cell.river.wS::after { left: 0; right: 0; }
+.tile-river .sub, .tile-lake .sub { display: none; }
+#board .cell.river { box-shadow: none; }
+#board .cell.river.wS::after { background-image: linear-gradient(90deg, rgba(20,80,110,.25), transparent 22%, transparent 78%, rgba(20,80,110,.25)); }
+#board .cell.lake { box-shadow: none; background-image: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,.12), transparent 60%); }
+#board .cell.lake:not(.wN):not(.wS):not(.wW):not(.wE) { box-shadow: inset 0 0 0 3px rgba(18,70,80,.3); }
+.cell.lake:not(.lPad) .lakePic g { display: none; }
+.cardSvg:has(.riverFlow) { overflow: hidden; border-radius: 6px; }
+
+/* corriente del río: chevrones finos en un patrón continuo en coordenadas del tablero (cada casilla
+   lo desplaza por su fila), así los tramos seguidos, y los puentes sobre la junta, encajan sin cortes.
+   Un solo reloj para todo el tablero (--flow, animado en #board): los tramos colocados más tarde
+   van en fase con los demás */
+@property --flow { syntax: '<length>'; inherits: true; initial-value: 0px; }
+#board:has(.cell.river) { animation: riverClock 1.6s linear infinite; }
+@keyframes riverClock { to { --flow: 28px; } }
+#board .cell.river {
+  --step: calc(var(--cell-h) + 3px); --off: calc(var(--row) * var(--step) * -1 + var(--flow));
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='28'><path d='M5 10l5 4 5-4' fill='none' stroke='white' stroke-opacity='.5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),
+    linear-gradient(90deg, rgba(20,80,110,.22), transparent 24%, transparent 76%, rgba(20,80,110,.22));
+  background-size: 20px 28px, 100% 100%;
+  background-repeat: repeat-y, no-repeat;
+  background-position: center var(--off), 0 0;
+}
+#board .cell.river.wS::after {
+  background-image: inherit; background-size: 20px 28px, 100% 100%; background-repeat: repeat-y, no-repeat;
+  background-position: center calc(var(--off) - var(--cell-h) + 5px), 0 0;
+}
+/* nacimiento y desembocadura: un velo de espuma encima (sin tapar la corriente) */
+#board .cell.river.rSrc > .tile-river { background: radial-gradient(ellipse 60% 26% at 50% 0, rgba(255,255,255,.4), transparent 70%); }
+#board .cell.river.rEnd > .tile-river { background: radial-gradient(ellipse 70% 24% at 50% 100%, rgba(255,255,255,.5), transparent 70%); }
+#board .cell.river.rSrc.rEnd > .tile-river { background: radial-gradient(ellipse 60% 26% at 50% 0, rgba(255,255,255,.4), transparent 70%), radial-gradient(ellipse 70% 24% at 50% 100%, rgba(255,255,255,.5), transparent 70%); }
+#board .cell.river > .tile-river { position: absolute; inset: 0; width: auto; height: auto; border-radius: inherit; }
+@media (prefers-reduced-motion: reduce) { #board:has(.cell.river) { animation: none; } }
+html.reduceMotion #board:has(.cell.river) { animation: none; }
+
+/* ---------- lago continuo ----------
+   El agua es un solo patrón en coordenadas del tablero (--col/--row): reflejos suaves y ondas que
+   derivan despacio con un reloj común (--lflow). Borde oscuro solo en la orilla exterior (lados sin
+   vecina de lago) y los bloques 2×2 rellenan también la esquina de la junta (wSE). */
+@property --lflow { syntax: '<length>'; inherits: true; initial-value: 0px; }
+#board:has(.cell.lake) { animation: lakeClock 36s linear infinite; }
+#board:has(.cell.lake):has(.cell.river) { animation: riverClock 1.6s linear infinite, lakeClock 36s linear infinite; }
+@keyframes lakeClock { to { --lflow: 180px; } }
+#board .cell.lake {
+  --stepX: calc(var(--cell-w) + 3px); --stepY: calc(var(--cell-h) + 3px);
+  --ox: calc(var(--col) * var(--stepX) * -1 + var(--lflow)); --oy: calc(var(--row) * var(--stepY) * -1);
+  --lakeTex: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='150'><g fill='white'><ellipse cx='30' cy='26' rx='20' ry='3.2' fill-opacity='.16'/><ellipse cx='112' cy='18' rx='12' ry='2.2' fill-opacity='.11'/><ellipse cx='146' cy='82' rx='22' ry='3.4' fill-opacity='.14'/><ellipse cx='64' cy='104' rx='15' ry='2.6' fill-opacity='.12'/><ellipse cx='16' cy='132' rx='10' ry='2' fill-opacity='.1'/></g><g fill='none' stroke='white' stroke-opacity='.08' stroke-width='1.4'><path d='M78 58q14-6 28 0'/><path d='M120 134q12-5 24 0'/><path d='M8 76q10-4 20 0'/></g></svg>");
+  background-image: var(--lakeTex); background-size: 180px 150px; background-repeat: repeat;
+  background-position: var(--ox) var(--oy);
+  --eN: 3px; --eS: 3px; --eW: 3px; --eE: 3px;
+  box-shadow: inset 0 var(--eN) 0 rgba(18,62,72,.45), inset 0 calc(var(--eS) * -1) 0 rgba(18,62,72,.45),
+    inset var(--eW) 0 0 rgba(18,62,72,.45), inset calc(var(--eE) * -1) 0 0 rgba(18,62,72,.45) !important;
+}
+#board .cell.lake.wN { --eN: 0px; } #board .cell.lake.wS { --eS: 0px; } #board .cell.lake.wW { --eW: 0px; } #board .cell.lake.wE { --eE: 0px; }
+#board .cell.lake.wS::after {
+  background-color: var(--wc); background-image: var(--lakeTex); background-size: 180px 150px;
+  background-position: var(--ox) calc(var(--oy) - var(--cell-h) + 5px);
+  /* orilla en los lados del puente que dan al césped */
+  box-shadow: inset 3px 0 0 rgba(18,62,72,.45), inset -3px 0 0 rgba(18,62,72,.45);
+}
+#board .cell.lake.wS.wW::after { box-shadow: inset -3px 0 0 rgba(18,62,72,.45); }
+#board .cell.lake.wS.wE::after { box-shadow: inset 3px 0 0 rgba(18,62,72,.45); }
+#board .cell.lake.wS.wW.wE::after { box-shadow: none; }
+#board .cell.lake.wSE::after { right: -7px; box-shadow: none; } /* bloque 2×2: rellena también la esquina */
+#board .cell.lake.wE::before {
+  background-color: var(--wc); background-image: var(--lakeTex); background-size: 180px 150px;
+  background-position: calc(var(--ox) - var(--cell-w) + 5px) var(--oy);
+  box-shadow: inset 0 3px 0 rgba(18,62,72,.45), inset 0 -3px 0 rgba(18,62,72,.45);
+}
+#board .cell.lake.wE.wN::before { box-shadow: inset 0 -3px 0 rgba(18,62,72,.45); }
+#board .cell.lake.wE.wS::before { box-shadow: inset 0 3px 0 rgba(18,62,72,.45); }
+#board .cell.lake.wE.wN.wS::before { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { #board:has(.cell.lake) { animation: none; } }
+html.reduceMotion #board:has(.cell.lake) { animation: none; }

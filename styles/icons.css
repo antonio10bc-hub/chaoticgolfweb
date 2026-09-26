@@ -35,3 +35,5 @@
 .ico-no::before, .ico-no::after { left: 44%; top: 8%; width: 14%; height: 84%; background: currentColor; border-radius: 4px; }
 .ico-no::before { transform: rotate(45deg); }
 .ico-no::after { transform: rotate(-45deg); }
+.ico-river::before { left: 34%; top: 6%; width: 32%; height: 88%; border-radius: 40%; background: #5BB6D6; }
+.ico-lake::before { inset: 16% 8%; border-radius: 50%; background: #2E7E8C; }

@@ -30,7 +30,7 @@ function html() {
     `<button class="btn-ghost btn-sm btn-icon setClose" data-rules="close" aria-label="${esc(t('common.close'))}"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></header>` +
     `<div class="setBody">` +
     sec('goal', 'i-hole') + sec('turn', 'i-arrow-r') + sec('colors', 'i-bolt') + sec('jaque', 'i-flag') +
-    sec('edges', 'i-out') + sec('tiles', 'i-sand') +
+    sec('edges', 'i-out') + sec('tiles', 'i-sand') + sec('water', 'i-drop') +
     `<section><h4><svg class="i" aria-hidden="true"><use href="#i-hand"/></svg>${esc(t('rules.cardsH'))}</h4><div class="rlCards">${cardsHTML()}</div></section>` +
     `<section><h4><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>${esc(t('rules.keysH'))}</h4><p class="rlKeys">${t('rules.keys')}</p></section>` +
     `</div>`;

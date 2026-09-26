@@ -300,6 +300,7 @@ export function explainPlay(before, after, p, cardKey) {
     let near = null;
     for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
     if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
+    if (placed.type === 'river' || placed.type === 'lake') return { key: placed.type };
     return { key: 'portal' };
   }
   const me0 = ballOf(B, p), me1 = ballOf(A, p);

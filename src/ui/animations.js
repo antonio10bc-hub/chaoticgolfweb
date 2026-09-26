@@ -7,9 +7,9 @@ import { pieceEl, syncPieces } from './board.js';
 import { setPos, cellCenterPx, pieceCenterPx } from './geometry.js';
 import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
-import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, CONFETTI_C } from '../fx/juice.js';
+import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, CONFETTI_C } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxZoomPulse, fxEdgeFall, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
 import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
@@ -72,6 +72,33 @@ async function playEvent(ev) {
       await wait(ms + 15);
       break;
     }
+    case 'drift': {   // río: la pieza flota y la corriente la baja despacio, con ondas a su paso
+      el.classList.add('swimming');
+      const ms = 430;
+      setPos(el, ev.x, ev.y, ms, 'cubic-bezier(.45,.05,.55,.95)');
+      const { px, py } = cellCenterPx(ev.x, ev.y);
+      fxSpawn(px, py, { n: 3, colors: WATER_C, size: 5, dist: 16, dur: 420, gravity: -6 });
+      fxTrailPush(ev.x, ev.y, trailCol);
+      if (!app.driftSfx) { sfx('water'); app.driftSfx = true; setTimeout(() => { app.driftSfx = false; }, 900); }
+      await wait(ms + 10);
+      if (ev.out) { el.classList.remove('swimming'); el.classList.add('climbOut'); setTimeout(() => el.classList.remove('climbOut'), 380); }
+      break;
+    }
+    case 'splash': {  // lago: entra en el agua, se hunde con salpicadura y aros
+      el.classList.remove('swimming');
+      setPos(el, ev.x, ev.y, 120, 'ease-out');
+      await wait(110);
+      const { px, py } = cellCenterPx(ev.x, ev.y);
+      el.classList.add('splashing');
+      fxSpawn(px, py, { n: 5, colors: WATER_C, size: 4, dist: 14, up: 8, dur: 420, gravity: 40 });
+      fxSplashRing(px, py);
+      sfx('splash');
+      await wait(380);
+      el.style.opacity = 0;
+      el.classList.remove('splashing');
+      await wait(60);
+      break;
+    }
     case 'teleport': { // succión con escala + rotación y glow; expulsión simétrica al salir
       const src = pieceCenterPx(el);
       el.classList.add('warp', 'warpOut');
@@ -113,6 +140,7 @@ async function playEvent(ev) {
       break;
     }
     case 'fall': {    // rueda hacia fuera con rotación y fade + poof en el borde
+      el.classList.remove('swimming');
       const edge = pieceCenterPx(el);
       el.classList.add('falling');
       setPos(el, ev.x, ev.y, JUICE.fall.ms, 'ease-in');
@@ -126,7 +154,7 @@ async function playEvent(ev) {
     }
     case 'appear': {  // reaparece con drop-in, rebote y polvareda
       el.style.display = 'flex';
-      el.classList.remove('ghostHoled', 'ghostPick', 'ghostCan'); // (si salía del hoyo, deja de ser fantasma)
+      el.classList.remove('ghostHoled', 'ghostPick', 'ghostCan', 'swimming'); // (si salía del hoyo, deja de ser fantasma)
       inner.style.transform = '';
       setPos(el, ev.x, ev.y, 0);
       el.classList.add('dropping', 'air');

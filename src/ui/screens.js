@@ -25,6 +25,9 @@ import { clearPause } from './pause.js';
 import { resetZoom } from './board-zoom.js';
 import { clearBubbles } from './persona.js';
 import { setCourseSlot } from './prefs.js';
+import { deckById } from '../content/decks.js';
+// escena de la partida en curso: la de su baraja (solo partida rápida)
+const sceneOfGame = () => app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '';
 import { renderDailyCard, paintRushTimer } from './screen-modes.js';
 
 // qué hacen "← Volver" y "Reiniciar" en cada modo (lo rellena cada módulo de pantalla)
@@ -53,6 +56,7 @@ export function showScreen(s) {
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
   $('logPanel').style.display = s === 'game' ? 'flex' : 'none';   // el historial solo vive en la partida
+  if (s === 'game') $('gameScreen').dataset.scene = sceneOfGame(); // fondo propio de la baraja (lago…)
   if (s === 'game' && app.game) { resetZoom(); fitBoard(); render(); } // recalcular tamaños al hacerse visible
   paintRushTimer();   // la cuenta atrás del contrarreloj (y el tinte rojo) solo en su partida
   if (s === 'editor' && ED.level) { fitEditorBoard(); edRender(); }

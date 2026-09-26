@@ -167,8 +167,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
-  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): Baraja clásica, y Baraja de agua y
-  de minigolf aún bloqueadas ("Próximamente"). Cada una con su color, su última partida, "Repetir" y sus
+  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): Baraja clásica, **Baraja de agua** y
+  Baraja de minigolf (aún bloqueada, "Próximamente"). Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -181,6 +181,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí).
   Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
+- **Baraja de agua** (`tiles/river.js`, `tiles/lake.js`): sin búnkeres ni portales; 5 cartas de río y 5 de lago
+  (0 copias en el resto de barajas, así su reparto no cambia). **Río**: una sola columna; la primera carta va
+  donde sea y las demás lo alargan por arriba o por abajo. Quien entra (pelota u hoyo) pierde el resto del
+  movimiento y la corriente lo baja hasta la casilla justo debajo del río; si hay otra pelota, la empuja 1 y
+  ocupa su sitio; si el río acaba en el borde, se cae del tablero. **Lago**: crece pegando casillas por un lado;
+  caer dentro es como caerse del tablero (el hoyo vuelve a su casilla inicial). Si en la salida hay agua, el río
+  arrastra o se va a la casilla libre más cercana. La partida tiene fondo de lago (el campo es una isla), la bola
+  flota río abajo y hay chapuzón al caer al lago. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
 - **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
   como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.

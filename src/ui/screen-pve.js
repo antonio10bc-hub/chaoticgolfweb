@@ -18,6 +18,7 @@ import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
 import { deckById } from '../content/decks.js';
+import { defaultCounts } from '../content/cards/index.js';
 
 export const PVE_SIZES = {
   s: { cols: 5, rows: 5, par: 2 },
@@ -172,7 +173,9 @@ export function startPveMatch() {
   const cfg = app.pveCfg;
   clampPve(cfg);
   app.lastPveCfg = { ...cfg };
-  const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps) });
+  const dk = deckById(cfg.deck);
+  const extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
+  const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra });
   startGame(made.game, 'pve');
   dressVsGame(made);
   try { localStorage.setItem(lastKey(cfg.deck), JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }

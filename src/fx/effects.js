@@ -123,6 +123,19 @@ export function fxEdgeFall(x, y, color) {
   }
 }
 
+// chapuzón en el lago: un aro de agua que se abre (sutil: cabe en una sola casilla)
+export function fxSplashRing(px, py) {
+  if (REDUCED) return;
+  const layer = fxGetDomLayer();
+  for (const delay of [0]) {
+    const d = document.createElement('div');
+    d.className = 'splashRing';
+    d.style.left = px + 'px'; d.style.top = py + 'px'; d.style.animationDelay = delay + 'ms';
+    layer.appendChild(d);
+    setTimeout(() => d.remove(), 900 + delay);
+  }
+}
+
 // cadena de choques cortada (tope anti-bucle): eslabón roto flotando sobre la pelota
 export function fxChainStop(px, py) {
   const d = document.createElement('div');

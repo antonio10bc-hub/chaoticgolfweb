@@ -23,7 +23,7 @@
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
-import { isTrap, isPortal } from '../content/tiles/index.js';
+import { TILES, isTrap, isPortal, isRiver, isLake, isWater } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
@@ -259,6 +259,154 @@ export class Game {
   // las casillas PAR son solo una referencia impresa: no bloquean colocación
   cellFree(x, y) { return this.inBoard(x, y) && !this.ballAt(x, y) && !this.tileAt(x, y) && !this.isHole(x, y); }
   trapAt(x, y) { return isTrap(this.tileAt(x, y)); }
+  waterAt(x, y) { return isWater(this.tileAt(x, y)); }
+
+  /* ---- agua (baraja de agua): dónde se puede colocar ---- */
+  // río: una sola columna; la primera casilla donde sea, las demás alargan por arriba o por abajo.
+  // lago: la primera donde sea, las demás pegadas por un lado a una casilla de lago.
+  canPlaceTile(type, x, y) {
+    if (!this.cellFree(x, y)) return false;
+    const def = TILES[type];
+    if (def?.river) {
+      const r = this.S.tiles.filter(isRiver);
+      if (r.length >= def.maxOnBoard) return false;
+      if (!r.length) return true;
+      const ys = r.map(t => t.y);
+      return x === r[0].x && (y === Math.min(...ys) - 1 || y === Math.max(...ys) + 1);
+    }
+    if (def?.lake) {
+      const l = this.S.tiles.filter(isLake);
+      if (l.length >= def.maxOnBoard) return false;
+      return !l.length || l.some(t => Math.abs(t.x - x) + Math.abs(t.y - y) === 1);
+    }
+    return true;
+  }
+  anyPlaceFor(type) {
+    for (let y = 0; y < this.S.rows; y++) for (let x = 0; x < this.S.cols; x++) if (this.canPlaceTile(type, x, y)) return true;
+    return false;
+  }
+  // casilla libre más cercana (sin pelota, loseta ni hoyo)
+  nearestFree(x, y) {
+    const S = this.S;
+    for (let d = 1; d < S.cols + S.rows; d++) {
+      let best = null;
+      for (let oy = -d; oy <= d; oy++) for (let ox = -d; ox <= d; ox++) {
+        if (Math.abs(ox) + Math.abs(oy) !== d || !this.cellFree(x + ox, y + oy)) continue;
+        best = best || { x: x + ox, y: y + oy };
+      }
+      if (best) return best;
+    }
+    return null;
+  }
+  // fila de la desembocadura de un río que pasa por (x,y): la casilla justo debajo de su final
+  riverMouth(x, y) {
+    let yy = y;
+    while (isRiver(this.tileAt(x, yy + 1))) yy++;
+    return yy + 1;
+  }
+
+  /* ---- agua: pelotas ---- */
+  // la pelota acaba de entrar en agua: río (la arrastra) o lago (vuelve a su salida)
+  ballInWater(ball) {
+    const tl = this.tileAt(ball.x, ball.y), pid = 'b' + ball.player, b = playerTag(ball.player);
+    if (isLake(tl)) {
+      this.anim({ t: 'splash', p: pid, x: ball.x, y: ball.y });
+      this.log('log.ballLake', { b });
+      this.tip('lake');
+      this.resetBallToSpawn(ball);
+      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+      this.spawnWater(ball);
+      this.log('log.ballBack', { b, x: ball.x, y: ball.y });
+      return;
+    }
+    if (!isRiver(tl)) return;
+    this.log('log.ballRiver', { b });
+    this.tip('river');
+    const x = ball.x;
+    let y = ball.y;
+    while (isRiver(this.tileAt(x, y + 1))) { y++; this.anim({ t: 'drift', p: pid, x, y }); }
+    const ey = y + 1;
+    if (!this.inBoard(x, ey)) { // el río desemboca fuera del tablero: se cae
+      ball.x = x; ball.y = y;
+      this.anim({ t: 'fall', p: pid, x, y: ey, dir: 'down' });
+      this.resetBallToSpawn(ball);
+      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+      this.log('log.ballFell', { b, x: ball.x, y: ball.y });
+      this.spawnWater(ball);
+      return;
+    }
+    const hit = this.ballAt(x, ey);
+    if (hit && hit !== ball) { // otra pelota a la salida: la empuja 1 hacia abajo y ocupa su sitio
+      ball.x = x; ball.y = y;
+      this.anim({ t: 'impact', p: pid, dir: 'down', target: 'b' + hit.player });
+      this.log('log.riverPush', { a: b, b: playerTag(hit.player) });
+      this.moveBallTransfer(hit, 'down', 1);
+      if (this.ballAt(x, ey)) return; // no se ha podido mover: se queda al final del río
+    }
+    ball.x = x; ball.y = ey;
+    this.anim({ t: 'drift', p: pid, x, y: ey, out: true });
+    this.log('log.ballRiverOut', { b, x, y: ey });
+    if (isLake(this.tileAt(x, ey))) this.ballInWater(ball); // (del río al lago)
+  }
+  // tras volver a la salida: si en ella hay agua, el río la arrastra (o la casilla libre más cercana);
+  // si hay lago, a la casilla libre más cercana
+  spawnWater(ball) {
+    const tl = this.tileAt(ball.x, ball.y), pid = 'b' + ball.player;
+    if (!isWater(tl)) return;
+    let spot = null;
+    if (isRiver(tl)) {
+      const ey = this.riverMouth(ball.x, ball.y);
+      if (this.inBoard(ball.x, ey) && !this.ballAt(ball.x, ey) && !this.tileAt(ball.x, ey)) {
+        for (let y = ball.y + 1; y <= ey; y++) this.anim({ t: 'drift', p: pid, x: ball.x, y, out: y === ey });
+        ball.y = ey;
+        return;
+      }
+      spot = this.nearestFree(ball.x, ey - 1);
+    } else spot = this.nearestFree(ball.x, ball.y);
+    if (!spot) return;
+    ball.x = spot.x; ball.y = spot.y;
+    this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+  }
+
+  /* ---- agua: el hoyo (se mueve como una pelota) ---- */
+  // el hoyo entra en agua en (x,y): devuelve dónde se asienta
+  holeInWater(x, y) {
+    const S = this.S, tl = this.tileAt(x, y);
+    if (isLake(tl)) {
+      this.anim({ t: 'splash', p: 'hole', x, y });
+      this.log('log.holeLake');
+      this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
+      return this.holeSpawnWater(S.hole.initX, S.hole.initY);
+    }
+    this.log('log.holeRiver');
+    let yy = y;
+    while (isRiver(this.tileAt(x, yy + 1))) { yy++; this.anim({ t: 'drift', p: 'hole', x, y: yy }); }
+    const ey = yy + 1;
+    if (!this.inBoard(x, ey)) {
+      this.anim({ t: 'fall', p: 'hole', x, y: ey });
+      this.log('log.holeFell', { x: S.hole.initX, y: S.hole.initY });
+      this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
+      return this.holeSpawnWater(S.hole.initX, S.hole.initY);
+    }
+    this.anim({ t: 'drift', p: 'hole', x, y: ey, out: true });
+    if (isLake(this.tileAt(x, ey))) return this.holeInWater(x, ey);
+    return [x, ey];
+  }
+  holeSpawnWater(x, y) {
+    const tl = this.tileAt(x, y);
+    if (!isWater(tl)) return [x, y];
+    if (isRiver(tl)) {
+      const ey = this.riverMouth(x, y);
+      if (this.inBoard(x, ey) && !this.tileAt(x, ey)) {
+        for (let yy = y + 1; yy <= ey; yy++) this.anim({ t: 'drift', p: 'hole', x, y: yy, out: yy === ey });
+        return [x, ey];
+      }
+    }
+    const spot = this.nearestFree(x, y);
+    if (!spot) return [x, y];
+    this.anim({ t: 'appear', p: 'hole', x: spot.x, y: spot.y });
+    return [spot.x, spot.y];
+  }
   inTrap(ball) { return this.trapAt(ball.x, ball.y); }
   holeInTrap() { return this.trapAt(this.S.hole.x, this.S.hole.y); }
   // distancia efectiva de una carta de hoyo (la trampa resta 1)
@@ -328,6 +476,7 @@ export class Game {
         this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
         this.log('log.ballFell', { b, x: ball.x, y: ball.y });
         this.emergeFromPortal(ball, dx, dy);
+        this.spawnWater(ball);
         this.finishMoveChecks(ball); // si el hoyo ocupa su posición inicial, la pelota entra (JAQUE)
         return;
       }
@@ -342,6 +491,13 @@ export class Game {
       }
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: pid, x: cx, y: cy });
+      if (this.waterAt(cx, cy)) { // agua: se acaba el movimiento y actúa el río o el lago
+        ball.x = cx; ball.y = cy;
+        this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
+        this.ballInWater(ball);
+        this.finishMoveChecks(ball);
+        return;
+      }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.ballTrapped', { b, n: remaining });
         this.tip('bunker');
@@ -478,11 +634,13 @@ export class Game {
           this.anim({ t: 'appear', p: 'hole', x: hx, y: hy });
           this.log('log.holeEmerges', { x: hx, y: hy });
         }
+        [hx, hy] = this.holeSpawnWater(hx, hy);
         this.holeLandAt(hx, hy);
         return;
       }
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: 'hole', x: cx, y: cy });
+      if (this.waterAt(cx, cy)) { const [wx, wy] = this.holeInWater(cx, cy); this.holeLandAt(wx, wy); return; }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.holeTrapped', { n: remaining });
         remaining = 0;
@@ -694,7 +852,7 @@ export class Game {
       return true;
     }
     if (pd.kind === 'placeTile') {
-      if (!this.cellFree(x, y)) return false;
+      if (!this.canPlaceTile(pd.tileType, x, y)) return false;
       const type = pd.tileType;
       this.pending = null;
       this.consumeCard(pd.p, pd.idx);
@@ -746,6 +904,7 @@ export class Game {
       this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });
       this.emergeFromPortal(ball, dx, dy);
+      this.spawnWater(ball);
       return this.endSerpent();
     }
     const hit = this.ballAt(nx, ny);
@@ -763,6 +922,7 @@ export class Game {
     ball.x = nx; ball.y = ny;
     this.anim({ t: 'move', p: pid, x: nx, y: ny });
     pd.stepsLeft--;
+    if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
     if (this.trapAt(nx, ny) && pd.stepsLeft > 0) {
       this.log('log.ballTrapped', { b, n: pd.stepsLeft });
       return this.endSerpent();
@@ -886,7 +1046,7 @@ export class Game {
       return tg ? (tg.out ? 'out' : 'sel') : null;
     }
     if (pd.kind === 'serpent') return this.serpentTargets().some(t => t.x === x && t.y === y) ? 'sel' : null;
-    if (pd.kind === 'placeTile') return this.cellFree(x, y) ? 'sel' : null;
+    if (pd.kind === 'placeTile') return this.canPlaceTile(pd.tileType, x, y) ? 'sel' : null;
     return null;
   }
 

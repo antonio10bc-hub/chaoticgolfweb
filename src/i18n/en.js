@@ -5,6 +5,8 @@ export default {
     name: 'Player {n}',
   },
   cards: {
+    river: { name: 'River', desc: 'Place a stretch of river: whoever enters loses the rest of the move and the current carries it to just below the river. The first one goes anywhere; the rest extend the river at its top or bottom (max. 5).' },
+    lake: { name: 'Lake', desc: 'Place a lake square: falling in is like falling off the board. The first one goes anywhere; the rest must touch the lake to make it grow (max. 5).' },
     palo1: { name: 'Club 1', desc: 'Your ball moves 1 square in a straight line.' },
     palo2: { name: 'Club 2', desc: 'Your ball moves 2 squares in a straight line.' },
     palo3: { name: 'Club 3', desc: 'Your ball moves 3 squares in a straight line.' },
@@ -27,6 +29,8 @@ export default {
     orange: 'Orange · reaction, any time',
   },
   reason: {
+    noRiverSpot: 'Nowhere to place river: it only grows at its top or bottom (max. 5)',
+    noLakeSpot: 'Nowhere to place lake: it has to touch the lake (max. 5)',
     godMode: 'Free-move mode is on: turn it off to play cards',
     pending: 'Finish the current action first',
     over: 'The game is over',
@@ -39,10 +43,19 @@ export default {
     generic: 'This card can’t be played right now',
   },
   tiles: {
+    river: { name: 'River', label: 'RIVER' },
+    lake: { name: 'Lake', label: 'LAKE' },
     bunker: { name: 'Bunker', label: 'BUNKER' },
     portal: { name: 'Portal', label: 'PORTAL' },
   },
   log: {
+    ballRiver: 'Ball {b} falls into the river: the current carries it',
+    ballRiverOut: 'Ball {b} leaves the river at ({x},{y})',
+    riverPush: 'The river pushes {a} into {b}',
+    ballLake: 'Ball {b} falls into the lake!',
+    ballBack: 'Ball {b} goes back to ({x},{y})',
+    holeRiver: 'The hole falls into the river: the current carries it',
+    holeLake: 'The hole falls into the lake! Back to its starting square',
     noCardsLeft: 'No cards left to draw',
     reshuffle: 'The discard pile is shuffled into a new deck',
     ballPortal: 'Ball {b} goes through the portal',
@@ -276,7 +289,7 @@ export default {
   decks: {
     lead: 'Every deck has the usual cards plus its own kind of special cards.',
     classic: { name: 'Classic deck', desc: 'The usual cards: clubs, finger, hole, bunker, portal and the orange reactions. Against bots or in local multiplayer.' },
-    water: { name: 'Water deck', desc: 'The base cards plus some special water cards.' },
+    water: { name: 'Water deck', desc: 'No bunkers or portals: instead, rivers that sweep you downstream and lakes that send you back to the start. The course is an island.' },
     minigolf: { name: 'Minigolf deck', desc: 'The base cards plus some special minigolf cards.' },
     soon: 'Coming soon', played: 'Played', won: 'Wins', pct: 'Win rate',
   },
@@ -352,6 +365,8 @@ export default {
     end: 'You can play up to 2 black cards per turn. When you’re done, press End turn to draw.',
     next: 'Next', ok: 'Got it', skip: 'Skip tutorial', holeCards: 'Hole cards',
     card: {
+      river: 'You place a stretch of river. Whoever enters stops and the current carries it to the square below the river. There can only be one river: it grows at its top or bottom.',
+      lake: 'You place a lake square. Falling in is like falling off the board: back to your start. The lake grows by adding squares next to it.',
       palo1: 'Your ball moves 1 square in a straight line. It can’t get out of a bunker: leaving costs 1.',
       palo2: 'Your ball moves 2 squares in a straight line. If it hits another ball, it passes on the movement left.',
       palo3: 'Your ball moves 3 squares in a straight line. Mind the edges: if it goes off, it returns to its start!',
@@ -376,6 +391,7 @@ export default {
     colorsH: 'Black and orange', colors: 'Black cards only on your turn (max. 2). Orange cards at any time, even outside your turn: they’re for reacting.',
     jaqueH: 'CHECK', jaque: 'When a ball goes into the hole it doesn’t win yet: it’s CHECK and everyone else gets a last chance with their orange cards (move the hole, knock the ball out or cancel the play).',
     edgesH: 'Edges and collisions', edges: 'If a ball goes off the board it returns to its start (if there is a portal there, it goes through and comes out one square further in the direction of the fall). If it hits another ball it stops and passes on the movement it had left. The hole can move too and swallows any ball it lands on.',
+    waterH: 'Water (water deck)', water: 'River: a column of water that always flows down. Whoever enters (ball or hole) loses the rest of the move and the current takes it to the square just below the river; if another ball is there, it pushes it one square and takes its place; if the river ends at the edge, it falls off the board. Lake: falling in is like falling off the board. If there is water at your start when you go back, the river carries you or you go to the nearest free square.',
     tilesH: 'Bunkers and portals', tiles: 'A bunker stops whoever enters (they lose the rest of the move) and leaving costs 1. Portals don’t count as a square: whatever enters one comes out of the other in the same direction.',
     cardsH: 'The cards', keysH: 'Shortcuts',
     keys: '<kbd>E</kbd> end turn · <kbd>D</kbd> discard · <kbd>P</kbd> pause · <kbd>H</kbd> rules · <kbd>Esc</kbd> cancel / close · arrows + <kbd>Enter</kbd> on the board',
@@ -422,7 +438,7 @@ export default {
     sink: '{name}: sinks it!', saveJaque: '{name} stops {target} from winning', rewind: '{name} cancels the last play',
     knockOff: '{name} knocks {target} off the board', pushAway: '{name} pushes {target} away from the hole', holeAway: '{name} moves the hole away from {target}',
     holeCloser: '{name} brings the hole closer', bunkerBlock: '{name} puts a bunker in {target}’s way', bunker: '{name} places a bunker',
-    portal: '{name} opens a portal', closer: '{name} gets closer to the hole', generic: '{name} makes a move',
+    portal: '{name} opens a portal', river: '{name} extends the river', lake: '{name} grows the lake', closer: '{name} gets closer to the hole', generic: '{name} makes a move',
   },
   why: {
     button: 'Why did I lose?', keyTitle: 'The key moment', finalTitle: 'The winning play',

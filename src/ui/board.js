@@ -29,6 +29,7 @@ function buildGrid(board, cols, rows) {
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
     const c = document.createElement('div');
     c.dataset.x = x; c.dataset.y = y;
+    c.style.setProperty('--row', y); c.style.setProperty('--col', x); // (patrones que siguen de una casilla a otra: río y lago)
     c.setAttribute('role', 'gridcell');
     c.tabIndex = -1;
     c._cls = c._html = c._bg = c._title = c._aria = null;
@@ -53,6 +54,14 @@ export function renderBoard() {
     const par = g.parAt(x, y), tile = g.tileAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
+    if (tile && tileDef(tile.type).cellClass.startsWith('water')) { // agua: se une con las vecinas del mismo tipo
+      const same = (ox, oy) => g.tileAt(x + ox, y + oy)?.type === tile.type;
+      if (same(0, -1)) cls += ' wN'; if (same(0, 1)) cls += ' wS'; if (same(-1, 0)) cls += ' wW'; if (same(1, 0)) cls += ' wE';
+      if (tile.type === 'river' && !same(0, -1)) cls += ' rSrc'; // nacimiento
+      if (tile.type === 'river' && !same(0, 1)) cls += ' rEnd';  // desembocadura
+      if (tile.type === 'lake' && same(1, 0) && same(0, 1) && same(1, 1)) cls += ' wSE'; // bloque 2×2: se rellena la esquina
+      if (tile.type === 'lake' && (x * 2 + y) % 3 === 0) cls += ' lPad'; // nenúfar solo en algunas
+    }
     if (tile) { // pelotas y hoyo viven en la capa de piezas; aquí solo losetas y avisos
       const pop = justPlaced && justPlaced.x === x && justPlaced.y === y ? ' tilePop' : '';
       html += ASSETS.tileHTML(tile.type, pop, tile);

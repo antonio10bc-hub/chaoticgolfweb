@@ -61,6 +61,22 @@ const ARTS = {
     `<g class="portalRings"><circle class="portalRing" cx="50" cy="54" r="30" fill="none" stroke="#A9C3E6" stroke-width="2.2"/><circle class="portalRing" cx="50" cy="54" r="30" fill="none" stroke="#A9C3E6" stroke-width="2.2"/><circle class="portalRing" cx="50" cy="54" r="30" fill="none" stroke="#A9C3E6" stroke-width="2.2"/></g>` +
     `<circle cx="50" cy="54" r="34" fill="none" stroke="#A9C3E6" stroke-width="1.4" opacity=".7"/>` +
     `<circle class="portalCore" cx="50" cy="54" r="5" fill="#fff"/>`,
+  river: () =>
+    // río: franja de agua clara de arriba abajo, con chevrones que bajan (la corriente) y orillas de césped
+    // (el SVG recorta lo que se sale: ver .cardSvg:has(.riverFlow) en board.css)
+    `<path d="M29 -2C33 30 27 62 32 102H68C63 62 71 30 67 -2Z" fill="${G_MID}"/>` +
+    `<path d="M36 -2C39 30 34 62 38 102H62C58 62 64 30 60 -2Z" fill="#5BB6D6"/>` +
+    `<path d="M40 0C42 30 39 60 41 100" stroke="rgba(255,255,255,.35)" stroke-width="2" fill="none" stroke-linecap="round"/>` +
+    `<g class="riverFlow">` + [0, 1, 2, 3, 4].map(i => `<path d="M42 ${i * 30 - 26}l8 7 8-7" fill="none" stroke="#F1FBFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`).join('') + `</g>`,
+  lake: () =>
+    // lago: agua profunda y quieta, redondeada, con reflejos y un nenúfar
+    `<ellipse cx="54" cy="58" rx="40" ry="30" fill="${SH}"/>` +
+    `<ellipse cx="50" cy="54" rx="42" ry="32" fill="${G_MID}"/>` +
+    `<ellipse cx="50" cy="54" rx="36" ry="26" fill="#2E7E8C"/>` +
+    `<ellipse cx="50" cy="56" rx="30" ry="20" fill="#3A93A2" opacity=".6"/>` +
+    `<ellipse class="lakeShine a" cx="36" cy="44" rx="11" ry="3" fill="rgba(255,255,255,.3)"/>` +
+    `<ellipse class="lakeShine b" cx="60" cy="68" rx="8" ry="2.4" fill="rgba(255,255,255,.22)"/>` +
+    `<g transform="translate(60 50)"><path d="M0 0L12 -3A12 12 0 1 1 11 5Z" fill="#5E9A58" transform="rotate(-20)"/><circle r="2.4" fill="#F2B6C8"/></g>`,
   no: () =>
     // carta tachada: anula la última jugada
     `<rect x="32" y="22" width="36" height="50" rx="6" fill="#fff" stroke="${INK}" stroke-width="1.8" transform="rotate(-8 50 47)"/>` +

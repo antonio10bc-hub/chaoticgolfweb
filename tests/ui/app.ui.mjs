@@ -193,13 +193,14 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
   assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
 });
 
-it('modos de juego: dos pestañas (una a la vez), barajas con estadísticas y dos bloqueadas', async () => {
+it('modos de juego: dos pestañas (una a la vez), barajas con estadísticas y la de minigolf bloqueada', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
   assert.equal(await app(() => document.querySelectorAll('.deckCard').length), 3);
-  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 2);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 1);
+  assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked [data-mode]').length), 0); // bloqueadas: nada que pulsar
   await click('[data-mtab="special"]'); await sleep(700);
   assert.equal(await vis(), 'special');
@@ -227,6 +228,17 @@ it('final de partida: "Compartir" genera la imagen de la jugada final', async ()
   assert.deepEqual(img, [1080, 1350]);
   assert.ok(await page.$('[data-share="download"]'));
   await page.keyboard.press('Escape'); await sleep(200);
+});
+
+it('baraja de agua: sin búnkeres ni portales, con río y lago, y fondo de lago', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(400); await click('[data-mtab="quick"]'); await sleep(600);
+  await click('[data-mode="quick:water"]'); await confirmIfAsked(); await sleep(300);
+  await click('#pvePlay'); await confirmIfAsked(); await sleep(700);
+  const r = await app(() => { const S = window.chaoticGolf.app.game.S, all = [...S.deck, ...S.hands.flat()];
+    return { scene: document.getElementById('gameScreen').dataset.scene, bunker: all.filter(k => k === 'bunker' || k === 'portal').length,
+      water: all.filter(k => k === 'river' || k === 'lake').length }; });
+  assert.deepEqual(r, { scene: 'lake', bunker: 0, water: 10 });
 });
 
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {

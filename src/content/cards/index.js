@@ -18,7 +18,7 @@ import { t } from '../../i18n/index.js';
 import { palo1, palo2, palo3 } from './palo.js';
 import dedo from './dedo.js';
 import { hoyoUp, hoyoDown, hoyoLeft, hoyoRight, oHoyoUp, oHoyoDown, oHoyoLeft, oHoyoRight } from './hoyo.js';
-import { bunker, portal } from './place-tile.js';
+import { bunker, portal, river, lake } from './place-tile.js';
 import oPalo1 from './palo-reactivo.js';
 import no from './no.js';
 
@@ -29,6 +29,7 @@ const CARD_LIST = [
   oPalo1,
   oHoyoUp, oHoyoDown, oHoyoLeft, oHoyoRight,
   no,
+  river, lake, // (al final: el orden de las cartas de siempre, y por tanto del barajado, no cambia)
 ];
 
 for (const c of CARD_LIST) {

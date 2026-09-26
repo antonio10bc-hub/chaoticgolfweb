@@ -14,7 +14,7 @@ import { toast } from './hud.js';
 import { sfx } from '../audio/sfx.js';
 
 /* ---------- registro de la última jugada (desde el controlador) ---------- */
-const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink']);
+const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash']);
 // posiciones antes de la jugada (barato: solo pelotas y hoyo)
 export const piecesBefore = g => ({
   balls: g.S.balls.map(b => ({ player: b.player, x: b.x, y: b.y, holed: b.holed })),
@@ -68,7 +68,16 @@ function drawBoard(c, S, fp, box, col) {
   } };
   parLabels();
   for (const tl of S.tiles) {
-    if (tl.type === 'portal') {
+    if (tl.type === 'river' || tl.type === 'lake') {
+      const rv = tl.type === 'river', x0 = ox + tl.x * cw, y0 = oy + tl.y * ch;
+      c.fillStyle = rv ? '#5BB6D6' : '#2E7E8C';
+      const up = S.tiles.some(o => o.type === tl.type && o.x === tl.x && o.y === tl.y - 1), dn = S.tiles.some(o => o.type === tl.type && o.x === tl.x && o.y === tl.y + 1);
+      rr(c, x0 + gap / 2, y0 + (up ? -gap / 2 : gap / 2), cw - gap, ch - gap + (up ? gap / 2 : 0) + (dn ? gap / 2 : 0), rv ? 4 : Math.min(14, cw * .2)); c.fill();
+      c.strokeStyle = 'rgba(241,251,255,.85)'; c.lineWidth = cw * .05; c.lineCap = 'round'; c.lineJoin = 'round';
+      if (rv) for (const k of [.3, .62]) { c.beginPath(); c.moveTo(cx(tl.x) - cw * .14, y0 + ch * k); c.lineTo(cx(tl.x), y0 + ch * k + cw * .1); c.lineTo(cx(tl.x) + cw * .14, y0 + ch * k); c.stroke(); }
+      else { c.fillStyle = 'rgba(255,255,255,.2)'; c.beginPath(); c.ellipse(cx(tl.x) - cw * .1, cy(tl.y) - ch * .15, cw * .2, cw * .05, 0, 0, 7); c.fill();
+        c.fillStyle = '#5E9A58'; c.beginPath(); c.arc(cx(tl.x) + cw * .12, cy(tl.y) + ch * .1, cw * .11, .4, 5.9); c.lineTo(cx(tl.x) + cw * .12, cy(tl.y) + ch * .1); c.fill(); }
+    } else if (tl.type === 'portal') {
       const [d, l] = PT[tl.pair] || PT[1];
       c.fillStyle = d; c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .36, 0, 7); c.fill();
       c.strokeStyle = l; c.lineWidth = cw * .05; c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .24, 0, 7); c.stroke();
@@ -93,9 +102,10 @@ function drawBoard(c, S, fp, box, col) {
   for (const e of fp.events) {
     const p = pos[e.p]; if (!p) continue;
     const from = { x: p.x, y: p.y };
-    if (e.t === 'move') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; p.moved = true; }
+    if (e.t === 'move' || e.t === 'drift') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'teleport') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y }, jump: true }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'fall') { const to = { x: Math.max(-.45, Math.min(S.cols - .55, e.x)), y: Math.max(-.45, Math.min(S.rows - .55, e.y)) }; segs.push({ id: e.p, from, to }); marks.push({ k: 'fall', ...to }); p.moved = true; }
+    else if (e.t === 'splash') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; marks.push({ k: 'fall', x: e.x, y: e.y }); p.moved = true; }
     else if (e.t === 'appear') { p.x = e.x; p.y = e.y; marks.push({ k: 'back', id: e.p, x: e.x, y: e.y }); }
     else if (e.t === 'impact') marks.push({ k: 'hit', x: p.x, y: p.y });
     else if (e.t === 'sink') marks.push({ k: 'sink', id: e.p, x: p.x, y: p.y });

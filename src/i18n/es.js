@@ -8,6 +8,8 @@ export default {
     name: 'Jugador {n}',
   },
   cards: {
+    river: { name: 'Río', desc: 'Coloca un tramo de río: quien entra pierde el resto del movimiento y la corriente lo baja hasta debajo del río. El primero va donde quieras; los demás alargan el río por arriba o por abajo (máx. 5).' },
+    lake: { name: 'Lago', desc: 'Coloca una casilla de lago: caer dentro es como caerse del tablero. El primero va donde quieras; los demás, pegados al lago para hacerlo crecer (máx. 5).' },
     palo1: { name: 'Palo 1', desc: 'Tu pelota avanza 1 casilla en línea recta.' },
     palo2: { name: 'Palo 2', desc: 'Tu pelota avanza 2 casillas en línea recta.' },
     palo3: { name: 'Palo 3', desc: 'Tu pelota avanza 3 casillas en línea recta.' },
@@ -30,6 +32,8 @@ export default {
     orange: 'Naranja · reacción, en cualquier momento',
   },
   reason: {
+    noRiverSpot: 'No hay dónde poner río: solo se alarga por arriba o por abajo (máx. 5)',
+    noLakeSpot: 'No hay dónde poner lago: tiene que ir pegado al lago (máx. 5)',
     godMode: 'Modo libre activo: sal de él para jugar cartas',
     pending: 'Termina primero la acción en curso',
     over: 'La partida ha terminado',
@@ -42,10 +46,19 @@ export default {
     generic: 'Ahora no se puede jugar esta carta',
   },
   tiles: {
+    river: { name: 'Río', label: 'RÍO' },
+    lake: { name: 'Lago', label: 'LAGO' },
     bunker: { name: 'Búnker', label: 'BÚNKER' },
     portal: { name: 'Portal', label: 'PORTAL' },
   },
   log: {
+    ballRiver: 'Pelota {b} cae al río: la corriente la arrastra',
+    ballRiverOut: 'Pelota {b} sale del río en ({x},{y})',
+    riverPush: 'El río empuja a {a} contra {b}',
+    ballLake: '¡Pelota {b} cae al lago!',
+    ballBack: 'Pelota {b} vuelve a ({x},{y})',
+    holeRiver: 'El hoyo cae al río: la corriente lo arrastra',
+    holeLake: '¡El hoyo cae al lago! Vuelve a su casilla inicial',
     noCardsLeft: 'No quedan cartas que robar',
     reshuffle: 'La pila de descartes se baraja como nuevo mazo',
     ballPortal: 'Pelota {b} atraviesa el portal',
@@ -279,7 +292,7 @@ export default {
   decks: {
     lead: 'Cada baraja tiene las cartas de siempre más su propio tipo de cartas especiales.',
     classic: { name: 'Baraja clásica', desc: 'Las cartas de siempre: palos, dedo, hoyo, búnker, portal y las reacciones naranjas. Contra bots o en multijugador local.' },
-    water: { name: 'Baraja de agua', desc: 'Las cartas base y unas cartas especiales de agua.' },
+    water: { name: 'Baraja de agua', desc: 'Sin búnkeres ni portales: en su lugar, ríos que arrastran corriente abajo y lagos que te devuelven a la salida. El campo es una isla.' },
     minigolf: { name: 'Baraja de minigolf', desc: 'Las cartas base y unas cartas especiales de minigolf.' },
     soon: 'Próximamente', played: 'Jugadas', won: 'Victorias', pct: 'Ganadas',
   },
@@ -355,6 +368,8 @@ export default {
     end: 'Puedes jugar hasta 2 cartas negras por turno. Cuando acabes, pulsa Terminar turno para robar.',
     next: 'Siguiente', ok: 'Entendido', skip: 'Saltar tutorial', holeCards: 'Cartas de hoyo',
     card: {
+      river: 'Colocas un tramo de río. Quien entra se para y la corriente lo baja hasta la casilla de debajo del río. Solo puede haber un río: se alarga por arriba o por abajo.',
+      lake: 'Colocas una casilla de lago. Caer dentro es como caerse del tablero: vuelves a tu salida. El lago crece pegando casillas a las que ya hay.',
       palo1: 'Tu pelota avanza 1 casilla en línea recta. Desde el búnker no sirve: salir cuesta 1.',
       palo2: 'Tu pelota avanza 2 casillas en línea recta. Si choca con otra, le pasa el movimiento que le quede.',
       palo3: 'Tu pelota avanza 3 casillas en línea recta. ¡Ojo con los bordes: si se sale, vuelve a su salida!',
@@ -379,6 +394,7 @@ export default {
     colorsH: 'Negras y naranjas', colors: 'Las negras solo en tu turno (máx. 2). Las naranjas en cualquier momento, también fuera de tu turno: sirven para reaccionar.',
     jaqueH: 'JAQUE', jaque: 'Cuando una pelota entra en el hoyo no se gana aún: hay JAQUE y los demás tienen una última oportunidad con sus naranjas (mover el hoyo, sacar la pelota o anular la jugada).',
     edgesH: 'Bordes y choques', edges: 'Si una pelota sale del tablero vuelve a su salida (si ahí hay un portal, lo cruza y sale una casilla más allá en la dirección de la caída). Si choca con otra, se para y le pasa el movimiento que le quedaba. El hoyo también se puede mover y se traga la pelota sobre la que cae.',
+    waterH: 'Agua (baraja de agua)', water: 'Río: una columna de agua que siempre baja. Quien entra (pelota u hoyo) pierde el resto del movimiento y la corriente lo lleva a la casilla justo debajo del río; si ahí hay otra pelota, la empuja una casilla y ocupa su sitio; si el río acaba en el borde, se cae del tablero. Lago: caer dentro es como caerse del tablero. Si al volver a tu salida hay agua, el río te arrastra o vas a la casilla libre más cercana.',
     tilesH: 'Búnker y portales', tiles: 'El búnker frena a quien entra (pierde el resto del movimiento) y salir cuesta 1. Los portales no cuentan como casilla: lo que entra por uno sale por el otro en la misma dirección.',
     cardsH: 'Las cartas', keysH: 'Atajos',
     keys: '<kbd>E</kbd> terminar turno · <kbd>D</kbd> descartar · <kbd>P</kbd> pausa · <kbd>H</kbd> reglas · <kbd>Esc</kbd> cancelar / cerrar · flechas + <kbd>Enter</kbd> en el tablero',
@@ -425,7 +441,7 @@ export default {
     sink: '{name}: ¡emboca!', saveJaque: '{name} evita que {target} gane', rewind: '{name} anula la última jugada',
     knockOff: '{name} saca del tablero a {target}', pushAway: '{name} aparta a {target} del hoyo', holeAway: '{name} aleja el hoyo de {target}',
     holeCloser: '{name} se acerca el hoyo', bunkerBlock: '{name} pone un búnker en el camino de {target}', bunker: '{name} coloca un búnker',
-    portal: '{name} abre un portal', closer: '{name} se acerca al hoyo', generic: '{name} mueve ficha',
+    portal: '{name} abre un portal', river: '{name} alarga el río', lake: '{name} hace crecer el lago', closer: '{name} se acerca al hoyo', generic: '{name} mueve ficha',
   },
   why: {
     button: '¿Por qué he perdido?', keyTitle: 'El momento clave', finalTitle: 'La jugada ganadora',

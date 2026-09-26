@@ -80,6 +80,8 @@ export function sfx(name) {
     case 'sandPour': noiseHit(.34, 700, .42, 'lowpass', 0, .7); noiseHit(.22, 1600, .14, 'bandpass', .08, 1); break;     // colocar búnker
     case 'portalOpen': [392, 587, 784, 1175].forEach((f, i) => tone(f, f * 1.5, .22, 'sine', .22, i * .045)); noiseHit(.25, 2200, .12, 'bandpass', 0, 2); break;
     case 'chainBreak': tone(1320, 440, .18, 'triangle', .35); tone(990, 330, .22, 'sine', .25, .06); break; // cadena cortada
+    case 'splash': noiseHit(.28, 900, .5, 'lowpass'); tone(420, 140, .2, 'sine', .35); noiseHit(.12, 2600, .18, 'highpass', .08); break; // chapuzón
+    case 'water':  noiseHit(.5, 700, .16, 'bandpass', 0, 1.4); tone(620, 700, .12, 'sine', .08, .1); break; // corriente del río (suave)
     case 'fall':   tone(520, 130, .22, 'sine', .4); break;
     case 'pop':    tone(340, 640, .09, 'triangle', .55, 0, r); chain++; break;    // reaparecer / colocar
     case 'sink':   // traqueteo en el borde de la taza, caída y "clonc" al fondo

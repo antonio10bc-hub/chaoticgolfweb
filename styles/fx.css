@@ -247,3 +247,29 @@
   background: radial-gradient(ellipse var(--depth) calc(var(--depth) * 1.3) at 100% var(--fx), color-mix(in srgb, var(--ec) 75%, transparent), transparent 100%); }
 @keyframes edgeGlow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
 .edgeGlow.still { animation-duration: .6s; }
+
+/* ---------- agua ---------- */
+/* flotando en el río: se hunde un poco, se mece y deja un aro de agua alrededor */
+.piece.swimming .cardOnCell { animation: swimBob .9s ease-in-out infinite; filter: saturate(.85) brightness(1.05) drop-shadow(0 0 0 transparent); }
+.piece.swimming::after { content: ''; position: absolute; left: 50%; top: 56%; width: 70%; aspect-ratio: 2.2; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 2px solid rgba(255,255,255,.7); background: rgba(160,220,240,.28); z-index: 0; animation: swimRing .9s ease-in-out infinite; pointer-events: none; }
+@keyframes swimBob { 0%, 100% { transform: translateY(6%) scale(.86) rotate(-6deg); } 50% { transform: translateY(10%) scale(.84) rotate(6deg); } }
+@keyframes swimRing { 50% { transform: translate(-50%, -50%) scale(1.12); opacity: .7; } }
+.piece.climbOut .cardOnCell { animation: climbOut .36s cubic-bezier(.3,1.5,.5,1); }
+@keyframes climbOut { from { transform: translateY(10%) scale(.84); } }
+/* chapuzón en el lago: se hunde girando */
+.piece.splashing .cardOnCell { animation: splashIn .42s ease-in forwards; }
+@keyframes splashIn { 30% { transform: translateY(-8%) scale(1.04); } 100% { transform: translateY(18%) scale(.2) rotate(40deg); opacity: 0; } }
+.splashRing { position: absolute; width: 20px; height: 10px; margin: -5px 0 0 -10px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.9);
+  pointer-events: none; animation: splashRing .75s ease-out both; }
+@keyframes splashRing { from { transform: scale(.5); opacity: 1; } to { transform: scale(4.2); opacity: 0; } }
+html.reduceMotion .piece.swimming .cardOnCell, html.reduceMotion .piece.swimming::after { animation: none; }
+/* casillas de agua como destino: se quedan de agua, con un aro */
+.cell.water.selectable { animation: none; box-shadow: inset 0 0 0 2.5px rgba(241,241,220,.9); }
+.cell.river.selectable { background-color: #6FC3E0; } .cell.lake.selectable { background-color: #3A93A2; }
+.piece.swimming .cardOnCell { z-index: 1; }
+/* chapuzón más sutil: se hunde sin girar y el aro no se sale de la casilla */
+.piece.splashing .cardOnCell { animation: splashIn .38s ease-in forwards; }
+@keyframes splashIn { 25% { transform: translateY(-3%) scale(.98); } 100% { transform: translateY(10%) scale(.45); opacity: 0; } }
+.splashRing { width: 16px; height: 8px; margin: -4px 0 0 -8px; border-width: 1.5px; border-color: rgba(255,255,255,.7); animation-duration: .6s; }
+@keyframes splashRing { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }

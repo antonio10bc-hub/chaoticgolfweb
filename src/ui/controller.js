@@ -51,7 +51,7 @@ function noteRoute(g, me, ev) {
   const r = stats.route, last = r[r.length - 1], tag = 'b' + me;
   if (r.length >= ROUTE_MAX) return;
   if (ev.p === tag) {
-    const k = { move: 'm', teleport: 't', fall: 'f', appear: 'a' }[ev.t];
+    const k = { move: 'm', drift: 'm', teleport: 't', fall: 'f', splash: 'f', appear: 'a' }[ev.t];
     if (k) r.push([ev.x, ev.y, k]);
     else if (ev.t === 'sink' && last) r.push([last[0], last[1], 's']);
     else if (ev.t === 'impact' && last) r.push([last[0], last[1], 'h']);
@@ -60,8 +60,8 @@ function noteRoute(g, me, ev) {
 // jugador "tú" para el resumen: la persona en partida rápida con una sola persona, o el nivel
 const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
-const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop']);
-const STAT_OF = { impact: 'colisiones', fall: 'caidas', teleport: 'portales', sink: 'hundidas' };
+const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash']);
+const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
 export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {

@@ -1131,3 +1131,30 @@ body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display
 .shareBtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
 .shareBtns button { flex: 1 1 auto; }
 .shareBox .dlgBtns { justify-content: center; }
+
+/* ---------- escena de lago (baraja de agua): el campo es una isla en un lago ---------- */
+#gameDecor .dWater { display: none; }
+#gameScreen[data-scene="lake"] #game {
+  background-color: #3F8C9C;
+  background-image: var(--grain),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='60'><path d='M0 30 Q20 22 40 30 T80 30 T120 30 T160 30' fill='none' stroke='white' stroke-opacity='.10' stroke-width='2'/><path d='M-20 52 Q0 46 20 52 T60 52 T100 52 T140 52 T180 52' fill='none' stroke='white' stroke-opacity='.06' stroke-width='2'/></svg>"),
+    radial-gradient(ellipse 55% 45% at 50% 48%, rgba(120,200,210,.35), transparent 75%),
+    linear-gradient(170deg, #4E9FAE, #357C8D 70%, #2E6F80);
+  animation: lakeDrift 40s linear infinite;
+}
+@keyframes lakeDrift { to { background-position: 0 0, 160px 0, 0 0, 0 0; } }
+#gameScreen[data-scene="lake"] #gameDecor .dBunker, #gameScreen[data-scene="lake"] #gameDecor .dTree { display: none; }
+#gameScreen[data-scene="lake"] #gameDecor .dWater { display: block; position: absolute; }
+#gameDecor .dPads.a { width: 240px; left: -30px; top: 16%; animation: padBob 7s ease-in-out infinite; }
+#gameDecor .dPads.b { width: 200px; right: -20px; bottom: 22%; animation: padBob 8s ease-in-out -3s infinite; }
+#gameDecor .dReeds.a { width: 150px; left: -10px; bottom: 2%; }
+#gameDecor .dReeds.b { width: 120px; right: 10px; top: 4%; transform: scaleX(-1); }
+#gameDecor .dStones { width: 170px; right: -30px; top: 40%; }
+#gameDecor .dRipple.a { width: 160px; left: 12%; top: 58%; animation: ripple 5.5s ease-out infinite; }
+#gameDecor .dRipple.b { width: 120px; right: 16%; top: 12%; animation: ripple 6.5s ease-out -2.5s infinite; }
+@keyframes padBob { 50% { transform: translateY(6px) rotate(2deg); } }
+@keyframes ripple { 0% { transform: scale(.4); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+/* orilla de arena alrededor del tablero */
+#gameScreen[data-scene="lake"] #boardWrap { box-shadow: 0 0 0 7px #E6D9A8, 0 0 0 16px rgba(230,217,168,.35), 14px 14px 0 16px rgba(20,50,60,.18); }
+html.reduceMotion #gameScreen[data-scene="lake"] #game, html.reduceMotion #gameDecor .dWater { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { #gameScreen[data-scene="lake"] #game, #gameDecor .dWater { animation: none !important; } }

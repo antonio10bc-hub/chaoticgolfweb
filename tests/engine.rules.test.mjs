@@ -81,6 +81,74 @@ test('caída sobre un portal: si la salida está fuera del tablero, se queda en 
   assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [3, 0]);
 });
 
+/* ---------- baraja de agua: río y lago ---------- */
+// nivel 5×7: pelota abajo en (0,6), hoyo arriba a la derecha
+const water = (tiles, opts = {}) => level({ cols: 5, rows: 7, hole: { x: 4, y: 0 }, ball: { x: 0, y: 6 }, tiles, ...opts });
+
+test('río: para el movimiento y arrastra hacia abajo hasta la casilla justo debajo del final', () => {
+  const g = water([{ type: 'river', x: 0, y: 3 }, { type: 'river', x: 0, y: 4 }]);
+  g.S.balls[0].y = 6; hand(g, 0, ['palo3']);
+  g.clickCard(0, 0); g.clickCell(0, 3); // sube 3: entra en el río en (0,4) y pierde el resto
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [0, 5]);
+  assert.ok(g.takeEvents().some(e => e.t === 'drift'));
+});
+
+test('río: si a la salida hay otra pelota, la empuja 1 abajo y ocupa su sitio', () => {
+  const g = water([{ type: 'river', x: 1, y: 2 }], { extraBalls: [{ x: 1, y: 3 }] });
+  g.S.balls[0].x = 0; g.S.balls[0].y = 2; hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(1, 2);
+  assert.deepEqual(g.S.balls.map(b => [b.x, b.y]), [[1, 3], [1, 4]]);
+});
+
+test('río: si desemboca fuera del tablero, la pelota se cae y vuelve a su salida', () => {
+  const g = water([{ type: 'river', x: 2, y: 6 }]);
+  g.S.balls[0].x = 1; g.S.balls[0].y = 6; hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(2, 6);
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [0, 6]);
+});
+
+test('lago: caer dentro es como caerse del tablero; si en la salida hay agua, a la libre más cercana', () => {
+  const g = water([{ type: 'lake', x: 0, y: 4 }]);
+  g.S.balls[0].y = 5; hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(0, 4);
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [0, 6]);
+  assert.ok(g.takeEvents().some(e => e.t === 'splash'));
+  const h = water([{ type: 'lake', x: 0, y: 4 }, { type: 'lake', x: 0, y: 6 }]);
+  h.S.balls[0].y = 5; hand(h, 0, ['palo1']);
+  h.clickCard(0, 0); h.clickCell(0, 4);
+  const b = h.S.balls[0];
+  assert.ok(!h.tileAt(b.x, b.y) && Math.abs(b.x) + Math.abs(b.y - 6) === 1);
+});
+
+test('río en la salida: la corriente la lleva hasta debajo del río', () => {
+  const g = water([{ type: 'river', x: 0, y: 5 }, { type: 'lake', x: 1, y: 2 }]);
+  g.S.balls[0].x = 1; g.S.balls[0].y = 3; g.S.balls[0].spawnX = 0; g.S.balls[0].spawnY = 5;
+  hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(1, 2); // al lago → vuelve a (0,5), que es río → baja a (0,6)
+  assert.deepEqual([g.S.balls[0].x, g.S.balls[0].y], [0, 6]);
+});
+
+test('el hoyo también: el río lo arrastra y del lago vuelve a su casilla inicial', () => {
+  const g = water([{ type: 'river', x: 2, y: 1 }]);
+  g.S.hole = { x: 2, y: 0, initX: 2, initY: 0 };
+  g.moveHole('down', 2);
+  assert.deepEqual([g.S.hole.x, g.S.hole.y], [2, 2]);
+  const h = water([{ type: 'lake', x: 3, y: 0 }]);
+  h.moveHole('left', 1);
+  assert.deepEqual([h.S.hole.x, h.S.hole.y], [4, 0]);
+});
+
+test('colocar agua: el río crece en su columna por los extremos; el lago, pegado por un lado; máx. 5', () => {
+  const g = water([{ type: 'river', x: 2, y: 3 }, { type: 'lake', x: 0, y: 1 }]);
+  assert.ok(g.canPlaceTile('river', 2, 2) && g.canPlaceTile('river', 2, 4));
+  assert.ok(!g.canPlaceTile('river', 3, 3) && !g.canPlaceTile('river', 2, 5));
+  assert.ok(g.canPlaceTile('lake', 1, 1) && g.canPlaceTile('lake', 0, 2));
+  assert.ok(!g.canPlaceTile('lake', 1, 2));
+  for (const y of [0, 1, 2, 4]) g.S.tiles.push({ type: 'river', x: 3, y });
+  const r = water([0, 1, 2, 3, 4].map(y => ({ type: 'river', x: 2, y })));
+  assert.equal(r.anyPlaceFor('river'), false);
+});
+
 test('choque: el golpeado recibe los pasos restantes', () => {
   const g = level({ extraBalls: [{ x: 1, y: 0 }] });
   hand(g, 0, ['palo3']);

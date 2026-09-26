@@ -90,4 +90,5 @@ export const SAND_C  = ['#ECE6CC', '#F6F2E0', '#DCD3B0', '#CFC49B'];
 export const CEMENT_C = ['#efece4', '#cfccc4', '#faf8f2'];
 export const DIRT_C  = ['#a98a5c', '#8a6a3f', '#cbb289'];
 export const WARP_C  = ['#2D4F7C', '#4A6D9C', '#F1F1DC', '#E8873A'];
+export const WATER_C = ['#BFE8F5', '#7FCBE3', '#FFFFFF', '#4FA7C6'];
 export const CONFETTI_C = ['#E8873A', '#D9603A', '#2D4F7C', '#F1F1DC', '#8DB05F', '#ECE6CC'];
