@@ -18,7 +18,7 @@ import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
-import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel } from './records.js';
+import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo, nextStreakGoal } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
@@ -85,31 +85,44 @@ export async function startDaily() {
   startDailyGame(date);
 }
 export const streakLabel = n => n === 1 ? t('modes.daily.streak1') : t('modes.daily.streak', { n });
-function prevDayKey(date) {
-  const [y, m, d] = date.split('-').map(Number);
-  return dateKey(new Date(y, m - 1, d - 1));
+// la llama se enciende (con animación) la primera vez que vuelves al menú tras jugar el reto de hoy
+const FLAME_KEY = 'chaoticgolf_flameLit';
+function firstLitToday(date) {
+  try { if (localStorage.getItem(FLAME_KEY) === date) return false; localStorage.setItem(FLAME_KEY, date); } catch (e) { return false; }
+  return true;
 }
-// tarjeta del reto diario del menú principal: miniatura, fecha, récord de hoy, racha y botón
+// tarjeta del reto diario del menú principal: rivales (con el tic y la racha), fecha, mecánica, estado y botón
 export function renderDailyCard() {
   const R = loadRecords(), date = dailyDate(), today = R.daily.days[date];
-  const streak = R.daily.last === date || R.daily.last === prevDayKey(date) ? R.daily.streak : 0;
+  const sk = dailyStreakInfo(date, R);
   const saved = loadSave('daily');
   const narrow = window.matchMedia('(max-width: 420px)').matches; // en el móvil, fecha corta
-  const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' });
-  const status = saved ? t('save.title') : today?.best ? t('modes.daily.bestToday', { turns: turnsLabel(today.best) }) : t('modes.daily.notYet');
   const { diff, rivals, ch } = dailySetup(date), rv = rivals.map(personaById);
+  const diffTxt = t('pve.diff' + diff[0].toUpperCase() + diff.slice(1));
+  const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + diffTxt;
+  // una sola línea de estado: la racha manda (en peligro o perdida); con el reto de hoy jugado, la próxima meta
+  // (tu mejor resultado de hoy queda en el tic y en el resumen de la partida)
+  const goal = nextStreakGoal(sk.n), toGoal = goal - sk.n;
+  const status = saved ? t('save.title')
+    : sk.atRisk ? t('modes.daily.risk')
+    : sk.lost ? t('modes.daily.lost', { n: sk.lost })
+    : sk.today ? (toGoal === 1 ? t('modes.daily.toGoal1', { m: goal }) : t('modes.daily.toGoal', { n: toGoal, m: goal }))
+    : t('modes.daily.start');
   const face = pr => `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`;
-  const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name, diff: t('pve.diff' + diff[0].toUpperCase() + diff.slice(1)) });
+  const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name });
   const play = saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play');
+  // la racha, en grande sobre la miniatura: encendida si hoy ya has jugado, apagada (y latiendo) si está en peligro
+  const flameCls = (sk.today ? ' lit' : '') + (sk.atRisk ? ' risk' : '') + (sk.today && firstLitToday(date) ? ' ignite' : '');
+  const flame = sk.n || sk.lost ? `<span class="dFlame${flameCls}" title="${esc(streakLabel(sk.n))}"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg><b>${sk.n}</b></span>` : '';
   // el tic de completado va sobre la miniatura: el texto no cambia de forma según el estado.
   // Cada línea es una sola fila; la mecánica pasa a su propia línea si no cabe junto al título
   $('dailyCard').innerHTML =
     `<span class="dPreview dRivals">${rv.map(face).join('')}` +
-    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done'))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + `</span>` +
+    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done') + ' · ' + t('modes.daily.bestToday', { turns: turnsLabel(today.best) }))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + flame + `</span>` +
     `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><b>${esc(t('modes.daily.title'))}</b>` +
     `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(t('dailyFeat.' + ch.feature))}</span></span></span>` + // (la mecánica del día)
     `<span class="dVs">${esc(vs)}</span>` +
-    `<span class="dMeta"><span>${esc(status)}</span>${streak ? `<span class="dStreak"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(streakLabel(streak))}</span>` : ''}</span></span>` +
+    `<span class="dMeta${sk.atRisk && !saved ? ' risk' : ''}"><span>${esc(status)}</span></span></span>` +
     `<span class="dPlay" title="${esc(play)}"><span class="dPlayLbl">${esc(play)}</span><svg class="i" aria-hidden="true"><use href="#${today?.best && !saved ? 'i-reset' : 'i-arrow-r'}"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
   $('dailyCard').dataset.resume = saved ? '1' : '';

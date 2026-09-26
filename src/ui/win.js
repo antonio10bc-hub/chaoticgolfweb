@@ -13,7 +13,7 @@ import { t, joinAnd } from '../i18n/index.js';
 import { stats } from './controller.js';
 import { clearSave, slotOf } from './save.js';
 import { humansOf, multiHuman, displayName, isBot } from './players.js';
-import { recordEnd, turnsLabel } from './records.js';
+import { recordEnd, turnsLabel, claimStreakGoal, nextStreakGoal } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
 import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
@@ -33,6 +33,8 @@ const STYLE_FX = {
   zigzag: { icon: 'i-hand', colors: ['#9b6dd6', '#f27bb4', '#F1F1DC', '#E8873A'], sound: 'select' },
   first: { icon: 'i-flag', colors: ['#E8873A', '#f2b705', '#F1F1DC', '#8DB05F'], sound: 'sink' },
 };
+
+const FIRE_C = ['#E8873A', '#F5A33A', '#FFD23F', '#D9603A', '#F1F1DC'];
 
 export function showWin() {
   clearSave(); // partida terminada: ya no hay nada que continuar
@@ -66,7 +68,7 @@ export function showWin() {
 
   const box = $('winOverlay').querySelector('.box');
   const turns = ((slot === 'daily' || slot === 'weekly') && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
-  let chips = '', btns = '';
+  let chips = '', btns = '', streakGoal = false;
   const btn = (act, label, main = false) => `<button data-act="${act}" class="${main ? 'btn-primary btn-lg' : 'btn-light'}">${esc(label)}</button>`;
   const recChip = (txt, isNew = false) => `<span class="winRec${isNew ? ' new' : ''}">${esc(txt)}</span>`;
 
@@ -88,13 +90,19 @@ export function showWin() {
       chips = recChip(t('win.puzzleChip'), true);
       btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('modes', t('win.modes'));
       break;
-    case 'daily':
-      chips = lost ? recChip(streakLabel(rec.dailyStreak || 1)) : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
-        (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '') +
-        recChip(streakLabel(rec.dailyStreak || 1));
+    case 'daily': {
+      // la racha, con su llama: al llegar a una meta (3, 7, 15, 30…) se celebra una vez ese día; si no, la próxima meta
+      const n = rec.dailyStreak || 1;
+      streakGoal = !!app.run?.date && claimStreakGoal(app.run.date);
+      const flame = '<svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>';
+      const streakChip = streakGoal ? `<span class="winRec new streakGoal">${flame}${esc(t('win.streakGoal', { n }))}</span>`
+        : `<span class="winRec streak">${flame}${esc(t('win.streakChip', { streak: streakLabel(n), m: nextStreakGoal(n) }))}</span>`;
+      chips = (lost ? '' : recChip((rec.newBest ? t('win.dailyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
+        (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.dailyToday', { turns: turnsLabel(rec.best.turns) })) : '')) + streakChip;
       btns = btn('daily', lost ? t('win.retry') : t('modes.again'), true) + btn('menuHome', t('win.menu'));
       if (mode === 'pve') app.shareText = dailyShareText({ won: !lost, turns, st: stats, S, date: app.run.date });
       break;
+    }
     case 'weekly':
       chips = lost ? '' : recChip((rec.newBest ? t('win.weeklyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.weeklyToday', { turns: turnsLabel(rec.best.turns) })) : '');
@@ -167,6 +175,7 @@ export function showWin() {
   $('winOverlay').classList.add('visible');
   $('winBtns').querySelector('button')?.focus();
   fxWinConfetti(fx?.colors); // celebración (con los colores de cómo se ha ganado)
+  if (streakGoal) setTimeout(() => fxWinConfetti(FIRE_C), 450); // meta de la racha: llamarada de confeti
   if (fx) setTimeout(() => sfx(fx.sound), 250);
   sfx(lost ? 'lose' : 'win');
   musicMood(lost ? 'calm' : 'win');

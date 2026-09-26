@@ -167,9 +167,16 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
   La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
-  (la mecánica baja bajo el título si no cabe), el tic verde de completado es una insignia sobre la miniatura
-  de los rivales, la línea de estado dice "Partida guardada" si hay una a medias y en el móvil el botón es un
-  círculo (flecha, o repetir si ya está completado). Con el reto del día completado sale ese tic verde (y, la primera vez que vuelves al menú, la bola de la
+  (fecha y dificultad; título y mecánica, que baja si no cabe; rivales; estado), el tic verde de completado es
+  una insignia sobre la miniatura de los rivales y en el móvil el botón es un círculo (flecha, o repetir si ya
+  está completado).
+  **La racha** va en grande sobre la miniatura (llama y número): apagada y latiendo en rojo si hoy aún no has
+  jugado, encendida (con una llamarada la primera vez que vuelves al menú) cuando ya cuenta. La línea de estado
+  avisa: "¡No pierdas tu racha!", "Perdiste tu racha de 12", "Empieza hoy tu racha" o, con el reto de hoy
+  jugado, la próxima meta ("Faltan 3 días para 15", "¡Mañana llegas a 7!"). Metas: 3, 7, 15, 30, 50, 100, 150,
+  200, 365 y cada 100 después (`nextStreakGoal` / `dailyStreakInfo` en `src/ui/records.js`); al llegar a una,
+  el final de partida lo celebra una vez ese día con un chip grande y confeti de fuego; si no, muestra
+  "Racha: N días · meta: M". La racha cuenta por jugar el reto, no por ganarlo. Con el reto del día completado sale ese tic verde (y, la primera vez que vuelves al menú, la bola de la
   ilustración rueda hasta el hoyo: `src/ui/menu-ball.js`); con la app instalada, un punto en su icono avisa de que
   el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te

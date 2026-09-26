@@ -20,7 +20,7 @@ const blank = () => ({
   levels: {},   // índice de Lo básico -> { turns, strokes, at }
   puzzles: {},  // índice de puzle -> true
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
-  daily: { days: {}, streak: 0, bestStreak: 0, last: null }, // fecha -> { best, strokes }
+  daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null }, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
   rush: { best: 0, runs: 0 },
   challenges: {}, // id -> true
   weekly: { weeks: {} },  // semana "AAAA-Www" -> { best, strokes }
@@ -100,6 +100,27 @@ export function recordDailyPlayed(date) {
   }).daily;
 }
 export const dailyToday = date => loadRecords().daily.days[date] || null;
+
+// metas de la racha del reto diario (después de 365, cada 100 días)
+const STREAK_GOALS = [3, 7, 15, 30, 50, 100, 150, 200, 365];
+export const nextStreakGoal = n => STREAK_GOALS.find(g => g > n) ?? (Math.floor(n / 100) + 1) * 100;
+export const isStreakGoal = n => STREAK_GOALS.includes(n) || (n > 365 && n % 100 === 0);
+// la racha vista desde hoy: viva (jugada hoy o ayer), en peligro (aún no has jugado hoy) o apagada
+export function dailyStreakInfo(date, R = loadRecords()) {
+  const dl = R.daily, alive = dl.last === date || dl.last === prevDay(date);
+  return { n: alive ? dl.streak : 0, today: dl.last === date, atRisk: alive && dl.last !== date && dl.streak > 0,
+    lost: !alive && dl.streak >= 2 ? dl.streak : 0 };
+}
+// ¿toca celebrar hoy una meta de la racha? (una sola vez por día, aunque se repita el reto)
+export function claimStreakGoal(date) {
+  let ok = false;
+  updateRecords(d => {
+    const dl = d.daily;
+    if (dl.last !== date || !isStreakGoal(dl.streak) || dl.goalSeen === date) return;
+    dl.goalSeen = date; ok = true;
+  });
+  return ok;
+}
 
 // fin de partida: suma los totales, la victoria y los récords del modo.
 // Devuelve lo necesario para anunciarlo en el resumen final.
