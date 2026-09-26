@@ -217,7 +217,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),
   **Lanzadera** (quien pasa por encima vuela 3 casillas hacia su flecha; gira cada turno; la que ya ha lanzado en el
-  turno se apaga hasta el siguiente —`S.launched`—: se pasa por encima como por el césped, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
+  turno se apaga hasta el siguiente —`S.launched`—: se pasa por encima como por el césped y quien acaba en ella se
+  recoloca en la casilla libre de al lado, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
   Las piezas no cuentan como casilla y nadie se queda encima; el hoyo las usa igual que una pelota
   (`nextCell`, `launchBall` / `launchHole` en el motor). Par 5. Las piezas que giran se colocan en dos pasos:
   tocas la casilla (queda marcada con la pieza fantasma), la giras ("Girar", tecla R o tocándola otra vez) y

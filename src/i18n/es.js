@@ -72,6 +72,8 @@ export default {
     ballLands: 'Pelota {b} aterriza en ({x},{y})',
     ballRiver: 'Pelota {b} cae al río: la corriente la arrastra',
     ballRiverOut: 'Pelota {b} sale del río en ({x},{y})',
+    offLauncher: 'La lanzadera ya ha lanzado en este turno: pelota {b} se aparta a la casilla de al lado',
+    holeOffLauncher: 'La lanzadera ya ha lanzado en este turno: el hoyo se aparta a la casilla de al lado',
     riverBlocked: 'La corriente estrella la pelota {b} contra un bloque: rebota y acaba en una casilla libre cercana',
     holeRiverBlocked: 'La corriente estrella el hoyo contra un bloque: rebota y acaba en una casilla libre cercana',
     riverPush: 'El río empuja a {a} contra {b}',

@@ -196,13 +196,14 @@ test('lanzadera: tras lanzar se desactiva hasta el final del turno (sin ping-pon
   const g = mg([{ type: 'launcher', x: 1, y: 3, rot: 1 }, { type: 'launcher', x: 4, y: 3, rot: 3 }], { cols: 8 });
   g.S.balls[0].x = 0; g.S.balls[0].y = 3;
   hand(g, 0, ['palo1', 'palo4']);
-  g.clickCard(0, 0); g.clickCell(1, 3); // A → B → vuelve a A, que ya ha lanzado: aterriza en ella y se queda
-  assert.deepEqual(at(g), [1, 3]);
+  g.clickCard(0, 0); g.clickCell(1, 3); // A → B → vuelve a A, que ya ha lanzado: se recoloca al lado
+  assert.deepEqual(at(g), [1, 2]);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
   assert.deepEqual(g.S.launched, ['1,3', '4,3']);
-  g.clickCard(0, 0); // en el mismo turno pasa por encima de B (desactivada) como por el césped
+  g.S.balls[0].x = 0; g.S.balls[0].y = 3;
+  g.clickCard(0, 0); // en el mismo turno pasa por encima de A (desactivada) como por el césped y acaba en B: al lado
   const tg = g.pending.targets.find(t => t.dir === 'right'); g.clickCell(tg.x, tg.y);
-  assert.deepEqual(at(g), [5, 3]);
+  assert.deepEqual(at(g), [4, 2]);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
   g.endTurn();
   assert.equal(g.S.launched, undefined); // al terminar el turno se reactivan
@@ -244,8 +245,8 @@ test('río que desemboca en la lanzadera que lanza a ese río: sin bucle', () =>
   const river = [2, 3, 4, 5, 6].map(y => ({ type: 'river', x: 3, y }));
   const g = mg([...river, { type: 'launcher', x: 3, y: 7, rot: 0 }], { rows: 9, ball: { x: 1, y: 7 } });
   hand(g, 0, ['palo2']);
-  g.clickCard(0, 0); g.clickCell(3, 7); // lanzadera → río (3,4) → baja hasta la lanzadera, desactivada: se queda
-  assert.deepEqual(at(g), [3, 7]);
+  g.clickCard(0, 0); g.clickCell(3, 7); // lanzadera → río (3,4) → baja hasta la lanzadera, desactivada: al lado
+  assert.deepEqual(at(g), [2, 7]);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 1);
 });
 

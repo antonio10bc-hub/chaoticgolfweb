@@ -48,7 +48,8 @@ export function waterJoins(tileAt, x, y, tile) {
   if (!tileDef(tile.type).cellClass.startsWith('water')) return '';
   const same = (ox, oy) => tileAt(ox, oy)?.type === tile.type;
   let cls = '';
-  if (same(0, -1)) cls += ' wN'; if (same(0, 1)) cls += ' wS'; if (same(-1, 0)) cls += ' wW'; if (same(1, 0)) cls += ' wE';
+  if (same(0, -1)) cls += ' wN'; if (same(0, 1)) cls += ' wS';
+  if (tile.type !== 'river') { if (same(-1, 0)) cls += ' wW'; if (same(1, 0)) cls += ' wE'; } // (un río es una columna: dos ríos vecinos no se unen por el lado)
   if (tile.type === 'river' && !same(0, -1)) cls += ' rSrc'; // nacimiento
   if (tile.type === 'river' && !same(0, 1)) cls += ' rEnd';  // desembocadura
   if (tile.type === 'lake' && same(1, 0) && same(0, 1) && same(1, 1)) cls += ' wSE'; // bloque 2×2: se rellena la esquina
@@ -61,6 +62,10 @@ export function renderBoard() {
   hidePreview(); armed = null; // la vista previa se recalcula con el hover tras cada render
   const board = $('board');
   if (dims !== S.cols + 'x' + S.rows || board.children.length !== cells.length) buildGrid(board, S.cols, S.rows);
+  // lanzaderas apagadas: con una jugada por animar se mantienen como estaban (cada una se apaga cuando
+  // despega la pelota, en animations.js); sin nada pendiente, las del estado
+  if (!app.animating && !app.animQueue.length) app.lOffShown = [...(S.launched || [])];
+  const lOff = app.lOffShown || [];
   for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
     const cell = cells[y * S.cols + x];
     let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), html = '', title = ''; // mowB: banda de segado (decorativo)
@@ -69,7 +74,7 @@ export function renderBoard() {
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);
-    if (tile?.type === 'launcher' && S.launched?.includes(x + ',' + y)) cls += ' lOff'; // ya ha lanzado en este turno
+    if (tile?.type === 'launcher' && lOff.includes(x + ',' + y)) cls += ' lOff'; // ya ha lanzado en este turno
     if (tile) { // pelotas y hoyo viven en la capa de piezas; aquí solo losetas y avisos
       const pop = justPlaced && justPlaced.x === x && justPlaced.y === y ? ' tilePop' : '';
       html += ASSETS.tileHTML(tile.type, pop, tile);

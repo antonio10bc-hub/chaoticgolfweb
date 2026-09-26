@@ -325,9 +325,17 @@ export class Game {
     return isBlock(tl) || (isCorner(tl) && !CORNER_TURN[(tl.rot || 0) % 4][dir]);
   }
   // (minigolf) una lanzadera que ya ha lanzado algo en este turno se desactiva hasta el siguiente: se pasa
-  // por encima como por el césped y quien acaba en ella se queda (así nadie salta dos veces con la misma)
+  // por encima como por el césped y quien acaba en ella se recoloca en una casilla libre de al lado
+  // (finishMoveChecks / holeLandAt), así nadie salta dos veces con la misma
   launcherOn(x, y) { return isLauncher(this.tileAt(x, y)) && !this.S.launched?.includes(x + ',' + y); }
   markLaunched(x, y) { (this.S.launched ||= []).push(x + ',' + y); }
+  offLauncher(ball) {
+    const spot = this.nearestFree(ball.x, ball.y);
+    if (!spot) return;
+    ball.x = spot.x; ball.y = spot.y;
+    this.anim({ t: 'move', p: 'b' + ball.player, x: spot.x, y: spot.y });
+    this.log('log.offLauncher', { b: playerTag(ball.player) });
+  }
   // fila de la desembocadura de un río que pasa por (x,y): la casilla justo debajo de su final
   riverMouth(x, y) {
     let yy = y;
@@ -496,7 +504,7 @@ export class Game {
     this.log('log.ballLands', { b, x: tx, y: ty });
     if (this.waterAt(tx, ty)) { this.ballInWater(ball); return null; }
     if (this.launcherOn(tx, ty)) return this.launchBall(ball, { untilHit });
-    if (tx === x0 && ty === y0) return null; // (no había dónde aterrizar: se queda en la suya, ya desactivada)
+    if (tx === x0 && ty === y0) return null; // (no había dónde aterrizar: cae en la suya, ya desactivada, y se recoloca)
     return { landed: true, dir };
   }
   // el hoyo sobre una lanzadera: vuela igual; devuelve dónde se asienta
@@ -788,6 +796,9 @@ export class Game {
   // comprobaciones al terminar un movimiento (trampa informativa + hoyo exacto)
   finishMoveChecks(ball) {
     const pid = 'b' + ball.player;
+    // (minigolf) acaba sobre una lanzadera que ya ha lanzado en este turno: no vuelve a lanzar, se
+    // recoloca en la casilla libre de al lado
+    if (!ball.holed && isLauncher(this.tileAt(ball.x, ball.y))) this.offLauncher(ball);
     if (this.inTrap(ball)) {
       this.log('log.ballStaysTrap', { b: playerTag(ball.player) });
       this.tip('bunker');
@@ -919,6 +930,10 @@ export class Game {
   // el hoyo se asienta en (x,y): "plof" si es trampa y, si una pelota ocupa la casilla, se la traga (JAQUE)
   holeLandAt(x, y) {
     const S = this.S;
+    if (isLauncher(this.tileAt(x, y))) { // (igual que la pelota: fuera de la lanzadera ya usada)
+      const spot = this.nearestFree(x, y);
+      if (spot) { this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y }); this.log('log.holeOffLauncher'); x = spot.x; y = spot.y; }
+    }
     S.hole.x = x; S.hole.y = y;
     if (this.trapAt(x, y)) this.anim({ t: 'settle', p: 'hole' });
     const b = this.ballAt(x, y);

@@ -69,6 +69,8 @@ export default {
     ballLands: 'Ball {b} lands on ({x},{y})',
     ballRiver: 'Ball {b} falls into the river: the current carries it',
     ballRiverOut: 'Ball {b} leaves the river at ({x},{y})',
+    offLauncher: 'The launcher has already fired this turn: ball {b} moves to the next square',
+    holeOffLauncher: 'The launcher has already fired this turn: the hole moves to the next square',
     riverBlocked: 'The current slams ball {b} into a block: it bounces and ends up on a free square nearby',
     holeRiverBlocked: 'The current slams the hole into a block: it bounces and ends up on a free square nearby',
     riverPush: 'The river pushes {a} into {b}',

@@ -127,6 +127,11 @@ async function playEvent(ev) {
       const spin = isHole ? 0 : 360;
       const cell = document.querySelector(`#board .cell[data-x="${Math.round((from.px - cellStep().w / 2) / cellStep().w)}"][data-y="${Math.round((from.py - cellStep().h / 2) / cellStep().h)}"]`);
       cell?.classList.remove('lPop'); void cell?.offsetWidth; cell?.classList.add('lPop');
+      if (cell) { // se apaga justo al lanzar (hasta el final del turno)
+        const k = cell.dataset.x + ',' + cell.dataset.y;
+        app.lOffShown = [...(app.lOffShown || []).filter(q => q !== k), k];
+        setTimeout(() => { cell.classList.add('lOff'); cell._cls = null; }, 160); // (el render siguiente vuelve a comparar su clase)
+      }
       // 1) preparación
       await inner.animate([{ transform: 'none' }, { transform: 'translateY(10%) scale(1.22, .72)' }], { duration: 120, easing: 'ease-out', fill: 'forwards' }).finished;
       sfx('launch');
