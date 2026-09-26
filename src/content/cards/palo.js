@@ -27,7 +27,7 @@ export const palo5 = palo(5, 0);
 export const palo10 = palo(10, 0);
 
 // Palo iridiscente (Ultimate): la pelota avanza sin parar hasta chocar con algo. Se para justo antes
-// de un bloque o del borde (sin caerse); si choca con otra pelota, la golpeada hereda todo el impulso.
+// de un bloque; si choca con otra pelota, la golpeada hereda todo el impulso; si no hay nada, se cae.
 export const paloIri = {
   id: 'paloIri',
   color: 'black',

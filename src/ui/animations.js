@@ -7,9 +7,9 @@ import { pieceEl, syncPieces } from './board.js';
 import { setPos, cellCenterPx, pieceCenterPx, cellStep } from './geometry.js';
 import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
-import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, WOOD_C, CONFETTI_C, REDUCED } from '../fx/juice.js';
+import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, WOOD_C, IRI_C, CONFETTI_C, REDUCED } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxTunnel, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxTunnel, fxGetDomLayer, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
 import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
@@ -56,10 +56,18 @@ async function playEvent(ev) {
   const trailCol = pid < 0 ? '#2c5c46' : pColor(pid);
   switch (ev.t) {
     case 'move': {    // deslizamiento con easing, squash & stretch, sombra y estela
-      const ms = isHole ? JUICE.move.holeMs : JUICE.move.ms;
+      // (el iridiscente rueda más deprisa y sin frenar entre casillas: sus recorridos son largos)
+      const ms = isHole ? JUICE.move.holeMs : ev.iri ? JUICE.move.iriMs : JUICE.move.ms;
       if (!isHole) { el.classList.remove('glide'); void el.offsetWidth; el.classList.add('glide'); }
-      setPos(el, ev.x, ev.y, ms, isHole ? JUICE.move.holeEase : JUICE.move.ease);
-      fxTrailPush(ev.x, ev.y, trailCol);
+      const left = pieceCenterPx(el); // la estela se queda en la casilla que abandona
+      setPos(el, ev.x, ev.y, ms, isHole ? JUICE.move.holeEase : ev.iri ? 'linear' : JUICE.move.ease);
+      fxTrailPush(left.px, left.py, ev.iri ? 'iri' : trailCol);
+      if (ev.iri) { // palo iridiscente: brillo de colores detrás de la pelota
+        el.classList.add('iriRun');
+        const c = cellCenterPx(ev.x, ev.y);
+        fxSpawn(c.px, c.py, { n: 4, colors: IRI_C, size: 5, dist: 14, dur: 520, gravity: -4 });
+        clearTimeout(el._iriT); el._iriT = setTimeout(() => el.classList.remove('iriRun'), ms + 260);
+      }
       const { px, py } = cellCenterPx(ev.x, ev.y);
       if (isHole) {
         fxSpawn(px, py, { n: JUICE.move.dirtPuffs, colors: DIRT_C, size: 6, dist: 26, dur: 430, gravity: 14 });
@@ -104,26 +112,57 @@ async function playEvent(ev) {
       sfx('pop');
       break;
     }
-    case 'launch': {  // lanzadera: vuelo en arco por encima de todo, con sombra en el suelo, y aterrizaje
-      const s = cellStep(), cur = pieceCenterPx(el), dist = Math.hypot(ev.x * s.w + s.w / 2 - cur.px, ev.y * s.h + s.h / 2 - cur.py);
-      const ms = Math.min(900, 380 + dist * 1.1);
+    case 'launch': {  // lanzadera: la madera se comprime, la pieza se agacha, sale en parábola (girando, con
+                      // su sombra por el suelo) y al caer se aplasta, levanta polvo y deja un aro
+      const from = pieceCenterPx(el), to = cellCenterPx(ev.x, ev.y);
+      fxTrailPush(from.px, from.py, trailCol);
+      const dist = Math.hypot(to.px - from.px, to.py - from.py);
+      const ms = Math.round(Math.min(1000, Math.max(560, 480 + dist * .9))), lift = Math.min(130, 40 + dist * .38);
+      const spin = isHole ? 0 : 360;
+      const cell = document.querySelector(`#board .cell[data-x="${Math.round((from.px - cellStep().w / 2) / cellStep().w)}"][data-y="${Math.round((from.py - cellStep().h / 2) / cellStep().h)}"]`);
+      cell?.classList.remove('lPop'); void cell?.offsetWidth; cell?.classList.add('lPop');
+      // 1) preparación
+      await inner.animate([{ transform: 'none' }, { transform: 'translateY(10%) scale(1.22, .72)' }], { duration: 120, easing: 'ease-out', fill: 'forwards' }).finished;
       sfx('launch');
+      fxSpawn(from.px, from.py, { n: 8, colors: WOOD_C, size: 5, dist: 22, dur: 380, gravity: 10 });
+      // 2) vuelo: la pieza avanza en línea recta y su interior dibuja la parábola; la sombra se queda abajo
+      const sh = document.createElement('div');
+      sh.className = 'flyShadow';
+      sh.style.left = from.px + 'px'; sh.style.top = from.py + 'px';
+      fxGetDomLayer().appendChild(sh);
+      sh.animate([{ left: from.px + 'px', top: from.py + 'px', transform: 'scale(1)', opacity: .8 },
+        { transform: 'scale(.55)', opacity: .38, offset: .5 },
+        { left: to.px + 'px', top: to.py + 'px', transform: 'scale(1.05)', opacity: .85 }], { duration: ms, easing: 'linear', fill: 'forwards' });
       el.classList.add('flying');
-      setPos(el, ev.x, ev.y, ms, 'cubic-bezier(.35,.1,.55,.95)');
-      inner.animate([{ transform: 'translateY(0) scale(1)' }, { transform: `translateY(-${Math.min(90, 30 + dist * .25)}px) scale(1.35)`, offset: .5 }, { transform: 'translateY(0) scale(1)' }],
-        { duration: ms, easing: 'ease-in-out' });
+      setPos(el, ev.x, ev.y, ms, 'linear');
+      inner.getAnimations().forEach(a => a.cancel());
+      inner.animate([
+        { transform: 'translateY(10%) scale(1.22, .72) rotate(0deg)', easing: 'cubic-bezier(.2,.7,.45,1)' },
+        { transform: `translateY(-${lift}px) scale(1.4) rotate(${spin * .55}deg)`, offset: .5, easing: 'cubic-bezier(.55,0,.8,.35)' },
+        { transform: `translateY(0) scale(1.05, .95) rotate(${spin}deg)` }], { duration: ms });
+      // estela de velocidad
+      for (let k = 1; k < 5; k++) setTimeout(() => { const q = pieceCenterPx(el); fxSpawn(q.px, q.py, { n: 1, colors: ['#FFFFFF', '#F6E2BE'], size: 4, dist: 6, dur: 300 }); }, ms * k / 5);
       await wait(ms);
       el.classList.remove('flying');
-      if (!ev.out) { const { px, py } = cellCenterPx(ev.x, ev.y); fxSpawn(px, py, { n: 7, colors: GRASS_C, size: 5, dist: 22, dur: 380, gravity: 14 }); fxShake(); sfx('pop'); }
+      sh.remove();
+      // 3) aterrizaje
+      if (!ev.out) {
+        inner.animate([{ transform: 'scale(1.32, .68)' }, { transform: 'scale(.9, 1.1)', offset: .55 }, { transform: 'none' }], { duration: 300, easing: 'ease-out' });
+        fxSpawn(to.px, to.py, { n: 10, colors: GRASS_C, size: 5, dist: 26, dur: 420, gravity: 16 });
+        fxSplashRing(to.px, to.py, 'land');
+        fxShake();
+        sfx('pop');
+        await wait(140);
+      }
       break;
     }
     case 'drift': {   // río: la pieza flota y la corriente la baja despacio, con ondas a su paso
       el.classList.add('swimming');
-      const ms = 430;
+      const ms = 430, left = pieceCenterPx(el);
       setPos(el, ev.x, ev.y, ms, 'cubic-bezier(.45,.05,.55,.95)');
       const { px, py } = cellCenterPx(ev.x, ev.y);
       fxSpawn(px, py, { n: 3, colors: WATER_C, size: 5, dist: 16, dur: 420, gravity: -6 });
-      fxTrailPush(ev.x, ev.y, trailCol);
+      fxTrailPush(left.px, left.py, trailCol);
       if (!app.driftSfx) { sfx('water'); app.driftSfx = true; setTimeout(() => { app.driftSfx = false; }, 900); }
       await wait(ms + 10);
       if (ev.out) { el.classList.remove('swimming'); el.classList.add('climbOut'); setTimeout(() => el.classList.remove('climbOut'), 380); }
@@ -146,6 +185,7 @@ async function playEvent(ev) {
     }
     case 'teleport': { // succión con escala + rotación y glow; expulsión simétrica al salir
       const src = pieceCenterPx(el);
+      fxTrailPush(src.px, src.py, trailCol);
       el.classList.add('warp', 'warpOut');
       fxSpawn(src.px, src.py, { n: JUICE.teleport.vortex, colors: WARP_C, size: 6, dist: 34, dur: 430 });
       sfx('portal');
@@ -156,7 +196,6 @@ async function playEvent(ev) {
       await wait(30);
       const dst = pieceCenterPx(el);
       fxSpawn(dst.px, dst.py, { n: JUICE.teleport.vortex, colors: WARP_C, size: 6, dist: 40, up: 8, dur: 470 });
-      fxTrailPush(ev.x, ev.y, trailCol);
       el.style.opacity = 1;
       el.classList.add('warpIn');
       await wait(JUICE.teleport.outMs);
@@ -240,7 +279,7 @@ async function playEvent(ev) {
       fxChainStop(pt.px, pt.py);
       fxShake();
       sfx('chainBreak');
-      toast(t('notice.chainStop'), 'warn');
+      toast(t(ev.msg || 'notice.chainStop'), 'warn');
       await wait(Math.max(420, JUICE.comboMs * .6));
       break;
     }

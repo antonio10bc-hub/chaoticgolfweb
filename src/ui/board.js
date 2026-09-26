@@ -85,7 +85,9 @@ export function renderBoard() {
     const sel = g.selectableAt(x, y);
     if (sel === 'sel') { cls += ' selectable'; aria.push(t('a11y.selectable')); }
     // colocar una loseta: al pasar por encima se ve cómo quedará (con su orientación, si gira)
-    if (sel === 'sel' && g.pending?.kind === 'placeTile') html += `<div class="ghostTile">${tilePic({ type: g.pending.tileType, rot: g.pending.rot || 0 })}</div>`;
+    const staged = app.placeAt && app.placeAt.x === x && app.placeAt.y === y;
+    if (staged) cls += ' staged'; // pieza puesta de prueba (se gira y se confirma)
+    if (sel === 'sel' && g.pending?.kind === 'placeTile') html += `<div class="ghostTile${staged ? ' on' : ''}">${tilePic({ type: g.pending.tileType, rot: g.pending.rot || 0 })}</div>`;
     if (sel === 'out') { cls += ' selectable-out'; title = t('board.outWarning'); aria.push(title); }
     const bg = ASSETS.cellArt(tile, par);
     if (cell._cls !== cls) { cell.className = cls; cell._cls = cls; }
@@ -133,7 +135,7 @@ export function bindBoard(onCell) {
       focusCell(ny * S.cols + nx);
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onCell(x, y);
+      onCell(x, y, { key: true });
       requestAnimationFrame(() => cells[i]?.focus());
     }
   });

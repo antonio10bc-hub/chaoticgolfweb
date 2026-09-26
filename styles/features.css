@@ -1253,3 +1253,23 @@ body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) #sndCfgBtn { --b-f
 #gameScreen[data-scene="prism"] #piles .pile, #gameScreen[data-scene="prism"] #lastPlay, #gameScreen[data-scene="prism"] .pileLbl { color: #3B2C63; }
 #gameScreen[data-scene="prism"] .pileLbl b { border-color: rgba(59,44,99,.35); }
 #gameScreen[data-scene="prism"] #discardTop.empty { border-color: rgba(59,44,99,.35); }
+#boardWrap.zoomed { cursor: grab; } #boardWrap.zoomed:active { cursor: grabbing; }
+/* Ultimate: fondo vivo (manchas iridiscentes que flotan, cambian de tono y un destello que cruza) */
+#gameDecor .dIri, #gameDecor .dIriSweep { display: none; }
+#gameScreen[data-scene="prism"] #gameDecor { overflow: hidden; }
+#gameScreen[data-scene="prism"] #gameDecor .dIri { display: block; position: absolute; width: 58vmax; height: 58vmax; border-radius: 50%;
+  filter: blur(60px); opacity: .6; mix-blend-mode: multiply; will-change: transform; }
+#gameDecor .dIri.a { left: -18vmax; top: -22vmax; background: radial-gradient(circle, #FF9FD0, transparent 65%); animation: iriBlobA 19s ease-in-out infinite alternate; }
+#gameDecor .dIri.b { right: -20vmax; top: -10vmax; background: radial-gradient(circle, #9FC2FF, transparent 65%); animation: iriBlobB 23s ease-in-out infinite alternate; }
+#gameDecor .dIri.c { left: 10vmax; bottom: -30vmax; background: radial-gradient(circle, #8DF0D2, transparent 65%); animation: iriBlobC 21s ease-in-out infinite alternate; }
+#gameDecor .dIri.d { right: -8vmax; bottom: -26vmax; background: radial-gradient(circle, #FFE59A, transparent 65%); animation: iriBlobD 25s ease-in-out infinite alternate; }
+@keyframes iriBlobA { to { transform: translate(22vmax, 18vmax) scale(1.2); } }
+@keyframes iriBlobB { to { transform: translate(-26vmax, 20vmax) scale(.85); } }
+@keyframes iriBlobC { to { transform: translate(30vmax, -22vmax) scale(1.15); } }
+@keyframes iriBlobD { to { transform: translate(-24vmax, -18vmax) scale(1.25); } }
+#gameScreen[data-scene="prism"] #gameDecor .dIriSweep { display: block; position: absolute; inset: -20%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.45) 47%, rgba(255,255,255,.12) 52%, transparent 60%);
+  animation: iriSweep 9s ease-in-out infinite; mix-blend-mode: soft-light; }
+@keyframes iriSweep { 0%, 55% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
+html.reduceMotion #gameDecor .dIri, html.reduceMotion #gameDecor .dIriSweep { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { #gameDecor .dIri, #gameDecor .dIriSweep { animation: none !important; } }

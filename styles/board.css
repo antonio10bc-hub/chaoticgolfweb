@@ -264,3 +264,7 @@ html.reduceMotion .lArrow { animation: none; }
 .ghostTile .tilePic { width: 100%; height: 100%; }
 .cell.selectable:hover .ghostTile, .cell.selectable:focus-visible .ghostTile { opacity: .7; }
 .rotBtn { gap: 5px; } .rotBtn .i { width: 14px; height: 14px; }
+/* pieza puesta de prueba: se ve fija, con un marco que late, hasta confirmarla */
+.cell.staged .ghostTile, .ghostTile.on { opacity: .95 !important; }
+.cell.staged { box-shadow: inset 0 0 0 2.5px #F1F1DC, 0 0 0 3px rgba(232,135,58,.8) !important; animation: stagedPulse 1.2s ease-in-out infinite !important; z-index: 3; }
+@keyframes stagedPulse { 50% { box-shadow: inset 0 0 0 2.5px #F1F1DC, 0 0 0 5px rgba(232,135,58,.45); } }

@@ -5,6 +5,7 @@
 import { app } from './app.js';
 import { $, $$, restartClass } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
+import { TILES } from '../content/tiles/index.js';
 import { fitCellsTo } from './geometry.js';
 import { renderBoard, ensurePieces, syncPieces, clearPieces, markPlaced } from './board.js';
 import { renderHands, resetDealAnim } from './hands.js';
@@ -225,6 +226,28 @@ export function clickCell(x, y) {
   }
   return dispatch(gg => gg.clickCell(x, y));
 }
+// casilla tocada por la persona. Las piezas que giran (esquina, lanzadera) no se colocan al primer toque:
+// la pieza se queda puesta de prueba (app.placeAt); tocar la misma casilla la gira, otra la mueve,
+// y "Colocar" (o Intro) la deja. La IA usa clickCell directamente.
+export function uiCell(x, y, { key = false } = {}) {
+  const g = app.game, pd = g?.pending;
+  if (!app.animating && pd?.kind === 'placeTile' && TILES[pd.tileType]?.rotates && g.selectableAt(x, y) === 'sel' && !isBot(pd.p)) {
+    const same = app.placeAt && app.placeAt.x === x && app.placeAt.y === y;
+    if (same && key) return confirmPlace();
+    if (same) return rotatePending();
+    app.placeAt = { x, y };
+    sfx('select');
+    render();
+    return true;
+  }
+  return clickCell(x, y);
+}
+export function confirmPlace() {
+  const p = app.placeAt;
+  if (!p) return false;
+  app.placeAt = null;
+  return clickCell(p.x, p.y);
+}
 export const chooseAmount = n => dispatch(g => g.chooseAmount(n));
 export const pickHoled = pl => dispatch(g => g.pickHoled(pl));
 export const serpentStep = dir => dispatch(g => g.serpentStep(dir));
@@ -277,6 +300,7 @@ export function maybeSoloWin() {
 export function render() {
   const g = app.game;
   if (!g) return;
+  if (app.placeAt && (g.pending?.kind !== 'placeTile' || !g.selectableAt(app.placeAt.x, app.placeAt.y))) app.placeAt = null; // (pieza de prueba)
   passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
   setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting)); // (ajuste: turnos de la máquina más rápidos)
   hud.renderTopbar();

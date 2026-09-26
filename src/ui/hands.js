@@ -70,7 +70,9 @@ function hintFor(g, p) {
   const pd = g.pending, S = g.S;
   switch (pd.kind) {
     case 'move': return t('hands.hint.move', { card: CARDS[S.hands[p][pd.idx]].name });
-    case 'placeTile': return t('hands.hint.placeTile', { card: CARDS[pd.tileType].name });
+    case 'placeTile': return TILES[pd.tileType]?.rotates
+      ? t(app.placeAt ? 'hands.hint.placeRotConfirm' : 'hands.hint.placeRot', { card: CARDS[pd.tileType].name })
+      : t('hands.hint.placeTile', { card: CARDS[pd.tileType].name });
     case 'pickBall': return t('hands.hint.pickBall', { card: CARDS.oPalo1.name,
       extra: S.jaque && S.balls.some(b => b.holed) ? t('hands.hint.pickBallJaque') : '' });
     case 'serpent': return t('hands.hint.serpent', { card: CARDS.dedo.name, n: pd.stepsLeft });
@@ -95,8 +97,10 @@ function barButtons(g) {
     const n = pd.selected.length;
     html += `<button class="btn-secondary btn-sm" data-act="confirmDiscard"${n ? '' : ' disabled'}>${n ? t('hands.discardN', { n }) : t('hands.confirm')}</button>`;
   }
-  if (pd.kind === 'placeTile' && TILES[pd.tileType]?.rotates) // esquina y lanzadera: se giran antes de colocarlas (también con R)
+  if (pd.kind === 'placeTile' && TILES[pd.tileType]?.rotates) { // esquina y lanzadera: se ponen, se giran (R) y se confirman
     html += `<button class="btn-light btn-sm rotBtn" data-act="rotate" title="${esc(t('hands.rotateTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg>${esc(t('hands.rotate'))}</button>`;
+    if (app.placeAt) html += `<button class="btn-primary btn-sm" data-act="confirmPlace">${esc(t('hands.place'))}</button>`;
+  }
   if (pd.kind !== 'serpent') html += `<button class="btn-ghost btn-sm" data-act="cancel">${t('common.cancel')}</button>`; // el dedo ya gastado no se puede cancelar
   return html;
 }
@@ -222,6 +226,7 @@ export function bindHands() {
         case 'confirmDiscard': ctl.confirmDiscard(); break;
         case 'cancel': ctl.cancel(); break;
         case 'rotate': ctl.rotatePending(); break;
+        case 'confirmPlace': ctl.confirmPlace(); break;
         case 'react': startReaction(n); break;
         case 'endReact': endReaction(); break;
       }

@@ -83,7 +83,7 @@ const LOG_ICON = {
   ballTrapped: 'i-sand', ballStaysTrap: 'i-sand', transferTrap: 'i-sand', cantLeaveTrap: 'i-sand', holeTrapped: 'i-sand',
   ballLeavesTrap: 'i-sand', holeLeavesTrap: 'i-sand', ballMoved: 'i-arrow-r', holeMoved: 'i-hole', holeEmerges: 'i-hole',
   ballLeavesHole: 'i-arrow-r', ballExtracted: 'i-arrow-r', endTurn: 'i-check', discards: 'i-reset', cancelEffects: 'i-rewind',
-  jaqueCancelled: 'i-x', chainStops: 'i-chain-break', tilePlaced: 'i-grid',
+  jaqueCancelled: 'i-x', chainStops: 'i-chain-break', iriLoop: 'i-chain-break', tilePlaced: 'i-grid',
 };
 export let logMine = false;
 export const setLogMine = v => { logMine = v; };

@@ -193,12 +193,16 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),
   **Lanzadera** (quien pasa por encima vuela 5 casillas hacia su flecha; gira cada turno; nunca relanza hacia
-  una lanzadera ya usada en la jugada, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
+  una lanzadera ya usada en la jugada, tampoco a través de un río, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
   Las piezas no cuentan como casilla y nadie se queda encima; el hoyo las usa igual que una pelota
-  (`nextCell`, `launchBall` / `launchHole` en el motor). Girar: botón "Girar" o tecla R.
+  (`nextCell`, `launchBall` / `launchHole` en el motor). Par 5. Las piezas que giran se colocan en dos pasos:
+  tocas la casilla (queda marcada con la pieza fantasma), la giras ("Girar", tecla R o tocándola otra vez) y
+  confirmas con "Colocar" (o Intro). La lanzadera hace un salto con anticipación, sombra en el suelo, giro y
+  aterrizaje con polvo.
 - **Ultimate Chaotic Golf**: las cartas de todas las barajas (`counts` las suma solas: una baraja nueva entra
-  sin tocar nada), un campo enorme (+12 columnas y +4 filas), palos de 10 y el **palo iridiscente** (avanza hasta
-  chocar; se para antes de un bloque o del borde; la pelota golpeada hereda todo el impulso). Arte iridiscente.
+  sin tocar nada), un campo enorme (+12 columnas y +4 filas), par 7, palos de 10 y el **palo iridiscente** (no se para
+  nunca: rebota en los bloques, gira en las esquinas y sigue hasta chocar con otra pelota, que hereda el impulso y
+  hace lo mismo, o hasta caerse del tablero; si entra en un bucle sin fin, se corta; deja una estela iridiscente). Fondo iridiscente animado (manchas de color y un barrido de luz).
 - **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
   especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el
@@ -220,9 +224,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Música** minimalista y suave (timbres redondos, filtro y eco ligeros): se tensa en el JAQUE, fanfarria al ganar. Cada forma de ganar tiene
   su celebración (de portal, carambola, el hoyo se la traga, robo, tiro largo, zigzag, a la primera).
 - **Portal:** disco azul con anillos concéntricos que nacen en el centro y crecen sin salirse de la esfera.
+- **Estela:** cada pieza va dejando puntos de su color detrás según avanza; al acabar la jugada se quitan
+  rápido, uno a uno, del primero al último (`fxTrailPush` / `fxTrailShow`, tiempos en `JUICE.trail`).
 - **Caídas:** al salirse del tablero, el borde por el que cae la pieza destella con su color y una onda
   entra desde ese lado.
 - **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
+- **Tableros grandes** (minigolf, Ultimate): si las casillas quedarían pequeñas se hacen más cuadradas para
+  crecer (`fitCellsTo` en `geometry.js`), y en el ordenador la rueda del ratón hace zoom y se arrastra para moverlo.
+  Piezas y efectos usan la misma métrica que la rejilla (`GAP`/`PAD`), así que quedan centradas en cualquier tamaño.
 - **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final
   (jugada más larga, quién te golpeó más, tu carta más usada).
 

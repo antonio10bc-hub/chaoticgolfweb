@@ -1,7 +1,7 @@
 // Efectos decorativos basados en DOM (todo es cosmético: nunca toca el estado del juego).
 import { JUICE, REDUCED, CONFETTI_C } from './juice.js';
 import { fxRand, fxSpawn } from './particles.js';
-import { cellCenterPx, cellStep, GAP } from '../ui/geometry.js';
+import { cellCenterPx, cellStep, GAP, PAD } from '../ui/geometry.js';
 import { $, $$, restartClass } from '../ui/dom.js';
 import { app } from '../ui/app.js';
 import { sfx } from '../audio/sfx.js';
@@ -54,30 +54,35 @@ export function fxRewindApply() {
 }
 
 /* ---- capa DOM para elementos fx que no son partículas (estela, combo, trayectoria) ---- */
-function fxGetDomLayer() {
+export function fxGetDomLayer() {
   let l = $('fxLayer');
   if (!l) { l = document.createElement('div'); l.id = 'fxLayer'; $('boardArea').appendChild(l); }
   return l;
 }
 
-// estela fantasma del camino de la última jugada
+// estela del camino de la jugada: cada pieza va dejando puntos detrás según avanza (en la casilla que
+// abandona) y, al acabar el movimiento, se quitan rápido uno a uno, del más antiguo al último
 const trail = [];
-export const fxTrailReset = () => { trail.length = 0; };
-export const fxTrailPush = (x, y, color) => { if (trail.length < JUICE.trail.max) trail.push({ x, y, color }); };
+export const fxTrailReset = () => { trail.forEach(d => d.remove()); trail.length = 0; };
+export function fxTrailPush(px, py, color) {
+  if (REDUCED || trail.length >= JUICE.trail.max) return;
+  const last = trail[trail.length - 1];
+  if (last && Math.abs(last._px - px) < 2 && Math.abs(last._py - py) < 2) return; // (rebote en el sitio)
+  const d = document.createElement('div');
+  d.className = 'trailDot' + (color === 'iri' ? ' iri' : '');
+  d.style.left = px + 'px'; d.style.top = py + 'px';
+  if (color !== 'iri') d.style.background = color;
+  d._px = px; d._py = py;
+  fxGetDomLayer().appendChild(d);
+  trail.push(d);
+}
 export function fxTrailShow() {
-  if (REDUCED || !trail.length) return;
-  const layer = fxGetDomLayer();
-  trail.forEach((tr, i) => {
-    const { px, py } = cellCenterPx(tr.x, tr.y);
-    const d = document.createElement('div');
-    d.className = 'trailDot';
-    d.style.left = px + 'px'; d.style.top = py + 'px';
-    d.style.background = tr.color;
-    d.style.setProperty('--trail-ms', JUICE.trail.fadeMs + 'ms');
-    d.style.animationDelay = (i * 45) + 'ms';
-    layer.appendChild(d);
-    setTimeout(() => d.remove(), JUICE.trail.fadeMs + i * 45 + 80);
-  });
+  const dots = trail.splice(0), { holdMs, stepMs, maxMs } = JUICE.trail;
+  const step = Math.min(stepMs, maxMs / Math.max(1, dots.length)); // (las estelas muy largas, más deprisa)
+  dots.forEach((d, i) => setTimeout(() => {
+    d.classList.add('out');
+    setTimeout(() => d.remove(), 240);
+  }, holdMs + i * step));
 }
 
 // texto flotante de combo en colisiones encadenadas
@@ -100,7 +105,7 @@ export function fxEdgeFall(x, y, color) {
   const s = cellStep(), bw = S.cols * s.w - GAP, bh = S.rows * s.h - GAP;
   const cx = Math.max(0, Math.min(S.cols - 1, x)), cy = Math.max(0, Math.min(S.rows - 1, y));
   const c = cellCenterPx(cx, cy);
-  const pt = { up: [c.px, 0], down: [c.px, bh], left: [0, c.py], right: [bw, c.py] }[dir];
+  const pt = { up: [c.px, PAD], down: [c.px, PAD + bh], left: [PAD, c.py], right: [PAD + bw, c.py] }[dir];
   const layer = fxGetDomLayer();
   const glow = document.createElement('div');
   glow.className = 'edgeGlow' + (REDUCED ? ' still' : '');
@@ -148,12 +153,12 @@ export function fxTunnel(px, py, outDir) {
 }
 
 // chapuzón en el lago: un aro de agua que se abre (sutil: cabe en una sola casilla)
-export function fxSplashRing(px, py) {
+export function fxSplashRing(px, py, kind = '') {
   if (REDUCED) return;
   const layer = fxGetDomLayer();
   for (const delay of [0]) {
     const d = document.createElement('div');
-    d.className = 'splashRing';
+    d.className = 'splashRing' + (kind ? ' ' + kind : '');
     d.style.left = px + 'px'; d.style.top = py + 'px'; d.style.animationDelay = delay + 'ms';
     layer.appendChild(d);
     setTimeout(() => d.remove(), 900 + delay);

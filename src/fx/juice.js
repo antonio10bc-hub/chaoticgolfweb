@@ -9,6 +9,7 @@
 export const JUICE = {
   move: {
     ms: 200,              // duración de un paso de pelota
+    iriMs: 125,           // paso con el palo iridiscente
     holeMs: 270,          // paso del hoyo (más pesado)
     ease: 'cubic-bezier(.3,.75,.35,1)',     // salida suave con rebote sutil
     holeEase: 'cubic-bezier(.45,.55,.35,1)', // arrastre pesado del hoyo
@@ -33,7 +34,7 @@ export const JUICE = {
   dealStaggerMs: 95,      // retraso entre cartas robadas
   cardFlyMs: 320,         // viaje de la carta jugada hacia el tablero
   sfx: { volume: 0.13 },  // volumen maestro de los efectos de sonido
-  trail: { fadeMs: 2000, max: 14 },  // estela fantasma de la última jugada
+  trail: { max: 160, holdMs: 200, stepMs: 40, maxMs: 1100 },  // estela de la jugada: se quita uno a uno (stepMs) al acabar
   idle: { ms: 6000 },     // tiempo sin input antes de las animaciones de reposo
   slowMoMs: 240,          // pausa de slow-motion al embocar (antes del confeti)
   comboMs: 850,           // vida del texto flotante de combo
@@ -92,4 +93,5 @@ export const DIRT_C  = ['#a98a5c', '#8a6a3f', '#cbb289'];
 export const WARP_C  = ['#2D4F7C', '#4A6D9C', '#F1F1DC', '#E8873A'];
 export const WATER_C = ['#BFE8F5', '#7FCBE3', '#FFFFFF', '#4FA7C6'];
 export const WOOD_C  = ['#E2B77E', '#C99257', '#A8743F', '#F6E2BE'];
+export const IRI_C   = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF'];
 export const CONFETTI_C = ['#E8873A', '#D9603A', '#2D4F7C', '#F1F1DC', '#8DB05F', '#ECE6CC'];

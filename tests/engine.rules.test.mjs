@@ -202,15 +202,37 @@ test('lanzaderas enfrentadas: un solo rebote, sin ping-pong, y nadie se queda en
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
 });
 
-test('palo iridiscente: avanza hasta chocar; la golpeada hereda el impulso y se para en el borde', () => {
-  const g = mg([], { extraBalls: [{ x: 4, y: 3 }] });
+test('río que desemboca en la lanzadera que lanza a ese río: sin bucle', () => {
+  const river = [2, 3, 4, 5, 6].map(y => ({ type: 'river', x: 3, y }));
+  const g = mg([...river, { type: 'launcher', x: 3, y: 7, rot: 0 }], { rows: 9, ball: { x: 1, y: 7 } });
+  hand(g, 0, ['palo2']);
+  g.clickCard(0, 0); g.clickCell(3, 7); // lanzadera → río (3,2) → baja hasta la lanzadera (ya usada) → libre
+  const b = g.S.balls[0], on = g.S.tiles.find(t => t.x === b.x && t.y === b.y);
+  assert.equal(on, undefined);
+  assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 1);
+});
+
+test('palo iridiscente: rebota y sigue hasta chocar con una pelota (que hace lo mismo) o caerse', () => {
+  const keys = g => g.S.logK.map(l => l[0]);
+  const g = mg([{ type: 'block', x: 6, y: 3 }], { extraBalls: [{ x: 3, y: 3 }] });
   hand(g, 0, ['paloIri']);
   g.clickCard(0, 0); g.clickCell(2, 3);
-  assert.deepEqual(g.S.balls.map(b => [b.x, b.y]), [[3, 3], [6, 3]]); // se para junto a la otra; la otra hasta el borde
-  const h = mg([{ type: 'block', x: 5, y: 3 }]);
+  // A choca con B; B rebota en el bloque, vuelve y choca con A, que sale por la izquierda y vuelve a su salida
+  assert.deepEqual(g.S.balls.map(b => [b.x, b.y]), [[1, 3], [3, 3]]);
+  assert.deepEqual(keys(g).filter(k => k !== 'ballMoved').slice(0, 4), ['ballFell', 'collision', 'ballBounce', 'collision']);
+  const c = mg([{ type: 'corner', x: 4, y: 3, rot: 2 }], { extraBalls: [{ x: 4, y: 0 }] });
+  hand(c, 0, ['paloIri']);
+  c.clickCard(0, 0); c.clickCell(2, 3);
+  assert.deepEqual(at(c), [4, 1]); // la esquina la desvía hacia arriba y sigue hasta la otra pelota
+  const h = mg([{ type: 'block', x: 4, y: 3 }]);
   hand(h, 0, ['paloIri']);
   h.clickCard(0, 0); h.clickCell(2, 3);
-  assert.deepEqual(at(h), [4, 3]); // se para antes del bloque (no rebota)
+  assert.ok(keys(h).includes('ballBounce') && keys(h).includes('ballFell')); // rebota y, sin nada más, se cae
+  const l = mg([{ type: 'block', x: 0, y: 3 }, { type: 'block', x: 4, y: 3 }]);
+  hand(l, 0, ['paloIri']);
+  l.clickCard(0, 0); l.clickCell(2, 3);
+  assert.ok(keys(l).includes('iriLoop')); // entre dos bloques, el bucle se corta
+  assert.equal(at(l)[1], 3);
 });
 
 test('palos de 4 y 5 existen, pero con 0 copias fuera de sus barajas', () => {

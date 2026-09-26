@@ -1,9 +1,12 @@
-// Zoom y desplazamiento del tablero (sobre todo en el móvil con tableros grandes):
+// Zoom y desplazamiento del tablero (sobre todo con tableros grandes):
 //   · pellizcar con dos dedos acerca / aleja (también el pellizco del trackpad)
-//   · con zoom, arrastrar con un dedo mueve el tablero (sin que cuente como toque en una casilla)
+//   · en tableros grandes (minigolf, Ultimate), también la rueda del ratón
+//   · con zoom, arrastrar (dedo o ratón) mueve el tablero (sin que cuente como toque en una casilla)
 //   · el botón de la esquina vuelve a ver el tablero entero
 // Solo transforma #boardZoom: el tablero, las piezas y los efectos se escalan juntos.
 import { $ } from './dom.js';
+import { app } from './app.js';
+const bigBoard = () => { const S = app.game?.S; return !!S && S.cols * S.rows > 99; };
 
 const MIN = 1, MAX = 3;
 let s = 1, tx = 0, ty = 0;
@@ -37,7 +40,7 @@ function zoomAt(ns, cx, cy) {
 export function bindZoom() {
   const wrap = $('boardWrap');
   wrap.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse') return;
+    if (e.pointerType === 'mouse' && (s <= 1 || e.button !== 0)) return; // con ratón solo se arrastra con zoom
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     dragged = false;
     if (pts.size === 2) {
@@ -73,9 +76,9 @@ export function bindZoom() {
   wrap.addEventListener('click', e => { if (dragged) { e.stopPropagation(); e.preventDefault(); dragged = false; } }, true);
   // pellizco del trackpad (llega como rueda con ctrl)
   wrap.addEventListener('wheel', e => {
-    if (!e.ctrlKey) return;
+    if (!e.ctrlKey && !bigBoard()) return;
     e.preventDefault();
-    zoomAt(s * Math.exp(-e.deltaY / 500), e.clientX, e.clientY);
+    zoomAt(s * Math.exp(-e.deltaY / (e.ctrlKey ? 500 : 700)), e.clientX, e.clientY);
   }, { passive: false });
   $('zoomReset').addEventListener('click', resetZoom);
   window.addEventListener('resize', resetZoom);

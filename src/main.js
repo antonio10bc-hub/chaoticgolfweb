@@ -52,7 +52,7 @@ applyStaticTexts();
 bindSave();
 
 // listeners (un único sitio; nada de onclick en el HTML)
-bindBoard(ctl.clickCell);
+bindBoard(ctl.uiCell);
 bindHands();
 bindCardTip();
 bindWin();
