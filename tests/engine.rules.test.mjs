@@ -192,14 +192,20 @@ test('lanzadera: se para, vuela 3 hacia su flecha y la flecha gira cada turno', 
   assert.equal(g.S.tiles[0].rot, (rot + 1) % 4);
 });
 
-test('lanzaderas enfrentadas: un solo rebote, sin ping-pong, y nadie se queda encima', () => {
+test('lanzadera: tras lanzar se desactiva hasta el final del turno (sin ping-pong)', () => {
   const g = mg([{ type: 'launcher', x: 1, y: 3, rot: 1 }, { type: 'launcher', x: 4, y: 3, rot: 3 }], { cols: 8 });
   g.S.balls[0].x = 0; g.S.balls[0].y = 3;
-  hand(g, 0, ['palo1']);
-  g.clickCard(0, 0); g.clickCell(1, 3); // A → B → (vuelve a A: ya usada) → casilla libre junto a A
-  const b = g.S.balls[0], on = g.S.tiles.find(t => t.x === b.x && t.y === b.y);
-  assert.equal(on, undefined);
+  hand(g, 0, ['palo1', 'palo4']);
+  g.clickCard(0, 0); g.clickCell(1, 3); // A → B → vuelve a A, que ya ha lanzado: aterriza en ella y se queda
+  assert.deepEqual(at(g), [1, 3]);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
+  assert.deepEqual(g.S.launched, ['1,3', '4,3']);
+  g.clickCard(0, 0); // en el mismo turno pasa por encima de B (desactivada) como por el césped
+  const tg = g.pending.targets.find(t => t.dir === 'right'); g.clickCell(tg.x, tg.y);
+  assert.deepEqual(at(g), [5, 3]);
+  assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
+  g.endTurn();
+  assert.equal(g.S.launched, undefined); // al terminar el turno se reactivan
 });
 
 test('palo iridiscente: tras saltar una lanzadera sigue avanzando (y la pelota golpeada hereda el impulso)', () => {
@@ -238,9 +244,8 @@ test('río que desemboca en la lanzadera que lanza a ese río: sin bucle', () =>
   const river = [2, 3, 4, 5, 6].map(y => ({ type: 'river', x: 3, y }));
   const g = mg([...river, { type: 'launcher', x: 3, y: 7, rot: 0 }], { rows: 9, ball: { x: 1, y: 7 } });
   hand(g, 0, ['palo2']);
-  g.clickCard(0, 0); g.clickCell(3, 7); // lanzadera → río (3,2) → baja hasta la lanzadera (ya usada) → libre
-  const b = g.S.balls[0], on = g.S.tiles.find(t => t.x === b.x && t.y === b.y);
-  assert.equal(on, undefined);
+  g.clickCard(0, 0); g.clickCell(3, 7); // lanzadera → río (3,4) → baja hasta la lanzadera, desactivada: se queda
+  assert.deepEqual(at(g), [3, 7]);
   assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 1);
 });
 
@@ -410,13 +415,22 @@ test('puzles: cada uno se resuelve en un solo turno con su mano fija', async () 
   const { enumeratePlays } = await import('../src/ai/bot.js');
   const dir = new URL('../src/content/levels/puzzles/', import.meta.url);
   const files = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
-  assert.ok(files.length >= 6);
+  assert.ok(files.length >= 20);
   const solvable = g => g.S.winner !== null || enumeratePlays(g, 0).some(pl => solvable(pl.result));
+  const { applyAction } = await import('../src/ai/bot.js');
+  // una solución (lista de acciones) o null
+  const solve = g => { if (g.S.winner !== null) return []; for (const pl of enumeratePlays(g, 0)) { const r = solve(pl.result); if (r) return [...pl.actions, ...r]; } return null; };
   for (const f of files) {
     const L = JSON.parse(fs.readFileSync(new URL(f, dir)));
     const g = Game.fromLevel(L, { seed: 1 });
     assert.deepEqual(g.S.hands[0], L.hand, `${f}: la mano debe ser la del puzle`);
     assert.ok(solvable(g), `${f}: sin solución en un turno`);
+    const sol = solve(g);
+    for (const seed of [2, 3, 4, 5]) { // la solución no depende del azar (túneles, rebotes…)
+      const h = Game.fromLevel(L, { seed });
+      for (const a of sol) applyAction(h, a);
+      assert.notEqual(h.S.winner, null, `${f}: la solución falla con la semilla ${seed}`);
+    }
   }
 });
 

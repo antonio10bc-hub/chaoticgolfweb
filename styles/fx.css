@@ -268,7 +268,14 @@ html.reduceMotion .piece.swimming .cardOnCell, html.reduceMotion .piece.swimming
 .piece.swimming .cardOnCell { z-index: 1; }
 /* chapuzón más sutil: se hunde sin girar y el aro no se sale de la casilla */
 .piece.splashing .cardOnCell { animation: splashIn .38s ease-in forwards; }
-@keyframes splashIn { 25% { transform: translateY(-3%) scale(.98); } 100% { transform: translateY(10%) scale(.45); opacity: 0; } }
+/* al tocar el agua se aplasta un poco, se tiñe del agua del lago y se hunde girando apenas */
+@keyframes splashIn {
+  0% { transform: none; filter: none; }
+  18% { transform: translateY(2%) scale(1.08, .9); filter: none; }
+  55% { transform: translateY(7%) scale(.72) rotate(6deg); filter: saturate(.5) brightness(.85) hue-rotate(-20deg); opacity: .85; }
+  100% { transform: translateY(14%) scale(.3) rotate(10deg); filter: saturate(.2) brightness(.7); opacity: 0; }
+}
+.piece.splashing .cardOnCell { animation-duration: .44s; animation-timing-function: cubic-bezier(.4,0,.7,.6); }
 .splashRing { width: 16px; height: 8px; margin: -4px 0 0 -8px; border-width: 1.5px; border-color: rgba(255,255,255,.7); animation-duration: .6s; }
 @keyframes splashRing { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }
 
@@ -299,6 +306,13 @@ html.reduceMotion .piece.swimming .cardOnCell, html.reduceMotion .piece.swimming
 /* lanzadera: la madera se comprime al lanzar, sombra en el suelo durante el vuelo y aro al aterrizar */
 .cell.lPop .woodPic { animation: lPop .38s cubic-bezier(.3,1.6,.5,1); }
 @keyframes lPop { 30% { transform: scale(.86); } }
+/* lanzadera desactivada hasta el final del turno: apagada y algo hundida */
+.cell.lOff .woodPic { filter: grayscale(.85) brightness(.82); opacity: .6; transform: scale(.9); transition: filter .4s, opacity .4s, transform .4s; }
+.cell.wood .woodPic { transition: filter .4s, opacity .4s, transform .4s; }
 .flyShadow { position: absolute; width: calc(var(--cell-w) * .5); height: calc(var(--cell-w) * .22); margin: calc(var(--cell-w) * -.11 + 6px) 0 0 calc(var(--cell-w) * -.25);
   border-radius: 50%; background: rgba(14,32,14,.75); filter: blur(1.5px); pointer-events: none; z-index: 1; }
 .splashRing.land { border-color: rgba(241,241,220,.8); animation-duration: .5s; }
+.splashRing.wide { border-width: 1px; border-color: rgba(255,255,255,.5); animation-duration: .8s; animation-name: splashWide; }
+@keyframes splashWide { from { transform: scale(.8); opacity: .8; } to { transform: scale(3.2); opacity: 0; } }
+.splashRing.calm { border-width: 1px; border-color: rgba(220,245,250,.45); animation-duration: 1.3s; animation-name: splashCalm; animation-timing-function: cubic-bezier(.2,.6,.4,1); }
+@keyframes splashCalm { from { transform: scale(.4); opacity: .7; } to { transform: scale(2.8); opacity: 0; } }

@@ -10,7 +10,8 @@
 // También: el texto para compartir el resultado del reto diario y el aviso en el icono de la app.
 // La serie del contrarreloj se guarda aparte de la partida, para poder dejarla entre hoyos.
 import { app } from './app.js';
-import { CARDS } from '../content/cards/index.js';
+import { CARDS, defaultCounts } from '../content/cards/index.js';
+import { TILES as TILE_DEFS } from '../content/tiles/index.js';
 import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
@@ -28,7 +29,7 @@ import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
-import { DECKS } from '../content/decks.js';
+import { DECKS, deckById } from '../content/decks.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
@@ -214,6 +215,16 @@ export const CHALLENGES = [
   // atajos: 3 parejas de portales de colores (cada uno conecta con el de su color); sin cartas de portal
   { id: 'portals', icon: 'i-spiral', cfg: { opps: 2, size: 'l', diff: 'normal' }, extra: { counts: 'noPortals' }, tiles: { portalPairs: 3, bunker: 2 } },
   { id: 'crowd', icon: 'i-users', cfg: { opps: 6, size: 'l', diff: 'hard' } }, // 7 en la mesa: tú y 6 bots
+  // con las piezas de las otras barajas (deck: su mazo y su escena), solas y combinadas
+  { id: 'rapids', group: 'pieces', icon: 'i-wave', deck: 'water', cfg: { opps: 2, size: 'm', diff: 'normal' }, tiles: { river: 3 } },
+  { id: 'archipelago', group: 'pieces', icon: 'i-drop', deck: 'water', cfg: { opps: 2, size: 'l', diff: 'normal' }, tiles: { lake: 4 } },
+  { id: 'pinball', group: 'pieces', icon: 'i-burst', deck: 'minigolf', cfg: { opps: 2, size: 'l', diff: 'normal' }, tiles: { block: 6, corner: 4 } },
+  { id: 'launchpads', group: 'pieces', icon: 'i-launch', deck: 'minigolf', cfg: { opps: 2, size: 'l', diff: 'normal' }, tiles: { launcher: 5 } },
+  { id: 'warren', group: 'pieces', icon: 'i-tunnel', deck: 'minigolf', cfg: { opps: 2, size: 'l', diff: 'normal' }, tiles: { tunnel: 6 } },
+  { id: 'prism', group: 'pieces', icon: 'i-prism', deck: 'ultimate', cfg: { opps: 1, size: 'l', diff: 'hard' }, extra: { counts: 'prism' }, tiles: { block: 4, corner: 3 } },
+  { id: 'sawmill', group: 'combo', icon: 'i-block', deck: 'water', cfg: { opps: 2, size: 'l', diff: 'normal' }, extra: { counts: 'sawmill' }, tiles: { river: 3, corner: 2, block: 1, launcher: 1, riverMouth: ['corner', 'tunnel', 'block'] } },
+  { id: 'fullChaos', group: 'combo', icon: 'i-chaos', deck: 'ultimate', cfg: { opps: 3, size: 'l', diff: 'normal' },
+    tiles: { river: 1, lake: 1, block: 2, corner: 2, tunnel: 1, launcher: 2, portalPairs: 1, bunker: 2 } },
 ];
 const challengeById = id => CHALLENGES.find(c => c.id === id);
 function challengeExtra(ch) {
@@ -225,8 +236,13 @@ function challengeExtra(ch) {
     longDrive: { ...base, palo1: 0, palo2: 4, palo3: 10 },       // solo tiros largos
     fingers: { ...base, palo1: 4, palo2: 4, palo3: 2, dedo: 8 },  // el dedo manda
     noPortals: Object.fromEntries(Object.entries(CARDS).map(([k, d]) => [k, k === 'portal' ? 0 : d.copies])), // atajos
+    // prisma: casi todo son palos iridiscentes (y cartas de hoyo para ponerlo a tiro)
+    prism: { ...Object.fromEntries(Object.keys(CARDS).map(k => [k, 0])), paloIri: 12, palo1: 3, palo2: 2, hoyoUp: 2, hoyoDown: 2, hoyoLeft: 2, hoyoRight: 2, oPalo1: 2, oHoyoUp: 1, oHoyoDown: 1, oHoyoLeft: 1, oHoyoRight: 1, no: 2 },
+    // aserradero: agua y madera a la vez
+    sawmill: { ...deckById('minigolf').counts(defaultCounts()), river: 4, lake: 2 },
   };
   if (typeof ex.counts === 'string') ex.counts = DECKS[ex.counts];
+  if (!ex.counts && ch.deck && deckById(ch.deck).counts) ex.counts = deckById(ch.deck).counts(defaultCounts()); // el mazo de su baraja
   return ex;
 }
 // losetas de salida de un desafío, en casillas libres lejos de la salida y de la columna de PAR
@@ -234,17 +250,51 @@ function placeTiles(S, want, seed) {
   const r = mulberry32((seed ^ 0x7f4a7c15) >>> 0);
   const ballRow = S.balls[0].y, parX = S.parCells[0]?.x;
   const taken = (x, y) => S.tiles.some(t => t.x === x && t.y === y) || (S.hole.x === x && S.hole.y === y) || S.balls.some(b => b.x === x && b.y === y);
-  const ok = (x, y) => y > 0 && y < ballRow - 1 && x !== parX && !taken(x, y);
+  const ok = (x, y) => x >= 0 && x < S.cols && y > 0 && y < ballRow - 1 && x !== parX && !taken(x, y);
   const put = tile => {
     for (let tries = 0; tries < 80; tries++) {
       const x = Math.floor(r() * S.cols), y = Math.floor(r() * S.rows);
       if (ok(x, y)) { S.tiles.push({ ...tile, x, y }); return; }
     }
   };
+  // río: una columna de 2 a 4 casillas; lago: una mancha de 3 o 4 casillas unidas
+  const putRiver = () => {
+    for (let tries = 0; tries < 80; tries++) {
+      const len = 2 + Math.floor(r() * 3), x = Math.floor(r() * S.cols), y0 = 1 + Math.floor(r() * Math.max(1, ballRow - 2 - len));
+      const cells = Array.from({ length: len }, (_, j) => ({ x, y: y0 + j }));
+      if (cells.every(c => ok(c.x, c.y))) { cells.forEach(c => S.tiles.push({ type: 'river', ...c })); return { x, y: y0 + len }; } // (su desembocadura)
+    }
+    return null;
+  };
+  const mouths = [];
+  const putLake = () => {
+    for (let tries = 0; tries < 80; tries++) {
+      const x = Math.floor(r() * S.cols), y = Math.floor(r() * S.rows);
+      if (!ok(x, y)) continue;
+      const cells = [{ x, y }], want = 3 + Math.floor(r() * 2);
+      for (let k = 0; k < 30 && cells.length < want; k++) {
+        const b = cells[Math.floor(r() * cells.length)], [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(r() * 4)];
+        const c = { x: b.x + dx, y: b.y + dy };
+        if (ok(c.x, c.y) && !cells.some(q => q.x === c.x && q.y === c.y)) cells.push(c);
+      }
+      cells.forEach(c => S.tiles.push({ type: 'lake', ...c }));
+      return;
+    }
+  };
   for (const [type, n] of Object.entries(want)) {
+    if (type === 'riverMouth') continue;
     if (type === 'portalPairs') placePortalPairs(S, n, r, taken, ballRow, parX);
-    else for (let i = 0; i < n; i++) put({ type });
+    else for (let i = 0; i < n; i++) {
+      if (type === 'river') { const m = putRiver(); if (m) mouths.push(m); }
+      else if (type === 'lake') putLake();
+      else put(TILE_DEFS[type]?.rotates ? { type, rot: Math.floor(r() * 4) } : { type }); // (esquinas y lanzaderas, con su giro)
+    }
   }
+  // riverMouth: piezas justo en la desembocadura de los ríos (la corriente lleva a través de ellas)
+  (want.riverMouth || []).forEach((type, i) => {
+    const m = mouths[i];
+    if (m && m.y < S.rows && !taken(m.x, m.y)) S.tiles.push(TILE_DEFS[type]?.rotates ? { type, x: m.x, y: m.y, rot: Math.floor(r() * 4) } : { type, x: m.x, y: m.y });
+  });
 }
 // parejas de portales repartidas por todo el tablero: se divide en 6 zonas (a cada lado del PAR ×
 // arriba / centro / abajo) y cada zona recibe un portal, hacia su centro y con algo de azar. Cada
@@ -281,7 +331,7 @@ export async function startChallenge(id) {
   const ch = challengeById(id);
   if (!ch || !await modeIntro('challenge') || !await confirmReplaceSave('challenge')) return;
   recordStart('challenge', { challenge: id });
-  startVsGame({ cfg: ch.cfg, extra: challengeExtra(ch), tiles: ch.tiles, variant: 'challenge', run: { id } });
+  startVsGame({ cfg: ch.cfg, extra: challengeExtra(ch), tiles: ch.tiles, variant: 'challenge', run: { id, scene: ch.deck ? deckById(ch.deck).scene : undefined } });
 }
 
 /* =============== desafío semanal =============== */
@@ -442,13 +492,17 @@ export function openModes(tab) {
       <p>${esc(t('modes.rush.sub'))}</p>
       <div class="mdStats">${stat('i-trophy', t('modes.rush.best', { n: R.rush.best || 0 }))}${rush ? stat('i-flag', t('modes.holeN', { n: rush.hole + 1, total: rush.total })) : ''}${mini({ p: R.played.rush, w: R.won.rush })}</div>
       <div class="mdBtns">${rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
-  const chCards = CHALLENGES.map(ch => {
+  const chCard = ch => {
     const done = R.challenges[ch.id];
     return `<article class="chCard${done ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
       `<div class="chTxt"><b>${esc(t('challenges.' + ch.id + '.name'))}</b><small>${esc(t('challenges.' + ch.id + '.desc'))}</small>${mini(R.chStats[ch.id])}</div>` +
       (done ? `<span class="chDone"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
       (csave?.run?.id === ch.id ? cont('resume:challenge') : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
-  }).join('');
+  };
+  // en grupos, como los puzles: los de siempre, los de las piezas nuevas y los combinados (ch.group)
+  const chGroups = ['classic', 'pieces', 'combo'].map(g => ({ g, list: CHALLENGES.filter(c => (c.group || 'classic') === g) })).filter(x => x.list.length);
+  const chCards = chGroups.map(({ g, list }) => `<h4 class="lvlGroup">${esc(t('story.puzzleGroups.' + g))} <span>${list.filter(c => R.challenges[c.id]).length}/${list.length}</span></h4>` +
+    `<div class="chGrid">${list.map(chCard).join('')}</div>`).join('');
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
   const wk = weekKey(), { rule } = weeklySetup(wk), wbest = R.weekly.weeks[wk]?.best, left = weekDaysLeft();
   const weeklyCard = `<article class="chCard weekly${wbest ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
@@ -457,7 +511,7 @@ export function openModes(tab) {
     `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span>${mini(R.weekly.weeks[wk])}</div>` +
     (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
   const specialPanel = `<p class="mdLead">${esc(t('modes.specialLead'))}</p>` + rushCard +
-    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}<div class="chGrid">${chCards}</div></section>` +
+    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}${chCards}</section>` +
     puzzlesSectionHTML() + yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +

@@ -174,13 +174,18 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
-  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 6 desafíos con reglas
-  especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de
+  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 14 desafíos en tres grupos.
+  Lo de siempre: reglas especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de
   portales de colores —cada portal conecta con el de su color: `tile.pair`; repartidos por zonas del
-  tablero, cada pareja entre zonas opuestas—, multitud con 7 en la mesa) y el **desafío
+  tablero, cada pareja entre zonas opuestas—, multitud con 7 en la mesa). Piezas nuevas (con el mazo y la escena de su
+  baraja, `deck` en `CHALLENGES`): rápidos (3 ríos), archipiélago (4 lagos), pinball (bloques y esquinas), pista de
+  despegue (5 lanzaderas), madrigueras (6 túneles) y prisma (duelo con un mazo de palos iridiscentes). Combinados:
+  aserradero (ríos que desembocan en piezas de madera, `riverMouth`) y caos total (de todo). Las piezas se colocan al
+  empezar (`placeTiles`: ríos en columna, lagos en mancha, piezas con su giro al azar) y el **desafío
   semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
-  Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí:
+  Modos de juego: los 20 puzles de "gana en 1 turno" en tres grupos (lo de siempre, piezas nuevas y combinados; campo
+  `group` de su JSON) y **Tus niveles** (los del creador, que también está aquí:
   cada uno se edita o se elimina —con "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido).
 - **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las
@@ -211,8 +216,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Baraja de minigolf** (piezas de madera, `tiles/block|corner|tunnel|launcher.js`; campo 8 columnas más ancho):
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),
-  **Lanzadera** (quien pasa por encima vuela 3 casillas hacia su flecha; gira cada turno; nunca relanza hacia
-  una lanzadera ya usada en la jugada, tampoco a través de un río, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
+  **Lanzadera** (quien pasa por encima vuela 3 casillas hacia su flecha; gira cada turno; la que ya ha lanzado en el
+  turno se apaga hasta el siguiente —`S.launched`—: se pasa por encima como por el césped, así que no hay ping-pong) y palos de 4 y 5. Sin búnkeres ni portales.
   Las piezas no cuentan como casilla y nadie se queda encima; el hoyo las usa igual que una pelota
   (`nextCell`, `launchBall` / `launchHole` en el motor). Par 5. Las piezas que giran se colocan en dos pasos:
   tocas la casilla (queda marcada con la pieza fantasma), la giras ("Girar", tecla R o tocándola otra vez) y

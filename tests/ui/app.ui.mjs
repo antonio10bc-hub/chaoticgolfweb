@@ -360,3 +360,26 @@ it('laboratorio: añade cualquier carta a la mano y deshace', async () => {
   await click('#menuBtn'); await sleep(300);
   assert.equal(await app(() => window.chaoticGolf.app.screen), 'editor');
 });
+
+it('desafíos: todos arrancan con sus piezas dentro del tablero, sin solaparse ni tapar salidas, hoyo o PAR', async () => {
+  await fresh();
+  const ids = await app(() => import('/src/ui/screen-modes.js').then(m => m.CHALLENGES.map(c => c.id)));
+  assert.ok(ids.length >= 14);
+  for (const id of ids) {
+    await app(() => localStorage.removeItem('chaoticgolf_save_challenge'));
+    await page.evaluate(id => import('/src/ui/screen-modes.js').then(m => m.startChallenge(id)), id); await sleep(400);
+    const bad = await app(() => {
+      const S = window.chaoticGolf.app.game.S, seen = new Set(), out = [];
+      for (const t of S.tiles) {
+        const k = t.x + ',' + t.y;
+        if (t.x < 0 || t.y < 0 || t.x >= S.cols || t.y >= S.rows) out.push('fuera ' + k);
+        if (seen.has(k)) out.push('repetida ' + k);
+        seen.add(k);
+        if (S.balls.some(b => b.x === t.x && b.y === t.y) || (S.hole.x === t.x && S.hole.y === t.y) || S.parCells.some(p => p.x === t.x && p.y === t.y)) out.push('tapa ' + k);
+      }
+      return out;
+    });
+    assert.deepEqual(bad, [], id);
+    await click('#menuBtn'); await sleep(200);
+  }
+});

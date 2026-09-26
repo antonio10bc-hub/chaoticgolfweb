@@ -222,16 +222,19 @@ html.reduceMotion :is(#board, #edBoard):has(.cell.river) { animation: none; }
   --stepX: calc(var(--cell-w) + 3px); --stepY: calc(var(--cell-h) + 3px);
   --ox: calc(var(--col) * var(--stepX) * -1 + var(--lflow)); --oy: calc(var(--row) * var(--stepY) * -1);
   --lakeTex: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='150'><g fill='white'><ellipse cx='30' cy='26' rx='20' ry='3.2' fill-opacity='.16'/><ellipse cx='112' cy='18' rx='12' ry='2.2' fill-opacity='.11'/><ellipse cx='146' cy='82' rx='22' ry='3.4' fill-opacity='.14'/><ellipse cx='64' cy='104' rx='15' ry='2.6' fill-opacity='.12'/><ellipse cx='16' cy='132' rx='10' ry='2' fill-opacity='.1'/></g><g fill='none' stroke='white' stroke-opacity='.08' stroke-width='1.4'><path d='M78 58q14-6 28 0'/><path d='M120 134q12-5 24 0'/><path d='M8 76q10-4 20 0'/></g></svg>");
-  background-image: var(--lakeTex); background-size: 180px 150px; background-repeat: repeat;
-  background-position: var(--ox) var(--oy);
+  /* segunda capa: destellos finos que van al revés y más despacio (el agua parece moverse en dos planos) */
+  --lakeGlint: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='120'><g fill='white'><ellipse cx='22' cy='64' rx='9' ry='1.4' fill-opacity='.2'/><ellipse cx='96' cy='30' rx='6' ry='1.1' fill-opacity='.18'/><ellipse cx='118' cy='98' rx='8' ry='1.3' fill-opacity='.16'/><ellipse cx='58' cy='12' rx='5' ry='1' fill-opacity='.14'/></g></svg>");
+  --gx: calc(var(--col) * var(--stepX) * -1 - var(--lflow) * .55 + 40px); --gy: calc(var(--oy) + 30px);
+  background-image: var(--lakeTex), var(--lakeGlint); background-size: 180px 150px, 140px 120px; background-repeat: repeat;
+  background-position: var(--ox) var(--oy), var(--gx) var(--gy);
   --eN: 3px; --eS: 3px; --eW: 3px; --eE: 3px;
   box-shadow: inset 0 var(--eN) 0 rgba(18,62,72,.45), inset 0 calc(var(--eS) * -1) 0 rgba(18,62,72,.45),
     inset var(--eW) 0 0 rgba(18,62,72,.45), inset calc(var(--eE) * -1) 0 0 rgba(18,62,72,.45) !important;
 }
 :is(#board, #edBoard) .cell.lake.wN { --eN: 0px; } :is(#board, #edBoard) .cell.lake.wS { --eS: 0px; } :is(#board, #edBoard) .cell.lake.wW { --eW: 0px; } :is(#board, #edBoard) .cell.lake.wE { --eE: 0px; }
 :is(#board, #edBoard) .cell.lake.wS::after {
-  background-color: var(--wc); background-image: var(--lakeTex); background-size: 180px 150px;
-  background-position: var(--ox) calc(var(--oy) - var(--cell-h) + 5px);
+  background-color: var(--wc); background-image: var(--lakeTex), var(--lakeGlint); background-size: 180px 150px, 140px 120px;
+  background-position: var(--ox) calc(var(--oy) - var(--cell-h) + 5px), var(--gx) calc(var(--gy) - var(--cell-h) + 5px);
   /* orilla en los lados del puente que dan al césped */
   box-shadow: inset 3px 0 0 rgba(18,62,72,.45), inset -3px 0 0 rgba(18,62,72,.45);
 }
@@ -240,14 +243,18 @@ html.reduceMotion :is(#board, #edBoard):has(.cell.river) { animation: none; }
 :is(#board, #edBoard) .cell.lake.wS.wW.wE::after { box-shadow: none; }
 :is(#board, #edBoard) .cell.lake.wSE::after { right: -7px; box-shadow: none; } /* bloque 2×2: rellena también la esquina */
 :is(#board, #edBoard) .cell.lake.wE::before {
-  background-color: var(--wc); background-image: var(--lakeTex); background-size: 180px 150px;
-  background-position: calc(var(--ox) - var(--cell-w) + 5px) var(--oy);
+  background-color: var(--wc); background-image: var(--lakeTex), var(--lakeGlint); background-size: 180px 150px, 140px 120px;
+  background-position: calc(var(--ox) - var(--cell-w) + 5px) var(--oy), calc(var(--gx) - var(--cell-w) + 5px) var(--gy);
   box-shadow: inset 0 3px 0 rgba(18,62,72,.45), inset 0 -3px 0 rgba(18,62,72,.45);
 }
 :is(#board, #edBoard) .cell.lake.wE.wN::before { box-shadow: inset 0 -3px 0 rgba(18,62,72,.45); }
 :is(#board, #edBoard) .cell.lake.wE.wS::before { box-shadow: inset 0 3px 0 rgba(18,62,72,.45); }
 :is(#board, #edBoard) .cell.lake.wE.wN.wS::before { box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard):has(.cell.lake) { animation: none; } }
+/* el nenúfar se mece despacio (cada uno a su ritmo, según su casilla) */
+.cell.lake .padBob { transform-box: fill-box; transform-origin: 30% 60%; animation: padBob 7s ease-in-out infinite; animation-delay: calc(var(--col) * -1.3s - var(--row) * .7s); }
+@keyframes padBob { 0%, 100% { transform: rotate(-4deg) translate(0, 0); } 50% { transform: rotate(5deg) translate(1.5px, -1px); } }
+@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard):has(.cell.lake) { animation: none; } .cell.lake .padBob { animation: none; } }
+html.reduceMotion .cell.lake .padBob { animation: none; }
 html.reduceMotion :is(#board, #edBoard):has(.cell.lake) { animation: none; }
 
 /* ---------- piezas de madera (baraja de minigolf) ---------- */

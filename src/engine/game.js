@@ -324,6 +324,10 @@ export class Game {
     const tl = this.tileAt(x, y);
     return isBlock(tl) || (isCorner(tl) && !CORNER_TURN[(tl.rot || 0) % 4][dir]);
   }
+  // (minigolf) una lanzadera que ya ha lanzado algo en este turno se desactiva hasta el siguiente: se pasa
+  // por encima como por el césped y quien acaba en ella se queda (así nadie salta dos veces con la misma)
+  launcherOn(x, y) { return isLauncher(this.tileAt(x, y)) && !this.S.launched?.includes(x + ',' + y); }
+  markLaunched(x, y) { (this.S.launched ||= []).push(x + ',' + y); }
   // fila de la desembocadura de un río que pasa por (x,y): la casilla justo debajo de su final
   riverMouth(x, y) {
     let yy = y;
@@ -333,8 +337,7 @@ export class Game {
 
   /* ---- agua: pelotas ---- */
   // la pelota acaba de entrar en agua: río (la arrastra) o lago (vuelve a su salida).
-  // used: lanzaderas ya usadas en la jugada (río ↔ lanzadera también podría hacer un bucle)
-  ballInWater(ball, used = new Set()) {
+  ballInWater(ball) {
     const tl = this.tileAt(ball.x, ball.y), pid = 'b' + ball.player, b = playerTag(ball.player);
     if (isLake(tl)) {
       this.anim({ t: 'splash', p: pid, x: ball.x, y: ball.y });
@@ -371,23 +374,17 @@ export class Game {
       this.moveBallTransfer(hit, 'down', 1);
       if (this.ballAt(x, ey)) return; // no se ha podido mover: se queda al final del río
     }
-    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.riverThrough(ball, x, y, used); // (Ultimate)
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.riverThrough(ball, x, y); // (Ultimate)
     ball.x = x; ball.y = ey;
     this.anim({ t: 'drift', p: pid, x, y: ey, out: true });
     this.log('log.ballRiverOut', { b, x, y: ey });
-    if (isLake(this.tileAt(x, ey))) this.ballInWater(ball, used); // (del río al lago)
-    else if (isLauncher(this.tileAt(x, ey))) {
-      if (!used.has(x + ',' + ey)) this.launchBall(ball, used);
-      else { // (una lanzadera ya usada en la jugada): a la libre más cercana
-        const spot = this.nearestFree(x, ey);
-        if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
-      }
-    }
+    if (isLake(this.tileAt(x, ey))) this.ballInWater(ball); // (del río al lago)
+    else if (this.launcherOn(x, ey)) this.launchBall(ball);
   }
   // (Ultimate) la salida del río la tapa una pieza de madera o un portal: la corriente lleva la pelota a
   // través como un paso normal (túnel, esquina, portal). Contra un bloque (o la espalda de una esquina) no
   // hay paso: rebota un par de veces y acaba en una casilla libre cercana, al azar. (x,y): el final del río
-  riverThrough(ball, x, y, used) {
+  riverThrough(ball, x, y) {
     const pid = 'b' + ball.player, b = playerTag(ball.player), hops = this._riverHops || 0;
     ball.x = x; ball.y = y;
     const nc = this.bouncesAt(x, y + 1, 'down') || hops > 3 ? null : this.nextCell(x, y, 'down', pid, (px, py, other) => {
@@ -417,11 +414,8 @@ export class Game {
     this.anim({ t: 'move', p: pid, x: nc.x, y: nc.y });
     this.log('log.ballRiverOut', { b, x: nc.x, y: nc.y });
     const tl = this.tileAt(nc.x, nc.y);
-    if (isWater(tl)) { this._riverHops = hops + 1; try { this.ballInWater(ball, used); } finally { this._riverHops = hops; } } // (portal a otro río o lago)
-    else if (isLauncher(tl)) {
-      if (!used.has(nc.x + ',' + nc.y)) this.launchBall(ball, used);
-      else { const spot = this.nearestFree(nc.x, nc.y); if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); } }
-    }
+    if (isWater(tl)) { this._riverHops = hops + 1; try { this.ballInWater(ball); } finally { this._riverHops = hops; } } // (portal a otro río o lago)
+    else if (this.launcherOn(nc.x, nc.y)) this.launchBall(ball);
   }
   // la corriente empuja contra algo sólido: un par de rebotes y a una casilla libre cercana al azar
   riverBlocked(ball, x, y, { bump = true } = {}) {
@@ -462,16 +456,15 @@ export class Game {
   // la pelota está sobre una lanzadera: vuela 3 casillas hacia la flecha por encima de todo y, al
   // caer, se aplica lo que haya (hoyo, agua, búnker…). Si hay otra pelota, la golpea (1 casilla) y
   // ocupa su sitio; sobre una pieza de madera o un portal no se puede aterrizar: cae justo antes.
-  // Si aterriza fuera del tablero, se cae. Otra lanzadera la vuelve a lanzar, pero nunca hacia una por la
-  // que ya ha pasado en esta jugada (dos lanzaderas enfrentadas harían ping-pong): entonces, y si no hay
-  // dónde aterrizar, cae en la casilla libre más cercana. Nadie se queda encima de una lanzadera.
+  // Si aterriza fuera del tablero, se cae. Otra lanzadera la vuelve a lanzar; la que ya ha lanzado en este
+  // turno está desactivada (dos lanzaderas enfrentadas no hacen ping-pong): se aterriza en ella sin más.
   // untilHit (palo iridiscente): si golpea a otra pelota, esta hereda el impulso sin límite. Devuelve
   // { landed, dir } si ha aterrizado en una casilla normal (sin chocar): el iridiscente sigue avanzando
-  launchBall(ball, used = new Set(), { untilHit = false } = {}) {
+  launchBall(ball, { untilHit = false } = {}) {
     const pid = 'b' + ball.player, b = playerTag(ball.player);
     const from = this.tileAt(ball.x, ball.y), dir = ROT_DIRS[(from?.rot || 0) % 4], { dx, dy } = DIRS[dir];
     const x0 = ball.x, y0 = ball.y;
-    used.add(x0 + ',' + y0);
+    this.markLaunched(x0, y0);
     let tx = x0 + dx * FLY, ty = y0 + dy * FLY;
     this.log('log.ballLaunch', { b });
     this.tip('launcher');
@@ -501,20 +494,15 @@ export class Game {
     }
     ball.x = tx; ball.y = ty;
     this.log('log.ballLands', { b, x: tx, y: ty });
-    if (this.waterAt(tx, ty)) { this.ballInWater(ball, used); return null; }
-    if (isLauncher(this.tileAt(tx, ty))) {
-      if (!used.has(tx + ',' + ty)) return this.launchBall(ball, used, { untilHit });
-      // (vuelve a una lanzadera ya usada, o no había dónde aterrizar): a la libre más cercana
-      const spot = this.nearestFree(tx, ty);
-      if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
-      return null;
-    }
+    if (this.waterAt(tx, ty)) { this.ballInWater(ball); return null; }
+    if (this.launcherOn(tx, ty)) return this.launchBall(ball, { untilHit });
+    if (tx === x0 && ty === y0) return null; // (no había dónde aterrizar: se queda en la suya, ya desactivada)
     return { landed: true, dir };
   }
   // el hoyo sobre una lanzadera: vuela igual; devuelve dónde se asienta
-  launchHole(x, y, used = new Set()) {
+  launchHole(x, y) {
     const S = this.S, from = this.tileAt(x, y), dir = ROT_DIRS[(from?.rot || 0) % 4], { dx, dy } = DIRS[dir];
-    used.add(x + ',' + y);
+    this.markLaunched(x, y);
     let tx = x + dx * FLY, ty = y + dy * FLY;
     this.log('log.holeLaunch');
     if (!this.inBoard(tx, ty)) {
@@ -526,18 +514,14 @@ export class Game {
     }
     while ((isDevice(this.tileAt(tx, ty)) || isPortal(this.tileAt(tx, ty))) && !(tx === x && ty === y)) { tx -= dx; ty -= dy; }
     this.anim({ t: 'launch', p: 'hole', x: tx, y: ty });
-    if (this.waterAt(tx, ty)) return this.holeInWater(tx, ty, used);
-    if (isLauncher(this.tileAt(tx, ty))) {
-      if (!used.has(tx + ',' + ty)) return this.launchHole(tx, ty, used);
-      const spot = this.nearestFree(tx, ty); // (igual que la pelota: nunca encima de una lanzadera)
-      if (spot) { this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y }); return [spot.x, spot.y]; }
-    }
+    if (this.waterAt(tx, ty)) return this.holeInWater(tx, ty);
+    if (this.launcherOn(tx, ty)) return this.launchHole(tx, ty);
     return [tx, ty];
   }
 
   /* ---- agua: el hoyo (se mueve como una pelota) ---- */
   // el hoyo entra en agua en (x,y): devuelve dónde se asienta
-  holeInWater(x, y, used = new Set()) {
+  holeInWater(x, y) {
     const S = this.S, tl = this.tileAt(x, y);
     if (isLake(tl)) {
       this.anim({ t: 'splash', p: 'hole', x, y });
@@ -555,19 +539,14 @@ export class Game {
       this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
       return this.holeSpawnWater(S.hole.initX, S.hole.initY);
     }
-    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.holeRiverThrough(x, yy, used); // (Ultimate)
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) return this.holeRiverThrough(x, yy); // (Ultimate)
     this.anim({ t: 'drift', p: 'hole', x, y: ey, out: true });
     if (isLake(this.tileAt(x, ey))) return this.holeInWater(x, ey);
-    if (isLauncher(this.tileAt(x, ey))) {
-      if (!used.has(x + ',' + ey)) return this.launchHole(x, ey, used);
-      const spot = this.nearestFree(x, ey) || { x, y: ey }; // (lanzadera ya usada: a la libre más cercana)
-      this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y });
-      return [spot.x, spot.y];
-    }
+    if (this.launcherOn(x, ey)) return this.launchHole(x, ey);
     return [x, ey];
   }
   // el hoyo a través de la pieza o el portal que tapa la salida del río (igual que la pelota)
-  holeRiverThrough(x, y, used) {
+  holeRiverThrough(x, y) {
     const S = this.S, hops = this._riverHops || 0;
     const nc = this.bouncesAt(x, y + 1, 'down') || hops > 3 ? null : this.nextCell(x, y, 'down', 'hole', (px, py, other) => {
       this.log('log.holePortal');
@@ -589,13 +568,8 @@ export class Game {
     }
     this.anim({ t: 'move', p: 'hole', x: nc.x, y: nc.y });
     const tl = this.tileAt(nc.x, nc.y);
-    if (isWater(tl)) { this._riverHops = hops + 1; try { return this.holeInWater(nc.x, nc.y, used); } finally { this._riverHops = hops; } }
-    if (isLauncher(tl)) {
-      if (!used.has(nc.x + ',' + nc.y)) return this.launchHole(nc.x, nc.y, used);
-      const spot = this.nearestFree(nc.x, nc.y) || nc;
-      this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y });
-      return [spot.x, spot.y];
-    }
+    if (isWater(tl)) { this._riverHops = hops + 1; try { return this.holeInWater(nc.x, nc.y); } finally { this._riverHops = hops; } }
+    if (this.launcherOn(nc.x, nc.y)) return this.launchHole(nc.x, nc.y);
     return [nc.x, nc.y];
   }
   holeSpawnWater(x, y) {
@@ -770,10 +744,10 @@ export class Game {
         this.finishMoveChecks(ball);
         return;
       }
-      if (isLauncher(this.tileAt(cx, cy))) { // lanzadera: se acaba el movimiento y sale volando
+      if (this.launcherOn(cx, cy)) { // lanzadera: se acaba el movimiento y sale volando (si ya ha lanzado en este turno, se pasa por encima)
         ball.x = cx; ball.y = cy;
         this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
-        const fly = this.launchBall(ball, new Set(), { untilHit });
+        const fly = this.launchBall(ball, { untilHit });
         // el iridiscente no ha chocado con nada: tras aterrizar sigue avanzando hacia donde volaba
         // (salvo si cae en el hoyo o en un búnker)
         if (untilHit && fly?.landed && !this.isHole(ball.x, ball.y) && !this.trapAt(ball.x, ball.y)) {
@@ -932,7 +906,7 @@ export class Game {
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: 'hole', x: cx, y: cy });
       if (this.waterAt(cx, cy)) { const [wx, wy] = this.holeInWater(cx, cy); this.holeLandAt(wx, wy); return; }
-      if (isLauncher(this.tileAt(cx, cy))) { const [lx, ly] = this.launchHole(cx, cy); this.holeLandAt(lx, ly); return; }
+      if (this.launcherOn(cx, cy)) { const [lx, ly] = this.launchHole(cx, cy); this.holeLandAt(lx, ly); return; }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.holeTrapped', { n: remaining });
         remaining = 0;
@@ -1226,7 +1200,7 @@ export class Game {
     this.anim({ t: 'move', p: pid, x: nx, y: ny });
     pd.stepsLeft--;
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
-    if (isLauncher(this.tileAt(nx, ny))) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
+    if (this.launcherOn(nx, ny)) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
     if (this.trapAt(nx, ny) && pd.stepsLeft > 0) {
       this.log('log.ballTrapped', { b, n: pd.stepsLeft });
       return this.endSerpent();
@@ -1322,6 +1296,7 @@ export class Game {
     S.blackPlayed = 0;
     S.playedThisTurn = 0;
     for (const tl of S.tiles) if (isLauncher(tl)) tl.rot = ((tl.rot || 0) + 1) % 4; // (minigolf) cada turno, un cuarto de vuelta
+    delete S.launched; // y las que han lanzado en este turno se reactivan
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();

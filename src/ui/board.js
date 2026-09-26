@@ -69,6 +69,7 @@ export function renderBoard() {
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);
+    if (tile?.type === 'launcher' && S.launched?.includes(x + ',' + y)) cls += ' lOff'; // ya ha lanzado en este turno
     if (tile) { // pelotas y hoyo viven en la capa de piezas; aquí solo losetas y avisos
       const pop = justPlaced && justPlaced.x === x && justPlaced.y === y ? ' tilePop' : '';
       html += ASSETS.tileHTML(tile.type, pop, tile);

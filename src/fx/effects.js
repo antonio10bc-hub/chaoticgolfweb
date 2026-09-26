@@ -161,7 +161,7 @@ export function fxSplashRing(px, py, kind = '') {
     d.className = 'splashRing' + (kind ? ' ' + kind : '');
     d.style.left = px + 'px'; d.style.top = py + 'px'; d.style.animationDelay = delay + 'ms';
     layer.appendChild(d);
-    setTimeout(() => d.remove(), 900 + delay);
+    setTimeout(() => d.remove(), 1400 + delay);
   }
 }
 

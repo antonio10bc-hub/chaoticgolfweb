@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "group": "pieces",
+  "name": "Bordeando el lago",
+  "name_en": "Around the lake",
+  "cols": 7,
+  "rows": 7,
+  "hole": {
+    "x": 4,
+    "y": 4
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "tiles": [
+    {
+      "type": "lake",
+      "x": 3,
+      "y": 3
+    },
+    {
+      "type": "lake",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "type": "lake",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "type": "lake",
+      "x": 3,
+      "y": 4
+    },
+    {
+      "type": "bunker",
+      "x": 3,
+      "y": 2
+    }
+  ],
+  "hand": [
+    "hoyoLeft",
+    "oHoyoDown",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3,
+    "dedo": 0,
+    "hoyoUp": 0,
+    "hoyoDown": 0,
+    "hoyoLeft": 0,
+    "hoyoRight": 0,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 0,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0,
+    "river": 0,
+    "lake": 0,
+    "palo4": 0,
+    "palo5": 0,
+    "block": 0,
+    "corner": 0,
+    "tunnel": 0,
+    "launcher": 0,
+    "palo10": 0,
+    "paloIri": 0
+  }
+}

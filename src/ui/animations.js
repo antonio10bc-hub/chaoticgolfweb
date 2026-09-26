@@ -54,6 +54,12 @@ async function playEvent(ev) {
   const isHole = ev.p === 'hole';
   const pid = isHole ? -1 : +ev.p.slice(1);
   const trailCol = pid < 0 ? '#2c5c46' : pColor(pid);
+  // flotando en el río: cualquier otro movimiento (salir por una pieza o un portal, rebotar e ir a una
+  // casilla libre, volver a la salida…) la saca del agua; los rebotes y empujones siguen dentro
+  if (el.classList.contains('swimming') && !['drift', 'bump', 'impact', 'splash'].includes(ev.t)) {
+    el.classList.remove('swimming');
+    if (ev.t === 'move') { el.classList.add('climbOut'); setTimeout(() => el.classList.remove('climbOut'), 380); }
+  }
   switch (ev.t) {
     case 'move': {    // deslizamiento con easing, squash & stretch, sombra y estela
       // (el iridiscente rueda más deprisa y sin frenar entre casillas: sus recorridos son largos)
@@ -174,10 +180,13 @@ async function playEvent(ev) {
       await wait(110);
       const { px, py } = cellCenterPx(ev.x, ev.y);
       el.classList.add('splashing');
-      fxSpawn(px, py, { n: 5, colors: WATER_C, size: 4, dist: 14, up: 8, dur: 420, gravity: 40 });
+      // corona de gotas que sube y cae, dos aros escalonados y, cuando ya se ha hundido, una onda suave
+      fxSpawn(px, py - 4, { n: 7, colors: ['#FFFFFF', '#CFEFF5', '#9ED8E4'], size: 3, dist: 12, up: 16, dur: 480, gravity: 55 });
       fxSplashRing(px, py);
+      setTimeout(() => fxSplashRing(px, py, 'wide'), 150);
+      setTimeout(() => fxSplashRing(px, py, 'calm'), 420);
       sfx('splash');
-      await wait(380);
+      await wait(420);
       el.style.opacity = 0;
       el.classList.remove('splashing');
       await wait(60);

@@ -83,10 +83,18 @@ export function puzzlesSectionHTML() {
   const done = loadRecords().puzzles, sv = loadSave('puzzle');
   const next = app.puzzleLevels.findIndex((_, i) => !done[i]);
   const nDone = app.puzzleLevels.filter((_, i) => done[i]).length;
+  // en grupos: los de siempre, los de las piezas nuevas y los que las combinan ("group" en su JSON)
+  const groups = [];
+  app.puzzleLevels.forEach((L, i) => {
+    const g = L.group || 'classic';
+    if (groups.at(-1)?.id !== g) groups.push({ id: g, items: [] });
+    groups.at(-1).items.push(i);
+  });
   return `<section class="lvlSection puzzles"><h3>${esc(t('story.puzzlesH'))} <span class="lvlCount">${nDone}/${app.puzzleLevels.length}</span></h3>` +
-    `<p class="lvlSub">${esc(t('story.puzzlesSub'))}</p><div class="lvlRow">` +
-    app.puzzleLevels.map((L, i) => levelCard(i, L, { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"` })).join('') +
-    `</div></section>`;
+    `<p class="lvlSub">${esc(t('story.puzzlesSub'))}</p>` +
+    groups.map(gr => (groups.length > 1 ? `<h4 class="lvlGroup">${esc(t('story.puzzleGroups.' + gr.id))} <span>${gr.items.filter(i => done[i]).length}/${gr.items.length}</span></h4>` : '') +
+      `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"` })).join('') + `</div>`).join('') +
+    `</section>`;
 }
 // tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
 export function yoursSectionHTML() {

@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "group": "pieces",
+  "name": "Palo largo",
+  "name_en": "Long club",
+  "cols": 7,
+  "rows": 6,
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "ball": {
+    "x": 0,
+    "y": 1
+  },
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 6,
+      "y": 0,
+      "pair": 1
+    },
+    {
+      "type": "portal",
+      "x": 2,
+      "y": 3,
+      "pair": 1
+    },
+    {
+      "type": "bunker",
+      "x": 5,
+      "y": 0
+    },
+    {
+      "type": "bunker",
+      "x": 3,
+      "y": 5
+    }
+  ],
+  "hand": [
+    "palo4",
+    "hoyoLeft",
+    "oHoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3,
+    "dedo": 0,
+    "hoyoUp": 0,
+    "hoyoDown": 0,
+    "hoyoLeft": 0,
+    "hoyoRight": 0,
+    "bunker": 0,
+    "portal": 0,
+    "oPalo1": 0,
+    "oHoyoUp": 0,
+    "oHoyoDown": 0,
+    "oHoyoLeft": 0,
+    "oHoyoRight": 0,
+    "no": 0,
+    "river": 0,
+    "lake": 0,
+    "palo4": 0,
+    "palo5": 0,
+    "block": 0,
+    "corner": 0,
+    "tunnel": 0,
+    "launcher": 0,
+    "palo10": 0,
+    "paloIri": 0
+  }
+}

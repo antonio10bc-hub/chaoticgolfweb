@@ -26,8 +26,9 @@ import { resetZoom } from './board-zoom.js';
 import { clearBubbles } from './persona.js';
 import { setCourseSlot } from './prefs.js';
 import { deckById } from '../content/decks.js';
-// escena de la partida en curso: la de su baraja (solo partida rápida)
-const sceneOfGame = () => app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '';
+// escena de la partida en curso: la de su baraja (partida rápida y desafíos con piezas de otra baraja)
+// (los desafíos con piezas de otra baraja llevan su escena en app.run.scene)
+const sceneOfGame = () => app.run?.scene || (app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
 import { renderDailyCard, paintRushTimer } from './screen-modes.js';
 import { paintStoryBtn } from './screen-story.js';
 
