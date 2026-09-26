@@ -1,47 +1,269 @@
-/* Creador de niveles: paneles crema densos, tablero de césped a franjas */
-#editorScreen { display: none; min-height: 100vh; padding: 14px; padding-top: 52px; /* hueco para la insignia de slot */
-  background-image: var(--grain), repeating-linear-gradient(135deg, var(--grass-dark) 0 90px, var(--grass-mid) 90px 180px); }
-#edLayout { display: flex; gap: 14px; align-items: flex-start; }
-#edMain { flex: 1; min-width: 0; }
-#edBoardWrap { background-image: var(--grain); background-color: var(--cream); border-radius: 18px; padding: 10px; max-height: 92vh; overflow: auto;
-  box-shadow: 12px 12px 0 rgba(20,40,20,.22), var(--shadow-soft); }
-#edBoard { display: grid; gap: 3px; padding: 3px; width: max-content; margin: 0 auto; border-radius: 8px; background: #3F7440; }
-#edBoard .cell { cursor: pointer; }
-#edBoard .cell:hover { background-color: rgba(163,193,115,.55); box-shadow: inset 0 0 0 1.5px var(--cream); }
-#edPanel, #edPanelL {
-  width: 300px; flex-shrink: 0; border-radius: 18px; padding: 16px;
-  background-image: var(--grain); background-color: var(--cream);
-  font-size: 12.5px; max-height: 92vh; overflow: auto; color: var(--ink);
-  box-shadow: var(--shadow-soft);
+/* Creador de niveles: un taller sobre una alfombrilla de corte gris azulada (cuadrícula de 1 cm y
+   10 cm, reglas en los bordes y las líneas de ángulos de una esquina). Paneles de papel crema,
+   la misma barra que la partida y el tablero en el centro con sus reglas numeradas. */
+#editorScreen {
+  --mat: #3C4A55; --mat-deep: #34414B;
+  --mat-line: rgba(226,236,240,.075); --mat-line2: rgba(226,236,240,.15); --mat-ink: rgba(226,236,240,.66);
+  display: none; position: relative; height: 100vh; height: 100dvh; overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr);
+  background-color: var(--mat);
+  background-image:
+    linear-gradient(var(--mat-line2) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line2) 1px, transparent 1px),
+    linear-gradient(var(--mat-line) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -1px -1px;
+  color: var(--cream);
 }
-#edPanelL { width: 260px; } /* columna general, pegada a la izquierda */
-#edPanel h2, #edPanelL h2 { font-size: 22px; font-weight: 500; letter-spacing: -.03em; text-transform: lowercase; margin-bottom: 8px; }
-#edPanel h4, #edPanelL h4 {
-  margin: 16px 0 7px; font-size: 10px; font-weight: 500; color: var(--ink-soft);
-  text-transform: uppercase; letter-spacing: .16em;
-  border-bottom: 1px solid var(--cream-line); padding-bottom: 5px;
-}
-#edPanel input[type=number], #edPanelL input[type=number], #edPanel select, #edPanelL select {
-  background: #fff; color: var(--ink); border: 1px solid var(--cream-line);
-  border-radius: 999px; padding: 3px 10px; font-size: 12.5px;
-}
-#edPanel input[type=number], #edPanelL input[type=number] { width: 64px; text-align: right; }
-#edPanel select, #edPanelL select { width: 150px; }
-#edTools { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-.edTool { padding: 5px 12px; font-size: 12.5px; }
-.edTool.active { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
-#edInfo { margin-top: 10px; color: var(--ink-soft); font-size: 11.5px; line-height: 1.55; }
+/* reglas del borde de la alfombrilla: marca cada 10 px y más larga cada 50 */
+#editorScreen::before, #editorScreen::after { content: ''; position: absolute; pointer-events: none; z-index: 0; }
+#editorScreen::before { left: 0; right: 0; top: 0; height: 9px;
+  background: repeating-linear-gradient(90deg, var(--mat-ink) 0 1px, transparent 1px 50px) 0 0 / 100% 9px no-repeat,
+    repeating-linear-gradient(90deg, var(--mat-line2) 0 1px, transparent 1px 10px) 0 0 / 100% 5px no-repeat; }
+#editorScreen::after { top: 0; bottom: 0; left: 0; width: 9px;
+  background: repeating-linear-gradient(var(--mat-ink) 0 1px, transparent 1px 50px) 0 0 / 9px 100% no-repeat,
+    repeating-linear-gradient(var(--mat-line2) 0 1px, transparent 1px 10px) 0 0 / 5px 100% no-repeat; }
+#edMatArt { position: absolute; left: 0; bottom: 0; width: min(78vmin, 640px); height: auto; color: rgba(226,236,240,.1); pointer-events: none; z-index: 0; }
+#editorScreen > * { position: relative; z-index: 1; }
+#editorScreen > #edMatArt { position: absolute; z-index: 0; }
 
-/* Filas, mazo y botones del creador de niveles */
-.drow { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; gap: 8px; }
-.drow label { flex: 1; }
-/* mazo: cada fila con la miniatura de su carta (banda de color arriba, como las cartas de la mano) */
-#edDeck .drow { gap: 10px; padding: 4px 4px 4px 2px; margin: 0; border-bottom: 1px solid var(--cream-line); }
-#edDeck .drow:last-child { border-bottom: none; }
-#edDeck .drow.black + .drow.orange { margin-top: 12px; border-top: 1px solid var(--cream-line); }
-.deckMini { flex: 0 0 auto; width: 24px; height: 32px; border-radius: 5px; display: flex; align-items: center; justify-content: center; overflow: hidden;
-  background: #FBFBF1; border: 1px solid var(--cream-line); border-top: 4px solid var(--ink); }
-.deckMini.orange { border-top-color: var(--accent); }
-.deckMini svg, .deckMini img { width: 20px; height: 20px; object-fit: contain; }
-.dbtn { display: flex; width: 100%; margin: 5px 0; font-size: 12.5px; padding: 7px 12px; }
-.dbtn.danger { --b-fg: var(--accent-deep); }
+/* ---- barra: como la de la partida ---- */
+#edBar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 14px 18px 8px 22px; }
+#edBar .barSide.right { justify-content: flex-end; padding-right: 92px; } /* hueco para los botones de sonido, como en la partida */
+#edBar button { white-space: nowrap; }
+body[data-screen="editor"] #sfxBtn, body[data-screen="editor"] #sndCfgBtn { top: 14px; bottom: auto; left: auto; --b-bg: rgba(241,241,220,.06); --b-fg: var(--cream); --b-line: rgba(241,241,220,.55); backdrop-filter: none; }
+body[data-screen="editor"] #sfxBtn { right: 58px; }
+body[data-screen="editor"] #sndCfgBtn { right: 16px; }
+body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; right: 14px; }
+#edBar button:disabled { opacity: .35; }
+#edSave.isSaved { --b-line: rgba(241,241,220,.3); }
+#edPill { display: flex; flex-direction: column; align-items: center; gap: 1px; width: min(440px, 34vw); min-width: 0;
+  padding: 5px 18px 6px; border-radius: 999px; background-image: var(--grain); background-color: var(--cream); color: var(--ink); }
+#edName { width: 100%; border: none; background: none; text-align: center; font: inherit; font-size: 16px; font-weight: 500; letter-spacing: -.01em; color: var(--ink); padding: 1px 0; border-radius: 8px; }
+#edName::placeholder { color: var(--ink-soft); opacity: .8; }
+#edName:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#edStatus { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+#edStatus.warn { color: #9A5F17; }
+#edStatus.err { color: var(--accent-deep); font-weight: 500; }
+
+/* ---- tres columnas: herramientas · tablero · cartas ---- */
+#edLayout { display: grid; grid-template-columns: 232px minmax(0, 1fr) 296px; gap: 16px; padding: 6px 18px 16px 22px; min-height: 0; }
+.edPanel { min-height: 0; max-height: 100%; overflow: auto; align-self: start; border-radius: 18px; padding: 12px 14px 14px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink); box-shadow: 0 12px 28px rgba(12,20,26,.28); }
+.edPanel h3 { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin: 10px 2px 6px; }
+.edPanel h3:first-child { margin-top: 2px; }
+
+/* herramientas */
+.edToolRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.edTool { --b-bg: #FBFBF1; --b-line: var(--cream-line); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
+  padding: 6px 3px 5px; border-radius: 12px; min-width: 0; }
+.edTool .tiPic { width: 32px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.edTool .tiPic svg { width: 100%; height: 100%; }
+.edTool .tiPic .i { width: 24px; height: 24px; }
+.edTool .tiName { font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.edTool.on { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+.edTool:hover:not(.on) { background-color: #fff; }
+.tiPar { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: var(--cream); background: var(--par-cell); border-radius: 6px; padding: 12px 3px; }
+.edTool.pair2 .tiPic .tile-portal, .edTool.pair2 .tiPic { --pt-d: #5B3A8C; --pt-m: #6A4A9E; --pt-c: #7B5AB0; --pt-l: #CDB8EC; }
+.edTool.pair3 .tiPic { --pt-d: #1E6B63; --pt-m: #257A71; --pt-c: #2E8A80; --pt-l: #A6DDD5; }
+#edToolOpts { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--cream-line); }
+.edChips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { --b-bg: #FBFBF1; --b-line: var(--cream-line); padding: 4px 11px; font-size: 12.5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+.chip.on { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+/* lo elegido no se aclara al pasar el ratón (el texto claro dejaría de leerse) */
+.chip.on:hover, .edTool.on:hover, .edSeg button.on:hover, .labActs button.on:hover { background-color: var(--ink); }
+.pairChip i { width: 12px; height: 12px; border-radius: 50%; background: #2D4F7C; box-shadow: inset 0 0 0 2.5px #9DC0E8; }
+.pairChip.pair2 i { background: #6A4A9E; box-shadow: inset 0 0 0 2.5px #CDB8EC; }
+.pairChip.pair3 i { background: #257A71; box-shadow: inset 0 0 0 2.5px #A6DDD5; }
+.pairChip small { font-size: 10.5px; opacity: .7; }
+.rotChip { padding: 3px; border-radius: 10px; width: 40px; height: 48px; justify-content: center; }
+.rotChip svg { width: 100%; height: 100%; }
+.edHint { font-size: 12px; line-height: 1.4; color: var(--ink-soft); margin-top: 8px; }
+.edHint.soft { font-size: 11.5px; opacity: .85; }
+
+/* ---- centro: el tablero con sus reglas y el tamaño en los bordes ---- */
+#edMain { display: flex; flex-direction: column; align-items: center; min-width: 0; min-height: 0; }
+#edStage { flex: 1; min-height: 0; display: grid; grid-template-columns: 22px auto 56px; grid-template-rows: 22px auto 52px; align-content: center; justify-content: center; }
+#edRulerX, #edRulerY { display: grid; gap: 3px; font-size: 10px; font-variant-numeric: tabular-nums; color: var(--mat-ink); }
+#edRulerX { grid-column: 2; grid-row: 1; padding: 0 11px; align-items: end; }
+#edRulerY { grid-column: 1; grid-row: 2; padding: 11px 0; justify-items: end; align-items: center; }
+#edRulerX span { text-align: center; position: relative; padding-bottom: 6px; }
+#edRulerX span::after { content: ''; position: absolute; left: 50%; bottom: 0; width: 1px; height: 4px; background: var(--mat-ink); }
+#edRulerY span { position: relative; padding-right: 7px; }
+#edRulerY span::after { content: ''; position: absolute; right: 0; top: 50%; width: 4px; height: 1px; background: var(--mat-ink); }
+#edBoardWrap { grid-column: 2; grid-row: 2; padding: 8px; border-radius: 14px; background-image: var(--grain); background-color: var(--cream); box-shadow: 0 16px 34px rgba(12,20,26,.34); }
+#edBoard { display: grid; gap: 3px; padding: 3px; border-radius: 8px; background: var(--grout); touch-action: none; user-select: none; -webkit-user-select: none; }
+#edBoard .cell { cursor: crosshair; }
+#edBoard .cell.edHover { box-shadow: inset 0 0 0 2px var(--cream); z-index: 3; }
+.edGhost { position: absolute; inset: 0; opacity: .55; pointer-events: none; z-index: 4; display: flex; align-items: center; justify-content: center; }
+.edGhost.par { opacity: .8; }
+.cell.edBad { animation: edBad .32s ease; box-shadow: inset 0 0 0 2.5px var(--accent-deep) !important; }
+@keyframes edBad { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.edDecoy .circ { box-shadow: inset 0 0 0 2px #9A9A8C; }
+.edSize { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.edSize.v { grid-column: 3; grid-row: 2; flex-direction: column; }
+.edSize.h { grid-column: 2; grid-row: 3; }
+.edSize button { --b-bg: var(--cream); --b-line: var(--cream); width: 34px; height: 34px; padding: 0; border-radius: 50%; justify-content: center; }
+.edSize button:disabled { opacity: .3; }
+.edSize .szN { font-size: 11.5px; color: var(--mat-ink); white-space: nowrap; min-width: 4.5em; text-align: center; }
+.edSize.v .szN { min-width: 0; writing-mode: vertical-rl; transform: rotate(180deg); }
+#edDock { display: flex; gap: 12px; align-items: center; justify-content: center; padding-top: 6px; }
+#edDock button:disabled { opacity: .45; }
+#edDeckBtn, #edDeckClose { display: none; }
+
+/* ---- derecha: mazo y mano inicial ---- */
+.edSeg { display: flex; gap: 3px; padding: 3px; border-radius: 999px; background: var(--cream-deep); }
+.edSeg button { flex: 1; --b-line: transparent; --b-bg: transparent; border-radius: 999px; padding: 6px 8px; font-size: 13px; justify-content: center; gap: 6px; }
+.edSeg button.on { --b-bg: var(--ink); --b-fg: var(--cream); }
+.edSeg b { font-size: 11px; font-weight: 600; min-width: 18px; padding: 1px 5px; border-radius: 9px; background: rgba(36,36,36,.1); }
+.edSeg button.on b { background: rgba(241,241,220,.2); }
+.edPresets { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 10px 0 10px; }
+.edPresets > span { font-size: 12px; color: var(--ink-soft); margin-right: 2px; }
+.edPresets .chip { padding: 3px 9px; font-size: 12px; }
+.edPresets .chip[style*="--dc"]::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--dc); }
+.edCards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px 6px; }
+.edCard { position: relative; min-width: 0; }
+.edCard .ecAdd { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 2px 4px; border-radius: 9px;
+  --b-bg: #FBFBF1; --b-line: var(--cream-line); border-top: 4px solid var(--ink); }
+.edCard.orange .ecAdd { border-top-color: var(--accent); }
+.edCard.on .ecAdd { --b-bg: #fff; --b-line: var(--ink-soft); border-top-color: var(--ink); }
+.edCard.orange.on .ecAdd { border-top-color: var(--accent); }
+.edCard:not(.on) .ecArt { opacity: .5; }
+.edCards.pick .edCard .ecArt { opacity: 1; }
+.ecArt { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.ecArt svg, .ecArt img { width: 100%; height: 100%; object-fit: contain; }
+.ecName { font-size: 10px; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ecN { position: absolute; top: -6px; right: -4px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; pointer-events: none;
+  display: grid; place-items: center; font-size: 11px; font-weight: 600; background: var(--ink); color: var(--cream); }
+.edCard:not(.on) .ecN { background: var(--cream-deep); color: var(--ink-soft); }
+.ecSub { position: absolute; top: -6px; left: -4px; width: 19px; height: 19px; padding: 0; border-radius: 50%; justify-content: center;
+  --b-bg: var(--cream); --b-line: var(--ink-soft); }
+.ecSub .i { width: 11px; height: 11px; }
+.edFoot { font-size: 12px; color: var(--ink-soft); margin-top: 10px; text-align: center; }
+.edHand { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 10px 0 12px; }
+.edSlot { position: relative; min-width: 0; aspect-ratio: 3 / 4; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 3px 2px; }
+.edSlot.empty { border: 1.5px dashed var(--cream-line); }
+button.edSlot { --b-bg: #fff; --b-line: var(--ink-soft); border-top: 4px solid var(--ink); }
+button.edSlot.orange { border-top-color: var(--accent); }
+.edSlot .ecArt { width: 24px; height: 24px; }
+.edSlot .ecName { font-size: 9px; }
+.edSlot i { position: absolute; top: -6px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); color: var(--cream); display: grid; place-items: center; }
+.edSlot i .i { width: 10px; height: 10px; }
+
+/* ---- Mis niveles ---- */
+#edLib { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(18,26,32,.6); padding: 16px; }
+#edLib[hidden] { display: none; }
+.edLibBox { width: min(1000px, 100%); max-height: min(86vh, 100%); display: flex; flex-direction: column; border-radius: 20px; padding: 18px 20px 20px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink); box-shadow: 0 24px 60px rgba(8,14,18,.45); }
+.edLibHead { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.edLibHead h2 { font-size: 22px; font-weight: 500; letter-spacing: -.03em; }
+.edCount { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--cream-deep); color: var(--ink-soft); }
+.edCount:empty { display: none; }
+.edLibHead .edLibX { margin-left: auto; width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; }
+#edLibGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 12px; overflow: auto; min-height: 0; padding: 2px; }
+.libCard { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; background: #FBFBF1; border: 1.5px solid var(--cream-line); }
+.libCard.open { border-color: var(--accent); }
+.libMain { display: grid; gap: 3px; justify-items: start; text-align: left; padding: 0; --b-line: transparent; --b-bg: transparent; border-radius: 10px; position: relative; }
+.libMain:hover { background-color: transparent; }
+.libPrev { width: 100%; height: 118px; display: flex; align-items: center; justify-content: center; border-radius: 9px; background: var(--grout); padding: 8px; margin-bottom: 4px; }
+.libPrev svg { max-width: 100%; max-height: 100%; }
+.libName { font-size: 14.5px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.libMeta { font-size: 12px; color: var(--ink-soft); }
+.libTag { position: absolute; top: 6px; left: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: var(--navy); }
+.libTag.open { left: auto; right: 6px; color: var(--accent-deep); }
+.libActs { display: flex; gap: 6px; }
+.libActs > button:first-child { flex: 1; justify-content: center; }
+.libActs .btn-icon { width: 34px; padding: 0; justify-content: center; }
+.libEmpty { grid-column: 1 / -1; text-align: center; color: var(--ink-soft); padding: 40px 10px; font-size: 14px; }
+
+/* ---- diálogos de compartir y recibir ---- */
+#dialog:has(.lvDlg) { width: min(540px, 94vw); }
+.lvShare { display: flex; align-items: center; gap: 14px; }
+.lvPrev { width: 88px; height: 88px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--grout); padding: 7px; }
+.lvPrev svg { max-width: 100%; max-height: 100%; }
+.lvMeta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.lvMeta b { font-size: 17px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lvMeta small { font-size: 12.5px; color: var(--ink-soft); }
+.lvCode { display: flex; gap: 8px; align-items: center; }
+.lvCode input { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--cream-line); background: #fff; color: var(--ink); }
+.lvCode button { white-space: nowrap; gap: 6px; }
+#lvPaste { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+
+/* ---- Tus niveles (Modos de juego): editar y eliminar en cada tarjeta ---- */
+.lvlSection.yours h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lvlHeadActs { margin-left: auto; display: flex; gap: 6px; }
+.lvlWrap { position: relative; display: flex; }
+.lvlWrap > .lvlCard { flex: 1; }
+.lvlActs { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; align-items: center; z-index: 2; }
+.lvlActs button { width: 30px; height: 30px; padding: 0; justify-content: center; border-radius: 50%; }
+.lvlTag { position: absolute; right: 2px; top: 118px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: var(--navy); white-space: nowrap; }
+
+/* ---- laboratorio (en la partida): cualquier carta a mano ---- */
+#table.lab { grid-template-columns: 252px minmax(0, 1fr) minmax(150px, 200px); }
+#table.lab > #seats { display: none; } /* (en solitario no hay asientos: el panel ocupa su sitio) */
+#labPanel { grid-column: 1; grid-row: 1; align-self: center; z-index: 5; min-height: 0; max-height: 100%; overflow: auto; border-radius: 16px; padding: 12px;
+  background-image: var(--grain); background-color: var(--cream); color: var(--ink); }
+#labPanel[hidden] { display: none; }
+.labToggle { display: none; }
+.labHead { display: flex; align-items: center; gap: 7px; font-size: 14.5px; }
+.labHead .i { width: 18px; height: 18px; color: var(--accent-deep); }
+.labHint { font-size: 11.5px; line-height: 1.35; color: var(--ink-soft); margin: 4px 0 8px; }
+.labCards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.labCard { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 3px; border-radius: 8px; min-width: 0;
+  --b-bg: #FBFBF1; --b-line: var(--cream-line); border-top: 3px solid var(--ink); }
+.labCard.orange { border-top-color: var(--accent); }
+.labCard .ecArt { width: 26px; height: 26px; }
+.labCard .ecName { font-size: 9.5px; }
+.labActs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
+.labActs button { justify-content: center; gap: 6px; padding-left: 6px; padding-right: 6px; font-size: 12.5px; }
+.labActs [data-lab="god"] { grid-column: 1 / -1; }
+.labActs button.on { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+.labGod { font-size: 11.5px; color: var(--accent-deep); margin-top: 6px; line-height: 1.35; }
+.labGod:empty { display: none; }
+#board .cell.godPicked { box-shadow: inset 0 0 0 3px var(--accent); z-index: 3; }
+
+/* ---- pantallas medianas ---- */
+@media (max-width: 1180px) {
+  #edLayout { grid-template-columns: 206px minmax(0, 1fr) 266px; gap: 12px; }
+  .edCards { grid-template-columns: repeat(4, 1fr); gap: 6px 5px; }
+  .edToolRow { grid-template-columns: repeat(3, 1fr); }
+}
+/* ---- móvil: tablero arriba, herramientas en una tira y las cartas en una hoja ---- */
+@media (max-width: 900px) {
+  #edBar { grid-template-columns: auto 1fr; padding: 8px 10px 6px 14px; gap: 6px 8px; }
+  #edBar .lbl { display: none; }
+  #edBar button { padding: 6px 10px; }
+  #edBar .barSide { gap: 4px; }
+  #edBar .barSide.right { padding-right: 42px; }
+  #edPill { grid-row: 2; grid-column: 1 / -1; width: 100%; padding: 4px 12px; border-radius: 16px; }
+  body[data-screen="editor"] #sfxBtn { display: none; }
+  body[data-screen="editor"] #sndCfgBtn { right: 8px; top: 9px; width: 32px; height: 32px; }
+  #edDock { gap: 8px; }
+  #edDock button { padding: 8px 12px; font-size: 14px; }
+  #edDock .btn-lg { padding: 9px 16px; font-size: 15px; }
+  #edLab span { display: none; }
+  #edLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; padding: 4px 10px 10px 14px; gap: 8px; }
+  #edMain { grid-row: 1; }
+  #edToolsPanel { grid-row: 2; padding: 8px 10px; border-radius: 14px; overflow: visible; }
+  #edTools { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .edGroup { display: contents; }
+  .edGroup h3 { display: none; }
+  .edToolRow { display: flex; gap: 5px; }
+  .edTool { flex: 0 0 58px; }
+  #edToolOpts { margin-top: 6px; padding-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  #edToolOpts h3, #edToolOpts .edHint.soft { display: none; }
+  #edToolOpts .edHint { margin: 0; font-size: 11.5px; }
+  #edDeckBtn { display: inline-flex; }
+  #edDeckPanel { position: fixed; left: 8px; right: 8px; bottom: 8px; max-height: 72vh; z-index: 35; display: none; }
+  #edDeckPanel.open { display: block; }
+  #edDeckClose { display: inline-flex; position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 50%; }
+  #edDeckPanel .edSeg { margin-right: 46px; }
+  #edStage { grid-template-columns: 18px auto 46px; grid-template-rows: 18px auto 44px; }
+  .edCards { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+  #table.lab { grid-template-columns: 1fr; }
+  #labPanel { position: fixed; left: 8px; bottom: 150px; z-index: 36; padding: 0; background: none; overflow: visible; max-height: none; }
+  .labToggle { display: inline-flex; gap: 6px; }
+  .labBody { display: none; }
+  #labPanel.open .labBody { display: block; margin-top: 6px; width: min(340px, 92vw); max-height: 60vh; overflow: auto; border-radius: 16px; padding: 12px;
+    background-image: var(--grain); background-color: var(--cream); box-shadow: 0 16px 40px rgba(12,20,26,.3); }
+  #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
+}

@@ -32,7 +32,6 @@ export const isValidLevel = L => !!(L && Number.isInteger(L.cols) && Number.isIn
 
 export const loadLevels = () => normalizeLevels(read(LS_LEVELS, [])) || [];
 export const saveLevels = levels => write(LS_LEVELS, { version: LEVELS_VERSION, levels });
-export const exportLevels = () => JSON.stringify({ version: LEVELS_VERSION, levels: loadLevels() }, null, 1);
 
 export const loadProgress = () => read(LS_PROGRESS, {}) || {};
 export const saveProgress = p => write(LS_PROGRESS, p);

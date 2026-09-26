@@ -21,14 +21,15 @@ import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
-import { bindDialog } from './ui/dialog.js';
 import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/screens.js';
-import { bindStory, openStory } from './ui/screen-story.js';
+import { bindStory, openStory, storyLevelAt, startLevel } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
 import { bindModes, openModes } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
+import { bindLab } from './ui/lab.js';
+import { checkLinkLevel } from './ui/my-levels.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
 import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
@@ -56,7 +57,6 @@ bindBoard(ctl.uiCell);
 bindHands();
 bindCardTip();
 bindWin();
-bindDialog();
 bindScreens();
 bindStory();
 bindPve();
@@ -64,6 +64,7 @@ bindModes();
 bindAssist();
 bindZoom();
 bindEditor();
+bindLab();
 bindSoundPanel();
 bindSettings();
 bindTutorial();
@@ -72,7 +73,7 @@ bindPause();
 bindRules();
 bindBack();
 bindLogFilter();
-$('editorBtn').addEventListener('click', openEditor);
+$('editorBtn').addEventListener('click', () => openEditor());
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
 $('jaque').addEventListener('click', e => { if (e.target.closest('[data-act="confirmWin"]')) ctl.confirmWin(); });
@@ -135,6 +136,7 @@ document.addEventListener('click', e => {
   else if (app.screen === 'pve') openPveSetup();
   else if (app.screen === 'modes') openModes();
   else if (app.screen === 'editor') openEditor();
+  else if (app.screen === 'game') ctl.render(); // (el panel del laboratorio también)
   else showScreen(app.screen);
   updateMenuBtn();
 });
@@ -161,6 +163,10 @@ fxAmbientStart();
   ld.classList.add('done');
   document.body.classList.remove('loading'); // ahora sí: la entrada animada del menú
   setTimeout(() => ld.remove(), 500);
+  // enlace con un nivel compartido (…#nivel=CÓDIGO): se ofrece guardarlo en Tus niveles (y jugarlo)
+  const playLinked = idx => { const gi = app.storyLevels.length + idx; startLevel(storyLevelAt(gi), 'story', gi); };
+  checkLinkLevel(playLinked);
+  window.addEventListener('hashchange', () => checkLinkLevel(playLinked)); // (enlace abierto con el juego ya en marcha)
 })();
 
 // PWA: jugar sin conexión (solo en http/https)

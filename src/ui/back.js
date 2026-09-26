@@ -28,6 +28,8 @@ const OVERLAYS = [
   [() => $('pauseOverlay').classList.contains('visible'), () => $('pauseOverlay').querySelector('[data-pause="resume"]').click()],
   [() => $('logPanel').classList.contains('open'), () => $('logPanel').classList.remove('open')],
   [() => $('deckPop').classList.contains('open'), () => $('deckPop').classList.remove('open')],
+  [() => !$('edLib').hidden, () => $('edLibClose').click()],
+  [() => $('labPanel')?.classList.contains('open'), () => $('labPanel').classList.remove('open')],
 ];
 const overlayOpen = () => OVERLAYS.some(([open]) => open());
 

@@ -39,10 +39,11 @@ export function t(key, params) {
 // lista "A y B y C" tal y como la escribía el juego original
 export const joinAnd = items => items.join(t('common.and'));
 
-// aplica los textos a los elementos con data-i18n / data-i18n-title / data-i18n-aria
+// aplica los textos a los elementos con data-i18n / data-i18n-title / data-i18n-aria / data-i18n-placeholder
 export function applyStaticTexts(root = document) {
   root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   root.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
   root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   root.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  root.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
 }

@@ -42,6 +42,7 @@ src/
     screen-modes.js        reto diario, contrarreloj y desafíos · resume.js  continuar
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero
+    editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y laboratorio
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
@@ -91,7 +92,8 @@ Si usa los tipos de acción pendiente existentes (`move`, `pickBall`, `dedoAmoun
 aspecto (`cellClass`, `emoji`, `tileArt`…); regístrala en `tiles/index.js` y crea la carta que la coloca con
 `placeTile('tipo')` (ver `cards/place-tile.js`).
 
-**Un nivel de historia:** diséñalo en el Creador de Niveles, expórtalo, guarda el objeto del nivel como
+**Un nivel de historia:** diséñalo en el Creador de Niveles, compártelo y decodifica el código
+(`decodeLevel` en `src/content/levels/share.js`, o el borrador en `localStorage.chaoticgolf_editor`), guarda el objeto del nivel como
 `src/content/levels/story/05.json` y añádelo a `story/index.json`. Campos opcionales: `name`,
 `extraBalls` (pelotas de obstáculo) y `tips` (bocadillos: `{ "hit" | "bunker" | "portal": "clave.i18n" }`).
 
@@ -178,7 +180,21 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   tablero, cada pareja entre zonas opuestas—, multitud con 7 en la mesa) y el **desafío
   semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
-  Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí).
+  Modos de juego: los 6 puzles de "gana en 1 turno" y **Tus niveles** (los del creador, que también está aquí:
+  cada uno se edita o se elimina —con "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido).
+- **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
+  partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las
+  herramientas por baraja con el dibujo real de cada pieza (pelota, hoyo, PAR, obstáculo, borrar; búnker, portal con
+  parejas A/B/C; río, lago; bloque, esquina, túnel y lanzadera, con su giro) y sus opciones; en el centro el tablero
+  con reglas numeradas y +/− de columnas y filas en sus bordes; a la derecha el mazo (plantillas por baraja y cada
+  carta con su número) o la mano inicial (puzles). Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,
+  Ctrl+S. El estado dice si está listo para jugar o qué falta (mazo, portal sin pareja…). El borrador se guarda solo.
+  **Probar nivel** lo juega tal cual; **Laboratorio** (`src/ui/lab.js`) lo juega con cualquier carta a mano,
+  deshacer ilimitado y mover piezas a mano. En el móvil, las herramientas van en una tira y las cartas en una hoja.
+- **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
+  (`CG1…`, JSON compacto comprimido y validado al leerlo) o un enlace `…#nivel=CÓDIGO`. Quien abre el enlace ve
+  "Te han pasado un nivel" (guardar / guardar y jugar); con el código, "Añadir código". Se guarda como recibido y
+  no se duplica.
   Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
 - **Baraja de agua** (`tiles/river.js`, `tiles/lake.js`): sin búnkeres ni portales; 5 cartas de río y 5 de lago
@@ -268,7 +284,7 @@ obtenido. Si se cambia una regla **a propósito**, hay que cambiarla también en
   Personalidades `aggro` / `trick`, reacciones naranjas una vez por jugada, salva JAQUEs también con el
   palo reactivo y renueva la mano en vez de atascarse. Frente a un jugador aleatorio gana ~98 % de las
   veces (`npm run simulate -- --random 0`).
-- Exportar/importar niveles con diálogos propios (copiar, descargar `.json`, cargar archivo) en lugar de
-  `prompt()`; los niveles guardados llevan versión de esquema (los antiguos se migran solos) y nombre.
+- Los niveles guardados llevan versión de esquema (los antiguos se migran solos) y nombre; se comparten con un
+  código (ver "Compartir niveles").
 - Teclado: el tablero es una cuadrícula navegable con flechas + Enter; cartas con Tab + Enter; Escape
   cierra paneles o cancela la acción en curso. Etiquetas ARIA en casillas y cartas.

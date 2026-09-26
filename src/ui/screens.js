@@ -43,7 +43,7 @@ let usingKeyboard = false;
 window.addEventListener('keydown', e => { if (e.key === 'Tab' || e.key.startsWith('Arrow') || e.key === 'Enter') usingKeyboard = true; }, true);
 window.addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 
-const DISPLAY = { menu: 'flex', game: 'block', editor: 'block', story: 'flex', pve: 'flex', modes: 'flex' };
+const DISPLAY = { menu: 'flex', game: 'block', editor: 'grid', story: 'flex', pve: 'flex', modes: 'flex' };
 
 export function showScreen(s) {
   const prev = app.screen;

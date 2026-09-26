@@ -34,6 +34,7 @@ import { redrawCaddie, clearCaddie, paintAssist } from './assist.js';
 import { showPuzzleFail } from './win.js';
 import { musicMood } from '../audio/sfx.js';
 import { piecesBefore, notePlay } from './share-play.js';
+import { paintLab } from './lab.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -104,6 +105,8 @@ export function fitBoard() {
 }
 
 /* ---------- dispatch ---------- */
+// acciones del laboratorio del creador (dar cartas, deshacer, mover piezas): pasan por el mismo camino
+export const labAction = fn => dispatch(fn);
 function dispatch(fn) {
   const g = app.game;
   if (!g) return false;
@@ -313,6 +316,7 @@ export function render() {
   if (hud.modeChip()) requestAnimationFrame(() => { if (app.game === g) { fitBoard(); render(); } }); // etiqueta del modo (torneo, contrarreloj…)
   paintAssist();    // botones de consejo y deshacer
   redrawCaddie();   // el consejo sigue a la vista hasta que juegas
+  paintLab();       // panel del laboratorio del creador
 }
 
 function renderPieces() {

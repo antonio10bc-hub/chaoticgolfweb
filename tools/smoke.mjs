@@ -146,7 +146,9 @@ try {
   await shot('08-editor');
   await click('#edTest'); await sleep(500); await shot('09-editor-prueba');
   await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
-  await click('#edExport'); await sleep(300); await shot('10-exportar');
+  await click('#edShare'); await sleep(500); await shot('10-compartir');
+  await page.keyboard.press('Escape'); await sleep(200);
+  await click('#edLibBtn'); await sleep(300); await shot('10b-mis-niveles');
   await page.keyboard.press('Escape'); await sleep(200);
   await click('#edMenu'); await sleep(300); // vuelve a Modos de juego
   if (await page.evaluate(() => window.chaoticGolf.app.screen) !== 'modes') problems.push('el creador no vuelve a Modos de juego');

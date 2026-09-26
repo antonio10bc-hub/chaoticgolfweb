@@ -24,7 +24,8 @@ import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
-import { openEditor } from './editor.js';
+import { openEditor, edLibraryChanged } from './editor.js';
+import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
@@ -341,6 +342,7 @@ export function modeChipText() {
     case 'challenge': return t('challenges.' + r.id + '.name');
     case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;
     case 'puzzle': return t('story.puzzleChip');
+    case 'lab': return t('lab.chip');
   }
   return '';
 }
@@ -540,6 +542,8 @@ export function bindModes() {
   $('modesBack').addEventListener('click', () => showScreen('menu'));
   $('dailyCard').addEventListener('click', () => { if ($('dailyCard').dataset.resume) resumeGame('daily'); else startDaily(); });
   $('modesGrid').addEventListener('click', e => {
+    const ya = e.target.closest('[data-lvedit], [data-lvdel], [data-lvcode]'); // tus niveles: editar, eliminar, añadir código
+    if (ya) { yoursAction(ya); return; }
     const lv = e.target.closest('[data-level], [data-puzzle]'); // puzles y tus niveles
     if (lv) { playLevelCard(lv); return; }
     const tb = e.target.closest('[data-mtab]');
@@ -570,5 +574,11 @@ export function bindModes() {
   MODE_NAV.rush = { back: () => openModes('special'), restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
   MODE_NAV.challenge = { back: () => openModes('special'), restart: () => startChallenge(app.run?.id) };
   MODE_NAV.weekly = { back: () => openModes('special'), restart: () => { clearSave('weekly'); startWeeklyGame(app.run?.week); } };
+}
+async function yoursAction(b) {
+  const d = b.dataset;
+  if (d.lvedit != null) { openEditor({ idx: +d.lvedit }); return; }
+  if (d.lvdel != null) { deleteWithUndo(+d.lvdel, info => { edLibraryChanged(info); if (app.screen === 'modes') openModes('special'); }); return; }
+  if (d.lvcode != null && await addCodeDialog() != null) openModes('special');
 }
 export { store as modeStore, RUSH_KEY, tabOfGame };

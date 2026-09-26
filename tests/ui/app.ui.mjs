@@ -305,3 +305,58 @@ it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
   await page.waitForSelector('#winOverlay.visible', { timeout: 5000 });
   assert.match(await app(() => document.getElementById('winMsg').textContent), /otra vez/i);
 });
+
+it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien lo recibe lo guarda', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(300);
+  await click('[data-mtab="special"]'); await sleep(500);
+  await click('#editorBtn'); await sleep(500);
+  const at = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
+  await click('#edTools [data-tool="lake"]');
+  const [a, b] = await at(0, 0), [c, d] = await at(2, 0);
+  await page.mouse.move(a, b); await page.mouse.down(); await page.mouse.move(c, d, { steps: 6 }); await page.mouse.up(); await sleep(100);
+  await click('#edTools [data-tool="corner"]');
+  const [e, f] = await at(5, 3);
+  await page.mouse.click(e, f); await sleep(60); await page.mouse.click(e, f); await sleep(60); // pone y gira
+  const L = await app(() => JSON.parse(localStorage.getItem('chaoticgolf_editor')).level);
+  assert.deepEqual(L.tiles.filter(t => t.type === 'lake').map(t => t.x), [0, 1, 2]);
+  assert.deepEqual(L.tiles.find(t => t.type === 'corner'), { type: 'corner', x: 5, y: 3, rot: 1 });
+  await page.keyboard.down('Control'); await page.keyboard.press('KeyZ'); await page.keyboard.up('Control'); await sleep(80); // deshace el giro
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_editor')).level.tiles.find(t => t.type === 'corner').rot), undefined);
+  await page.focus('#edName'); await page.keyboard.type('Compartido'); await page.keyboard.press('Enter');
+  await click('#edShare'); await sleep(500); // guarda y abre el diálogo con el código
+  const code = await app(() => document.getElementById('lvCode').value);
+  assert.match(code, /^CG[01]/);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
+  await page.keyboard.press('Escape'); await sleep(200);
+  // otra persona (sin niveles) abre el enlace y lo guarda
+  await app(() => localStorage.removeItem('chaoticgolf_levels'));
+  await page.goto(URL + '#nivel=' + code, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('#dialog[open] button[value="save"]'); await sleep(200);
+  await page.click('#dialog[open] button[value="save"]'); await sleep(300);
+  const got = await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels);
+  assert.equal(got.length, 1);
+  assert.equal(got[0].name, 'Compartido');
+  assert.equal(got[0].origin, 'received');
+  // en Tus niveles se elimina sin diálogo y se puede deshacer
+  await click('#modesBtn'); await sleep(300);
+  await click('[data-mtab="special"]'); await sleep(500);
+  await click('[data-lvdel="0"]'); await sleep(200);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 0);
+  await click('#toast .toastAct'); await sleep(300);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
+});
+
+it('laboratorio: añade cualquier carta a la mano y deshace', async () => {
+  await fresh();
+  await app(() => import('/src/ui/editor.js').then(m => m.openEditor())); await sleep(500);
+  await click('#edLab'); await sleep(800);
+  assert.equal(await app(() => window.chaoticGolf.app.variant), 'lab');
+  const n0 = await app(() => window.chaoticGolf.app.game.S.hands[0].length);
+  await click('#labPanel [data-give="paloIri"]'); await sleep(200);
+  assert.equal(await app(() => window.chaoticGolf.app.game.S.hands[0].at(-1)), 'paloIri');
+  await click('#labPanel [data-lab="undo"]'); await sleep(200);
+  assert.equal(await app(() => window.chaoticGolf.app.game.S.hands[0].length), n0);
+  await click('#menuBtn'); await sleep(300);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'editor');
+});

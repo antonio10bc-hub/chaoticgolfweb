@@ -18,6 +18,8 @@
   transition: opacity .2s var(--ease-out), transform .25s var(--ease-out);
 }
 #toast.visible { opacity: 1; transform: translate(-50%, 0); }
+#toast.action.visible { pointer-events: auto; padding-right: 6px; }
+#toast .toastAct { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream); padding: 4px 12px; font-size: 13px; }
 #toast.warn { box-shadow: 0 0 0 1.5px var(--accent-deep), 0 10px 26px rgba(20,40,20,.25); }
 #toast.warn::before { /* mano de "alto" en línea fina */
   content: ''; width: 16px; height: 16px; flex: 0 0 auto;

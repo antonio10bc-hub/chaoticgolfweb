@@ -123,6 +123,16 @@ export function bindLogFilter() {
 }
 
 let toastTimer = null;
+// aviso con una acción (p. ej. "Nivel eliminado · Deshacer"): dura más y se puede pulsar
+export function actionToast(msg, label, onAction, ms = 5200) {
+  const el = $('toast');
+  el.innerHTML = `<span>${esc(msg)}</span><button type="button" class="toastAct">${esc(label)}</button>`;
+  el.className = 'visible action';
+  el.querySelector('button').addEventListener('click', () => { clearTimeout(toastTimer); el.classList.remove('visible'); onAction(); }, { once: true });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('visible'), ms);
+}
+
 export function toast(msg, kind = '') {
   const el = $('toast');
   el.textContent = msg;

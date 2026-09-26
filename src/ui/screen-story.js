@@ -8,7 +8,6 @@ import { loadLevels, loadProgress } from '../storage.js';
 import { startGame } from './controller.js';
 import { hideWin } from './win.js';
 import { aiStop } from './ai-driver.js';
-import { ED } from './editor.js';
 import { t } from '../i18n/index.js';
 import { saveGame, loadSave } from './save.js';
 import { recordStart, levelBest, turnsLabel, loadRecords } from './records.js';
@@ -89,11 +88,19 @@ export function puzzlesSectionHTML() {
     app.puzzleLevels.map((L, i) => levelCard(i, L, { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"` })).join('') +
     `</div></section>`;
 }
+// tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
 export function yoursSectionHTML() {
   const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story'), base = app.storyLevels.length;
-  return `<section class="lvlSection yours"><h3>${esc(t('story.yours'))}</h3><div class="lvlRow">` + (levels.length
-    ? levels.map((L, j) => { const i = base + j; return levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"` }); }).join('')
-    : `<div class="noLevels">${esc(t('story.none'))} <button class="btn-light btn-sm" data-mode="editor">${esc(t('story.openEditor'))}</button></div>`) +
+  const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
+  return `<section class="lvlSection yours"><h3>${esc(t('story.yours'))}${levels.length ? ` <span class="lvlCount">${levels.length}</span>` : ''}` +
+    `<span class="lvlHeadActs"><button class="btn-light btn-sm btn-icon" data-mode="editor">${icon('i-plus')}${esc(t('story.create'))}</button>` +
+    `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span></h3><div class="lvlRow">` + (levels.length
+    ? levels.map((L, j) => { const i = base + j, name = L.name || t('story.untitled');
+      return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"` }) +
+        `<span class="lvlActs">${L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : ''}` +
+        `<button class="btn-light btn-sm btn-icon" data-lvedit="${j}" title="${esc(t('lib.edit'))}" aria-label="${esc(t('lib.editAria', { name }))}">${icon('i-wrench')}</button>` +
+        `<button class="btn-light btn-sm btn-icon danger" data-lvdel="${j}" title="${esc(t('lib.delete'))}" aria-label="${esc(t('lib.deleteAria', { name }))}">${icon('i-trash')}</button></span></div>`; }).join('')
+    : `<div class="noLevels">${esc(t('story.none'))}</div>`) +
     `</div></section>`;
 }
 // tarjeta de nivel pulsada (Lo básico o Modos): continúa el nivel a medias o lo empieza
@@ -119,7 +126,7 @@ export function paintStoryBtn() {
 
 export function replayLevel() {
   hideWin();
-  if (app.mode === 'test') startLevel(ED.level, 'test');
+  if (app.mode === 'test') startLevel(app.level, 'test', null, { variant: app.variant }); // (probar o laboratorio)
   else if (app.variant === 'puzzle') startLevel(puzzleAt(app.levelIndex), 'story', app.levelIndex, { variant: 'puzzle' });
   else if (app.mode === 'story') startLevel(storyLevelAt(app.levelIndex), 'story', app.levelIndex);
   else newFreeGame();
@@ -139,6 +146,7 @@ export const hasNextLevel = () => {
 };
 
 // miniatura del tablero de un nivel (casillas, PAR, losetas, hoyo, pelota y obstáculos)
+const PREV_FILL = { bunker: '#ECE6CC', portal: '#2D4F7C', river: '#5BB6D6', lake: '#2E7E8C', block: '#7A5230', corner: '#7A5230', tunnel: '#7A5230', launcher: '#7A5230' };
 export function levelPreviewSVG(L) {
   const s = 10, g = 2, W = L.cols * (s + g) - g, H = L.rows * (s + g) - g;
   const par = new Set((L.parCells || []).map(p => p.x + ',' + p.y));
@@ -146,8 +154,9 @@ export function levelPreviewSVG(L) {
   let out = '';
   for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) {
     const k = x + ',' + y, tp = tile[k];
-    const fill = tp === 'bunker' ? '#ECE6CC' : tp === 'portal' ? '#2D4F7C' : par.has(k) ? '#8DB05F' : ((x + y) % 2 ? '#5C9854' : '#4F8A4B');
+    const fill = PREV_FILL[tp] || (par.has(k) ? '#8DB05F' : ((x + y) % 2 ? '#5C9854' : '#4F8A4B'));
     out += `<rect x="${x * (s + g)}" y="${y * (s + g)}" width="${s}" height="${s}" rx="2.5" fill="${fill}"/>`;
+    if (tp === 'block' || tp === 'corner' || tp === 'tunnel' || tp === 'launcher') out += `<rect x="${x * (s + g) + 2}" y="${y * (s + g) + 2}" width="${s - 4}" height="${s - 4}" rx="1.5" fill="#C99257"/>`;
   }
   const c = (x, y) => [x * (s + g) + s / 2, y * (s + g) + s / 2];
   for (const eb of L.extraBalls || []) { const [cx, cy] = c(eb.x, eb.y); out += `<circle cx="${cx}" cy="${cy}" r="3.4" fill="#F1F1DC"/>`; }
@@ -168,4 +177,5 @@ export function bindStory() {
   MODE_NAV.story = { back: () => (isUserLevelIdx(app.levelIndex) ? openModes('special') : openStory()), restart: replayLevel };
   MODE_NAV.puzzle = { back: () => openModes('special'), restart: replayLevel };
   MODE_NAV.test = { back: () => showScreen('editor'), restart: replayLevel };
+  MODE_NAV.lab = MODE_NAV.test; // laboratorio del creador
 }
