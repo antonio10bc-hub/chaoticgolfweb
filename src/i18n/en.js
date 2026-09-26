@@ -523,7 +523,7 @@ export default {
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',
     daily: { title: 'Daily challenge', sub: 'A small board against 2 bots, the same for everyone. A new mechanic and new rivals every day.', vs: 'vs {a} and {b}',
       bestToday: 'Your best today: {turns}', done: 'Completed today', notYet: 'Not completed yet', streak: 'Streak: {n} days', streak1: 'Streak: 1 day',
-      risk: 'Don’t lose your streak!', lost: '{n}-day streak lost', start: 'Start your streak today', toGoal: '{n} days to {m}', toGoal1: 'Tomorrow you hit {m}!' },
+      risk: 'Don’t lose your streak!', lost: '{n}-day streak lost', start: 'Start your streak today' },
     rush: { title: 'Time attack', holes: '{n} generated holes', sub: 'Every hole has its own countdown: fewer turns and more time to spare, more points. If time runs out, the run is over.',
       best: 'Record: {n} pts', continue: 'Continue · hole {n}', pts: '{n} pts' },
     challenge: { title: 'Challenge' },

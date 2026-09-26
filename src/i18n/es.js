@@ -526,7 +526,7 @@ export default {
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',
     daily: { title: 'Reto diario', sub: 'Tablero pequeño contra 2 bots, igual para todo el mundo. Cada día, una mecánica y rivales nuevos.', vs: 'contra {a} y {b}',
       bestToday: 'Tu mejor hoy: {turns}', done: 'Completado hoy', notYet: 'Aún no lo has completado', streak: 'Racha: {n} días', streak1: 'Racha: 1 día',
-      risk: '¡No pierdas tu racha!', lost: 'Perdiste tu racha de {n}', start: 'Empieza hoy tu racha', toGoal: 'Faltan {n} días para {m}', toGoal1: '¡Mañana llegas a {m}!' },
+      risk: '¡No pierdas tu racha!', lost: 'Perdiste tu racha de {n}', start: 'Empieza hoy tu racha' },
     rush: { title: 'Contrarreloj', holes: '{n} hoyos generados', sub: 'Cada hoyo tiene su cuenta atrás: menos turnos y más tiempo de sobra, más puntos. Si se acaba el tiempo, se acaba la serie.',
       best: 'Récord: {n} pts', continue: 'Seguir · hoyo {n}', pts: '{n} pts' },
     challenge: { title: 'Desafío' },

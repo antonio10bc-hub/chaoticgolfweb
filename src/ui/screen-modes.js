@@ -18,7 +18,7 @@ import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
-import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo, nextStreakGoal } from './records.js';
+import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
@@ -100,29 +100,28 @@ export function renderDailyCard() {
   const { diff, rivals, ch } = dailySetup(date), rv = rivals.map(personaById);
   const diffTxt = t('pve.diff' + diff[0].toUpperCase() + diff.slice(1));
   const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + diffTxt;
-  // una sola línea de estado: la racha manda (en peligro o perdida); con el reto de hoy jugado, la próxima meta
-  // (tu mejor resultado de hoy queda en el tic y en el resumen de la partida)
-  const goal = nextStreakGoal(sk.n), toGoal = goal - sk.n;
+  // línea de estado solo cuando hay algo que decir: partida a medias o la racha (en peligro, perdida o por empezar).
+  // Con el reto de hoy jugado no hace falta (la llama encendida lo dice; tu mejor resultado queda en el tic)
   const status = saved ? t('save.title')
     : sk.atRisk ? t('modes.daily.risk')
     : sk.lost ? t('modes.daily.lost', { n: sk.lost })
-    : sk.today ? (toGoal === 1 ? t('modes.daily.toGoal1', { m: goal }) : t('modes.daily.toGoal', { n: toGoal, m: goal }))
+    : sk.today ? ''
     : t('modes.daily.start');
   const face = pr => `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`;
   const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name });
   const play = saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play');
-  // la racha, en grande sobre la miniatura: encendida si hoy ya has jugado, apagada (y latiendo) si está en peligro
+  // la racha, junto al título (lejos de las caras de los rivales): encendida si hoy ya has jugado, apagada (y latiendo) si está en peligro
   const flameCls = (sk.today ? ' lit' : '') + (sk.atRisk ? ' risk' : '') + (sk.today && firstLitToday(date) ? ' ignite' : '');
   const flame = sk.n || sk.lost ? `<span class="dFlame${flameCls}" title="${esc(streakLabel(sk.n))}"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg><b>${sk.n}</b></span>` : '';
   // el tic de completado va sobre la miniatura: el texto no cambia de forma según el estado.
   // Cada línea es una sola fila; la mecánica pasa a su propia línea si no cabe junto al título
   $('dailyCard').innerHTML =
     `<span class="dPreview dRivals">${rv.map(face).join('')}` +
-    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done') + ' · ' + t('modes.daily.bestToday', { turns: turnsLabel(today.best) }))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + flame + `</span>` +
-    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><b>${esc(t('modes.daily.title'))}</b>` +
+    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done') + ' · ' + t('modes.daily.bestToday', { turns: turnsLabel(today.best) }))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + `</span>` +
+    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><span class="dTitle"><b>${esc(t('modes.daily.title'))}</b>${flame}</span>` +
     `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(t('dailyFeat.' + ch.feature))}</span></span></span>` + // (la mecánica del día)
     `<span class="dVs">${esc(vs)}</span>` +
-    `<span class="dMeta${sk.atRisk && !saved ? ' risk' : ''}"><span>${esc(status)}</span></span></span>` +
+    (status ? `<span class="dMeta${sk.atRisk && !saved ? ' risk' : ''}"><span>${esc(status)}</span></span>` : '') + `</span>` +
     `<span class="dPlay" title="${esc(play)}"><span class="dPlayLbl">${esc(play)}</span><svg class="i" aria-hidden="true"><use href="#${today?.best && !saved ? 'i-reset' : 'i-arrow-r'}"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
   $('dailyCard').dataset.resume = saved ? '1' : '';

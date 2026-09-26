@@ -709,7 +709,7 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 .mDaily {
   --b-bg: var(--accent); --b-fg: var(--ink); --b-line: var(--accent);
   display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
-  width: 100%; padding: 10px 16px 10px 10px; border-radius: 18px; text-align: left;
+  width: 100%; padding: 13px 16px 13px 10px; border-radius: 18px; text-align: left;
 }
 .mDaily:hover { background-color: #EE9550; }
 .mDaily.done { --b-bg: rgba(232,135,58,.14); --b-line: var(--accent); }
@@ -816,14 +816,14 @@ html.reduceMotion #rushTimer.danger, html.reduceMotion #game.urgent #boardWrap {
 .dRivals .avatar:first-child { left: 4px; top: 5px; }
 .dRivals .avatar + .avatar { right: 4px; bottom: 5px; }
 .dVs { font-size: 12.5px; font-weight: 500; }
-/* la mecánica del día, junto al título (o debajo si no cabe: el título no se parte nunca) */
+/* la mecánica del día, bajo el título */
 .dFeat { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
   background: rgba(36,36,36,.12); color: inherit; white-space: nowrap; }
 .dFeat > span { overflow: hidden; text-overflow: ellipsis; }
 .dFeat .i { width: 13px; height: 13px; flex: 0 0 auto; }
 .mDaily .dMeta { opacity: .75; }
 @media (max-width: 420px) { .dRivals .avatar { width: 28px; height: 28px; } }
-@media (max-width: 420px) { .mDaily { gap: 10px; padding-right: 12px; } .dTxt b { font-size: 16.5px; } .dVs { font-size: 12px; } }
+@media (max-width: 420px) { .mDaily { gap: 9px; padding-right: 12px; } .dTxt b { font-size: 16.5px; } .dVs { font-size: 12px; } }
 
 /* continuar una partida guardada: siempre en naranja */
 .btn-continue { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--accent); }
@@ -850,30 +850,39 @@ button:where(:not(#endTurnBtn)) { box-shadow: none !important; } /* (sin especif
 .themeFor { font-size: 11px; color: var(--ink-soft); font-weight: 400; }
 
 /* ---------- tarjeta del reto diario: tic de completado ---------- */
-.dHead { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; }
+.dHead { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; } /* título (con la racha) y, debajo, la mecánica: misma forma todos los días */
 /* el tic, como insignia en la esquina de la miniatura (fuera del texto: no lo descoloca) */
 .dDone { position: absolute; top: -7px; right: -7px; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%;
   background: var(--grass-dark); color: var(--cream); border: 2px solid var(--cream); }
 .dDone .i { width: 11px; height: 11px; stroke-width: 3; }
 body[data-screen="menu"]:not(.loading) .dDone { animation: donePop .5s .7s cubic-bezier(.34,1.56,.64,1) both; }
 @keyframes donePop { from { transform: scale(0); } }
-/* la racha, en grande sobre la miniatura: apagada y latiendo si hoy aún no has jugado,
+/* la racha, junto al título: apagada y latiendo si hoy aún no has jugado,
    encendida (con una llamarada la primera vez) cuando ya cuenta */
-.dFlame { position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 2px;
-  height: 22px; padding: 0 8px 0 6px; border-radius: 999px; border: 2px solid var(--cream); background: var(--ink); color: var(--cream);
+.dTitle { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 3px 7px; max-width: 100%; min-height: 22px; } /* (misma altura con o sin llama) */ /* (si no cabe, la llama baja: nunca pisa el botón) */
+.dFlame { display: inline-flex; align-items: center; gap: 2px; flex: 0 0 auto;
+  height: 22px; padding: 0 8px 0 6px; border-radius: 999px; background: var(--ink); color: var(--cream);
   font-size: 13px; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.dFlame b { font-weight: 700; }
+.dFlame b { font-size: inherit; font-weight: 700; letter-spacing: 0; }
 .dFlame .i { width: 14px; height: 14px; color: rgba(241,241,220,.4); transition: color .4s; }
 .dFlame.lit .i { color: #F5A33A; }
 .dFlame.risk { animation: flameRisk 1.6s ease-in-out infinite; }
 @keyframes flameRisk { 50% { box-shadow: 0 0 0 2px rgba(200,52,31,.35), 0 0 12px 2px rgba(200,52,31,.45); } }
 body[data-screen="menu"]:not(.loading) .dFlame.ignite { animation: flamePop .6s .9s cubic-bezier(.34,1.56,.64,1) both; }
 body[data-screen="menu"]:not(.loading) .dFlame.ignite .i { animation: flameIgnite 1s .9s ease-out both; }
-@keyframes flamePop { 40% { transform: translateX(-50%) scale(1.3); } }
+@keyframes flamePop { 40% { transform: scale(1.3); } }
 @keyframes flameIgnite { 0% { color: rgba(241,241,220,.4); } 35% { color: #FFD23F; transform: scale(1.35) translateY(-1px); } 100% { color: #F5A33A; } }
 html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMotion .dFlame.ignite .i { animation: none !important; }
 .dMeta.risk { opacity: 1; font-weight: 600; }
-@media (max-width: 420px) { .dFlame { height: 20px; font-size: 12px; bottom: -8px; } .dFlame .i { width: 12px; height: 12px; } }
+@media (max-width: 420px) { .dTitle { column-gap: 5px; min-height: 20px; } .dFlame { height: 20px; padding: 0 7px 0 5px; font-size: 12px; } .dFlame .i { width: 12px; height: 12px; } }
+/* móviles muy estrechos: el título, la racha y el botón caben en una fila también en inglés */
+@media (max-width: 380px) {
+  .dTxt b { font-size: 15px; }
+  .dTitle { column-gap: 4px; }
+  .dPreview { width: 44px; height: 44px; }
+  .dRivals .avatar { width: 26px; height: 26px; }
+  .dFlame { gap: 1px; padding: 0 6px 0 4px; }
+}
 
 /* ---------- ficha del rival: tu balance y tu némesis ---------- */
 .rvRec { font-size: 11px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }

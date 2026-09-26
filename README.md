@@ -167,13 +167,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
   La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
-  (fecha y dificultad; título y mecánica, que baja si no cabe; rivales; estado), el tic verde de completado es
+  (fecha y dificultad; título con la racha; la mecánica; rivales; estado), el tic verde de completado es
   una insignia sobre la miniatura de los rivales y en el móvil el botón es un círculo (flecha, o repetir si ya
   está completado).
-  **La racha** va en grande sobre la miniatura (llama y número): apagada y latiendo en rojo si hoy aún no has
+  **La racha** va junto al título (llama y número, lejos de las caras de los rivales): apagada y latiendo en rojo si hoy aún no has
   jugado, encendida (con una llamarada la primera vez que vuelves al menú) cuando ya cuenta. La línea de estado
-  avisa: "¡No pierdas tu racha!", "Perdiste tu racha de 12", "Empieza hoy tu racha" o, con el reto de hoy
-  jugado, la próxima meta ("Faltan 3 días para 15", "¡Mañana llegas a 7!"). Metas: 3, 7, 15, 30, 50, 100, 150,
+  solo aparece cuando hay algo que decir: "Partida guardada", "¡No pierdas tu racha!", "Perdiste tu racha de 12"
+  o "Empieza hoy tu racha"; con el reto de hoy jugado desaparece y la tarjeta queda más baja. Metas: 3, 7, 15, 30, 50, 100, 150,
   200, 365 y cada 100 después (`nextStreakGoal` / `dailyStreakInfo` en `src/ui/records.js`); al llegar a una,
   el final de partida lo celebra una vez ese día con un chip grande y confeti de fuego; si no, muestra
   "Racha: N días · meta: M". La racha cuenta por jugar el reto, no por ganarlo. Con el reto del día completado sale ese tic verde (y, la primera vez que vuelves al menú, la bola de la
