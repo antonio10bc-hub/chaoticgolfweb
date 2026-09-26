@@ -72,28 +72,39 @@ const sizeLabel = L => {
 const previewBlock = L => `<div class="lvShare"><span class="lvPrev">${levelPreviewSVG(L)}</span>` +
   `<span class="lvMeta"><b>${esc(L.name || t('story.untitled'))}</b><small>${esc(sizeLabel(L))}</small></span></div>`;
 
-async function copy(text, okKey) {
-  try { await navigator.clipboard.writeText(text); toast(t(okKey)); sfx('select'); } catch (e) { toast(t('lib.copyFailed'), 'warn'); }
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); sfx('select'); return true; } catch (e) { toast(t('lib.copyFailed'), 'warn'); return false; }
 }
+const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
 
-// compartir: el código (y el enlace) para copiar, o la hoja de compartir del sistema
+// compartir: lo importante es el enlace (quien lo abre tiene el nivel listo para jugar); el código, debajo
+// y en pequeño, por si prefieren pegarlo a mano. La confirmación sale en el propio botón
 export async function shareLevelDialog(L) {
   const code = await encodeLevel(L), link = levelLink(code);
-  const canShare = typeof navigator.share === 'function';
-  const p = openDialog({ title: t('lib.shareTitle'), cls: 'lvDlg', body: previewBlock(L) +
-    `<p class="dlgHint">${esc(t('lib.shareHint'))}</p>` +
-    `<div class="lvCode"><input readonly id="lvCode" value="${esc(code)}" aria-label="${esc(t('lib.codeLabel'))}">` +
-    `<button type="button" class="btn-light" data-copy="code"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>${esc(t('lib.copyCode'))}</button></div>` +
-    `<div class="lvCode"><input readonly id="lvLink" value="${esc(link)}" aria-label="${esc(t('lib.linkLabel'))}">` +
-    `<button type="button" class="btn-light" data-copy="link"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>${esc(t('lib.copyLink'))}</button></div>`,
-    buttons: [...(canShare ? [{ value: 'share', label: t('lib.shareSys') }] : []), { value: 'close', label: t('common.close') }] });
+  const p = openDialog({ title: t('lib.shareTitle'), cls: 'lvDlg lvShareDlg', body: previewBlock(L) +
+    `<div class="lvLinkBox"><p class="lvLead">${esc(t('lib.shareLead'))}</p>` +
+    `<button type="button" class="btn-primary btn-lg lvCopyLink" data-copy="link">${icon('i-copy')}<span>${esc(t('lib.copyLink'))}</span></button>` +
+    `<input readonly id="lvLink" class="lvField" value="${esc(link)}" aria-label="${esc(t('lib.linkLabel'))}" hidden></div>` + // (solo si no se puede copiar)
+    `<div class="lvCodeBox"><span class="lvCodeHead"><b>${esc(t('lib.codeAlt'))}</b> ${esc(t('lib.codeHint'))}</span>` +
+    `<span class="lvCode"><input readonly id="lvCode" class="lvField" value="${esc(code)}" aria-label="${esc(t('lib.codeLabel'))}">` +
+    `<button type="button" class="lvCopyCode" data-copy="code" title="${esc(t('lib.copyCode'))}" aria-label="${esc(t('lib.copyCode'))}">${icon('i-copy')}</button></span></div>`,
+    buttons: [{ value: 'close', label: t('common.close') }] });
   const box = document.getElementById('dialog');
-  box.querySelector('[data-copy="code"]').addEventListener('click', () => copy(code, 'lib.codeCopied'));
-  box.querySelector('[data-copy="link"]').addEventListener('click', () => copy(link, 'lib.linkCopied'));
-  box.querySelectorAll('.lvCode input').forEach(i => i.addEventListener('focus', () => i.select()));
-  if (await p === 'share') {
-    try { await navigator.share({ title: L.name || 'Chaotic Golf', text: t('lib.shareText', { name: L.name || t('story.untitled') }), url: link }); } catch (e) { /* cancelado */ }
-  }
+  const linkBtn = box.querySelector('[data-copy="link"]'), codeBtn = box.querySelector('[data-copy="code"]');
+  box.querySelectorAll('.lvField').forEach(i => i.addEventListener('focus', () => i.select()));
+  const flash = (btn, html, ms = 2000) => {
+    const was = btn.innerHTML;
+    btn.classList.add('copied'); btn.innerHTML = html;
+    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = was; }, ms);
+  };
+  linkBtn.addEventListener('click', async () => {
+    if (linkBtn.classList.contains('copied')) return;
+    if (await copy(link)) flash(linkBtn, icon('i-check') + `<span>${esc(t('lib.linkCopiedBtn'))}</span>`);
+    else { const f = box.querySelector('#lvLink'); f.hidden = false; f.focus(); } // a mano
+  });
+  codeBtn.addEventListener('click', async () => { if (!codeBtn.classList.contains('copied') && await copy(code)) flash(codeBtn, icon('i-check')); });
+  linkBtn.focus({ focusVisible: false }); // (el foco, en lo importante, no en el campo del código; sin aro al abrir)
+  await p;
 }
 
 // pegar un código recibido: devuelve la posición del nivel guardado (o null)

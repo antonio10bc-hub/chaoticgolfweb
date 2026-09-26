@@ -221,7 +221,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
   (`CG1…`, JSON compacto comprimido y validado al leerlo) o un enlace `…#nivel=CÓDIGO`. Quien abre el enlace ve
   "Te han pasado un nivel" (guardar / guardar y jugar); con el código, "Añadir código". Se guarda como recibido y
-  no se duplica.
+  no se duplica. La ventana de compartir pone el enlace por delante (un botón grande "Copiar enlace": al abrirlo,
+  el nivel está listo para jugar; si el portapapeles falla, aparece el enlace para copiarlo a mano) y, debajo y en
+  pequeño, el código con su botón de copiar. Sin botón de compartir del sistema; la confirmación sale en el botón.
   Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
 - **Baraja de agua** (`tiles/river.js`, `tiles/lake.js`): sin búnkeres ni portales; 5 cartas de río y 5 de lago

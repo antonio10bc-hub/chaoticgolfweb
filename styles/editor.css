@@ -192,6 +192,23 @@ button.edSlot.orange { --b-line: var(--accent); background-color: #FFF6E6; }
 .lvCode { display: flex; gap: 8px; align-items: center; }
 .lvCode input { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--cream-line); background: #fff; color: var(--ink); }
 .lvCode button { white-space: nowrap; gap: 6px; }
+/* compartir: el enlace manda (un botón grande); el código, debajo y en pequeño */
+.lvLinkBox { display: flex; flex-direction: column; gap: 10px; margin-top: 2px; }
+.lvLead { font-size: 14.5px; line-height: 1.35; color: var(--ink); }
+.lvCopyLink { width: 100%; min-height: 50px; }
+.lvCopyLink .i { width: 18px; height: 18px; }
+.lvCopyLink:hover .i { transform: none; }
+.lvCopyLink.copied, .lvCopyLink.copied:hover { --b-bg: var(--grass-dark); --b-line: var(--grass-dark); background-color: var(--grass-dark); }
+.lvLinkBox .lvField { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--cream-line); background: #fff; color: var(--ink); }
+.lvCodeBox { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--cream-line); }
+.lvCodeHead { font-size: 12.5px; color: var(--ink-soft); }
+.lvCodeHead b { font-weight: 600; color: var(--ink); }
+.lvCodeBox .lvCode input { color: var(--ink-soft); }
+.lvCopyCode { flex: 0 0 auto; width: 36px; height: 36px; padding: 0; --b-line: var(--cream-line); --b-bg: #fff; }
+.lvCopyCode .i { width: 16px; height: 16px; }
+.lvCopyCode.copied, .lvCopyCode.copied:hover { --b-bg: var(--grass-dark); --b-fg: var(--cream); --b-line: var(--grass-dark); background-color: var(--grass-dark); }
+/* "Cerrar", discreto: no compite con copiar el enlace */
+.lvShareDlg .dlgBtns button:last-child { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line); }
 #lvPaste { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
 
 /* ---- Tus niveles (Modos de juego): editar y eliminar en cada tarjeta ---- */
