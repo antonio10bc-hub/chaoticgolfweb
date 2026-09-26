@@ -594,7 +594,6 @@ body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 .mdTable span.me { background: var(--accent); color: var(--ink); }
 .chGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 10px; }
 .chCard { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 12px; border: 1px solid var(--cream-line); border-radius: 14px; position: relative; }
-.chCard > button { flex: 0 0 auto; margin-left: auto; }
 .chCard.done { background: rgba(163,193,115,.15); }
 .chTxt { flex: 1 1 150px; display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
 .chTxt b { font-size: 14px; font-weight: 600; }
@@ -1291,3 +1290,64 @@ body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) #sndCfgBtn { --b-f
 @keyframes iriSweep { 0%, 55% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
 html.reduceMotion #gameDecor .dIri, html.reduceMotion #gameDecor .dIriSweep { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { #gameDecor .dIri, #gameDecor .dIriSweep { animation: none !important; } }
+
+/* ---------- Modos de juego: todo compacto ---------- */
+/* desafíos (y el semanal): toda la tarjeta es el botón; a la derecha, jugar / continuar / superado */
+.chGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+button.chCard { --b-bg: transparent; --b-line: var(--cream-line); width: 100%; flex-wrap: nowrap; justify-content: flex-start; align-items: center;
+  gap: 10px; padding: 9px 10px 9px 9px; border-radius: 14px; text-align: left; font-weight: 400; letter-spacing: 0; line-height: 1.25; }
+button.chCard:hover { background-color: rgba(181,71,63,.06); border-color: rgba(181,71,63,.35); }
+button.chCard:hover .chGo:not(.ok) { transform: scale(1.08); }
+.chCard .mdIco { width: 34px; height: 34px; border-radius: 10px; }
+.chCard .mdIco .i { width: 18px; height: 18px; }
+.chTxt { flex: 1 1 auto; }
+.chTxt b { font-size: 13.5px; }
+.chTxt small { font-size: 11.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.chEnd { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 3px; margin-left: 4px; }
+.chGo { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--cream); transition: transform .15s var(--ease-out); }
+.chGo .i { width: 13px; height: 13px; }
+.chGo.ok { background: var(--mode-challenge); }
+.chCont { font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--accent); color: #fff; white-space: nowrap; }
+.chSt { font-size: 10.5px; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.chCard.saved { border-color: var(--accent); }
+.chCard.weekly { margin-bottom: 4px; padding: 10px 12px 10px 10px; }
+.chCard.weekly .mdIco { width: 38px; height: 38px; }
+.chCard.weekly .chTxt b { font-size: 15px; }
+.chCard.weekly .wkTag { display: block; -webkit-line-clamp: unset; font-size: 10px; letter-spacing: .1em; margin-bottom: 1px; }
+/* contrarreloj: una fila (icono, título con récord y botón) */
+.mdPanel > .modeCard.rush { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+.modeCard.rush .mdHead { flex: 1 1 240px; }
+.modeCard.rush .mdHead h3 { font-size: 19px; }
+.modeCard.rush .mdBtns { margin: 0; }
+/* secciones con menos aire */
+#modesGrid .mdSection, #modesGrid .lvlSection { padding: 16px 16px 18px; }
+#modesGrid .mdSection > h3, #modesGrid .lvlSection h3 { margin-bottom: 10px; }
+#modesGrid .lvlGroup { margin: 12px 2px 7px; }
+#modesGrid .lvlGroup:first-of-type { margin-top: 2px; }
+.mdPanel { gap: 14px; }
+/* puzles y tus niveles: tarjetas pequeñas en una rejilla que llena todo el ancho (y queda centrada) */
+#modesGrid .lvlRow { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; } /* (8 por grupo: una fila) */
+#modesGrid .lvlCard, #modesGrid .lvlWrap { width: auto; min-width: 0; }
+#modesGrid .lvlCard { padding: 6px 6px 8px; gap: 5px; border-radius: 13px; }
+#modesGrid .lvlPreview { height: 78px; padding: 6px; border-radius: 9px; }
+#modesGrid .lvlName { font-size: 12.5px; min-height: 0; padding: 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+#modesGrid .lvlNum { top: 10px; left: 10px; min-width: 19px; height: 19px; font-size: 10px; padding: 0 5px; }
+#modesGrid .lvlFoot { margin: 0 2px; }
+#modesGrid .lvlState { font-size: 10.5px; padding: 2px 8px; margin: 0; }
+#modesGrid .lvlCard.done .lsTxt { display: none; } /* completado: solo el tic */
+#modesGrid .lvlCard.done .lvlState { padding: 3px 6px; }
+#modesGrid .lvlSaved { top: 10px; right: 10px; font-size: 9.5px; padding: 1px 6px; }
+#modesGrid .lvlActs { top: 9px; right: 9px; gap: 3px; }
+#modesGrid .lvlActs button { width: 26px; height: 26px; }
+#modesGrid .lvlActs .i { width: 13px; height: 13px; }
+#modesGrid .lvlWrap > .lvlTag { position: absolute; z-index: 2; left: 10px; right: auto; top: 64px; font-size: 9.5px; padding: 1px 6px; }
+#modesGrid .noLevels { padding: 12px 16px; font-size: 13px; }
+@media (max-width: 820px) { .chGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } #modesGrid .lvlRow { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .chGrid { grid-template-columns: 1fr; gap: 6px; }
+  #modesGrid .lvlRow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  #modesGrid .lvlPreview { height: 62px; padding: 4px; }
+  #modesGrid .lvlName { font-size: 11.5px; }
+  #modesGrid .lvlWrap > .lvlTag { top: 48px; }
+  .lvlHeadActs { margin-left: 0; width: 100%; }
+}

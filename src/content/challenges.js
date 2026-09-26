@@ -101,6 +101,11 @@ export const CHALLENGES = [
       const wall1 = [], wall2 = [];
       for (let x = 0; x < C.cols; x++) { if (x < C.cols - 3) wall1.push(b(x, C.hy + 1)); if (x > 2) wall2.push(b(x, C.hy + 3)); }
       return [...wall1, ...wall2, b(C.cx + v.pick([-3, 3]), C.by - 1)]; } },
+  // trampolines: dos lanzaderas junto a la salida; giran cada turno: cuando apuntan arriba son un atajo
+  // hacia el hoyo, y si no, un desvío (una sola idea: saber cuándo subirse)
+  { id: 'springboard', group: 'warmup', icon: 'i-launch', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'wood', scene: 'mini',
+    layout: (C, v) => { const r = v.rot();
+      return [{ type: 'launcher', x: C.cx - 2, y: C.by, rot: r }, { type: 'launcher', x: C.cx + 2, y: C.by, rot: (r + 2) % 4 }]; } },
   { id: 'rapids', group: 'warmup', icon: 'i-wave', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'water', scene: 'lake', mirror: true,
     layout: (C, v) => { const long = v.chance(.5) ? 1 : 0;
       return [...col('river', C.cx - 2, C.hy, C.hy + 1 + long), ...col('river', C.cx + 2, C.hy, C.hy + 2 - long)]; } },

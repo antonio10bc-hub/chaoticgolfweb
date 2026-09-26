@@ -15,7 +15,7 @@ const make = (ch, seed) => {
 };
 
 test('desafíos: todos en un grupo de dificultad y con nombre propio', () => {
-  assert.ok(CHALLENGES.length >= 17);
+  assert.ok(CHALLENGES.length >= 18);
   for (const ch of CHALLENGES) assert.ok(CH_GROUPS.includes(ch.group), ch.id);
   assert.equal(new Set(CHALLENGES.map(c => c.id)).size, CHALLENGES.length);
   assert.equal(new Set(WEEKLY.map(c => c.id)).size, WEEKLY.length);

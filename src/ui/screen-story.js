@@ -40,17 +40,18 @@ export function startLevel(level, mode, idx = null, { variant = null, run = null
 }
 
 // tarjeta de nivel (miniatura, número, nombre y estado)
-function levelCard(i, L, { done, next, best, saved, attr }) {
+// compact (Modos de juego): tarjeta pequeña, sin "Jugar" (toda la tarjeta lo es): solo el estado si lo hay
+function levelCard(i, L, { done, next, best, saved, attr, compact = false }) {
   const state = done ? 'done' : next ? 'next' : '';
-  const label = done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="lsTxt">${t('story.completed')}</span>` : next ? t('story.next') : t('story.play');
-  return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${i * 60}ms" ${attr}` +
+  const label = compact && !done && !next ? '' : done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="lsTxt">${t('story.completed')}</span>` : next ? t('story.next') : t('story.play');
+  return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${Math.min(i, 8) * 45}ms" ${attr}` +
     ` aria-label="${esc(t('story.levelAria', { n: i + 1, name: levelName(L) }))}${done ? ` · ${esc(t('story.done'))}` : ''}">` +
     `<span class="lvlNum">${i + 1}</span>` +
     `<span class="lvlPreview">${levelPreviewSVG(L)}</span>` +
     `<span class="lvlName">${esc(levelName(L) || t('story.untitled'))}</span>` +
-    `<span class="lvlFoot"><span class="lvlState">${label}</span>` +
-    (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(turnsLabel(best.turns))}</span>` : '') +
-    `</span>${saved ? `<span class="lvlSaved">${esc(t('story.inProgress'))}</span>` : ''}</button>`;
+    (label || best ? `<span class="lvlFoot">${label ? `<span class="lvlState">${label}</span>` : ''}` +
+      (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(turnsLabel(best.turns))}</span>` : '') + `</span>` : '') +
+    `${saved ? `<span class="lvlSaved">${esc(t('story.inProgress'))}</span>` : ''}</button>`;
 }
 
 export function openStory() {
@@ -91,9 +92,8 @@ export function puzzlesSectionHTML() {
     groups.at(-1).items.push(i);
   });
   return `<section class="lvlSection puzzles"><h3>${esc(t('story.puzzlesH'))} <span class="lvlCount">${nDone}/${app.puzzleLevels.length}</span></h3>` +
-    `<p class="lvlSub">${esc(t('story.puzzlesSub'))}</p>` +
     groups.map(gr => (groups.length > 1 ? `<h4 class="lvlGroup">${esc(t('modes.groups.' + gr.id))} <span>${gr.items.filter(i => done[i]).length}/${gr.items.length}</span></h4>` : '') +
-      `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"` })).join('') + `</div>`).join('') +
+      `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"`, compact: true })).join('') + `</div>`).join('') +
     `</section>`;
 }
 // tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
@@ -104,8 +104,8 @@ export function yoursSectionHTML() {
     `<span class="lvlHeadActs"><button class="btn-light btn-sm btn-icon" data-mode="editor">${icon('i-plus')}${esc(t('story.create'))}</button>` +
     `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span></h3><div class="lvlRow">` + (levels.length
     ? levels.map((L, j) => { const i = base + j, name = L.name || t('story.untitled');
-      return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"` }) +
-        `<span class="lvlActs">${L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : ''}` +
+      return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"`, compact: true }) +
+        (L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : '') + `<span class="lvlActs">` +
         `<button class="btn-light btn-sm btn-icon" data-lvedit="${j}" title="${esc(t('lib.edit'))}" aria-label="${esc(t('lib.editAria', { name }))}">${icon('i-wrench')}</button>` +
         `<button class="btn-light btn-sm btn-icon danger" data-lvdel="${j}" title="${esc(t('lib.delete'))}" aria-label="${esc(t('lib.deleteAria', { name }))}">${icon('i-trash')}</button></span></div>`; }).join('')
     : `<div class="noLevels">${esc(t('story.none'))}</div>`) +

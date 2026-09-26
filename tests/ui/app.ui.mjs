@@ -375,7 +375,7 @@ it('probar nivel: con trampas (cartas a mano, deshacer y mover piezas con la rue
 it('desafíos: todos arrancan con sus piezas dentro del tablero, sin solaparse ni tapar salidas, hoyo o PAR', async () => {
   await fresh();
   const ids = await app(() => import('/src/content/challenges.js').then(m => m.CHALLENGES.map(c => c.id)));
-  assert.ok(ids.length >= 17);
+  assert.ok(ids.length >= 18);
   for (const id of ids) {
     await app(() => localStorage.removeItem('chaoticgolf_save_challenge'));
     await page.evaluate(id => import('/src/ui/screen-modes.js').then(m => m.startChallenge(id)), id); await sleep(400);

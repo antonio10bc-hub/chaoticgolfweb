@@ -176,11 +176,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
   el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
   mecánica —búnker; río y pelota de obstáculo; portales y madera; lago, esquinas y lanzadera; todo en campo grande—,
-  con las piezas en la zona entre la pelota y el hoyo: `src/content/levels/generate.js`) y 17 **desafíos** en tres grupos
+  con las piezas en la zona entre la pelota y el hoyo: `src/content/levels/generate.js`) y 18 **desafíos** en tres grupos de 6
   por dificultad (calentamiento, intermedio, experto). Viven en `src/content/challenges.js` (sin interfaz): cada uno
   tiene su tamaño de campo, mazo, rivales, reglas y un **campo diseñado a mano** en coordenadas relativas al recorrido
   (hoyo, columna de PAR y salidas), que cada partida varía con su semilla (se refleja de lado, cambian giros o una pieza
-  elige entre varios sitios). Calentamiento: paso corto, hoyo inquieto, mar de arena (eslalon de búnkeres), rápidos,
+  elige entre varios sitios). Calentamiento: paso corto, hoyo inquieto, mar de arena (eslalon de búnkeres), trampolines, rápidos,
   archipiélago. Intermedio: atajos (3 parejas de portales), pinball, madrigueras, pista de despegue (cadenas de
   lanzaderas que se abren y cierran al girar), campo largo (palos de 4, 5 y 10), solo naranjas. Experto: aserradero,
   esclusas (ríos que desembocan en lanzaderas), espejos (laberinto de esquinas), prisma (iridiscentes con búnkeres de

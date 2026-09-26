@@ -352,33 +352,35 @@ export function openModes(tab) {
       `<div><dt>${esc(t('decks.pct'))}</dt><dd>${pct}</dd></div></dl>` +
       `<div class="dkBtns">${btns}</div></article>`;
   };
-  const quickPanel = `<p class="mdLead">${esc(t('decks.lead'))}</p><div class="deckList">${DECKS.map(deckCard).join('')}</div>`;
+  const quickPanel = `<div class="deckList">${DECKS.map(deckCard).join('')}</div>`;
 
   /* ---- juegos especiales ---- */
+  // una sola línea con lo importante (récord, hoyo a medias) y el botón a la derecha
   const rushCard = `<article class="modeCard rush">
-      <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3><small>${esc(t('modes.rush.holes', { n: RUSH_HOLES }))}</small></div></div>
-      <p>${esc(t('modes.rush.sub'))}</p>
-      <div class="mdStats">${stat('i-trophy', t('modes.rush.best', { n: R.rush.best || 0 }))}${rush ? stat('i-flag', t('modes.holeN', { n: rush.hole + 1, total: rush.total })) : ''}${mini({ p: R.played.rush, w: R.won.rush })}</div>
+      <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3>` +
+    `<small>${esc([t('modes.rush.holes', { n: RUSH_HOLES }), t('modes.rush.best', { n: R.rush.best || 0 }), rush ? t('modes.holeN', { n: rush.hole + 1, total: rush.total }) : ''].filter(Boolean).join(' · '))}</small></div></div>
       <div class="mdBtns">${rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
+  // desafío: toda la tarjeta es el botón; a la derecha, jugar / continuar / superado y, si ya se ha jugado, victorias/partidas
+  const chEnd = (saved, done, s) => `<span class="chEnd">${saved ? `<span class="chCont">${esc(t('menu.continue'))}</span>`
+    : `<span class="chGo${done ? ' ok' : ''}"><svg class="i" aria-hidden="true"><use href="#${done ? 'i-check' : 'i-play'}"/></svg></span>`}` +
+    (s?.p ? `<small class="chSt" title="${esc(t('modes.chStat', { w: s.w || 0, p: s.p }))}">${s.w || 0}/${s.p}</small>` : '') + `</span>`;
   const chCard = ch => {
-    const done = R.challenges[ch.id];
-    return `<article class="chCard${done ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
-      `<div class="chTxt"><b>${esc(t('challenges.' + ch.id + '.name'))}</b><small>${esc(t('challenges.' + ch.id + '.desc'))}</small>${mini(R.chStats[ch.id])}</div>` +
-      (done ? `<span class="chDone"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
-      (csave?.run?.id === ch.id ? cont('resume:challenge') : btn('ch:' + ch.id, t('modes.play'), !done)) + `</article>`;
+    const done = R.challenges[ch.id], saved = csave?.run?.id === ch.id, name = t('challenges.' + ch.id + '.name'), desc = t('challenges.' + ch.id + '.desc');
+    return `<button class="chCard${done ? ' done' : ''}${saved ? ' saved' : ''}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" aria-label="${esc(name + '. ' + desc)}">` +
+      `<span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
+      `<span class="chTxt"><b>${esc(name)}</b><small>${esc(desc)}</small></span>${chEnd(saved, done, R.chStats[ch.id])}</button>`;
   };
-  // en grupos, como los puzles: los de siempre, los de las piezas nuevas y los combinados (ch.group)
   const chGroups = CH_GROUPS.map(g => ({ g, list: CHALLENGES.filter(c => c.group === g) })).filter(x => x.list.length);
   const chCards = chGroups.map(({ g, list }) => `<h4 class="lvlGroup">${esc(t('modes.groups.' + g))} <span>${list.filter(c => R.challenges[c.id]).length}/${list.length}</span></h4>` +
     `<div class="chGrid">${list.map(chCard).join('')}</div>`).join('');
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
   const wk = weekKey(), { rule } = weeklySetup(wk), wbest = R.weekly.weeks[wk]?.best, left = weekDaysLeft();
-  const weeklyCard = `<article class="chCard weekly${wbest ? ' done' : ''}"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
-    `<div class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}</small>` +
-    `<b>${esc(t('weekly.' + rule.id + '.name'))}</b><small>${esc(t('weekly.' + rule.id + '.desc'))}</small>` +
-    `<span class="wkBest">${esc(wbest ? t('modes.weekly.best', { turns: turnsLabel(wbest) }) : t('modes.weekly.noBest'))}</span>${mini(R.weekly.weeks[wk])}</div>` +
-    (wsave ? cont('resume:weekly') : btn('weekly', wbest ? t('modes.again') : t('modes.play'))) + `</article>`;
-  const specialPanel = `<p class="mdLead">${esc(t('modes.specialLead'))}</p>` + rushCard +
+  const wname = t('weekly.' + rule.id + '.name'), wdesc = t('weekly.' + rule.id + '.desc');
+  const weeklyCard = `<button class="chCard weekly${wbest ? ' done' : ''}${wsave ? ' saved' : ''}" data-mode="${wsave ? 'resume:weekly' : 'weekly'}" aria-label="${esc(t('modes.weekly.title') + ': ' + wname + '. ' + wdesc)}">` +
+    `<span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
+    `<span class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}${wbest ? ' · ' + esc(t('modes.weekly.best', { turns: turnsLabel(wbest) })) : ''}</small>` +
+    `<b>${esc(wname)}</b><small>${esc(wdesc)}</small></span>${chEnd(wsave, !!wbest, R.weekly.weeks[wk])}</button>`;
+  const specialPanel = rushCard +
     `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}${chCards}</section>` +
     puzzlesSectionHTML() + yoursSectionHTML();
 
