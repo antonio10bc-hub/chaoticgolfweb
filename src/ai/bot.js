@@ -11,6 +11,7 @@
    funciona con la IA sin tocar este archivo.
    ========================================================= */
 import { CARDS } from '../content/cards/index.js';
+import { TILES } from '../content/tiles/index.js';
 
 // personalidades: pesos de la evaluación y ganas de reaccionar con naranjas
 export const STYLES = {
@@ -112,9 +113,20 @@ function pendingChoices(g) {
     case 'dedoAmount': for (const n of [1, 2, 3]) out.push(['amount', n]); break;
     case 'pickHoled': for (const b of S.balls) if (b.holed) out.push(['pickHoled', b.player]); break;
     case 'pickBall':
-    case 'placeTile':
       for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) if (g.selectableAt(x, y)) out.push(['cell', x, y]);
       break;
+    case 'placeTile': {
+      // en tableros grandes (minigolf, Ultimate) solo se piensa cerca de las pelotas y del hoyo; las piezas
+      // que giran (esquina, lanzadera) se prueban en sus 4 orientaciones
+      const big = S.cols * S.rows > 99, rot = TILES[pd.tileType]?.rotates;
+      const near = (x, y) => Math.abs(x - S.hole.x) + Math.abs(y - S.hole.y) <= 3 || S.balls.some(b => !b.holed && Math.abs(x - b.x) + Math.abs(y - b.y) <= 3);
+      for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
+        if (!g.selectableAt(x, y) || ((big || rot) && !near(x, y))) continue;
+        if (rot) for (let r = 0; r < 4; r++) out.push(['cellRot', x, y, r]);
+        else out.push(['cell', x, y]);
+      }
+      break;
+    }
   }
   return out;
 }
@@ -123,6 +135,7 @@ export function applyAction(g, a) {
   switch (a[0]) {
     case 'card': return g.clickCard(a[1], a[2]);
     case 'cell': return g.clickCell(a[1], a[2]);
+    case 'cellRot': if (g.pending) g.pending.rot = a[3]; return g.clickCell(a[1], a[2]);
     case 'amount': return g.chooseAmount(a[1]);
     case 'pickHoled': return g.pickHoled(a[1]);
   }
@@ -300,7 +313,7 @@ export function explainPlay(before, after, p, cardKey) {
     let near = null;
     for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
     if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
-    if (placed.type === 'river' || placed.type === 'lake') return { key: placed.type };
+    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher'].includes(placed.type)) return { key: placed.type };
     return { key: 'portal' };
   }
   const me0 = ballOf(B, p), me1 = ballOf(A, p);

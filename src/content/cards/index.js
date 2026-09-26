@@ -15,10 +15,10 @@
 // El nombre visible sale de i18n: cards.<id>.name / cards.<id>.short, y la
 // explicación de qué hace (tooltip) de cards.<id>.desc
 import { t } from '../../i18n/index.js';
-import { palo1, palo2, palo3 } from './palo.js';
+import { palo1, palo2, palo3, palo4, palo5, palo10, paloIri } from './palo.js';
 import dedo from './dedo.js';
 import { hoyoUp, hoyoDown, hoyoLeft, hoyoRight, oHoyoUp, oHoyoDown, oHoyoLeft, oHoyoRight } from './hoyo.js';
-import { bunker, portal, river, lake } from './place-tile.js';
+import { bunker, portal, river, lake, block, corner, tunnel, launcher } from './place-tile.js';
 import oPalo1 from './palo-reactivo.js';
 import no from './no.js';
 
@@ -29,7 +29,10 @@ const CARD_LIST = [
   oPalo1,
   oHoyoUp, oHoyoDown, oHoyoLeft, oHoyoRight,
   no,
-  river, lake, // (al final: el orden de las cartas de siempre, y por tanto del barajado, no cambia)
+  // (al final: el orden de las cartas de siempre, y por tanto del barajado, no cambia)
+  river, lake,                                      // baraja de agua
+  palo4, palo5, block, corner, tunnel, launcher,    // baraja de minigolf
+  palo10, paloIri,                                  // Ultimate
 ];
 
 for (const c of CARD_LIST) {

@@ -249,3 +249,18 @@ html.reduceMotion #board:has(.cell.river) { animation: none; }
 #board .cell.lake.wE.wN.wS::before { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { #board:has(.cell.lake) { animation: none; } }
 html.reduceMotion #board:has(.cell.lake) { animation: none; }
+
+/* ---------- piezas de madera (baraja de minigolf) ---------- */
+.cell.wood { overflow: visible; }
+.tile-block, .tile-corner, .tile-tunnel, .tile-launcher { background: transparent; width: 100%; height: 100%; }
+.tile-block .sub, .tile-corner .sub, .tile-tunnel .sub, .tile-launcher .sub { display: none; }
+.woodPic { overflow: visible; }
+.lArrow { transform-box: view-box; transform-origin: 50px 66px; transform: rotate(var(--r)); animation: lSpin .5s cubic-bezier(.3,1.4,.5,1); }
+@keyframes lSpin { from { transform: rotate(calc(var(--r) - 90deg)); } }
+@media (prefers-reduced-motion: reduce) { .lArrow { animation: none; } }
+html.reduceMotion .lArrow { animation: none; }
+/* fantasma de la loseta a colocar (con su giro) */
+.ghostTile { position: absolute; inset: 3px; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 2; }
+.ghostTile .tilePic { width: 100%; height: 100%; }
+.cell.selectable:hover .ghostTile, .cell.selectable:focus-visible .ghostTile { opacity: .7; }
+.rotBtn { gap: 5px; } .rotBtn .i { width: 14px; height: 14px; }

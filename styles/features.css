@@ -1187,3 +1187,69 @@ html.reduceMotion #gameScreen[data-scene="lake"] #game, html.reduceMotion #gameD
 .dkCards { gap: 5px; }
 .dkCards .i { width: 14px; height: 14px; }
 html.reduceMotion .dmFlow { animation: none; }
+/* vista previa: tras un túnel no se sabe por dónde saldrá */
+#previewSvg .pvUnknown circle { fill: rgba(36,36,36,.55); stroke: #F6E2BE; stroke-width: 2; }
+#previewSvg .pvUnknown text { fill: #F6E2BE; font: 700 15px Outfit, sans-serif; text-anchor: middle; }
+
+/* ---------- baraja Ultimate: iridiscente ---------- */
+.deckCard.ultimate { position: relative; background-image: var(--grain), linear-gradient(115deg, rgba(255,160,210,.22), rgba(150,190,255,.22) 35%, rgba(140,240,210,.22) 65%, rgba(200,160,255,.22)); }
+.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none;
+  background: linear-gradient(115deg, #FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); background-size: 300% 100%; animation: iriShift 8s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.deckCard.ultimate .dkPic { background: linear-gradient(135deg, rgba(255,143,196,.25), rgba(143,182,255,.25), rgba(126,232,200,.25)); }
+.deckCard.ultimate .dkMain h3 { background: linear-gradient(90deg, #C2408A, #4B6FD6, #1E9E7C, #8A4FD6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.deckCard.ultimate .dkStats { background: rgba(142,107,224,.1); }
+@keyframes iriShift { to { background-position: 300% 0; } }
+html.reduceMotion .deckCard.ultimate::before { animation: none; }
+
+/* ---------- escena de minigolf: césped artificial y un marco de madera alrededor del campo ---------- */
+#gameScreen[data-scene="mini"] #game {
+  background-color: #5FA94F;
+  background-image: var(--grain),
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.06) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 80%, rgba(0,0,0,.05) 0 2px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 60px, transparent 60px 120px);
+  background-size: auto, 26px 26px, 32px 32px, auto;
+}
+#gameScreen[data-scene="mini"] #gameDecor .dBunker, #gameScreen[data-scene="mini"] #gameDecor .dTree { display: none; }
+#gameScreen[data-scene="mini"] #boardWrap { background-color: #C99257;
+  background-image: var(--grain), repeating-linear-gradient(90deg, rgba(122,82,48,.18) 0 2px, transparent 2px 38px);
+  box-shadow: inset 0 0 0 3px #A8743F, 0 0 0 4px #7A5230, 14px 14px 0 4px rgba(20,40,20,.22); }
+
+/* ---------- escena Ultimate: iridiscente ---------- */
+#gameScreen[data-scene="prism"] #game {
+  background-color: #D9CCF2;
+  background-image: var(--grain), linear-gradient(120deg, #FFD1E8, #D2E0FF 25%, #CFF5E9 50%, #FFF1C9 75%, #E6D4FF);
+  background-size: auto, 400% 400%;
+  animation: prismBg 24s ease-in-out infinite alternate;
+}
+@keyframes prismBg { to { background-position: 0 0, 100% 100%; } }
+#gameScreen[data-scene="prism"] #gameDecor .dBunker, #gameScreen[data-scene="prism"] #gameDecor .dTree { display: none; }
+#gameScreen[data-scene="prism"] #boardWrap { box-shadow: 0 0 0 3px rgba(255,255,255,.8), 0 0 0 7px #C39BFF, 0 0 40px 8px rgba(160,130,255,.45), 14px 14px 0 7px rgba(60,40,120,.18); }
+html.reduceMotion #gameScreen[data-scene="prism"] #game { animation: none; }
+@media (prefers-reduced-motion: reduce) { #gameScreen[data-scene="prism"] #game, .deckCard.ultimate::before { animation: none; } }
+.dmAlso { margin: 2px 0 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+.dmChip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; border: 1px solid var(--cream-line); color: var(--ink); font-weight: 500; }
+.dmChip .hintCard { width: 20px; height: 27px; }
+.dmQ { font: 700 12px Outfit, sans-serif; fill: #F6E2BE; letter-spacing: .1em; }
+@media (min-width: 900px) { #dialog:has(.deckIntro) { width: min(980px, 94vw); } .dmGrid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); } }
+/* con 4 barajas: tarjetas más compactas para que la pestaña quepa en pantalla */
+@media (min-width: 641px) {
+  .deckList { gap: 10px; }
+  .deckCard { padding: 12px 18px 12px 14px; row-gap: 7px; column-gap: 16px; }
+  .dkPic { width: 72px; height: 72px; border-radius: 16px; }
+  .dkArt { width: 58px; height: 58px; }
+  .dkMain h3 { font-size: 19px; margin-bottom: 2px; }
+  .dkMain p { font-size: 13px; line-height: 1.35; }
+  .dkMain .mdStats { margin-top: 5px; }
+  .dkStats { padding: 7px 4px; }
+  .dkStats dd { font-size: 21px; }
+  #modesScreen:has(.deckList) { padding-top: 6vh; }
+}
+/* Ultimate: sobre el fondo claro, la barra de la partida y las etiquetas en tinta oscura */
+#gameScreen[data-scene="prism"] #gameBar .btn-ghost,
+body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) #sfxBtn,
+body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) #sndCfgBtn { --b-fg: #3B2C63; --b-line: rgba(59,44,99,.35); --b-bg: rgba(255,255,255,.5); }
+#gameScreen[data-scene="prism"] #piles .pile, #gameScreen[data-scene="prism"] #lastPlay, #gameScreen[data-scene="prism"] .pileLbl { color: #3B2C63; }
+#gameScreen[data-scene="prism"] .pileLbl b { border-color: rgba(59,44,99,.35); }
+#gameScreen[data-scene="prism"] #discardTop.empty { border-color: rgba(59,44,99,.35); }

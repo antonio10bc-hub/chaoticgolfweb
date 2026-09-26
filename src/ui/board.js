@@ -3,7 +3,7 @@
 import { app } from './app.js';
 import { $, $$ } from './dom.js';
 import { ASSETS, pColor } from '../art.js';
-import { tileDef } from '../content/tiles/index.js';
+import { tileDef, tilePic } from '../content/tiles/index.js';
 import { setPos } from './geometry.js';
 import { fxRewindApply } from '../fx/effects.js';
 import { previewCell, hidePreview } from './preview.js';
@@ -84,6 +84,8 @@ export function renderBoard() {
       html += `<span class="spawnMark holeMark" title="${t('board.holeMark')}"></span>`;
     const sel = g.selectableAt(x, y);
     if (sel === 'sel') { cls += ' selectable'; aria.push(t('a11y.selectable')); }
+    // colocar una loseta: al pasar por encima se ve cómo quedará (con su orientación, si gira)
+    if (sel === 'sel' && g.pending?.kind === 'placeTile') html += `<div class="ghostTile">${tilePic({ type: g.pending.tileType, rot: g.pending.rot || 0 })}</div>`;
     if (sel === 'out') { cls += ' selectable-out'; title = t('board.outWarning'); aria.push(title); }
     const bg = ASSETS.cellArt(tile, par);
     if (cell._cls !== cls) { cell.className = cls; cell._cls = cls; }

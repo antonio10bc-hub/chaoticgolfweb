@@ -29,3 +29,13 @@ export const river = placeTile('river', { copies: 0, canPlay: g => g.anyPlaceFor
 export const lake = placeTile('lake', { copies: 0, canPlay: g => g.anyPlaceFor('lake'), blockedReason: 'reason.noLakeSpot',
   demo: { cols: 5, rows: 5, hole: { x: 4, y: 0 }, ball: { x: 0, y: 2 }, spawn: { x: 1, y: 4 }, tiles: [{ type: 'lake', x: 2, y: 1 }, { type: 'lake', x: 2, y: 2 }, { type: 'lake', x: 3, y: 2 }],
     card: 'palo3', dir: 'right' } });
+
+// minigolf: piezas de madera (0 copias fuera de su baraja). Esquina y lanzadera se giran al colocarlas.
+export const block = placeTile('block', { copies: 0,
+  demo: { cols: 5, rows: 5, hole: { x: 4, y: 0 }, ball: { x: 1, y: 3 }, tiles: [{ type: 'block', x: 3, y: 3 }], card: 'palo3', dir: 'right' } });
+export const corner = placeTile('corner', { copies: 0,
+  demo: { cols: 5, rows: 5, hole: { x: 4, y: 1 }, ball: { x: 1, y: 4 }, tiles: [{ type: 'corner', x: 1, y: 1, rot: 0 }], card: 'palo5', dir: 'up' } });
+export const tunnel = placeTile('tunnel', { copies: 0,
+  demo: { cols: 5, rows: 5, hole: { x: 4, y: 0 }, ball: { x: 0, y: 2 }, tiles: [{ type: 'tunnel', x: 2, y: 2 }], card: 'palo3', dir: 'right' } });
+export const launcher = placeTile('launcher', { copies: 0,
+  demo: { cols: 7, rows: 5, hole: { x: 6, y: 0 }, ball: { x: 0, y: 3 }, tiles: [{ type: 'launcher', x: 1, y: 3, rot: 1 }], card: 'palo2', dir: 'right' } });

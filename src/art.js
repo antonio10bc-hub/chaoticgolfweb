@@ -79,7 +79,7 @@ export const ASSETS = {
     const d = tileDef(type), pr = tile?.pair ? ` pair${tile.pair}` : '', letter = tile?.pair ? ' ' + 'ABCDEF'[tile.pair - 1] : '';
     return ART[d.tileArt] && !pr
       ? `<div class="cardOnCell artCard${extra}"><img class="fill" src="${ART[d.tileArt]}" alt=""></div>`
-      : `<div class="cardOnCell ${d.tileClass}${pr}${extra}">${d.pic}<div class="sub">${t(`tiles.${type}.label`)}${letter}</div></div>`;
+      : `<div class="cardOnCell ${d.tileClass}${pr}${extra}">${d.picFor ? d.picFor(tile || {}) : d.pic}<div class="sub">${t(`tiles.${type}.label`)}${letter}</div></div>`;
   },
   trapBadgeHTML: () => `<div class="badge"><svg class="i" aria-hidden="true"><use href="#i-sand"/></svg></div>`,
   parLabelHTML: n => `<div class="parLabel">PAR ${n}</div>`,

@@ -149,6 +149,78 @@ test('colocar agua: el río crece en su columna por los extremos; el lago, pegad
   assert.equal(r.anyPlaceFor('river'), false);
 });
 
+/* ---------- baraja de minigolf y Ultimate ---------- */
+const mg = (tiles, opts = {}) => level({ cols: 7, rows: 7, hole: { x: 6, y: 0 }, ball: { x: 1, y: 3 }, tiles, ...opts });
+const at = g => [g.S.balls[0].x, g.S.balls[0].y];
+
+test('bloque: la pelota rebota y vuelve por donde venía, sin gastar paso', () => {
+  const g = mg([{ type: 'block', x: 3, y: 3 }]);
+  hand(g, 0, ['palo3']);
+  g.clickCard(0, 0); g.clickCell(4, 3); // 1 paso a (2,3), rebota, 2 pasos atrás: (1,3), (0,3)
+  assert.deepEqual(at(g), [0, 3]);
+});
+
+test('esquina: la cara inclinada desvía 90° sin gastar paso; por la espalda rebota', () => {
+  const g = mg([{ type: 'corner', x: 1, y: 1, rot: 0 }]); // ángulo recto arriba-izquierda: abierta abajo y a la derecha
+  hand(g, 0, ['palo3']);
+  g.clickCard(0, 0); g.clickCell(1, 0); // sube: (1,2), esquina → derecha: (2,1), (3,1)
+  assert.deepEqual(at(g), [3, 1]);
+  const h = mg([{ type: 'corner', x: 3, y: 3, rot: 0 }]);
+  hand(h, 0, ['palo2']);
+  h.clickCard(0, 0); h.clickCell(3, 3); // derecha: (2,3) y choca con la espalda → vuelve a (1,3)
+  assert.deepEqual(at(h), [1, 3]);
+});
+
+test('túnel: sale por uno de sus 4 lados al azar y no gasta paso', () => {
+  const seen = new Set();
+  for (let seed = 1; seed <= 30; seed++) {
+    const g = Game.fromLevel({ cols: 7, rows: 7, hole: { x: 6, y: 0 }, ball: { x: 1, y: 3 }, parCells: [], tiles: [{ type: 'tunnel', x: 2, y: 3 }], deckCounts: { palo1: 4 } }, { seed });
+    g.S.hands[0] = ['palo2']; g.clickCard(0, 0); g.clickCell(3, 3);
+    const b = g.S.balls[0]; seen.add(b.x + ',' + b.y);
+    assert.ok(!(b.x === 2 && b.y === 3)); // nunca se queda dentro
+  }
+  assert.ok(seen.size >= 3, 'sale por varios lados: ' + [...seen]);
+});
+
+test('lanzadera: se para, vuela 5 hacia su flecha y la flecha gira cada turno', () => {
+  const g = mg([{ type: 'launcher', x: 2, y: 3, rot: 0 }], { cols: 7, rows: 9, ball: { x: 1, y: 8 }, hole: { x: 6, y: 0 } });
+  g.S.balls[0].x = 1; g.S.balls[0].y = 8; g.S.tiles[0].y = 8;
+  hand(g, 0, ['palo3']);
+  g.clickCard(0, 0); g.clickCell(4, 8); // entra en la lanzadera (2,8) y vuela 5 hacia arriba → (2,3)
+  assert.deepEqual(at(g), [2, 3]);
+  const rot = g.S.tiles[0].rot; g.endTurn();
+  assert.equal(g.S.tiles[0].rot, (rot + 1) % 4);
+});
+
+test('lanzaderas enfrentadas: un solo rebote, sin ping-pong, y nadie se queda encima', () => {
+  const g = mg([{ type: 'launcher', x: 1, y: 3, rot: 1 }, { type: 'launcher', x: 6, y: 3, rot: 3 }], { cols: 8 });
+  g.S.balls[0].x = 0; g.S.balls[0].y = 3;
+  hand(g, 0, ['palo1']);
+  g.clickCard(0, 0); g.clickCell(1, 3); // A → B → (vuelve a A: ya usada) → casilla libre junto a A
+  const b = g.S.balls[0], on = g.S.tiles.find(t => t.x === b.x && t.y === b.y);
+  assert.equal(on, undefined);
+  assert.equal(g.S.log.filter(l => /volando|flies/.test(l)).length, 2);
+});
+
+test('palo iridiscente: avanza hasta chocar; la golpeada hereda el impulso y se para en el borde', () => {
+  const g = mg([], { extraBalls: [{ x: 4, y: 3 }] });
+  hand(g, 0, ['paloIri']);
+  g.clickCard(0, 0); g.clickCell(2, 3);
+  assert.deepEqual(g.S.balls.map(b => [b.x, b.y]), [[3, 3], [6, 3]]); // se para junto a la otra; la otra hasta el borde
+  const h = mg([{ type: 'block', x: 5, y: 3 }]);
+  hand(h, 0, ['paloIri']);
+  h.clickCard(0, 0); h.clickCell(2, 3);
+  assert.deepEqual(at(h), [4, 3]); // se para antes del bloque (no rebota)
+});
+
+test('palos de 4 y 5 existen, pero con 0 copias fuera de sus barajas', () => {
+  assert.equal(defaultCounts().palo4, 0); assert.equal(defaultCounts().palo5, 0); assert.equal(defaultCounts().paloIri, 0);
+  const g = mg([]);
+  hand(g, 0, ['palo5']);
+  g.clickCard(0, 0); g.clickCell(6, 3);
+  assert.deepEqual(at(g), [6, 3]);
+});
+
 test('choque: el golpeado recibe los pasos restantes', () => {
   const g = level({ extraBalls: [{ x: 1, y: 0 }] });
   hand(g, 0, ['palo3']);

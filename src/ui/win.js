@@ -251,7 +251,9 @@ function routeHTML(st, S, me) {
   for (let x = 1; x < S.cols; x++) grid.push(`M${x * U} 0V${H}`);
   for (let y = 1; y < S.rows; y++) grid.push(`M0 ${y * U}H${W}`);
   const PT = { 2: ['#5B3A8C', '#CDB8EC'], 3: ['#1E6B63', '#A6DDD5'] }; // colores de las parejas de Atajos
-  const tiles = S.tiles.map(tl => tl.type === 'river' || tl.type === 'lake'
+  const tiles = S.tiles.map(tl => ['block', 'corner', 'tunnel', 'launcher'].includes(tl.type)
+    ? `<rect x="${tl.x * U + 2}" y="${tl.y * U + 2}" width="${U - 4}" height="${U - 4}" rx="${tl.type === 'launcher' ? U / 2 : 3}" fill="#A8743F" stroke="#7A5230" stroke-width="1"/>`
+    : tl.type === 'river' || tl.type === 'lake'
     ? `<rect x="${tl.x * U + 1}" y="${tl.y * U + 1}" width="${U - 2}" height="${U - 2}" rx="${tl.type === 'lake' ? 6 : 2}" fill="${tl.type === 'lake' ? '#2E7E8C' : '#5BB6D6'}"/>`
     : tl.type === 'portal'
     ? `<circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .36}" fill="${(PT[tl.pair] || ['#2D4F7C'])[0]}"/><circle cx="${c(tl.x)}" cy="${c(tl.y)}" r="${U * .16}" fill="${(PT[tl.pair] || [0, '#A9C3E6'])[1]}"/>`

@@ -273,3 +273,20 @@ html.reduceMotion .piece.swimming .cardOnCell, html.reduceMotion .piece.swimming
 @keyframes splashIn { 25% { transform: translateY(-3%) scale(.98); } 100% { transform: translateY(10%) scale(.45); opacity: 0; } }
 .splashRing { width: 16px; height: 8px; margin: -4px 0 0 -8px; border-width: 1.5px; border-color: rgba(255,255,255,.7); animation-duration: .6s; }
 @keyframes splashRing { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }
+
+/* ---------- minigolf ---------- */
+.cell.woodHit .woodPic { animation: woodHit .26s ease-out; }
+@keyframes woodHit { 30% { transform: translate(1.5px, -1px) rotate(1.5deg); } 60% { transform: translate(-1px, 1px) rotate(-1deg); } }
+.piece.flying { z-index: 30; }
+.piece.flying .cardOnCell { filter: drop-shadow(0 14px 8px rgba(20,40,20,.35)); }
+.tunnelFx { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 8; }
+.tfArrow { position: absolute; width: 0; height: 0; border: 9px solid transparent; opacity: .25; transition: opacity .06s, transform .12s; }
+.tfArrow[data-dir="up"] { left: -9px; top: -44px; border-bottom: 12px solid #F6E2BE; border-top: 0; }
+.tfArrow[data-dir="down"] { left: -9px; top: 32px; border-top: 12px solid #F6E2BE; border-bottom: 0; }
+.tfArrow[data-dir="left"] { left: -40px; top: -9px; border-right: 12px solid #F6E2BE; border-left: 0; }
+.tfArrow[data-dir="right"] { left: 28px; top: -9px; border-left: 12px solid #F6E2BE; border-right: 0; }
+.tfArrow.on { opacity: 1; }
+.tfArrow.pick { transform: scale(1.5); filter: drop-shadow(0 0 6px #E8873A); }
+.tfArrow.pick[data-dir="up"] { border-bottom-color: #E8873A; } .tfArrow.pick[data-dir="down"] { border-top-color: #E8873A; }
+.tfArrow.pick[data-dir="left"] { border-right-color: #E8873A; } .tfArrow.pick[data-dir="right"] { border-left-color: #E8873A; }
+.tunnelFx.out { opacity: 0; transition: opacity .3s; }

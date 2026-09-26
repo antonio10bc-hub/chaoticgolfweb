@@ -4,12 +4,12 @@
 import { app } from './app.js';
 import { $, wait } from './dom.js';
 import { pieceEl, syncPieces } from './board.js';
-import { setPos, cellCenterPx, pieceCenterPx } from './geometry.js';
+import { setPos, cellCenterPx, pieceCenterPx, cellStep } from './geometry.js';
 import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
-import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, CONFETTI_C } from '../fx/juice.js';
+import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, WOOD_C, CONFETTI_C, REDUCED } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxTunnel, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
 import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
@@ -70,6 +70,51 @@ async function playEvent(ev) {
         sfx(step || 'roll'); // cada loseta suena distinto al rodar por ella (arena…)
       }
       await wait(ms + 15);
+      break;
+    }
+    case 'bump': {    // bloque (o espalda de esquina): la pieza se asoma, choca y vuelve; la madera tiembla
+      const { dx, dy } = DIRS[ev.dir];
+      inner.style.transition = 'transform 90ms ease-out';
+      inner.style.transform = `translate(${dx * 22}%, ${dy * 18}%)`;
+      await wait(90);
+      const cell = document.querySelector(`#board .cell[data-x="${ev.x}"][data-y="${ev.y}"]`);
+      cell?.classList.remove('woodHit'); void cell?.offsetWidth; cell?.classList.add('woodHit');
+      const { px, py } = cellCenterPx(ev.x, ev.y);
+      fxSpawn(px - dx * 18, py - dy * 22, { n: 5, colors: WOOD_C, size: 4, dist: 16, dur: 320 });
+      sfx('wood');
+      inner.style.transform = '';
+      await wait(110);
+      inner.style.transition = '';
+      break;
+    }
+    case 'deflect': { // esquina: destello en la cara inclinada y sigue en la nueva dirección
+      const cell = document.querySelector(`#board .cell[data-x="${ev.x}"][data-y="${ev.y}"]`);
+      cell?.classList.remove('woodHit'); void cell?.offsetWidth; cell?.classList.add('woodHit');
+      sfx('woodTick');
+      await wait(40);
+      break;
+    }
+    case 'tunnel': {  // túnel: la pieza desaparece dentro, parpadean las 4 salidas (tensión) y sale por una
+      el.style.opacity = 0;
+      const { px, py } = cellCenterPx(ev.x, ev.y);
+      const tension = fxTunnel(px, py, ev.dir);
+      sfx('tunnel');
+      await wait(REDUCED ? 250 : tension);
+      el.style.opacity = 1;
+      sfx('pop');
+      break;
+    }
+    case 'launch': {  // lanzadera: vuelo en arco por encima de todo, con sombra en el suelo, y aterrizaje
+      const s = cellStep(), cur = pieceCenterPx(el), dist = Math.hypot(ev.x * s.w + s.w / 2 - cur.px, ev.y * s.h + s.h / 2 - cur.py);
+      const ms = Math.min(900, 380 + dist * 1.1);
+      sfx('launch');
+      el.classList.add('flying');
+      setPos(el, ev.x, ev.y, ms, 'cubic-bezier(.35,.1,.55,.95)');
+      inner.animate([{ transform: 'translateY(0) scale(1)' }, { transform: `translateY(-${Math.min(90, 30 + dist * .25)}px) scale(1.35)`, offset: .5 }, { transform: 'translateY(0) scale(1)' }],
+        { duration: ms, easing: 'ease-in-out' });
+      await wait(ms);
+      el.classList.remove('flying');
+      if (!ev.out) { const { px, py } = cellCenterPx(ev.x, ev.y); fxSpawn(px, py, { n: 7, colors: GRASS_C, size: 5, dist: 22, dur: 380, gravity: 14 }); fxShake(); sfx('pop'); }
       break;
     }
     case 'drift': {   // río: la pieza flota y la corriente la baja despacio, con ondas a su paso

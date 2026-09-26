@@ -14,7 +14,7 @@ import { toast } from './hud.js';
 import { sfx } from '../audio/sfx.js';
 
 /* ---------- registro de la última jugada (desde el controlador) ---------- */
-const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash']);
+const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash', 'launch', 'bump']);
 // posiciones antes de la jugada (barato: solo pelotas y hoyo)
 export const piecesBefore = g => ({
   balls: g.S.balls.map(b => ({ player: b.player, x: b.x, y: b.y, holed: b.holed })),
@@ -68,7 +68,22 @@ function drawBoard(c, S, fp, box, col) {
   } };
   parLabels();
   for (const tl of S.tiles) {
-    if (tl.type === 'river' || tl.type === 'lake') {
+    if (['block', 'corner', 'tunnel', 'launcher'].includes(tl.type)) { // piezas de madera
+      const x0 = ox + tl.x * cw + gap, y0 = oy + tl.y * ch + gap, w = cw - gap * 2, h = ch - gap * 2, r = tl.rot || 0;
+      c.fillStyle = '#A8743F'; c.strokeStyle = '#7A5230'; c.lineWidth = cw * .03;
+      if (tl.type === 'corner') {
+        const P = [[[x0, y0], [x0 + w, y0], [x0, y0 + h]], [[x0, y0], [x0 + w, y0], [x0 + w, y0 + h]], [[x0 + w, y0], [x0 + w, y0 + h], [x0, y0 + h]], [[x0, y0], [x0, y0 + h], [x0 + w, y0 + h]]][r % 4];
+        c.beginPath(); P.forEach(([px, py], i) => c[i ? 'lineTo' : 'moveTo'](px, py)); c.closePath(); c.fill(); c.stroke();
+      } else if (tl.type === 'launcher') {
+        c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .38, 0, 7); c.fill(); c.stroke();
+        c.save(); c.translate(cx(tl.x), cy(tl.y)); c.rotate(r * Math.PI / 2); c.fillStyle = '#E8873A';
+        c.beginPath(); c.moveTo(0, -cw * .26); c.lineTo(cw * .17, 0); c.lineTo(-cw * .17, 0); c.fill(); c.fillRect(-cw * .06, 0, cw * .12, cw * .22); c.restore();
+      } else {
+        rr(c, x0, y0, w, h, cw * .12); c.fill(); c.stroke();
+        c.fillStyle = '#E2B77E'; rr(c, x0 + w * .14, y0 + h * .12, w * .72, h * .7, cw * .08); c.fill();
+        if (tl.type === 'tunnel') { c.fillStyle = '#3A2614'; c.font = `700 ${Math.round(cw * .36)}px Outfit, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', cx(tl.x), cy(tl.y)); c.textBaseline = 'alphabetic'; }
+      }
+    } else if (tl.type === 'river' || tl.type === 'lake') {
       const rv = tl.type === 'river', x0 = ox + tl.x * cw, y0 = oy + tl.y * ch;
       c.fillStyle = rv ? '#5BB6D6' : '#2E7E8C';
       const up = S.tiles.some(o => o.type === tl.type && o.x === tl.x && o.y === tl.y - 1), dn = S.tiles.some(o => o.type === tl.type && o.x === tl.x && o.y === tl.y + 1);
@@ -103,6 +118,8 @@ function drawBoard(c, S, fp, box, col) {
     const p = pos[e.p]; if (!p) continue;
     const from = { x: p.x, y: p.y };
     if (e.t === 'move' || e.t === 'drift') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; p.moved = true; }
+    else if (e.t === 'launch') { const to = { x: Math.max(-.45, Math.min(S.cols - .55, e.x)), y: Math.max(-.45, Math.min(S.rows - .55, e.y)) }; segs.push({ id: e.p, from, to, jump: true }); p.x = e.x; p.y = e.y; p.moved = true; }
+    else if (e.t === 'bump') marks.push({ k: 'hit', x: p.x, y: p.y });
     else if (e.t === 'teleport') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y }, jump: true }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'fall') { const to = { x: Math.max(-.45, Math.min(S.cols - .55, e.x)), y: Math.max(-.45, Math.min(S.rows - .55, e.y)) }; segs.push({ id: e.p, from, to }); marks.push({ k: 'fall', ...to }); p.moved = true; }
     else if (e.t === 'splash') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; marks.push({ k: 'fall', x: e.x, y: e.y }); p.moved = true; }

@@ -63,7 +63,7 @@ export function redrawCaddie() {
     return;
   }
   // con la carta elegida: señala la siguiente casilla del plan
-  const next = c.plan.actions.find((a, i) => i > 0 && a[0] === 'cell' && g.selectableAt(a[1], a[2]));
+  const next = c.plan.actions.find((a, i) => i > 0 && (a[0] === 'cell' || a[0] === 'cellRot') && g.selectableAt(a[1], a[2]));
   if (next) {
     document.querySelector(`#board .cell[data-x="${next[1]}"][data-y="${next[2]}"]`)?.classList.add('caddieCell');
     previewCell(next[1], next[2]);

@@ -123,6 +123,30 @@ export function fxEdgeFall(x, y, color) {
   }
 }
 
+// túnel: 4 flechas alrededor que se encienden en rueda cada vez más despacio (tensión) y al final
+// se queda la de la salida. Devuelve cuánto dura (ms).
+export function fxTunnel(px, py, outDir) {
+  const order = ['up', 'right', 'down', 'left'];
+  const d = document.createElement('div');
+  d.className = 'tunnelFx';
+  d.style.left = px + 'px'; d.style.top = py + 'px';
+  d.innerHTML = order.map(k => `<i class="tfArrow" data-dir="${k}"></i>`).join('');
+  fxGetDomLayer().appendChild(d);
+  const arrows = [...d.children];
+  // rueda: 7-10 destellos que se van frenando, parando en la salida
+  const stopAt = order.indexOf(outDir), laps = 2 * 4 + ((stopAt - 0 + 4) % 4);
+  let tm = 0, delay = 55;
+  for (let i = 0; i <= laps; i++) {
+    const k = i % 4, last = i === laps;
+    setTimeout(() => { arrows.forEach((a, j) => a.classList.toggle('on', j === k)); if (last) arrows[k].classList.add('pick'); }, tm);
+    tm += delay; delay *= 1.16;
+  }
+  const total = tm + 260;
+  setTimeout(() => d.classList.add('out'), total);
+  setTimeout(() => d.remove(), total + 400);
+  return total;
+}
+
 // chapuzón en el lago: un aro de agua que se abre (sutil: cabe en una sola casilla)
 export function fxSplashRing(px, py) {
   if (REDUCED) return;

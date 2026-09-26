@@ -24,13 +24,21 @@
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
-import { TILES, isTrap, isPortal, isRiver, isLake, isWater } from '../content/tiles/index.js';
+import { TILES, isTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
 const SPAWN_NEIGHBORS = [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]];
 const MAX_LOG = 200, MAX_HISTORY = 100;
+// minigolf: dirección contraria, dirección de cada rotación (lanzadera) y desvío de la esquina
+// (rot = dónde está el ángulo recto: 0 arriba-izq, 1 arriba-der, 2 abajo-der, 3 abajo-izq;
+// dirección de llegada → dirección de salida; si no está, llega por la espalda y rebota)
+const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+export const ROT_DIRS = ['up', 'right', 'down', 'left'];
+const CORNER_TURN = [{ up: 'right', left: 'down' }, { up: 'left', right: 'down' }, { down: 'left', right: 'up' }, { down: 'right', left: 'up' }];
+const MAX_RUN = 60;      // tope de casillas del palo iridiscente (bucles de esquinas o portales)
+const FLY = 5;           // casillas que vuela una pieza desde la lanzadera
 // tope de choques encadenados: con portales puede formarse un bucle infinito
 // (P2 · A · B · P1: A golpea a B, B sale por P2 y vuelve a golpear a A…).
 // El juego original reventaba la pila en ese caso; aquí la cadena se detiene.
@@ -345,15 +353,27 @@ export class Game {
       this.moveBallTransfer(hit, 'down', 1);
       if (this.ballAt(x, ey)) return; // no se ha podido mover: se queda al final del río
     }
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) { // (Ultimate) la salida la tapa una pieza: a la libre más cercana
+      const spot = this.nearestFree(x, ey) || { x, y };
+      ball.x = spot.x; ball.y = spot.y;
+      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+      return;
+    }
     ball.x = x; ball.y = ey;
     this.anim({ t: 'drift', p: pid, x, y: ey, out: true });
     this.log('log.ballRiverOut', { b, x, y: ey });
     if (isLake(this.tileAt(x, ey))) this.ballInWater(ball); // (del río al lago)
+    else if (isLauncher(this.tileAt(x, ey))) this.launchBall(ball);
   }
   // tras volver a la salida: si en ella hay agua, el río la arrastra (o la casilla libre más cercana);
   // si hay lago, a la casilla libre más cercana
   spawnWater(ball) {
     const tl = this.tileAt(ball.x, ball.y), pid = 'b' + ball.player;
+    if (isDevice(tl) || isLauncher(tl)) { // (minigolf: nadie se queda encima de una pieza)
+      const spot = this.nearestFree(ball.x, ball.y);
+      if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y }); }
+      return;
+    }
     if (!isWater(tl)) return;
     let spot = null;
     if (isRiver(tl)) {
@@ -368,6 +388,77 @@ export class Game {
     if (!spot) return;
     ball.x = spot.x; ball.y = spot.y;
     this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+  }
+
+  /* ---- minigolf: la lanzadera ---- */
+  // la pelota está sobre una lanzadera: vuela 5 casillas hacia la flecha por encima de todo y, al
+  // caer, se aplica lo que haya (hoyo, agua, búnker…). Si hay otra pelota, la golpea (1 casilla) y
+  // ocupa su sitio; sobre una pieza de madera o un portal no se puede aterrizar: cae justo antes.
+  // Si aterriza fuera del tablero, se cae. Otra lanzadera la vuelve a lanzar, pero nunca hacia una por la
+  // que ya ha pasado en esta jugada (dos lanzaderas enfrentadas harían ping-pong): entonces, y si no hay
+  // dónde aterrizar, cae en la casilla libre más cercana. Nadie se queda encima de una lanzadera.
+  launchBall(ball, used = new Set()) {
+    const pid = 'b' + ball.player, b = playerTag(ball.player);
+    const from = this.tileAt(ball.x, ball.y), dir = ROT_DIRS[(from?.rot || 0) % 4], { dx, dy } = DIRS[dir];
+    const x0 = ball.x, y0 = ball.y;
+    used.add(x0 + ',' + y0);
+    let tx = x0 + dx * FLY, ty = y0 + dy * FLY;
+    this.log('log.ballLaunch', { b });
+    this.tip('launcher');
+    if (!this.inBoard(tx, ty)) {
+      this.anim({ t: 'launch', p: pid, x: tx, y: ty, out: true });
+      this.anim({ t: 'fall', p: pid, x: tx, y: ty, dir });
+      this.tip('fall');
+      this.resetBallToSpawn(ball);
+      this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
+      this.log('log.ballFell', { b, x: ball.x, y: ball.y });
+      this.spawnWater(ball);
+      return;
+    }
+    const blocked = (x, y) => isDevice(this.tileAt(x, y)) || isPortal(this.tileAt(x, y));
+    while (blocked(tx, ty) && !(tx === x0 && ty === y0)) { tx -= dx; ty -= dy; }
+    this.anim({ t: 'launch', p: pid, x: tx, y: ty });
+    const hit = this.ballAt(tx, ty);
+    if (hit && hit !== ball) {
+      this.anim({ t: 'impact', p: pid, dir, target: 'b' + hit.player });
+      this.log('log.collision', { a: b, b: playerTag(hit.player), n: 1 });
+      this.moveBallTransfer(hit, dir, 1);
+      while ((this.ballAt(tx, ty) && this.ballAt(tx, ty) !== ball || blocked(tx, ty)) && !(tx === x0 && ty === y0)) { tx -= dx; ty -= dy; }
+      this.anim({ t: 'move', p: pid, x: tx, y: ty });
+    }
+    ball.x = tx; ball.y = ty;
+    this.log('log.ballLands', { b, x: tx, y: ty });
+    if (this.waterAt(tx, ty)) this.ballInWater(ball);
+    else if (isLauncher(this.tileAt(tx, ty))) {
+      if (!used.has(tx + ',' + ty)) this.launchBall(ball, used);
+      else { // (vuelve a una lanzadera ya usada, o no había dónde aterrizar): a la libre más cercana
+        const spot = this.nearestFree(tx, ty);
+        if (spot) { ball.x = spot.x; ball.y = spot.y; this.anim({ t: 'move', p: pid, x: spot.x, y: spot.y }); }
+      }
+    }
+  }
+  // el hoyo sobre una lanzadera: vuela igual; devuelve dónde se asienta
+  launchHole(x, y, used = new Set()) {
+    const S = this.S, from = this.tileAt(x, y), dir = ROT_DIRS[(from?.rot || 0) % 4], { dx, dy } = DIRS[dir];
+    used.add(x + ',' + y);
+    let tx = x + dx * FLY, ty = y + dy * FLY;
+    this.log('log.holeLaunch');
+    if (!this.inBoard(tx, ty)) {
+      this.anim({ t: 'launch', p: 'hole', x: tx, y: ty, out: true });
+      this.anim({ t: 'fall', p: 'hole', x: tx, y: ty });
+      this.log('log.holeFell', { x: S.hole.initX, y: S.hole.initY });
+      this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
+      return this.holeSpawnWater(S.hole.initX, S.hole.initY);
+    }
+    while ((isDevice(this.tileAt(tx, ty)) || isPortal(this.tileAt(tx, ty))) && !(tx === x && ty === y)) { tx -= dx; ty -= dy; }
+    this.anim({ t: 'launch', p: 'hole', x: tx, y: ty });
+    if (this.waterAt(tx, ty)) return this.holeInWater(tx, ty);
+    if (isLauncher(this.tileAt(tx, ty))) {
+      if (!used.has(tx + ',' + ty)) return this.launchHole(tx, ty, used);
+      const spot = this.nearestFree(tx, ty); // (igual que la pelota: nunca encima de una lanzadera)
+      if (spot) { this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y }); return [spot.x, spot.y]; }
+    }
+    return [tx, ty];
   }
 
   /* ---- agua: el hoyo (se mueve como una pelota) ---- */
@@ -390,12 +481,20 @@ export class Game {
       this.anim({ t: 'appear', p: 'hole', x: S.hole.initX, y: S.hole.initY });
       return this.holeSpawnWater(S.hole.initX, S.hole.initY);
     }
+    if (isDevice(this.tileAt(x, ey)) || isPortal(this.tileAt(x, ey))) { const spot = this.nearestFree(x, ey) || { x, y: yy }; this.anim({ t: 'appear', p: 'hole', x: spot.x, y: spot.y }); return [spot.x, spot.y]; }
     this.anim({ t: 'drift', p: 'hole', x, y: ey, out: true });
     if (isLake(this.tileAt(x, ey))) return this.holeInWater(x, ey);
+    if (isLauncher(this.tileAt(x, ey))) return this.launchHole(x, ey);
     return [x, ey];
   }
   holeSpawnWater(x, y) {
     const tl = this.tileAt(x, y);
+    if (isDevice(tl) || isLauncher(tl)) {
+      const spot = this.nearestFree(x, y);
+      if (!spot) return [x, y];
+      this.anim({ t: 'appear', p: 'hole', x: spot.x, y: spot.y });
+      return [spot.x, spot.y];
+    }
     if (!isWater(tl)) return [x, y];
     if (isRiver(tl)) {
       const ey = this.riverMouth(x, y);
@@ -458,22 +557,69 @@ export class Game {
     return [nx, ny];
   }
 
+  // siguiente casilla de un paso desde (x,y) hacia dir, resolviendo lo que no cuenta como casilla:
+  // portales (crossPortals), bloques y espaldas de esquina (rebote), caras de esquina (desvío 90°) y
+  // túneles (salida al azar). Devuelve { x, y, dir } (dir puede haber cambiado), out: fuera del tablero,
+  // stop: no puede avanzar (atascada, o noBounce ante un bloque) y via: ha pasado por alguna pieza.
+  nextCell(x, y, dirKey, pid, onPortal, { noBounce = false } = {}) {
+    let dir = dirKey, cx = x, cy = y, via = false;
+    for (let guard = 0; guard < 16; guard++) {
+      const { dx, dy } = DIRS[dir];
+      const [nx, ny] = this.crossPortals(cx + dx, cy + dy, dx, dy, onPortal);
+      if (!this.inBoard(nx, ny)) return { x: nx, y: ny, dir, out: true, via };
+      const tl = this.tileAt(nx, ny);
+      const turn = isCorner(tl) ? CORNER_TURN[(tl.rot || 0) % 4][dir] : null;
+      if (isBlock(tl) || (isCorner(tl) && !turn)) {
+        if (noBounce) return { x: cx, y: cy, dir, stop: true, via };
+        const bx = nx - dx, by = ny - dy;
+        this.anim({ t: 'bump', p: pid, x: nx, y: ny, dir });
+        this.log(pid === 'hole' ? 'log.holeBounce' : 'log.ballBounce', { b: pid === 'hole' ? '' : playerTag(+pid.slice(1)) });
+        this.tip('block');
+        dir = OPP[dir]; cx = bx; cy = by; via = true;
+        continue;
+      }
+      if (turn) {
+        this.anim({ t: 'move', p: pid, x: nx, y: ny });
+        this.anim({ t: 'deflect', p: pid, x: nx, y: ny, dir: turn });
+        this.tip('corner');
+        dir = turn; cx = nx; cy = ny; via = true;
+        continue;
+      }
+      if (isTunnel(tl)) {
+        const out = ROT_DIRS[Math.floor(this.rand() * 4)];
+        this.anim({ t: 'move', p: pid, x: nx, y: ny });
+        this.anim({ t: 'tunnel', p: pid, x: nx, y: ny, dir: out });
+        this.log('log.tunnel', { dir: t('dirs.' + out) });
+        this.tip('tunnel');
+        dir = out; cx = nx; cy = ny; via = true;
+        continue;
+      }
+      return { x: nx, y: ny, dir, via };
+    }
+    return { x: cx, y: cy, dir, stop: true, via };
+  }
+
   // mueve una pelota en línea recta; aplica portales, trampas, colisiones en cadena, caídas y hoyo
-  moveBallRaw(ball, dirKey, steps) {
-    const { dx, dy } = DIRS[dirKey];
+  // (y las piezas de minigolf). untilHit: palo iridiscente (sin límite de pasos hasta chocar)
+  moveBallRaw(ball, dirKey, steps, { untilHit = false } = {}) {
     const pid = 'b' + ball.player, b = playerTag(ball.player);
     const startX = ball.x, startY = ball.y;
-    let cx = ball.x, cy = ball.y;
-    let remaining = steps;
+    let cx = ball.x, cy = ball.y, dir = dirKey;
+    let remaining = untilHit ? MAX_RUN : steps;
+    const onPortal = (px, py, other) => {
+      this.log('log.ballPortal', { b });
+      this.tip('portal');
+      this.anim({ t: 'move', p: pid, x: px, y: py });
+      this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
+    };
     while (remaining > 0) {
-      const [nx, ny] = this.crossPortals(cx + dx, cy + dy, dx, dy, (px, py, other) => {
-        this.log('log.ballPortal', { b });
-        this.tip('portal');
-        this.anim({ t: 'move', p: pid, x: px, y: py });
-        this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
-      });
+      const nc = this.nextCell(cx, cy, dir, pid, onPortal, { noBounce: untilHit });
+      if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy }); break; } // atascada / el iridiscente topa con un bloque
+      dir = nc.dir;
+      const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
+      if (!this.inBoard(nx, ny) && untilHit) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy }); break; } // el iridiscente se para en el borde
       if (!this.inBoard(nx, ny)) {
-        this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
+        this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir });
         this.tip('fall');
         this.resetBallToSpawn(ball);
         this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
@@ -486,10 +632,11 @@ export class Game {
       const hit = this.ballAt(nx, ny);
       if (hit && hit !== ball) {
         ball.x = cx; ball.y = cy;
-        this.anim({ t: 'impact', p: pid, dir: dirKey, target: 'b' + hit.player });
-        this.log('log.collision', { a: b, b: playerTag(hit.player), n: remaining });
+        if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy });
+        this.anim({ t: 'impact', p: pid, dir, target: 'b' + hit.player });
+        this.log('log.collision', { a: b, b: playerTag(hit.player), n: untilHit ? '∞' : remaining });
         this.tip(this._chain ? 'chain' : 'hit'); // (golpeada que golpea a otra: carambola)
-        this.moveBallTransfer(hit, dirKey, remaining);
+        this.moveBallTransfer(hit, dir, remaining, { untilHit }); // (con el iridiscente, la golpeada hereda el impulso)
         return;
       }
       cx = nx; cy = ny; remaining--;
@@ -498,6 +645,13 @@ export class Game {
         ball.x = cx; ball.y = cy;
         this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
         this.ballInWater(ball);
+        this.finishMoveChecks(ball);
+        return;
+      }
+      if (isLauncher(this.tileAt(cx, cy))) { // lanzadera: se acaba el movimiento y sale volando
+        ball.x = cx; ball.y = cy;
+        this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
+        this.launchBall(ball);
         this.finishMoveChecks(ball);
         return;
       }
@@ -546,23 +700,23 @@ export class Game {
   }
 
   // movimiento transferido por colisión: también sufre la penalización de trampa
-  moveBallTransfer(ball, dirKey, steps) {
+  moveBallTransfer(ball, dirKey, steps, opts) {
     if ((this._chain || 0) >= MAX_CHAIN) {
       this.log('log.chainStops');
       this.anim({ t: 'chainStop', p: 'b' + ball.player }); // la interfaz lo explica en su momento de la animación
       return;
     }
     this._chain = (this._chain || 0) + 1;
-    try { this._moveBallTransfer(ball, dirKey, steps); } finally { this._chain--; }
+    try { this._moveBallTransfer(ball, dirKey, steps, opts); } finally { this._chain--; }
   }
-  _moveBallTransfer(ball, dirKey, steps) {
+  _moveBallTransfer(ball, dirKey, steps, opts) {
     let s = steps;
     if (this.inTrap(ball)) {
       s -= 1;
       this.log('log.transferTrap', { b: playerTag(ball.player) });
       if (s <= 0) { this.log('log.cantLeaveTrap', { b: playerTag(ball.player) }); return; }
     }
-    this.moveBallRaw(ball, dirKey, s);
+    this.moveBallRaw(ball, dirKey, s, opts);
   }
 
   // regla: si la pelota vuelve tras caerse a una casilla con portal, lo atraviesa y sale una
@@ -609,14 +763,17 @@ export class Game {
     const S = this.S;
     this.tip('holeMove');
     const { dx, dy } = DIRS[dirKey];
-    let cx = S.hole.x, cy = S.hole.y;
+    let cx = S.hole.x, cy = S.hole.y, dir = dirKey;
     let remaining = dist;
     while (remaining > 0) {
-      const [nx, ny] = this.crossPortals(cx + dx, cy + dy, dx, dy, (px, py, other) => {
+      const nc = this.nextCell(cx, cy, dir, 'hole', (px, py, other) => {
         this.log('log.holePortal');
         this.anim({ t: 'move', p: 'hole', x: px, y: py });
         this.anim({ t: 'teleport', p: 'hole', x: other.x, y: other.y });
       });
+      if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: 'hole', x: cx, y: cy }); break; }
+      dir = nc.dir;
+      const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: 'hole', x: nx, y: ny });
         let hx = S.hole.initX, hy = S.hole.initY;
@@ -647,6 +804,7 @@ export class Game {
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: 'hole', x: cx, y: cy });
       if (this.waterAt(cx, cy)) { const [wx, wy] = this.holeInWater(cx, cy); this.holeLandAt(wx, wy); return; }
+      if (isLauncher(this.tileAt(cx, cy))) { const [lx, ly] = this.launchHole(cx, cy); this.holeLandAt(lx, ly); return; }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.holeTrapped', { n: remaining });
         remaining = 0;
@@ -847,7 +1005,7 @@ export class Game {
         this.log('log.ballLeavesTrap', { b: playerTag(pd.ball.player), n: steps });
         this.tip('trapExit');
       }
-      this.moveBallRaw(pd.ball, tg.dir, steps);
+      this.moveBallRaw(pd.ball, tg.dir, steps, { untilHit: !!pd.untilHit });
       // si una colisión la deja sobre la casilla del hoyo, vuelve a caer dentro
       if (pd.extract && !pd.ball.holed && this.isHole(pd.ball.x, pd.ball.y)) this.finishMoveChecks(pd.ball);
       this.afterPlay();
@@ -864,7 +1022,7 @@ export class Game {
       const type = pd.tileType;
       this.pending = null;
       this.consumeCard(pd.p, pd.idx);
-      S.tiles.push({ type, x, y });
+      S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : { type, x, y });
       this.emit({ t: 'tilePlaced', x, y });
       this.log('log.tilePlaced', { tile: t(`tiles.${type}.name`), x, y });
       this.afterPlay();
@@ -901,12 +1059,18 @@ export class Game {
     if (pd.stepsLeft <= 0) return this.endSerpent(); // blindaje: jamás contar en negativo
     const ball = pd.ball;
     const pid = 'b' + ball.player, b = playerTag(ball.player);
-    const { dx, dy } = DIRS[dirKey];
-    const [nx, ny] = this.crossPortals(ball.x + dx, ball.y + dy, dx, dy, (px, py, other) => {
+    const nc = this.nextCell(ball.x, ball.y, dirKey, pid, (px, py, other) => {
       this.log('log.ballPortal', { b });
       this.anim({ t: 'move', p: pid, x: px, y: py });
       this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
     });
+    if (nc.stop) { // atascada entre piezas: pierde el paso
+      if (nc.via) this.anim({ t: 'move', p: pid, x: ball.x, y: ball.y });
+      pd.stepsLeft--;
+      return pd.stepsLeft ? true : this.endSerpent();
+    }
+    dirKey = nc.dir;
+    const { dx, dy } = DIRS[dirKey], nx = nc.x, ny = nc.y;
     if (!this.inBoard(nx, ny)) {
       this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
       this.tip('fall');
@@ -921,6 +1085,7 @@ export class Game {
     if (hit && hit !== ball) {
       // regla: el choque consume solo 1 paso; el impactado recibe ese paso
       // y el jugador conserva los movimientos restantes del dedo
+      if (nc.via) this.anim({ t: 'move', p: pid, x: ball.x, y: ball.y });
       this.anim({ t: 'impact', p: pid, dir: dirKey, target: 'b' + hit.player });
       pd.stepsLeft--;
       this.log('log.collisionDedo', { a: b, b: playerTag(hit.player), n: pd.stepsLeft });
@@ -933,6 +1098,7 @@ export class Game {
     this.anim({ t: 'move', p: pid, x: nx, y: ny });
     pd.stepsLeft--;
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
+    if (isLauncher(this.tileAt(nx, ny))) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
     if (this.trapAt(nx, ny) && pd.stepsLeft > 0) {
       this.log('log.ballTrapped', { b, n: pd.stepsLeft });
       return this.endSerpent();
@@ -958,6 +1124,14 @@ export class Game {
     const b = this.S.balls.find(bb => bb.player === pl);
     if (!b || !b.holed) return false;
     this.pending = { kind: 'move', p: pd.p, idx: pd.idx, n: 1, ball: b, extract: true, targets: this.straightTargets(b, 1) };
+    return true;
+  }
+
+  // girar la pieza que se va a colocar (esquina, lanzadera)
+  rotatePending(d = 1) {
+    const pd = this.pending;
+    if (pd?.kind !== 'placeTile' || !TILES[pd.tileType]?.rotates) return false;
+    pd.rot = (((pd.rot || 0) + d) % 4 + 4) % 4;
     return true;
   }
 
@@ -1019,6 +1193,7 @@ export class Game {
     S.turn = (S.turn + 1) % S.nPlayers;
     S.blackPlayed = 0;
     S.playedThisTurn = 0;
+    for (const tl of S.tiles) if (isLauncher(tl)) tl.rot = ((tl.rot || 0) + 1) % 4; // (minigolf) cada turno, un cuarto de vuelta
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();

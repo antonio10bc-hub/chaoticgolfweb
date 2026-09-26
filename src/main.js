@@ -90,6 +90,7 @@ window.addEventListener('keydown', e => {
   if (app.paused) return;
   if (k === 'e' && !$('endTurnBtn').disabled) { e.preventDefault(); $('endTurnBtn').click(); }
   if (k === 'd' && !$('discardBtn').disabled) { e.preventDefault(); $('discardBtn').click(); }
+  if (k === 'r' && app.game?.pending?.kind === 'placeTile') { e.preventDefault(); ctl.rotatePending(); } // girar la pieza a colocar
 });
 // sonido sutil en cualquier botón de interfaz
 document.addEventListener('click', e => { if (e.target.closest('button:not(:disabled)')) sfx('click'); }, true);

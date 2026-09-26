@@ -57,6 +57,9 @@ async function runPlan(plan, g) {
       switch (a[0]) {
         case 'card': ok = ctl.clickCard(a[1], a[2]); break;
         case 'cell': ok = ctl.clickCell(a[1], a[2]); break;
+        case 'cellRot': // gira la pieza a la vista (esquina, lanzadera) y la coloca
+          for (let k = 0; k < 4 && (G().pending?.rot || 0) !== a[3]; k++) { ctl.rotatePending(); await pwait(170); }
+          ok = ctl.clickCell(a[1], a[2]); break;
         case 'amount': ok = ctl.chooseAmount(a[1]); break;
         case 'pickHoled': ok = ctl.pickHoled(a[1]); break;
       }

@@ -20,9 +20,40 @@ const club = (grip = NAVY) =>
   `<path d="M29 77 L41 78" stroke="${CREAM}" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>`;
 
 const ARROW_ROT = { up: 0, right: 90, down: 180, left: 270 };
+// madera del minigolf
+const WD = { hi: '#E2B77E', mid: '#C99257', side: '#A8743F', dark: '#7A5230' };
+const woodGrain = (x, y, w, n) => Array.from({ length: n }, (_, i) => `<path d="M${x + 4} ${y + (i + 1) * 9}q${w * .22} -3 ${w * .45} 0t${w * .45} 0" fill="none" stroke="rgba(122,82,48,.35)" stroke-width="1.3" stroke-linecap="round"/>`).join('');
+// degradado iridiscente (Ultimate)
+let iriSeq = 0;
+const IRI = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9ECF"/><stop offset=".3" stop-color="#A8C8FF"/><stop offset=".55" stop-color="#9DF2D6"/><stop offset=".8" stop-color="#FFE59A"/><stop offset="1" stop-color="#C9A6FF"/></linearGradient></defs>`;
 
 const ARTS = {
   palo: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` + club() + ball(68, 76),
+  // palo iridiscente: el palo y la estela brillan con los colores del arcoíris
+  // (id único por dibujo: si el primero está oculto, Chrome no pinta el degradado en los demás)
+  paloIri: () => { const id = 'iri' + (++iriSeq); return IRI(id) + `<circle cx="50" cy="54" r="40" fill="url(#${id})" opacity=".35"/>` +
+    `<path d="M74 12 L44 74" stroke="${SH}" stroke-width="4" stroke-linecap="round" transform="translate(4 4)"/>` +
+    `<path d="M74 12 L44 74" stroke="url(#${id})" stroke-width="4.2" stroke-linecap="round"/>` +
+    `<path d="M76 8 L69 22" stroke="${INK}" stroke-width="8" stroke-linecap="round"/>` +
+    `<path d="M33 70 Q40 67 48 72 L46 82 Q34 85 25 81 Q22 74 33 70 Z" fill="url(#${id})" stroke="${INK}" stroke-width="1.6"/>` +
+    `<path d="M60 78 H92" stroke="url(#${id})" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 5"/>` + ball(56, 78) +
+    `<path d="M18 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFF6C9"/><path d="M84 40l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z" fill="#FFF6C9"/>`; },
+  block: () => `<rect x="24" y="24" width="56" height="60" rx="7" fill="${SH}"/>` +
+    `<rect x="20" y="18" width="58" height="62" rx="7" fill="${WD.side}"/><rect x="20" y="18" width="58" height="54" rx="7" fill="${WD.mid}"/>` +
+    `<rect x="27" y="24" width="44" height="42" rx="4" fill="${WD.hi}"/>` + woodGrain(27, 24, 44, 4) +
+    `<path d="M14 50 H4 M10 44 L4 50 L10 56" fill="none" stroke="${ACC}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  corner: () => `<polygon points="24,24 84,24 24,84" fill="${SH}"/>` +
+    `<polygon points="18,18 80,18 18,80" fill="${WD.side}" stroke="${WD.dark}" stroke-width="1.8" stroke-linejoin="round"/>` +
+    `<polygon points="26,26 62,26 26,62" fill="${WD.hi}"/><line x1="80" y1="18" x2="18" y2="80" stroke="#F6E2BE" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M60 92 V66 H86" fill="none" stroke="${ACC}" stroke-width="2.6" stroke-dasharray="1 5" stroke-linecap="round"/>` + ball(60, 92, 5),
+  tunnel: () => `<rect x="24" y="24" width="56" height="60" rx="9" fill="${SH}"/>` +
+    `<rect x="20" y="18" width="60" height="62" rx="9" fill="${WD.side}"/><rect x="20" y="18" width="60" height="56" rx="9" fill="${WD.mid}"/>` +
+    `<rect x="28" y="25" width="44" height="42" rx="5" fill="${WD.hi}"/>` +
+    `<path d="M41 18a9 9 0 0 1 18 0Z M41 74a9 9 0 0 0 18 0Z M20 37a9 9 0 0 1 0 18Z M80 37a9 9 0 0 0 0 18Z" fill="#3A2614"/>` +
+    `<text x="50" y="53" text-anchor="middle" font-size="20" font-weight="700" fill="${WD.side}">?</text>`,
+  launcher: () => `<circle cx="53" cy="58" r="34" fill="${SH}"/><circle cx="50" cy="54" r="34" fill="${WD.side}"/><circle cx="50" cy="51" r="32" fill="${WD.mid}"/>` +
+    `<circle cx="50" cy="51" r="24" fill="${WD.hi}"/><path d="M50 28L64 46H55V70H45V46H36Z" fill="${ACC}" stroke="${WD.dark}" stroke-width="1.8" stroke-linejoin="round"/>` +
+    `<path d="M50 8 V2 M44 10 L40 5 M56 10 L60 5" stroke="${ACC}" stroke-width="2.2" stroke-linecap="round"/>`,
   paloReactivo: () => `<circle cx="50" cy="54" r="40" fill="${ACC}" opacity=".16"/>` + club(ACC) + ball(68, 76) +
     `<path d="M24 12 16 26h7l-3 12 10-15h-7l3-11z" fill="${ACC}"/>`,
   dedo: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` +

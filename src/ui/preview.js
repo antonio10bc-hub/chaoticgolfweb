@@ -19,15 +19,19 @@ function simulate(g, act) {
   const evs = sim.takeEvents();
   const pos = { hole: { x: g.S.hole.x, y: g.S.hole.y } };
   for (const b of g.S.balls) pos['b' + b.player] = { x: b.x, y: b.y };
-  const paths = {}, marks = [];
+  const paths = {}, marks = [], unknown = new Set(); // (tras un túnel, el camino es incierto: se corta con un "?")
   const push = (id, pt) => {
-    if (!pos[id]) return;
+    if (!pos[id] || unknown.has(id)) return;
     (paths[id] ||= [{ ...pos[id], kind: 'start' }]).push(pt);
     pos[id] = { x: pt.x, y: pt.y };
   };
   for (const ev of evs) {
     switch (ev.t) {
-      case 'move': push(ev.p, { x: ev.x, y: ev.y, kind: 'move' }); break;
+      case 'move': case 'drift': push(ev.p, { x: ev.x, y: ev.y, kind: 'move' }); break;
+      case 'splash': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
+      case 'launch': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
+      case 'bump': if (pos[ev.p] && !unknown.has(ev.p)) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break;
+      case 'tunnel': if (pos[ev.p] && !unknown.has(ev.p)) { marks.push({ kind: 'unknown', x: ev.x, y: ev.y }); unknown.add(ev.p); } break;
       case 'teleport': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
       case 'fall': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
       case 'appear': if (paths[ev.p]) push(ev.p, { x: ev.x, y: ev.y, kind: 'appear' }); break;
@@ -95,6 +99,7 @@ function draw(res, { armedAt = null } = {}) {
     if (m.kind === 'impact') out += `<g class="pvHit" transform="translate(${c.px} ${c.py})"><path d="M0 -9V-4M0 4V9M-9 0H-4M4 0H9M-6 -6L-3.5 -3.5M3.5 3.5L6 6M6 -6L3.5 -3.5M-3.5 3.5L-6 6"/></g>`;
     if (m.kind === 'sink') out += `<circle cx="${c.px}" cy="${c.py}" r="${rBall * 1.5}" class="pvSink"/>`;
     if (m.kind === 'sand') out += `<circle cx="${c.px}" cy="${c.py}" r="${rBall * 1.3}" class="pvSand"/>`;
+    if (m.kind === 'unknown') out += `<g class="pvUnknown" transform="translate(${c.px} ${c.py})"><circle r="${rBall * 1.2}"/><text y="${rBall * .45}">?</text></g>`;
   }
   if (armedAt) { // en pantallas táctiles: primer toque = vista previa, segundo = confirmar
     const c = cellCenterPx(armedAt.x, armedAt.y);

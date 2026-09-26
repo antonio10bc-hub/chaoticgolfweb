@@ -17,7 +17,7 @@ import { PERSONAS, personaById, assignPersonas, faceSVG } from './persona.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
-import { deckById } from '../content/decks.js';
+import { deckById, deckSize } from '../content/decks.js';
 import { deckIntro } from './deck-intro.js';
 import { defaultCounts } from '../content/cards/index.js';
 
@@ -104,7 +104,10 @@ function buildPveSetup() {
   $('pveColors').innerHTML = PVE_COLORS.map((c, i) =>
     `<button class="pveColor${cfg.color === i ? ' sel' : ''}" style="background:${c}" data-color="${i}"` +
     ` title="${esc(t('pve.pickColor'))}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${cfg.color === i}"></button>`).join('');
-  $$('#pveSizes .pveOpt').forEach(b => { b.classList.toggle('sel', cfg.size === b.dataset.size); b.setAttribute('aria-pressed', cfg.size === b.dataset.size); });
+  $$('#pveSizes .pveOpt').forEach(b => {
+    b.classList.toggle('sel', cfg.size === b.dataset.size); b.setAttribute('aria-pressed', cfg.size === b.dataset.size);
+    const sz = deckSize(dk, PVE_SIZES[b.dataset.size]); b.querySelector('small').textContent = `${sz.cols}×${sz.rows}`; // (tamaño real con la baraja)
+  });
   $$('#pveOpps .pveOpt').forEach(b => { b.classList.toggle('sel', cfg.opps === +b.dataset.n); b.setAttribute('aria-pressed', cfg.opps === +b.dataset.n); });
 }
 
@@ -133,7 +136,7 @@ export function applyOwnLook(S, seats, people) {
 // extra: { counts, rules } (desafíos) · rivals: ids de personajes (el resto, al azar)
 // seed: partida igual para todo el mundo (reto diario)
 export function createVsGame(cfg, { extra = {}, rivals = [], seed } = {}) {
-  const sz = PVE_SIZES[cfg.size] || PVE_SIZES.m;
+  const sz = deckSize(deckById(cfg.deck), PVE_SIZES[cfg.size] || PVE_SIZES.m); // (minigolf y Ultimate: campo más grande)
   const prof = loadProfile();
   const people = cfg.humans > 1 ? prof.people.slice(0, cfg.humans) : [{ name: prof.name, color: cfg.color ?? prof.color }];
   const game = Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, ...extra,
@@ -157,7 +160,7 @@ export function lastPve(deck = 'classic') {
   try { const c = JSON.parse(localStorage.getItem(lastKey(deck))); return c && PVE_SIZES[c.size] ? { ...c, deck } : null; } catch (e) { return null; }
 }
 export function cfgSub(c) {
-  const sz = PVE_SIZES[c.size], parts = [`${sz.cols}×${sz.rows}`];
+  const sz = deckSize(deckById(c.deck), PVE_SIZES[c.size]), parts = [`${sz.cols}×${sz.rows}`];
   if (c.humans > 1) parts.push(t('pve.peopleN', { n: c.humans }));
   // (la baraja no se repite aquí: la tarjeta de cada baraja ya dice cuál es)
   if (c.opps) parts.push(t(c.opps > 1 ? 'pve.botsN' : 'pve.botN', { n: c.opps }), t('pve.diff' + c.diff[0].toUpperCase() + c.diff.slice(1)));

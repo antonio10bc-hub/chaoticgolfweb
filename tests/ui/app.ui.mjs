@@ -193,15 +193,14 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
   assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
 });
 
-it('modos de juego: dos pestañas (una a la vez), barajas con estadísticas y la de minigolf bloqueada', async () => {
+it('modos de juego: dos pestañas (una a la vez) y 4 barajas con estadísticas', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
-  assert.equal(await app(() => document.querySelectorAll('.deckCard').length), 3);
-  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 1);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard').length), 4);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
-  assert.equal(await app(() => document.querySelectorAll('.deckCard.locked [data-mode]').length), 0); // bloqueadas: nada que pulsar
   await click('[data-mtab="special"]'); await sleep(700);
   assert.equal(await vis(), 'special');
   assert.ok(await page.$('.mdPanel[data-panel="special"] [data-mode="rushNew"]'));
@@ -272,6 +271,28 @@ it('baraja nueva: la primera vez presenta sus cartas con un tablero de ejemplo a
   await app(() => localStorage.removeItem('chaoticgolf_save_pve'));
   await click('[data-mode="quick:water"]'); await sleep(300); await click('#pvePlay'); await sleep(500);
   assert.equal(await page.$('#dialog[open] .deckIntro'), null);
+});
+
+it('baraja de minigolf: campo 8 columnas más ancho, piezas de madera y presentación de 4 cartas', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(400); await click('[data-mtab="quick"]'); await sleep(600);
+  await app(() => { window.chaoticGolf.app.pveCfg.size = 'm'; });
+  await click('[data-mode="quick:minigolf"]'); await confirmIfAsked(); await sleep(300);
+  await click('#pvePlay'); await sleep(600);
+  assert.equal(await app(() => document.querySelectorAll('#dialog[open] .dmCard').length), 4);
+  await page.click('#dialog[open] button[value="ok"]'); await sleep(900);
+  const r = await app(() => { const S = window.chaoticGolf.app.game.S, all = [...S.deck, ...S.hands.flat()];
+    return { cols: S.cols, rows: S.rows, scene: document.getElementById('gameScreen').dataset.scene, wood: all.filter(k => ['block', 'corner', 'tunnel', 'launcher'].includes(k)).length }; });
+  assert.deepEqual(r, { cols: 15, rows: 9, scene: 'mini', wood: 13 });
+});
+
+it('Ultimate: reúne las cartas de todas las barajas', async () => {
+  await fresh({ chaoticgolf_deckIntros: { ultimate: true } });
+  await click('#modesBtn'); await sleep(400); await click('[data-mtab="quick"]'); await sleep(600);
+  await click('[data-mode="quick:ultimate"]'); await confirmIfAsked(); await sleep(300);
+  await click('#pvePlay'); await sleep(900);
+  const kinds = await app(() => { const S = window.chaoticGolf.app.game.S; return [...new Set([...S.deck, ...S.hands.flat()])]; });
+  for (const k of ['bunker', 'portal', 'river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'palo10', 'paloIri']) assert.ok(kinds.includes(k), k);
 });
 
 it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {

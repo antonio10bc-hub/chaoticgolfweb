@@ -80,6 +80,10 @@ export function sfx(name) {
     case 'sandPour': noiseHit(.34, 700, .42, 'lowpass', 0, .7); noiseHit(.22, 1600, .14, 'bandpass', .08, 1); break;     // colocar búnker
     case 'portalOpen': [392, 587, 784, 1175].forEach((f, i) => tone(f, f * 1.5, .22, 'sine', .22, i * .045)); noiseHit(.25, 2200, .12, 'bandpass', 0, 2); break;
     case 'chainBreak': tone(1320, 440, .18, 'triangle', .35); tone(990, 330, .22, 'sine', .25, .06); break; // cadena cortada
+    case 'wood':   tone(210, 150, .09, 'triangle', .7); noiseHit(.06, 1800, .25, 'bandpass', 0, 3); break; // golpe en madera
+    case 'woodTick': tone(520, 420, .05, 'triangle', .35); break;
+    case 'tunnel': [0, .09, .2, .34].forEach((d, i) => tone(300 + i * 60, 300 + i * 60, .05, 'triangle', .22, d)); break; // redoble de tensión
+    case 'launch': tone(260, 900, .28, 'sine', .45); noiseHit(.22, 1400, .2, 'bandpass', 0, 1.2); break; // ¡fiuuu!
     case 'splash': noiseHit(.28, 900, .5, 'lowpass'); tone(420, 140, .2, 'sine', .35); noiseHit(.12, 2600, .18, 'highpass', .08); break; // chapuzón
     case 'water':  noiseHit(.5, 700, .16, 'bandpass', 0, 1.4); tone(620, 700, .12, 'sine', .08, .1); break; // corriente del río (suave)
     case 'fall':   tone(520, 130, .22, 'sine', .4); break;

@@ -7,6 +7,7 @@ import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { pColor } from '../art.js';
 import { CARDS } from '../content/cards/index.js';
+import { TILES } from '../content/tiles/index.js';
 import { cardFaceHTML, cardArtHTML } from './card-art.js';
 import { fxDealFrom } from '../fx/effects.js';
 import { t } from '../i18n/index.js';
@@ -94,6 +95,8 @@ function barButtons(g) {
     const n = pd.selected.length;
     html += `<button class="btn-secondary btn-sm" data-act="confirmDiscard"${n ? '' : ' disabled'}>${n ? t('hands.discardN', { n }) : t('hands.confirm')}</button>`;
   }
+  if (pd.kind === 'placeTile' && TILES[pd.tileType]?.rotates) // esquina y lanzadera: se giran antes de colocarlas (también con R)
+    html += `<button class="btn-light btn-sm rotBtn" data-act="rotate" title="${esc(t('hands.rotateTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-reset"/></svg>${esc(t('hands.rotate'))}</button>`;
   if (pd.kind !== 'serpent') html += `<button class="btn-ghost btn-sm" data-act="cancel">${t('common.cancel')}</button>`; // el dedo ya gastado no se puede cancelar
   return html;
 }
@@ -218,6 +221,7 @@ export function bindHands() {
         case 'pickHoled': ctl.pickHoled(n); break;
         case 'confirmDiscard': ctl.confirmDiscard(); break;
         case 'cancel': ctl.cancel(); break;
+        case 'rotate': ctl.rotatePending(); break;
         case 'react': startReaction(n); break;
         case 'endReact': endReaction(); break;
       }

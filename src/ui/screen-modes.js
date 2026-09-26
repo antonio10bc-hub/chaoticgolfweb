@@ -390,12 +390,14 @@ const EMBLEM = {
   club: '<path d="M34 16 26 42" stroke="#F1F1DC" stroke-width="3.4" stroke-linecap="round"/><path d="M22 41h9" stroke="#F1F1DC" stroke-width="4" stroke-linecap="round"/><circle cx="37" cy="41" r="3.4" fill="#F1F1DC"/>',
   drop: '<path d="M30 14c6 9 11 15 11 21a11 11 0 0 1-22 0c0-6 5-12 11-21z" fill="#F1F1DC"/><path d="M25 35a5 5 0 0 0 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".45"/>',
   mill: '<path d="M30 30 30 46M24 46h12" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round"/><g fill="#F1F1DC"><path d="M30 30 22 18l5-2z"/><path d="M30 30 42 22l2 5z"/><path d="M30 30 38 42l-5 2z"/><path d="M30 30 18 38l-2-5z"/></g><circle cx="30" cy="30" r="3" fill="currentColor"/>',
+  prism: '<path d="M30 13 44 40H16Z" fill="rgba(255,255,255,.9)"/><path d="M30 13 44 40 30 33Z" fill="rgba(255,255,255,.55)"/><path d="M8 30h12M40 30l12-5M40 32l12 2M40 35l12 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
 };
-const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true" style="color:${dk.color}">` +
+const IRI_DEF = '<defs><linearGradient id="iriDeck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#C39BFF"/></linearGradient></defs>';
+const deckArt = dk0 => { const dk = dk0.ultimate ? { ...dk0, color: 'url(#iriDeck)' } : dk0; return `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true" style="color:${dk0.color}">${dk0.ultimate ? IRI_DEF : ''}` +
   `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".35" transform="rotate(-12 31 31)"/>` +
   `<rect x="14" y="8" width="34" height="46" rx="6" fill="${dk.color}" opacity=".6" transform="rotate(-5 31 31)"/>` +
   `<rect x="13" y="7" width="34" height="46" rx="6" fill="${dk.color}"/><rect x="16.5" y="10.5" width="27" height="39" rx="4" fill="none" stroke="rgba(241,241,220,.45)" stroke-width="1.4"/>` +
-  `<g transform="translate(0 0)">${EMBLEM[dk.emblem]}</g></svg>`;
+  `<g transform="translate(0 0)">${EMBLEM[dk.emblem]}</g></svg>`; };
 
 export function openModes(tab) {
   hideWin();
@@ -421,7 +423,7 @@ export function openModes(tab) {
       ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
       : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '') +
         (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '');
-    return `<article class="deckCard${dk.locked ? ' locked' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
+    return `<article class="deckCard${dk.locked ? ' locked' : ''}${dk.ultimate ? ' ultimate' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
       `<p>${esc(t('decks.' + dk.id + '.desc'))}</p>` +
