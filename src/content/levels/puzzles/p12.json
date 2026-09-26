@@ -1,47 +1,50 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Palo largo",
-  "name_en": "Long club",
-  "cols": 7,
+  "group": "mid",
+  "name": "Corriente y codo",
+  "name_en": "Current and bend",
+  "cols": 6,
   "rows": 6,
   "hole": {
-    "x": 2,
-    "y": 2
+    "x": 1,
+    "y": 4
   },
   "ball": {
-    "x": 0,
+    "x": 1,
     "y": 1
   },
   "tiles": [
     {
-      "type": "portal",
-      "x": 6,
-      "y": 0,
-      "pair": 1
-    },
-    {
-      "type": "portal",
+      "type": "river",
       "x": 2,
-      "y": 3,
-      "pair": 1
+      "y": 1
     },
     {
-      "type": "bunker",
-      "x": 5,
-      "y": 0
+      "type": "river",
+      "x": 2,
+      "y": 2
     },
     {
-      "type": "bunker",
-      "x": 3,
-      "y": 5
+      "type": "river",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "corner",
+      "x": 1,
+      "y": 5,
+      "rot": 3
     }
   ],
   "hand": [
-    "palo4",
-    "hoyoLeft",
-    "oHoyoDown"
+    "palo1",
+    "oPalo1"
   ],
   "parCells": [],
   "deckCounts": {

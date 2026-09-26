@@ -2,39 +2,46 @@
   "version": 1,
   "puzzle": true,
   "group": "expert",
-  "name": "Hoyo volador",
-  "name_en": "Flying hole",
-  "cols": 5,
-  "rows": 7,
+  "name": "Caos controlado",
+  "name_en": "Controlled chaos",
+  "cols": 7,
+  "rows": 8,
   "hole": {
-    "x": 2,
-    "y": 6
+    "x": 4,
+    "y": 7
   },
   "ball": {
-    "x": 2,
+    "x": 0,
     "y": 2
   },
   "tiles": [
     {
       "type": "river",
-      "x": 1,
-      "y": 1
+      "x": 3,
+      "y": 5
     },
     {
       "type": "river",
-      "x": 1,
-      "y": 2
+      "x": 3,
+      "y": 6
+    },
+    {
+      "type": "corner",
+      "x": 0,
+      "y": 5,
+      "rot": 3
     },
     {
       "type": "launcher",
-      "x": 0,
-      "y": 6
+      "x": 3,
+      "y": 7,
+      "rot": 1
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "palo1",
-    "oPalo1"
+    "hoyoRight",
+    "paloIri",
+    "palo3"
   ],
   "parCells": [],
   "deckCounts": {

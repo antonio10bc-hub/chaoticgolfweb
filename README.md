@@ -174,18 +174,24 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
-  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie) y 14 desafíos en tres grupos.
-  Lo de siempre: reglas especiales (solo naranjas, sin palo 3, hoyo inquieto, mar de arena con 14 búnkeres, atajos con 3 parejas de
-  portales de colores —cada portal conecta con el de su color: `tile.pair`; repartidos por zonas del
-  tablero, cada pareja entre zonas opuestas—, multitud con 7 en la mesa). Piezas nuevas (con el mazo y la escena de su
-  baraja, `deck` en `CHALLENGES`): rápidos (3 ríos), archipiélago (4 lagos), pinball (bloques y esquinas), pista de
-  despegue (5 lanzaderas), madrigueras (6 túneles) y prisma (duelo con un mazo de palos iridiscentes). Combinados:
-  aserradero (ríos que desembocan en piezas de madera, `riverMouth`) y caos total (de todo). Las piezas se colocan al
-  empezar (`placeTiles`: ríos en columna, lagos en mancha, piezas con su giro al azar) y el **desafío
-  semanal**: cada semana una regla nueva de 8 (igual para todos: tablero, mazo y rivales) con su récord.
+  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
+  mecánica —búnker; río y pelota de obstáculo; portales y madera; lago, esquinas y lanzadera; todo en campo grande—,
+  con las piezas en la zona entre la pelota y el hoyo: `src/content/levels/generate.js`) y 17 **desafíos** en tres grupos
+  por dificultad (calentamiento, intermedio, experto). Viven en `src/content/challenges.js` (sin interfaz): cada uno
+  tiene su tamaño de campo, mazo, rivales, reglas y un **campo diseñado a mano** en coordenadas relativas al recorrido
+  (hoyo, columna de PAR y salidas), que cada partida varía con su semilla (se refleja de lado, cambian giros o una pieza
+  elige entre varios sitios). Calentamiento: paso corto, hoyo inquieto, mar de arena (eslalon de búnkeres), rápidos,
+  archipiélago. Intermedio: atajos (3 parejas de portales), pinball, madrigueras, pista de despegue (cadenas de
+  lanzaderas que se abren y cierran al girar), campo largo (palos de 4, 5 y 10), solo naranjas. Experto: aserradero,
+  esclusas (ríos que desembocan en lanzaderas), espejos (laberinto de esquinas), prisma (iridiscentes con búnkeres de
+  tope), multitud y caos total. El **desafío semanal** remezcla esos campos con una regla nueva cada semana (12, igual
+  para todos: tablero, mazo y rivales) con su récord. Todos se han equilibrado con cientos de partidas entre bots
+  (duración, uso de cada mecánica, ventaja por posición) y `tests/challenges.test.mjs` comprueba sus campos y que se
+  juegan hasta el final.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
-  Modos de juego: los 20 puzles de "gana en 1 turno" en tres grupos (lo de siempre, piezas nuevas y combinados; campo
-  `group` de su JSON) y **Tus niveles** (los del creador, que también está aquí:
+  Modos de juego: los 24 puzles de "gana en 1 turno" en tres grupos por dificultad (campo `group` de su JSON): cada
+  carta de la mano hace falta (salvo alguna pista falsa a propósito en los difíciles), cada pieza cambia la jugada o es
+  una trampa para quien juega mal, y la solución no depende del azar (el test la repite con varias semillas); y **Tus niveles** (los del creador, que también está aquí:
   cada uno se edita o se elimina —con "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido).
 - **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las

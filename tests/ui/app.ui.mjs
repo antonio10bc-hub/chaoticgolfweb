@@ -374,8 +374,8 @@ it('probar nivel: con trampas (cartas a mano, deshacer y mover piezas con la rue
 
 it('desafíos: todos arrancan con sus piezas dentro del tablero, sin solaparse ni tapar salidas, hoyo o PAR', async () => {
   await fresh();
-  const ids = await app(() => import('/src/ui/screen-modes.js').then(m => m.CHALLENGES.map(c => c.id)));
-  assert.ok(ids.length >= 14);
+  const ids = await app(() => import('/src/content/challenges.js').then(m => m.CHALLENGES.map(c => c.id)));
+  assert.ok(ids.length >= 17);
   for (const id of ids) {
     await app(() => localStorage.removeItem('chaoticgolf_save_challenge'));
     await page.evaluate(id => import('/src/ui/screen-modes.js').then(m => m.startChallenge(id)), id); await sleep(400);
@@ -386,7 +386,7 @@ it('desafíos: todos arrancan con sus piezas dentro del tablero, sin solaparse n
         if (t.x < 0 || t.y < 0 || t.x >= S.cols || t.y >= S.rows) out.push('fuera ' + k);
         if (seen.has(k)) out.push('repetida ' + k);
         seen.add(k);
-        if (S.balls.some(b => b.x === t.x && b.y === t.y) || (S.hole.x === t.x && S.hole.y === t.y) || S.parCells.some(p => p.x === t.x && p.y === t.y)) out.push('tapa ' + k);
+        if (S.balls.some(b => b.x === t.x && b.y === t.y) || (S.hole.x === t.x && S.hole.y === t.y) || (t.type !== 'bunker' && S.parCells.some(p => p.x === t.x && p.y === t.y))) out.push('tapa ' + k);
       }
       return out;
     });

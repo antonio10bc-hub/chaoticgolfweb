@@ -1,50 +1,41 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "combo",
-  "name": "Corriente y codo",
-  "name_en": "Current and bend",
+  "group": "mid",
+  "name": "Paso atrás",
+  "name_en": "Step back",
   "cols": 6,
   "rows": 6,
   "hole": {
     "x": 1,
-    "y": 4
+    "y": 3
   },
   "ball": {
-    "x": 1,
-    "y": 1
+    "x": 3,
+    "y": 4
   },
   "tiles": [
     {
-      "type": "river",
-      "x": 2,
-      "y": 1
-    },
-    {
-      "type": "river",
-      "x": 2,
-      "y": 2
-    },
-    {
-      "type": "river",
-      "x": 2,
+      "type": "lake",
+      "x": 0,
       "y": 3
     },
     {
-      "type": "river",
-      "x": 2,
+      "type": "lake",
+      "x": 0,
       "y": 4
     },
     {
       "type": "corner",
-      "x": 1,
-      "y": 5,
-      "rot": 3
+      "x": 3,
+      "y": 3,
+      "rot": 1
     }
   ],
   "hand": [
     "palo1",
-    "oPalo1"
+    "hoyoUp",
+    "palo3"
   ],
   "parCells": [],
   "deckCounts": {

@@ -52,6 +52,16 @@ export function loadRecords() {
 }
 const saveRecords = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* sin storage */ } };
 export const resetRecords = () => saveRecords(blank());
+// los puzles y los desafíos se rediseñaron (versión 2 de los niveles): su progreso empieza de cero una vez
+const LEVELS_EPOCH = '2', EPOCH_KEY = 'chaoticgolf_levelsEpoch';
+export function resetLevelProgressOnce() {
+  try {
+    if (localStorage.getItem(EPOCH_KEY) === LEVELS_EPOCH) return;
+    updateRecords(d => { d.puzzles = {}; d.challenges = {}; d.chStats = {}; });
+    for (const slot of ['puzzle', 'challenge']) localStorage.removeItem('chaoticgolf_save_' + slot);
+    localStorage.setItem(EPOCH_KEY, LEVELS_EPOCH);
+  } catch (e) { /* sin storage */ }
+}
 export const updateRecords = fn => { const d = loadRecords(); fn(d); saveRecords(d); return d; };
 
 // una partida nueva (no al continuar una guardada)

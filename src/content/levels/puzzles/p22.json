@@ -2,39 +2,41 @@
   "version": 1,
   "puzzle": true,
   "group": "expert",
-  "name": "Hoyo volador",
-  "name_en": "Flying hole",
-  "cols": 5,
-  "rows": 7,
+  "name": "Tope de arena",
+  "name_en": "Sand stop",
+  "cols": 6,
+  "rows": 6,
   "hole": {
-    "x": 2,
-    "y": 6
+    "x": 1,
+    "y": 1
   },
   "ball": {
-    "x": 2,
-    "y": 2
+    "x": 5,
+    "y": 4
   },
   "tiles": [
     {
-      "type": "river",
-      "x": 1,
-      "y": 1
+      "type": "portal",
+      "x": 5,
+      "y": 5,
+      "pair": 1
     },
     {
-      "type": "river",
-      "x": 1,
-      "y": 2
+      "type": "portal",
+      "x": 3,
+      "y": 0,
+      "pair": 1
     },
     {
-      "type": "launcher",
+      "type": "bunker",
       "x": 0,
-      "y": 6
+      "y": 1
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "palo1",
-    "oPalo1"
+    "paloIri",
+    "oPalo1",
+    "hoyoLeft"
   ],
   "parCells": [],
   "deckCounts": {

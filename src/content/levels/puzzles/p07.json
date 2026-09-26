@@ -1,39 +1,29 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Que te lo traiga el río",
-  "name_en": "Let the river bring it",
-  "cols": 5,
-  "rows": 7,
+  "group": "warmup",
+  "name": "Esquinazo",
+  "name_en": "Round the corner",
+  "cols": 6,
+  "rows": 8,
   "hole": {
-    "x": 2,
-    "y": 0
+    "x": 3,
+    "y": 2
   },
   "ball": {
-    "x": 1,
-    "y": 5
+    "x": 5,
+    "y": 6
   },
   "tiles": [
     {
-      "type": "river",
-      "x": 1,
-      "y": 1
-    },
-    {
-      "type": "river",
-      "x": 1,
-      "y": 2
-    },
-    {
-      "type": "river",
-      "x": 1,
-      "y": 3
+      "type": "corner",
+      "x": 3,
+      "y": 6,
+      "rot": 3
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "oPalo1",
+    "palo3",
     "hoyoDown"
   ],
   "parCells": [],

@@ -1,6 +1,7 @@
 {
   "version": 1,
   "puzzle": true,
+  "group": "warmup",
   "name": "Acércalo",
   "name_en": "Bring it closer",
   "cols": 5,
@@ -13,18 +14,7 @@
     "x": 1,
     "y": 4
   },
-  "tiles": [
-    {
-      "type": "bunker",
-      "x": 3,
-      "y": 3
-    },
-    {
-      "type": "bunker",
-      "x": 0,
-      "y": 1
-    }
-  ],
+  "tiles": [],
   "hand": [
     "hoyoLeft",
     "palo3"

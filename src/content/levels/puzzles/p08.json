@@ -1,50 +1,30 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Bordeando el lago",
-  "name_en": "Around the lake",
+  "group": "warmup",
+  "name": "Lanzamiento",
+  "name_en": "Launch",
   "cols": 7,
   "rows": 7,
   "hole": {
-    "x": 4,
-    "y": 4
-  },
-  "ball": {
     "x": 2,
     "y": 2
   },
+  "ball": {
+    "x": 1,
+    "y": 5
+  },
   "tiles": [
     {
-      "type": "lake",
-      "x": 3,
-      "y": 3
-    },
-    {
-      "type": "lake",
+      "type": "launcher",
       "x": 4,
-      "y": 3
-    },
-    {
-      "type": "lake",
-      "x": 5,
-      "y": 3
-    },
-    {
-      "type": "lake",
-      "x": 3,
-      "y": 4
-    },
-    {
-      "type": "bunker",
-      "x": 3,
-      "y": 2
+      "y": 2,
+      "rot": 2
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "oHoyoDown",
-    "palo3"
+    "palo3",
+    "hoyoRight"
   ],
   "parCells": [],
   "deckCounts": {

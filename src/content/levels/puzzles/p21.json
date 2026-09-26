@@ -2,39 +2,23 @@
   "version": 1,
   "puzzle": true,
   "group": "expert",
-  "name": "Hoyo volador",
-  "name_en": "Flying hole",
+  "name": "Cuenta exacta",
+  "name_en": "Exact count",
   "cols": 5,
   "rows": 7,
   "hole": {
-    "x": 2,
+    "x": 3,
     "y": 6
   },
   "ball": {
-    "x": 2,
-    "y": 2
+    "x": 4,
+    "y": 3
   },
-  "tiles": [
-    {
-      "type": "river",
-      "x": 1,
-      "y": 1
-    },
-    {
-      "type": "river",
-      "x": 1,
-      "y": 2
-    },
-    {
-      "type": "launcher",
-      "x": 0,
-      "y": 6
-    }
-  ],
+  "tiles": [],
   "hand": [
-    "hoyoLeft",
-    "palo1",
-    "oPalo1"
+    "palo2",
+    "oPalo1",
+    "palo1"
   ],
   "parCells": [],
   "deckCounts": {

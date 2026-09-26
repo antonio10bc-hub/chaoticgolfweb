@@ -1,38 +1,44 @@
 {
   "version": 1,
   "puzzle": true,
-  "name": "Zigzag",
-  "name_en": "Zigzag",
-  "cols": 5,
-  "rows": 6,
+  "group": "warmup",
+  "name": "Río abajo",
+  "name_en": "Downstream",
+  "cols": 6,
+  "rows": 8,
   "hole": {
     "x": 2,
-    "y": 3
+    "y": 0
   },
   "ball": {
-    "x": 0,
-    "y": 5
+    "x": 4,
+    "y": 1
   },
   "tiles": [
     {
-      "type": "bunker",
-      "x": 1,
+      "type": "river",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "river",
+      "x": 2,
       "y": 4
-    },
-    {
-      "type": "bunker",
-      "x": 0,
-      "y": 3
-    },
-    {
-      "type": "bunker",
-      "x": 3,
-      "y": 3
     }
   ],
   "hand": [
-    "palo1",
-    "dedo"
+    "palo3",
+    "hoyoDown"
   ],
   "parCells": [],
   "deckCounts": {
@@ -51,6 +57,16 @@
     "oHoyoDown": 0,
     "oHoyoLeft": 0,
     "oHoyoRight": 0,
-    "no": 0
+    "no": 0,
+    "river": 0,
+    "lake": 0,
+    "palo4": 0,
+    "palo5": 0,
+    "block": 0,
+    "corner": 0,
+    "tunnel": 0,
+    "launcher": 0,
+    "palo10": 0,
+    "paloIri": 0
   }
 }

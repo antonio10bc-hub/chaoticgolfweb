@@ -1,36 +1,29 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Despegue",
-  "name_en": "Lift-off",
-  "cols": 5,
-  "rows": 6,
+  "group": "mid",
+  "name": "Tope",
+  "name_en": "Backstop",
+  "cols": 6,
+  "rows": 7,
   "hole": {
-    "x": 3,
-    "y": 1
+    "x": 4,
+    "y": 5
   },
   "ball": {
-    "x": 0,
-    "y": 5
+    "x": 2,
+    "y": 3
   },
   "tiles": [
     {
-      "type": "launcher",
-      "x": 0,
-      "y": 1,
-      "rot": 1
-    },
-    {
-      "type": "bunker",
-      "x": 2,
-      "y": 4
+      "type": "block",
+      "x": 4,
+      "y": 1
     }
   ],
   "hand": [
-    "palo3",
-    "hoyoRight",
-    "palo1"
+    "paloIri",
+    "palo2"
   ],
   "parCells": [],
   "deckCounts": {
@@ -60,5 +53,11 @@
     "launcher": 0,
     "palo10": 0,
     "paloIri": 0
-  }
+  },
+  "extraBalls": [
+    {
+      "x": 4,
+      "y": 6
+    }
+  ]
 }

@@ -29,6 +29,7 @@ import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
 import { bindLab } from './ui/lab.js';
+import { resetLevelProgressOnce } from './ui/records.js';
 import { checkLinkLevel } from './ui/my-levels.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
@@ -63,6 +64,7 @@ bindPve();
 bindModes();
 bindAssist();
 bindZoom();
+resetLevelProgressOnce(); // (niveles rediseñados: su progreso, de cero)
 bindEditor();
 bindLab();
 bindSoundPanel();

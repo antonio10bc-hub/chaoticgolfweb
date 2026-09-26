@@ -1,68 +1,31 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "combo",
-  "name": "Caos controlado",
-  "name_en": "Controlled chaos",
+  "group": "expert",
+  "name": "Arcoíris en vuelo",
+  "name_en": "Rainbow flight",
   "cols": 6,
-  "rows": 8,
+  "rows": 6,
   "hole": {
     "x": 3,
-    "y": 1
+    "y": 2
   },
   "ball": {
-    "x": 1,
+    "x": 5,
     "y": 0
   },
   "tiles": [
     {
-      "type": "river",
-      "x": 2,
-      "y": 2
-    },
-    {
-      "type": "river",
-      "x": 2,
-      "y": 3
-    },
-    {
-      "type": "river",
-      "x": 2,
-      "y": 4
-    },
-    {
-      "type": "corner",
-      "x": 5,
-      "y": 4,
-      "rot": 2
-    },
-    {
       "type": "launcher",
-      "x": 5,
-      "y": 0,
-      "rot": 2
-    },
-    {
-      "type": "block",
       "x": 3,
-      "y": 7
-    },
-    {
-      "type": "portal",
-      "x": 0,
       "y": 1,
-      "pair": 1
-    },
-    {
-      "type": "portal",
-      "x": 4,
-      "y": 5,
-      "pair": 1
+      "rot": 2
     }
   ],
   "hand": [
-    "palo4",
-    "paloIri"
+    "paloIri",
+    "hoyoDown",
+    "oPalo1"
   ],
   "parCells": [],
   "deckCounts": {

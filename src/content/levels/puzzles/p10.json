@@ -1,36 +1,37 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Esquinazo",
-  "name_en": "Round the corner",
-  "cols": 5,
-  "rows": 7,
+  "group": "mid",
+  "name": "Palo largo",
+  "name_en": "Long club",
+  "cols": 7,
+  "rows": 6,
   "hole": {
-    "x": 1,
-    "y": 4
+    "x": 2,
+    "y": 2
   },
   "ball": {
-    "x": 4,
-    "y": 0
+    "x": 0,
+    "y": 1
   },
   "tiles": [
     {
-      "type": "corner",
-      "x": 4,
-      "y": 4,
-      "rot": 2
+      "type": "portal",
+      "x": 6,
+      "y": 0,
+      "pair": 1
     },
     {
-      "type": "corner",
+      "type": "portal",
       "x": 2,
-      "y": 3
+      "y": 3,
+      "pair": 1
     }
   ],
   "hand": [
     "palo4",
-    "hoyoRight",
-    "palo1"
+    "hoyoLeft",
+    "oHoyoDown"
   ],
   "parCells": [],
   "deckCounts": {

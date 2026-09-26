@@ -2,39 +2,34 @@
   "version": 1,
   "puzzle": true,
   "group": "expert",
-  "name": "Hoyo volador",
-  "name_en": "Flying hole",
-  "cols": 5,
-  "rows": 7,
+  "name": "Vuelo y rebote",
+  "name_en": "Fly and bounce",
+  "cols": 6,
+  "rows": 6,
   "hole": {
-    "x": 2,
-    "y": 6
+    "x": 3,
+    "y": 1
   },
   "ball": {
-    "x": 2,
-    "y": 2
+    "x": 4,
+    "y": 4
   },
   "tiles": [
     {
-      "type": "river",
-      "x": 1,
-      "y": 1
-    },
-    {
-      "type": "river",
-      "x": 1,
-      "y": 2
-    },
-    {
       "type": "launcher",
-      "x": 0,
-      "y": 6
+      "x": 1,
+      "y": 4
+    },
+    {
+      "type": "block",
+      "x": 5,
+      "y": 1
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "palo1",
-    "oPalo1"
+    "palo3",
+    "palo4",
+    "hoyoRight"
   ],
   "parCells": [],
   "deckCounts": {

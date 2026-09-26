@@ -1,51 +1,23 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "combo",
-  "name": "Sin mojarse",
-  "name_en": "Stay dry",
-  "cols": 7,
+  "group": "mid",
+  "name": "Pon la esquina",
+  "name_en": "Place the corner",
+  "cols": 6,
   "rows": 7,
   "hole": {
-    "x": 1,
-    "y": 1
+    "x": 3,
+    "y": 5
   },
   "ball": {
-    "x": 3,
-    "y": 3
+    "x": 5,
+    "y": 6
   },
-  "tiles": [
-    {
-      "type": "lake",
-      "x": 3,
-      "y": 4
-    },
-    {
-      "type": "lake",
-      "x": 4,
-      "y": 4
-    },
-    {
-      "type": "lake",
-      "x": 4,
-      "y": 3
-    },
-    {
-      "type": "lake",
-      "x": 5,
-      "y": 3
-    },
-    {
-      "type": "corner",
-      "x": 1,
-      "y": 3,
-      "rot": 3
-    }
-  ],
+  "tiles": [],
   "hand": [
-    "palo1",
-    "hoyoRight",
-    "palo4"
+    "corner",
+    "palo2"
   ],
   "parCells": [],
   "deckCounts": {

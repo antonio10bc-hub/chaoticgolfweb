@@ -1,34 +1,39 @@
 {
   "version": 1,
   "puzzle": true,
-  "name": "Ven aquí",
-  "name_en": "Come here",
-  "cols": 5,
-  "rows": 6,
+  "group": "warmup",
+  "name": "Atajo",
+  "name_en": "Shortcut",
+  "cols": 6,
+  "rows": 7,
   "hole": {
-    "x": 3,
-    "y": 2
+    "x": 4,
+    "y": 0
   },
   "ball": {
-    "x": 2,
-    "y": 4
+    "x": 0,
+    "y": 6
   },
   "tiles": [
     {
-      "type": "bunker",
-      "x": 2,
-      "y": 4
+      "type": "portal",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 2
     },
     {
       "type": "bunker",
-      "x": 1,
-      "y": 2
+      "x": 2,
+      "y": 6
     }
   ],
   "hand": [
-    "hoyoDown",
-    "oHoyoLeft",
-    "palo1"
+    "palo1",
+    "palo3"
   ],
   "parCells": [],
   "deckCounts": {

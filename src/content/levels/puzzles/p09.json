@@ -1,35 +1,30 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "pieces",
-  "name": "Rebote",
-  "name_en": "Rebound",
-  "cols": 5,
-  "rows": 8,
+  "group": "mid",
+  "name": "Orilla",
+  "name_en": "Shoreline",
+  "cols": 6,
+  "rows": 6,
   "hole": {
-    "x": 3,
-    "y": 2
+    "x": 5,
+    "y": 4
   },
   "ball": {
     "x": 1,
-    "y": 4
+    "y": 2
   },
   "tiles": [
     {
-      "type": "block",
-      "x": 0,
+      "type": "lake",
+      "x": 4,
       "y": 4
-    },
-    {
-      "type": "block",
-      "x": 1,
-      "y": 0
     }
   ],
   "hand": [
-    "hoyoRight",
-    "hoyoLeft",
-    "palo4"
+    "oHoyoLeft",
+    "hoyoUp",
+    "palo3"
   ],
   "parCells": [],
   "deckCounts": {

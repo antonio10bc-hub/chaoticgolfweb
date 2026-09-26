@@ -1,39 +1,29 @@
 {
   "version": 1,
   "puzzle": true,
-  "name": "Quita de en medio",
-  "name_en": "Out of the way",
+  "group": "warmup",
+  "name": "Rebote",
+  "name_en": "Rebound",
   "cols": 5,
-  "rows": 6,
+  "rows": 8,
   "hole": {
     "x": 2,
     "y": 1
   },
   "ball": {
-    "x": 2,
-    "y": 4
+    "x": 0,
+    "y": 5
   },
-  "extraBalls": [
-    {
-      "x": 2,
-      "y": 2
-    }
-  ],
   "tiles": [
     {
-      "type": "bunker",
-      "x": 1,
-      "y": 4
-    },
-    {
-      "type": "bunker",
+      "type": "block",
       "x": 3,
-      "y": 4
+      "y": 1
     }
   ],
   "hand": [
-    "oPalo1",
-    "palo3"
+    "palo4",
+    "hoyoRight"
   ],
   "parCells": [],
   "deckCounts": {
@@ -52,6 +42,16 @@
     "oHoyoDown": 0,
     "oHoyoLeft": 0,
     "oHoyoRight": 0,
-    "no": 0
+    "no": 0,
+    "river": 0,
+    "lake": 0,
+    "palo4": 0,
+    "palo5": 0,
+    "block": 0,
+    "corner": 0,
+    "tunnel": 0,
+    "launcher": 0,
+    "palo10": 0,
+    "paloIri": 0
   }
 }

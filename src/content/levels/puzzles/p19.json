@@ -1,35 +1,42 @@
 {
   "version": 1,
   "puzzle": true,
-  "group": "combo",
-  "name": "Arcoíris en vuelo",
-  "name_en": "Rainbow flight",
-  "cols": 6,
-  "rows": 6,
+  "group": "expert",
+  "name": "Correo aéreo",
+  "name_en": "Airmail",
+  "cols": 5,
+  "rows": 8,
   "hole": {
-    "x": 3,
-    "y": 5
+    "x": 2,
+    "y": 7
   },
   "ball": {
-    "x": 0,
-    "y": 5
+    "x": 1,
+    "y": 1
   },
   "tiles": [
     {
       "type": "launcher",
       "x": 4,
-      "y": 5,
-      "rot": 3
+      "y": 4,
+      "rot": 2
     },
     {
-      "type": "block",
-      "x": 0,
-      "y": 3
+      "type": "portal",
+      "x": 3,
+      "y": 4,
+      "pair": 1
+    },
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 1,
+      "pair": 1
     }
   ],
   "hand": [
-    "hoyoLeft",
-    "paloIri",
+    "oPalo1",
+    "palo2",
     "hoyoRight"
   ],
   "parCells": [],
@@ -60,11 +67,5 @@
     "launcher": 0,
     "palo10": 0,
     "paloIri": 0
-  },
-  "extraBalls": [
-    {
-      "x": 1,
-      "y": 1
-    }
-  ]
+  }
 }
