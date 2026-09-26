@@ -96,17 +96,21 @@ export function renderDailyCard() {
   const saved = loadSave('daily');
   const narrow = window.matchMedia('(max-width: 420px)').matches; // en el móvil, fecha corta
   const when = new Date().toLocaleDateString(locale(), narrow ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' });
-  const status = today?.best ? t('modes.daily.bestToday', { turns: turnsLabel(today.best) }) : t('modes.daily.notYet');
+  const status = saved ? t('save.title') : today?.best ? t('modes.daily.bestToday', { turns: turnsLabel(today.best) }) : t('modes.daily.notYet');
   const { diff, rivals, ch } = dailySetup(date), rv = rivals.map(personaById);
   const face = pr => `<span class="avatar hasFace" style="--pc:${STYLE_COLOR[pr.style]}">${faceSVG(-1, pr.style, 'idle')}</span>`;
   const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name, diff: t('pve.diff' + diff[0].toUpperCase() + diff.slice(1)) });
+  const play = saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play');
+  // el tic de completado va sobre la miniatura: el texto no cambia de forma según el estado.
+  // Cada línea es una sola fila; la mecánica pasa a su propia línea si no cabe junto al título
   $('dailyCard').innerHTML =
-    `<span class="dPreview dRivals">${rv.map(face).join('')}</span>` +
+    `<span class="dPreview dRivals">${rv.map(face).join('')}` +
+    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done'))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + `</span>` +
     `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><b>${esc(t('modes.daily.title'))}</b>` +
-    (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done'))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') +
-    `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg>${esc(t('dailyFeat.' + ch.feature))}</span></span><span class="dVs">${esc(vs)}</span>` + // (la mecánica del día)
+    `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(t('dailyFeat.' + ch.feature))}</span></span></span>` + // (la mecánica del día)
+    `<span class="dVs">${esc(vs)}</span>` +
     `<span class="dMeta"><span>${esc(status)}</span>${streak ? `<span class="dStreak"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(streakLabel(streak))}</span>` : ''}</span></span>` +
-    `<span class="dPlay">${esc(saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play'))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></span>`;
+    `<span class="dPlay" title="${esc(play)}"><span class="dPlayLbl">${esc(play)}</span><svg class="i" aria-hidden="true"><use href="#${today?.best && !saved ? 'i-reset' : 'i-arrow-r'}"/></svg></span>`;
   $('dailyCard').classList.toggle('done', !!today?.best);
   $('dailyCard').dataset.resume = saved ? '1' : '';
   syncBadge();

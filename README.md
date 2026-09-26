@@ -166,7 +166,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   repite dos días seguidos; algún día el tablero crece una o dos filas o columnas: `dailyChallenge` en
   `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
-  Con el reto del día completado sale un tic verde (y, la primera vez que vuelves al menú, la bola de la
+  La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
+  (la mecánica baja bajo el título si no cabe), el tic verde de completado es una insignia sobre la miniatura
+  de los rivales, la línea de estado dice "Partida guardada" si hay una a medias y en el móvil el botón es un
+  círculo (flecha, o repetir si ya está completado). Con el reto del día completado sale ese tic verde (y, la primera vez que vuelves al menú, la bola de la
   ilustración rueda hasta el hoyo: `src/ui/menu-ball.js`); con la app instalada, un punto en su icono avisa de que
   el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
