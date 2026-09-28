@@ -183,7 +183,10 @@ html.phone #endTurnBtn { grid-area: end; min-width: 0; min-height: 54px; padding
 html.phone #turnActions button { flex: none; }
 html.phone #turnActions button small { font-size: .72em; }
 /* no es tu turno: la mano se aparta y pierde opacidad (salvo si puedes reaccionar al JAQUE) */
-html.phone #dock.waiting:not(.cta) #dockRow { opacity: .55; transform: translateY(4px) scale(.97); }
+/* (las naranjas no: se pueden jugar aunque no sea tu turno, y así se ve) */
+html.phone #dock.waiting:not(.cta) #dockRow { transform: translateY(4px) scale(.97); background-color: rgba(241,241,220,.62); }
+html.phone #dock.waiting:not(.cta) #hands .card:not(.orange), html.phone #dock.waiting:not(.cta) #turnActions { opacity: .55; }
+html.phone #turnActions { transition: opacity .3s var(--ease-out); }
 /* zurdos: los botones de turno a la izquierda */
 html.phone.leftHand #dockRow { grid-template-columns: auto minmax(0, 1fr); }
 html.phone.leftHand #turnActions { order: -1; }

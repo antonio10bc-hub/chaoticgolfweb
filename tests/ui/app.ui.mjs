@@ -486,8 +486,13 @@ it('táctil en vertical: tablero entero y a lo ancho, sin solapes, y rivales que
   await p.waitForFunction(() => document.querySelector('.seat.active'), { timeout: 8000 });
   const op = await p.evaluate(() => [...document.querySelectorAll('.seat')].map(s => [s.classList.contains('active'), +getComputedStyle(s).opacity]));
   assert.ok(op.some(([a, o]) => a && o > .95) && op.some(([a, o]) => !a && o < .7), JSON.stringify(op));
+  // tu mano se aparta y pierde opacidad, salvo las naranjas (se pueden jugar fuera de turno)
+  await p.evaluate(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.hands[S.human] = ['palo2', 'no']; ctl.render(); });
   await sleep(400);
-  assert.ok(+await p.evaluate(() => getComputedStyle(document.getElementById('dockRow')).opacity) < .7, 'tu mano se aparta');
+  const dim = await p.evaluate(() => ({ black: +getComputedStyle(document.querySelector('#hands .card[data-key="palo2"]')).opacity,
+    orange: +getComputedStyle(document.querySelector('#hands .card[data-key="no"]')).opacity, btns: +getComputedStyle(document.getElementById('turnActions')).opacity }));
+  assert.ok(dim.black < .7 && dim.btns < .7, 'negras y botones apagados: ' + JSON.stringify(dim));
+  assert.ok(await p.evaluate(() => !document.querySelector('#hands .card[data-key="no"]').classList.contains('unplayable')) ? dim.orange > .95 : true, 'naranja entera: ' + JSON.stringify(dim));
   await p.close();
 });
 
