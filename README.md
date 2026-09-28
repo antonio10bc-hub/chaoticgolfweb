@@ -6,6 +6,10 @@ Mesa digital del juego de cartas: palos, dedo, búnkeres, portales, cartas de mo
 Sitio 100 % estático, sin paso de build: HTML + CSS + módulos ES nativos. Se puede instalar como app
 (PWA) y funciona sin conexión.
 
+Visitas con **Vercel Web Analytics**: `main.js` carga `/_vercel/insights/script.js` (lo sirve Vercel en cada
+despliegue; no hace falta el paquete npm, que es para React/Next). En local no se carga, y el service worker
+no toca `/_vercel/`. Hay que activar Analytics en el proyecto de Vercel.
+
 ## Arrancar
 
 ```bash

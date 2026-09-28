@@ -197,5 +197,12 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); warm(); });
 }
 
+// analíticas de Vercel (visitas): el script lo sirve Vercel en cada despliegue; en local no existe
+if (location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.)/.test(location.hostname)) {
+  const va = document.createElement('script');
+  va.defer = true; va.src = '/_vercel/insights/script.js';
+  document.head.append(va);
+}
+
 // gancho de depuración para la consola y las pruebas de humo (tools/smoke.mjs)
 window.chaoticGolf = { app, ctl };
