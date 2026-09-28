@@ -1,6 +1,7 @@
 // Final de partida (o de hoyo): mensaje, celebración según cómo se ha ganado, colores del
 // ganador, resumen, récords del modo y botones de lo que se puede hacer después.
 // También el aviso de puzle fallado y el panel de "¿Por qué he perdido?".
+import { trackEnd } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
@@ -183,6 +184,7 @@ export function showWin() {
 
 // contrarreloj: se ha acabado el tiempo (la serie termina con lo sumado)
 export function showRushTimeUp({ sum, newBest, hole, best }) {
+  trackEnd('rush', { won: false, reason: 'tiempo' });
   $('winMsg').textContent = t('win.rushTimeUp');
   $('winIcon').innerHTML = `<svg class="i"><use href="#i-timer"/></svg>`;
   $('winOverlay').classList.add('lost');
@@ -202,6 +204,7 @@ export function showRushTimeUp({ sum, newBest, hole, best }) {
 // puzle: se ha terminado el turno sin embocar
 export function showPuzzleFail() {
   clearSave('puzzle');
+  trackEnd('puzzle', { won: false });
   $('winMsg').textContent = t('win.puzzleFail');
   $('winIcon').innerHTML = `<svg class="i"><use href="#i-reset"/></svg>`;
   $('winOverlay').classList.add('lost');

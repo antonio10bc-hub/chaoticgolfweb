@@ -11,6 +11,17 @@ Visitas y rendimiento con **Vercel Web Analytics** y **Speed Insights**: `main.j
 falta los paquetes npm, que son para React/Next). En local no se cargan, y el service worker no toca `/_vercel/`.
 Hay que activar los dos en el proyecto de Vercel.
 
+**Qué se juega: Umami** (cloud.umami.is, sin cookies ni datos personales; `src/ui/analytics.js`). `main.js` carga su
+script solo en la web publicada (en local y en los tests no se envía nada), sin la búsqueda ni el `#nivel=…` de la
+dirección. Además de las visitas, tres eventos:
+- **partida** (una nueva, no al continuar): `modo` (partida rápida, multijugador local, reto diario, contrarreloj,
+  desafío, desafío semanal, lo básico, puzle, tus niveles) y lo que la define: `baraja`, `dificultad`, `tablero`,
+  `bots`, `personas`, `nivel`, `desafio`, `regla`, `hoyo`.
+- **final**: lo mismo más `resultado` (victoria / derrota), `turnos` y `motivo` (contrarreloj sin tiempo).
+- **tutorial**: la presentación de Lo básico, `completo` o saltada.
+Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Salen de `recordStart` / `recordEnd` (`src/ui/records.js`), el
+mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
+
 ## Arrancar
 
 ```bash

@@ -5,6 +5,7 @@
 // cada rival (y quién te gana más: tu némesis), partidas por día (evolución) y cartas más usadas.
 import { t } from '../i18n/index.js';
 import { dateKey } from '../content/levels/generate.js';
+import { trackStart, trackEnd } from './analytics.js';
 
 const KEY = 'chaoticgolf_stats';
 const VERSION = 1;
@@ -69,6 +70,7 @@ export const updateRecords = fn => { const d = loadRecords(); fn(d); saveRecords
 // { challenge } (cada desafío) o { week } (el desafío semanal de esa semana)
 export function recordStart(kind, { deck = null, challenge = null, week = null } = {}) {
   if (!REC_MODES.includes(kind)) return;
+  trackStart(kind); // (analíticas: qué modos se juegan)
   updateRecords(d => {
     d.played[kind]++;
     const bump = (map, id) => { const k = map[id] = map[id] || { p: 0, w: 0 }; k.p = (k.p || 0) + 1; };
@@ -148,6 +150,7 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null, we
   // reto diario y semanal contra bots: cuentan tus turnos, no los de toda la mesa
   const own = (kind === 'daily' || kind === 'weekly') && stats?.misTurnos;
   const turns = (own ? stats.misTurnos : stats?.turnos || 0) + 1, strokes = stats?.golpes || 0;
+  trackEnd(kind, { won, turns }); // (analíticas: cómo acaban)
   let newBest = false, best = null;
   if (kind === 'story' && won && levelIndex != null && stats) {
     const prev = d.levels[levelIndex];

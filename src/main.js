@@ -48,6 +48,7 @@ import { bindRules, openRules, closeRules, rulesOpen } from './ui/rules.js';
 import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
 import { bakeGrain, bakeScene, sceneFromCache } from './ui/bake.js';
+import { UMAMI_ID, flushQueue } from './ui/analytics.js';
 
 // texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
 sceneFromCache();
@@ -217,13 +218,20 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 }
 
 // Vercel: analíticas (visitas) y Speed Insights (rendimiento real). Los scripts los sirve Vercel en
-// cada despliegue; en local no existen
+// cada despliegue; en local no existen.
+// Umami: los eventos del juego (qué modos se juegan y cómo acaban, src/ui/analytics.js). Solo en la web
+// publicada: en local y en los tests no se cuenta nada. Sin la búsqueda ni el #nivel=… de la dirección
 if (location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.)/.test(location.hostname)) {
   for (const src of ['/_vercel/insights/script.js', '/_vercel/speed-insights/script.js']) {
     const sc = document.createElement('script');
     sc.defer = true; sc.src = src;
     document.head.append(sc);
   }
+  const um = document.createElement('script');
+  um.defer = true; um.src = 'https://cloud.umami.is/script.js';
+  Object.assign(um.dataset, { websiteId: UMAMI_ID, excludeSearch: 'true', excludeHash: 'true' });
+  um.onload = flushQueue;
+  document.head.append(um);
 }
 
 // gancho de depuración para la consola y las pruebas de humo (tools/smoke.mjs)

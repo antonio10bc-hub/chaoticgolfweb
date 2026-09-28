@@ -10,6 +10,7 @@ import { CARDS } from '../content/cards/index.js';
 import { cardArtHTML } from './card-art.js';
 import { sfx } from '../audio/sfx.js';
 import { isPhone } from './device.js';
+import { track } from './analytics.js';
 
 const KEY = 'chaoticgolf_tutorial';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -34,7 +35,8 @@ export function tutorialStart() {
 }
 export function tutorialStop() { step = null; clearTimeout(timer); hideCoach(); }
 
-function finishIntro() {
+function finishIntro(done = true) {
+  track('tutorial', { completo: done }); // (analíticas: ¿se termina la presentación o se salta?)
   step = null;
   const d = load(); d.intro = true; save(d);
 }
@@ -142,7 +144,7 @@ export function bindTutorial() {
     const b = e.target.closest('[data-coach]');
     if (!b) return;
     const a = b.dataset.coach;
-    if (a === 'skip') { if (step) finishIntro(); hideCoach(); return; }
+    if (a === 'skip') { if (step) finishIntro(false); hideCoach(); return; }
     if (a === 'next' && step === 'ball') { step = 'hole'; showStep(); return; }
     if (a === 'next' && step === 'hole') { step = 'hand'; showStep(); return; }
     if (a === 'ok' && step === 'end') { finishIntro(); }
