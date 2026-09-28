@@ -11,6 +11,7 @@
      audio/    efectos de sonido y música generativa
      i18n/     textos
    ========================================================= */
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
 import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
@@ -55,6 +56,9 @@ loadPrefs();
 setLang(detectLang());
 applyStaticTexts();
 bindSave();
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
 
 // listeners (un único sitio; nada de onclick en el HTML)
 bindBoard(ctl.uiCell);
