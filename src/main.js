@@ -48,7 +48,7 @@ import { bindRules, openRules, closeRules, rulesOpen } from './ui/rules.js';
 import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
 import { bakeGrain, bakeScene, sceneFromCache } from './ui/bake.js';
-import { UMAMI_ID, flushQueue } from './ui/analytics.js';
+import { UMAMI_ID, flushQueue, track } from './ui/analytics.js';
 
 // texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
 sceneFromCache();
@@ -233,6 +233,9 @@ if (location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.)/.test(loca
   um.onload = flushQueue;
   document.head.append(um);
 }
+
+// app instalada (analíticas)
+window.addEventListener('appinstalled', () => track('instalar'));
 
 // gancho de depuración para la consola y las pruebas de humo (tools/smoke.mjs)
 window.chaoticGolf = { app, ctl };

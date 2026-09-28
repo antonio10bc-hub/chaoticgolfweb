@@ -2,6 +2,7 @@
 // tablero tal como acabó y el recorrido de la última jugada (de dónde salió cada pieza, choques,
 // portales, caídas y la bola en el hoyo), la carta jugada, quién la jugó y el resultado.
 // En el móvil se comparte con la hoja del sistema; en el ordenador, copiar o descargar.
+import { track } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { t } from '../i18n/index.js';
@@ -238,6 +239,7 @@ export async function openShareDialog({ title, meta, text = null }) {
     const b = e.target.closest('[data-share]');
     if (!b) return;
     sfx('select');
+    track('compartir', { que: 'jugada', como: b.dataset.share });
     try {
       if (b.dataset.share === 'native') await navigator.share({ files: [file], text: caption });
       if (b.dataset.share === 'copy') { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast(t('share.imgCopied')); }

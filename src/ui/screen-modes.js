@@ -9,6 +9,7 @@
 //   · Desafío semanal — cada semana, una regla especial nueva (igual para todos) y su récord.
 // También: el texto para compartir el resultado del reto diario y el aviso en el icono de la app.
 // La serie del contrarreloj se guarda aparte de la partida, para poder dejarla entre hoyos.
+import { track } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
@@ -162,6 +163,7 @@ export function dailyShareText({ won, turns, st, S, date }) {
 }
 // en el móvil, la hoja de compartir del sistema; si no, al portapapeles
 export async function shareText(text) {
+  track('compartir', { que: 'resultado' });
   const touch = window.matchMedia('(pointer: coarse)').matches;
   try {
     if (touch && navigator.share) { await navigator.share({ text }); return; }

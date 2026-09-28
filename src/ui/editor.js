@@ -6,6 +6,7 @@
 //   · abajo: Probar nivel (con trampas: cualquier carta a mano, deshacer y mover piezas; ver lab.js)
 // Se pinta arrastrando; clic derecho borra con cualquier herramienta. El borrador en curso se guarda
 // solo; "Guardar" lo lleva a Mis niveles (my-levels.js), desde donde se comparte con un código.
+import { track } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS, CARD_KEYS, defaultCounts } from '../content/cards/index.js';
@@ -457,6 +458,7 @@ const closeLib = () => { $('edLib').hidden = true; $('edLibBtn').focus(); };
 
 /* ---------- entrada ---------- */
 export async function openEditor({ idx = null } = {}) {
+  if (app.screen !== 'editor') track('creador', { accion: 'abrir' }); // (analíticas)
   if (idx != null && idx !== ED.idx && ED.level && app.screen !== 'editor' && !await leaveChanges()) return;
   if (idx != null && listLevels()[idx]) { if (idx !== ED.idx || !ED.level) setLevel(listLevels()[idx], idx); }
   else if (!ED.level && !loadDraft()) setLevel(defaultLevel());
@@ -568,7 +570,7 @@ export function bindEditor() {
     if (dirty()) save({ quiet: true }); // se comparte lo que está guardado: así también lo tienes tú
     shareLevelDialog(exportable(ED.level));
   });
-  $('edTest').addEventListener('click', () => play());
+  $('edTest').addEventListener('click', () => { track('creador', { accion: 'probar' }); play(); });
   $('edDeckBtn').addEventListener('click', () => { // móvil: las cartas en una hoja
     const open = $('edDeckPanel').classList.toggle('open');
     $('edDeckBtn').setAttribute('aria-expanded', String(open));

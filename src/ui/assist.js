@@ -2,6 +2,7 @@
 //   · Consejo del caddie — sugiere tu mejor jugada con la misma IA que los bots: resalta la carta,
 //     dibuja el recorrido y, al elegirla, la casilla. Es opcional y queda anotado (resumen final).
 //   · Deshacer — en Lo básico y en partidas fáciles puedes deshacer tus jugadas del turno en curso.
+import { track, modeData, currentKind } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { t } from '../i18n/index.js';
@@ -35,6 +36,7 @@ export function askCaddie() {
   delete sim.S.aiLevel; sim.S.aiStyles = sim.S.aiStyles || []; sim.S.aiStyles[me] = 'trick';
   const plan = choosePlan(sim, me, () => .5);
   stats.caddie = (stats.caddie || 0) + 1;
+  track('ayuda', { tipo: 'consejo', modo: modeData(currentKind()).modo });
   sfx('select');
   if (!plan) {
     const junk = sim.S.playedThisTurn === 0 && sim.S.turn === me ? discardPlan(sim, me) : [];
@@ -84,6 +86,7 @@ export function undoLast() {
   if (!undoAllowed()) return;
   app.undo.count--;
   stats.undos = (stats.undos || 0) + 1;
+  track('ayuda', { tipo: 'deshacer', modo: modeData(currentKind()).modo });
   ctl.undoMove();
   if (!app.undo.count) app.undo = null;
 }

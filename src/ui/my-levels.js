@@ -1,6 +1,7 @@
 // Mis niveles: la lista de niveles del creador, propios y recibidos. Guardar, eliminar (con
 // deshacer: no hay diálogo de confirmación), compartir por código o enlace y recibir un nivel
 // (pegando el código o abriendo un enlace …#nivel=CÓDIGO; ver también link-tabs.js). La usan el creador y "Tus niveles".
+import { track } from './analytics.js';
 import { app } from './app.js';
 import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
@@ -80,6 +81,7 @@ const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>
 // compartir: lo importante es el enlace (quien lo abre tiene el nivel listo para jugar); el código, debajo
 // y en pequeño, por si prefieren pegarlo a mano. La confirmación sale en el propio botón
 export async function shareLevelDialog(L) {
+  track('compartir', { que: 'nivel' });
   const code = await encodeLevel(L), link = levelLink(code);
   const p = openDialog({ title: t('lib.shareTitle'), cls: 'lvDlg lvShareDlg', body: previewBlock(L) +
     `<div class="lvLinkBox"><p class="lvLead">${esc(t('lib.shareLead'))}</p>` +

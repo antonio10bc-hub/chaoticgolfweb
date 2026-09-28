@@ -1,5 +1,6 @@
 // Continuar una partida guardada: los botones naranjas de cada pantalla (Lo básico, Partida
 // rápida, Modos, reto diario), con un subtítulo que dice qué es.
+import { trackResume } from './analytics.js';
 import { app } from './app.js';
 import { Game } from '../engine/game.js';
 import { startGame } from './controller.js';
@@ -32,6 +33,7 @@ export function resumeGame(slot) {
   if (!d) return;
   startGame(Game.restore(d.game), d.mode, { levelIndex: d.levelIndex, level: d.level, variant: d.variant || null, run: d.run || null });
   applySaveExtras(d);
+  trackResume(); // (analíticas: se retoma una partida guardada)
   // multijugador local: por privacidad, al volver se pasa el dispositivo antes de enseñar manos
   app.viewer = humansOf().length > 1 ? null : d.game.S.human;
   updateMenuBtn();

@@ -13,14 +13,19 @@ Hay que activar los dos en el proyecto de Vercel.
 
 **Qué se juega: Umami** (cloud.umami.is, sin cookies ni datos personales; `src/ui/analytics.js`). `main.js` carga su
 script solo en la web publicada (en local y en los tests no se envía nada), sin la búsqueda ni el `#nivel=…` de la
-dirección. Además de las visitas, tres eventos:
-- **partida** (una nueva, no al continuar): `modo` (partida rápida, multijugador local, reto diario, contrarreloj,
-  desafío, desafío semanal, lo básico, puzle, tus niveles) y lo que la define: `baraja`, `dificultad`, `tablero`,
-  `bots`, `personas`, `nivel`, `desafio`, `regla`, `hoyo`.
-- **final**: lo mismo más `resultado` (victoria / derrota), `turnos` y `motivo` (contrarreloj sin tiempo).
-- **tutorial**: la presentación de Lo básico, `completo` o saltada.
-Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Salen de `recordStart` / `recordEnd` (`src/ui/records.js`), el
-mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
+dirección. Cada pantalla cuenta como una **página** (`/`, `/modos`, `/lo-basico`, `/partida-rapida`, `/creador` y
+`/partida/<modo>`: recorridos y tiempo en cada una) y hay estos **eventos**:
+- **partida** (una nueva): `modo` (partida rápida, multijugador local, reto diario, contrarreloj, desafío, desafío
+  semanal, lo básico, puzle, tus niveles), lo que la define (`baraja`, `dificultad`, `tablero`, `bots`, `personas`,
+  `nivel`, `desafio`, `regla`, `hoyo`) y `app` (instalada / navegador).
+- **final**: lo mismo más `resultado` (victoria / derrota: el % de victorias por modo), `turnos`, `segundos` y
+  `motivo` (contrarreloj sin tiempo). **abandona**: salir o reiniciar a medias (`como`, `turnos`, `segundos`).
+  **continua**: se retoma una partida guardada.
+- **tutorial** (`completo` o saltado), **ayuda** (`tipo`: consejo / deshacer), **compartir** (`que`: resultado, jugada,
+  nivel), **creador** (`accion`: abrir / probar) e **instalar**.
+Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Partidas y finales salen de `recordStart` / `recordEnd`
+(`src/ui/records.js`), el mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
+Un evento nuevo: `track('nombre', { dato: valor })` (valores cortos y con pocas variantes, nunca datos personales).
 
 ## Arrancar
 

@@ -3,11 +3,12 @@
 //   screen-story.js  Lo básico y puzles       screen-pve.js    Partida rápida
 //   screen-modes.js  Reto diario, contrarreloj, torneo y desafíos
 //   resume.js        continuar partidas guardadas
+import { trackScreen, trackLeave } from './analytics.js';
 import { app } from './app.js';
 import { $ } from './dom.js';
 import { Game } from '../engine/game.js';
 import { ART } from '../art.js';
-import { startGame, fitBoard, render } from './controller.js';
+import { startGame, fitBoard, render, stats } from './controller.js';
 import { hideWin } from './win.js';
 import { aiStop } from './ai-driver.js';
 import { CARDS } from '../content/cards/index.js';
@@ -61,6 +62,7 @@ export function showScreen(s) {
   musicScene(s === 'game' ? 'game' : 'menu'); // la música acompaña: menú ↔ partida con fundido cruzado
   if (s !== 'game') { tutorialStop(); clearBubbles(); } // ni tutorial ni bocadillos de los bots fuera de la partida
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
+  if (prev !== s) trackScreen(s);     // (analíticas: cada pantalla, como una página)
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
   // fundido corto de la pantalla que entra (Web Animations: no obliga a maquetar antes de tiempo; sin fill, al
   // terminar no deja transform y los botones fijos de dentro siguen fijos)
@@ -159,12 +161,15 @@ export function bindScreens() {
   MODE_NAV.free = { back: () => showScreen('menu'), restart: newFreeGame };
   // "← Menú / Niveles / Modos": la partida se guarda y se vuelve a la pantalla de su modo
   $('menuBtn').addEventListener('click', () => {
+    if (gameInProgress()) trackLeave('salir', stats?.turnos); // (analíticas: partida a medias)
     const slot = slotOf();
     suspendGame();
     (MODE_NAV[slot]?.back || (() => showScreen('menu')))();
   });
   $('resetBtn').addEventListener('click', async () => { // empezar de cero: el nivel, la partida o la serie en curso
+    const wasOn = gameInProgress();
     if (!await confirmReset()) return;
+    if (wasOn) trackLeave('reiniciar', stats?.turnos);
     const slot = slotOf();
     aiStop(); clearSave(slot); // la partida anterior deja de existir antes de crear la nueva
     document.querySelectorAll('.card.floating').forEach(el => el.remove());
