@@ -285,3 +285,40 @@ html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bott
   .profBox header { padding-top: 12px; }
   .profBox header h2 { font-size: 26px; }
 }
+
+/* ---- ordenador (pantalla ancha): todo a la vista, sin desplazarse ----
+   tu pelota en una columna a la izquierda; a la derecha las 8 pelotas: 2 × 4 tarjetas en horizontal y, con sitio
+   (1200 px o más), 4 × 2 en vertical */
+@media (min-width: 1000px) and (min-height: 620px) {
+  .profBox { width: min(1240px, 96vw); max-height: none; }
+  .profBox .pfLayout { display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: 0; }
+  .profBox .setBody { overflow: visible; padding: 0 24px 22px; }
+  .profBox .pfHero { grid-template-columns: 1fr; justify-items: center; align-content: center; text-align: center; gap: 12px;
+    padding: 34px 18px 22px; border-bottom: 0; border-right: 1px solid var(--cream-line); }
+  .profBox .pfInfo { align-items: center; gap: 8px; }
+  .profBox .pfName, .profBox .pfActs, .profBox .pfColors { justify-content: center; }
+  .profBox .pfName { font-size: 27px; }
+  .profBox .pfSub { max-width: 240px; }
+  .profBox .pfStage { width: 220px; height: 186px; }
+  .profBox .pfStage .skBall { --bs: 110px !important; margin-bottom: 22px; }
+  .profBox .pfStage::before { height: 74px; left: 10px; right: 10px; }
+  .profBox .pfStage::after { bottom: 40px; width: 84px; margin-left: -42px; }
+  .profBox .pfStage .pfFlag { right: 16px; bottom: 36px; width: 32px; height: 62px; }
+  .profBox .pfBurst i { animation-name: pfBurstBig; }
+  .profBox .pfListHead { margin: 4px 0 12px; }
+  .profBox .pfGrid { gap: 10px; padding: 0; }
+}
+@media (min-width: 1200px) and (min-height: 620px) {
+  /* tarjetas en vertical: pelota y nombre arriba, los tres niveles y la barra debajo, a lo ancho */
+  .profBox .pfGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .profBox .pfCard { grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 3px 10px; padding: 12px 10px 12px 12px; }
+  .profBox .pfMini { grid-row: 1 / 3; width: 54px; height: 54px; }
+  .profBox .pfCard .nm, .profBox .pfCard .goal { grid-column: 2; align-self: end; }
+  .profBox .pfCard .goal { align-self: start; }
+  .profBox .pfCard .nm { flex-wrap: wrap; row-gap: 3px; }
+  .profBox .pfLvls { grid-column: 1 / -1; margin-top: 8px; gap: 4px; }
+  .profBox .pfLv { padding: 5px 1px 4px; }
+  .profBox .pfLv small { font-size: 9px; letter-spacing: -.01em; }
+  .profBox .pfBar { grid-column: 1 / -1; margin-top: 6px; }
+}
+@keyframes pfBurstBig { 0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(-104px) scale(.3); opacity: 0; } }

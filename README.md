@@ -274,7 +274,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   1 · 5 · 15; cronómetro con estela · esfera de reloj · rayos), **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
   completo (calentamiento · intermedio · experto). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
   un nivel lo enseña en grande (también los que aún no tienes) y los ganados se ponen con un toque. Decoran la pelota sin
-  cambiar su color (el color es quien juega) y se ven en el tablero en cualquier modo de una sola persona. En Partida
+  cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 8 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
   rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un
   nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y el botón del menú lleva un
   punto hasta que lo ves. Una pelota nueva = una entrada en `SKINS`, su objetivo en `skinProgress` y su aspecto en
