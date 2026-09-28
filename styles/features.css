@@ -1409,3 +1409,111 @@ button.chCard:hover .chGo:not(.ok) { transform: scale(1.08); }
   #modesGrid .lvlWrap > .lvlTag { top: 48px; }
   .lvlHeadActs { margin-left: 0; width: 100%; }
 }
+
+/* =========================================================
+   Final de partida compacto: todo cabe en pantalla sin desplazarse (ordenador, móvil y horizontal)
+     cabecera   estilo de la victoria · mensaje · fichas (ganador, récord, racha)
+     cuerpo     las 5 cifras en una fila · recorrido | resumen, lado a lado (o "¿por qué he perdido?" en su sitio)
+     botones
+   ========================================================= */
+#winOverlay { padding: 34px 12px 12px; }
+#winOverlay .box { width: min(640px, 100%); min-width: 0; max-width: 100%; padding: 42px 26px 20px; display: flex; flex-direction: column; gap: 14px; }
+#winOverlay .winIcon { width: 60px; height: 60px; }
+#winOverlay .winIcon .i { width: 28px; height: 28px; }
+#winOverlay .winHead { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#winOverlay #winStyle { margin: 0; }
+#winOverlay .msg { font-size: clamp(22px, 3.4vw, 27px); margin: 0; text-wrap: balance; }
+#winOverlay #winChips { margin: 0; gap: 6px; }
+#winOverlay .winChip { font-size: 13px; padding: 4px 13px; }
+#winOverlay .winRec { font-size: 13px; padding: 4px 12px; }
+#winOverlay .winRec.streakGoal { font-size: 14.5px; padding: 6px 15px; }
+/* cuerpo: cifras arriba; debajo, recorrido y resumen lado a lado */
+#winOverlay .winBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "stats stats" "route sum" "why why"; gap: 12px 14px; align-items: start; }
+#winOverlay .winBody:empty, #winOverlay .winBody:not(:has(> :not(:empty))) { display: none; }
+#winOverlay #winStats { grid-area: stats; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; }
+#winOverlay #winStats .st { padding: 6px 2px 5px; border-radius: 12px; font-size: 10.5px; gap: 1px; line-height: 1.15; }
+#winOverlay #winStats .st .i { width: 15px; height: 15px; }
+#winOverlay #winStats .st b { font-size: 17px; }
+#winOverlay #winSummary { grid-area: sum; grid-template-columns: 1fr; gap: 6px; margin: 0; }
+#winOverlay .sumTile { padding: 7px 10px; border-radius: 12px; gap: 8px; }
+#winOverlay .sumTile .i { width: 16px; height: 16px; }
+#winOverlay .sumTile small { font-size: 10.5px; }
+#winOverlay .sumTile b { font-size: 12.5px; }
+#winOverlay #winRoute { grid-area: route; margin: 0; }
+#winOverlay #winRoute h4 { margin: 0 0 6px; }
+#winOverlay .rtWrap { gap: 10px; align-items: center; }
+#winOverlay .rtMap { height: 124px; max-width: 58%; }
+#winOverlay .rtLegend { gap: 3px; font-size: 11.5px; }
+#winOverlay .rtSw { width: 16px; height: 16px; }
+/* sin recorrido (o sin resumen), lo otro ocupa todo el ancho */
+#winOverlay .winBody:not(:has(#winRoute:not(:empty))) #winSummary { grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+#winOverlay .winBody:not(:has(#winSummary:not(:empty))) #winRoute { grid-column: 1 / -1; }
+/* "¿por qué he perdido?": el momento clave ocupa el sitio del resumen y del recorrido (no alarga el final) */
+#winOverlay #winWhy { grid-area: why; margin: -4px 0 0; }
+#winOverlay .box.whyOpen #winSummary, #winOverlay .box.whyOpen #winRoute { display: none; }
+#winOverlay .box.whyOpen #winWhy { grid-row: 2; margin: 0; }
+#winOverlay .whyPanel { margin-top: 6px; padding: 10px 12px; }
+#winOverlay .whyBoards { margin: 6px 0; }
+#winOverlay .whyBoards figure svg { width: auto; height: 118px; max-height: none; max-width: 30vw; }
+#winOverlay .whyHead p, #winOverlay .whyTip { font-size: 12.5px; }
+#winOverlay #winBtns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+#winOverlay #winBtns .btn-lg { padding: 10px 22px; }
+
+/* móvil en vertical (estrecho): el resumen, en una columna bajo el recorrido */
+@media (max-width: 560px) {
+  #winOverlay { padding: 30px 10px 10px; }
+  #winOverlay .box { padding: 36px 14px 14px; gap: 11px; border-radius: 18px; }
+  #winOverlay .winIcon { width: 52px; height: 52px; }
+  #winOverlay .winIcon .i { width: 24px; height: 24px; }
+  #winOverlay .msg { font-size: 22px; }
+  #winOverlay .winBody { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "route" "sum" "why"; gap: 10px; }
+  #winOverlay .box.whyOpen #winWhy { grid-row: 2; }
+  #winOverlay #winStats .st { font-size: 9.5px; padding: 5px 1px 4px; }
+  #winOverlay #winStats .st b { font-size: 16px; }
+  #winOverlay .rtMap { height: 96px; }
+  #winOverlay .rtLegend { flex-direction: row; flex-wrap: wrap; gap: 3px 10px; font-size: 11px; }
+  #winOverlay .sumTile { padding: 5px 9px; }
+  #winOverlay .sumTile span { flex-direction: row; align-items: baseline; gap: 6px; flex-wrap: wrap; } /* (una línea: «Jugada más larga  7 casillas · Tú») */
+  #winOverlay .whyBoards figure svg { height: 100px; }
+  #winOverlay #winBtns button { padding: 9px 16px; }
+}
+/* poca altura (móvil en horizontal, ventanas bajas): dos columnas, qué ha pasado y los botones a la izquierda */
+@media (max-height: 560px) and (min-width: 600px) {
+  #winOverlay { padding: 10px; }
+  #winOverlay .box { width: min(860px, 100%); padding: 16px 18px; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    grid-template-areas: "head body" "btns body"; grid-template-rows: 1fr auto; gap: 12px 20px; align-items: center; }
+  #winOverlay .winIcon { position: static; transform: none; width: 44px; height: 44px; grid-area: head; align-self: start; justify-self: center; margin-top: 0; }
+  #winOverlay .winIcon .i { width: 22px; height: 22px; }
+  #winOverlay .winHead { grid-area: head; padding-top: 52px; }
+  #winOverlay .msg { font-size: 21px; }
+  #winOverlay .winBody { grid-area: body; grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "route" "sum" "why"; gap: 8px; }
+  #winOverlay .winBody:has(#winRoute:not(:empty)):has(#winSummary:not(:empty)) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "stats stats" "route sum" "why why"; }
+  #winOverlay .box.whyOpen #winWhy { grid-row: 2; grid-column: 1 / -1; }
+  #winOverlay #winBtns { grid-area: btns; }
+  #winOverlay .rtMap { height: 92px; }
+  #winOverlay .rtLegend { font-size: 10.5px; }
+  #winOverlay .whyBoards figure svg { height: 86px; }
+  #winOverlay .whyHead p, #winOverlay .whyTip { font-size: 11.5px; }
+  #winOverlay #winBtns button { padding: 8px 14px; }
+}
+
+/* =========================================================
+   Quién juega y cuál es tu color (ordenador y móvil)
+     · lo que no juega ahora pierde opacidad: los rivales en espera y tu mano fuera de tu turno
+       (salvo las naranjas: se pueden jugar aunque no sea tu turno)
+     · tu bandeja de abajo, teñida suavemente de tu color de bola; en tu turno, con el borde de tu color
+     · la píldora del turno y el marcador sobre la pelota que juega, del color de quien juega
+   ========================================================= */
+#dock { --dock-bg: color-mix(in srgb, var(--pc) 11%, var(--cream)); }
+#dockRow { background-color: var(--dock-bg); }
+#dock.myTurn #dockRow { border-color: var(--pc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc) 20%, transparent), var(--shadow-soft), 0 6px 18px rgba(20,40,20,.18); }
+#dock.cta #dockRow { border-color: var(--accent-deep); box-shadow: 0 0 0 4px rgba(217,96,58,.2), var(--shadow-soft); }
+#dock.myTurn .ownerTxt small { color: color-mix(in srgb, var(--pc) 70%, var(--ink)); }
+#dock.waiting:not(.cta) #hands .card:not(.orange) { opacity: .55; }
+.seat { opacity: .5; }
+.seat.active, .seat.cta, .seat.won { opacity: 1; }
+.seat.active { background-color: color-mix(in srgb, var(--pc) 9%, var(--cream)); }
+html.hiContrast .seat { opacity: .75; } html.hiContrast .seat.active, html.hiContrast .seat.cta, html.hiContrast .seat.won { opacity: 1; }
+#turnPill { border-color: color-mix(in srgb, var(--pc) 60%, transparent); background-color: color-mix(in srgb, var(--pc) 10%, var(--cream)); }
+#turnPill.mine { border-color: var(--pc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc) 24%, transparent), var(--shadow-soft); }
+.piece.isTurn .turnMark { background: var(--pc); box-shadow: 0 0 0 1.5px var(--cream), 0 1.2px 3.6px var(--shadow); }

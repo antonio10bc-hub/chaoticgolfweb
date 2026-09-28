@@ -259,7 +259,15 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   el nivel está listo para jugar; si el portapapeles falla, aparece el enlace para copiarlo a mano) y, debajo y en
   pequeño, el código con su botón de copiar. Sin botón de compartir del sistema; la confirmación sale en el botón.
   Lo básico tiene 8 niveles.
-- **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada).
+- **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada). Cabe
+  siempre sin desplazarse (ordenador, móvil pequeño y en horizontal): cabecera (cómo se ha ganado, mensaje, fichas),
+  las cinco cifras en una fila y, debajo, el recorrido y el resumen lado a lado (en el móvil estrecho, uno bajo otro;
+  con poca altura, dos columnas con el mensaje y los botones a la izquierda). "¿Por qué he perdido?" se abre en el
+  sitio del resumen ("Ver el resumen" vuelve), no debajo. `npm run test:ui` lo comprueba.
+- **Quién juega y cuál es tu color** (ordenador y móvil): tu bandeja de abajo va teñida suavemente de tu color de bola y,
+  en tu turno, con el borde de tu color; la píldora del turno y el marcador sobre la pelota que juega llevan el color de
+  quien juega; los rivales que no juegan y tu mano fuera de tu turno pierden opacidad, salvo las cartas naranjas (se
+  pueden jugar fuera de turno).
 - **Baraja de agua** (`tiles/river.js`, `tiles/lake.js`): sin búnkeres ni portales; 5 cartas de río y 5 de lago
   (0 copias en el resto de barajas, así su reparto no cambia). **Río**: una sola columna; la primera carta va
   donde sea y las demás lo alargan por arriba o por abajo. Quien entra (pelota u hoyo) pierde el resto del

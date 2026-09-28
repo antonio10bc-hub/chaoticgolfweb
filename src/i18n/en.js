@@ -561,7 +561,7 @@ export default {
     portal: '{name} opens a portal', river: '{name} extends the river', block: '{name} places a block', corner: '{name} places a corner', tunnel: '{name} places a tunnel', launcher: '{name} places a launcher', lake: '{name} grows the lake', closer: '{name} gets closer to the hole', generic: '{name} makes a move',
   },
   why: {
-    button: 'Why did I lose?', keyTitle: 'The key moment', finalTitle: 'The winning play',
+    button: 'Why did I lose?', back: 'Back to the summary', keyTitle: 'The key moment', finalTitle: 'The winning play',
     played: '{name} played {card}', you: 'you', before: 'Before', after: 'After',
     tip: {
       sink: 'When a rival is in range of the hole, keep an orange card for the CHECK: you can move the hole or knock their ball out.',

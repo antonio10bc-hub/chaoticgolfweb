@@ -564,7 +564,7 @@ export default {
     portal: '{name} abre un portal', river: '{name} alarga el río', block: '{name} pone un bloque', corner: '{name} coloca una esquina', tunnel: '{name} pone un túnel', launcher: '{name} coloca una lanzadera', lake: '{name} hace crecer el lago', closer: '{name} se acerca al hoyo', generic: '{name} mueve ficha',
   },
   why: {
-    button: '¿Por qué he perdido?', keyTitle: 'El momento clave', finalTitle: 'La jugada ganadora',
+    button: '¿Por qué he perdido?', back: 'Ver el resumen', keyTitle: 'El momento clave', finalTitle: 'La jugada ganadora',
     played: '{name} jugó {card}', you: 'ti', before: 'Antes', after: 'Después',
     tip: {
       sink: 'Cuando un rival queda a tiro del hoyo, guarda una naranja para el JAQUE: puedes mover el hoyo o sacar su pelota.',

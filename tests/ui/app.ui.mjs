@@ -542,3 +542,26 @@ it('táctil en horizontal: tablero a todo el alto entre la columna de rivales y 
   assert.ok(dock.b <= 390 + 1, 'la mano cabe');
   await p.close();
 });
+
+it('final de partida: cabe sin desplazarse (móvil pequeño y ordenador bajo), también con "¿por qué he perdido?"', async () => {
+  for (const vp of [{ width: 375, height: 667, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, { width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true }]) {
+    const p = await phonePage(vp);
+    await phoneQuick(p);
+    // una partida larga (recorrido, choques, cartas…) y la pierde un bot contra ti
+    await p.evaluate(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, me = S.human, b = S.balls.find(x => x.player === me);
+      const route = [[b.x, b.y, 'o']]; let y = b.y; for (let i = 0; i < 12; i++) { y = Math.max(1, y - 1); route.push([b.x, y, i === 4 ? 'h' : i === 7 ? 'H' : 'm']); }
+      ctl.setStats({ golpes: 14, hundidas: 1, colisiones: 5, portales: 2, caidas: 1, turnos: 7, longest: { n: 7, p: me }, hitsOnMe: { [(me + 1) % S.nPlayers]: 3 }, cardsUsed: { palo3: 4 }, route });
+      const w = S.balls.find(x => x.player !== me);
+      for (const o of S.balls) if (o !== w && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;
+      w.x = S.hole.x; w.y = S.hole.y + 1; S.turn = w.player; S.hands[w.player][0] = 'palo1';
+      app.ai.acting = true; ctl.clickCard(w.player, 0); ctl.clickCell(S.hole.x, S.hole.y); app.ai.acting = false; });
+    await sleep(2500);
+    await p.evaluate(() => { if (!document.getElementById('winOverlay').classList.contains('visible')) window.chaoticGolf.ctl.confirmWin(); });
+    await sleep(900);
+    const fits = () => p.evaluate(() => { const o = document.getElementById('winOverlay'); return o.classList.contains('visible') && o.scrollHeight <= o.clientHeight + 1; });
+    assert.ok(await fits(), 'el final cabe ' + vp.width + '×' + vp.height);
+    await p.evaluate(() => document.querySelector('[data-act="why"]')?.click()); await sleep(300);
+    assert.ok(await fits(), 'con "¿por qué he perdido?" abierto, también ' + vp.width + '×' + vp.height);
+    await p.close();
+  }
+});

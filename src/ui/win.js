@@ -157,7 +157,8 @@ export function showWin() {
 
   // ¿por qué he perdido? (con una persona contra la máquina)
   const why = lost && !multi ? keyMomentHTML() : '';
-  $('winWhy').innerHTML = why ? `<button class="btn-text winWhyBtn" data-act="why" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('why.button'))}</button><div class="whyPanel" hidden>${why}</div>` : '';
+  $('winWhy').innerHTML = why ? `<button class="btn-text winWhyBtn" data-act="why" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg><span>${esc(t('why.button'))}</span></button><div class="whyPanel" hidden>${why}</div>` : '';
+  box.classList.remove('whyOpen');
 
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
@@ -319,9 +320,11 @@ export function bindWin() {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (act === 'why') { // despliega el momento clave
+    if (act === 'why') { // el momento clave, en el sitio del resumen (así el final cabe siempre sin desplazarse)
       const p = $('winWhy').querySelector('.whyPanel');
       p.hidden = !p.hidden; b.setAttribute('aria-expanded', !p.hidden);
+      $('winOverlay').querySelector('.box').classList.toggle('whyOpen', !p.hidden);
+      b.querySelector('span').textContent = t(p.hidden ? 'why.button' : 'why.back');
       return;
     }
     switch (act) {
