@@ -6,7 +6,8 @@ import { app } from './app.js';
 import { $, $$, restartClass } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
 import { TILES } from '../content/tiles/index.js';
-import { fitCellsTo } from './geometry.js';
+import { fitCellsTo, fitCellsFlex } from './geometry.js';
+import { isPhone } from './device.js';
 import { renderBoard, ensurePieces, syncPieces, clearPieces, markPlaced } from './board.js';
 import { renderHands, resetDealAnim } from './hands.js';
 import { playQueue } from './animations.js';
@@ -35,6 +36,8 @@ import { showPuzzleFail } from './win.js';
 import { musicMood } from '../audio/sfx.js';
 import { piecesBefore, notePlay } from './share-play.js';
 import { paintLab, labGodClick } from './lab.js';
+import { previewCard } from './preview.js';
+import { autoZoom } from './board-zoom.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -81,6 +84,7 @@ export function startGame(game, mode, { levelIndex = null, level = null, variant
   app.passFor = null; app.reacting = null;
   app.finalPlay = null;
   app.winStyle = {}; app.undo = null; app.caddie = null; app.lastWhy = null; // cómo ganó cada uno · deshacer · consejo del caddie
+  app.armed = null; // (carta de efecto inmediato elegida en táctil, a la espera del segundo toque)
   resetMoments();
   clearPause();
   musicMood('calm');
@@ -100,6 +104,7 @@ export function startGame(game, mode, { levelIndex = null, level = null, variant
 export function fitBoard() {
   const col = $('boardCol'), S = app.game.S;
   const w = col?.clientWidth || window.innerWidth - 360, h = col?.clientHeight || window.innerHeight * .6;
+  if (isPhone()) { fitCellsFlex(S.cols, S.rows, w - 14, h - 14); return; } // táctil: marco fino (4px) + junta (3px)
   const pad = window.innerWidth <= 760 ? 22 : 30; // marco crema (10px, 7px en móvil) + junta (3px) a cada lado
   fitCellsTo(S.cols, S.rows, w - pad, h - pad, 84);
 }
@@ -110,6 +115,7 @@ export const labAction = fn => dispatch(fn);
 function dispatch(fn) {
   const g = app.game;
   if (!g) return false;
+  app.armed = null; // cualquier jugada suelta la carta elegida en táctil
   const jaqueBefore = g.S.jaque && g.S.winner !== null;
   const turnBefore = g.S.turn;
   const before = app.mode === 'pve' ? g.clone({ lite: true }) : null; // para explicar la jugada y el momento clave
@@ -201,8 +207,29 @@ function dispatch(fn) {
 
 /* ---------- acciones (interfaz e IA) ---------- */
 const CANCELLABLE = ['move', 'placeTile', 'pickBall', 'dedoAmount', 'pickHoled']; // (el dedo en marcha ya no)
+// interfaz táctil: una carta de efecto inmediato (hoyo, NO…) no se juega al primer toque. El primer toque
+// la elige y enseña en el tablero lo que hará; el segundo (o "Jugar") la juega. Así nadie juega una carta
+// sin querer (sin ratón no hay vista previa al pasar por encima). La IA nunca pasa por aquí.
+function armsFirst(p, idx) {
+  const g = app.game, k = g.S.hands[p]?.[idx];
+  if (!isPhone() || g.pending || isBot(p) || app.ai.acting || !k || !g.canPlay(p, k)) return false;
+  const sim = g.clone({ lite: true });
+  sim.events = [];
+  return !!sim.clickCard(p, idx) && !sim.pending;
+}
+export function disarm() { if (app.armed) { app.armed = null; render(); } }
+export const playArmed = () => { const a = app.armed; return a ? clickCard(a.p, a.idx) : false; };
+
 export function clickCard(p, idx) {
   if (app.animating) return false;
+  const armed = app.armed;
+  app.armed = null;
+  if (!(armed && armed.p === p && armed.idx === idx) && armsFirst(p, idx)) {
+    app.armed = { p, idx, key: app.game.S.hands[p][idx] };
+    sfx('select');
+    render();
+    return true;
+  }
   const pd = app.game.pending;
   // tocar otra vez la carta elegida la suelta; tocar otra carta tuya cambia de elección
   if (pd && pd.p === p && pd.idx !== undefined && CANCELLABLE.includes(pd.kind) && (app.mode !== 'pve' || !app.ai.acting)) {
@@ -304,6 +331,8 @@ export function render() {
   const g = app.game;
   if (!g) return;
   if (app.placeAt && (g.pending?.kind !== 'placeTile' || !g.selectableAt(app.placeAt.x, app.placeAt.y))) app.placeAt = null; // (pieza de prueba)
+  const a = app.armed; // (carta elegida en táctil: se suelta si ya no se puede jugar tal cual)
+  if (a && (g.pending || g.S.hands[a.p]?.[a.idx] !== a.key || !g.canPlay(a.p, a.key))) app.armed = null;
   passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
   setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting)); // (ajuste: turnos de la máquina más rápidos)
   hud.renderTopbar();
@@ -316,7 +345,9 @@ export function render() {
   if (hud.modeChip()) requestAnimationFrame(() => { if (app.game === g) { fitBoard(); render(); } }); // etiqueta del modo (torneo, contrarreloj…)
   paintAssist();    // botones de consejo y deshacer
   redrawCaddie();   // el consejo sigue a la vista hasta que juegas
+  if (app.armed) previewCard(app.armed.p, app.armed.idx); // táctil: lo que hará la carta elegida
   paintLab();       // panel del laboratorio del creador
+  autoZoom();       // táctil, tableros grandes: la cámara se acerca a los destinos al elegir
 }
 
 function renderPieces() {

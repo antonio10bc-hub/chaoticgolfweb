@@ -1,10 +1,12 @@
 // Tooltip de carta: al pasar el ratón (o enfocar con teclado) explica qué hace,
-// de qué tipo es y, si ahora no se puede jugar, por qué.
+// de qué tipo es y, si ahora no se puede jugar, por qué. En la interfaz táctil, manteniendo pulsada
+// la carta (ese toque no la juega); se cierra al tocar cualquier otra cosa.
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { CARDS } from '../content/cards/index.js';
 import { blockedReason } from './reasons.js';
 import { t } from '../i18n/index.js';
+import { isPhone, buzz } from './device.js';
 
 let timer = null, current = null;
 
@@ -31,11 +33,12 @@ export function hideCardTip() { clearTimeout(timer); $('cardTip').className = ''
 export function refreshCardTip() {
   if (!current) return;
   const el = document.querySelector(`.card[data-p="${current.p}"][data-idx="${current.idx}"][data-key]`);
-  if (el && el.matches(':hover, :focus-visible')) show(el); else hideCardTip();
+  if (el && (isPhone() || el.matches(':hover, :focus-visible'))) show(el); else hideCardTip();
 }
 
 export function bindCardTip() {
   const onEnter = e => {
+    if (isPhone()) return; // (en táctil, mantener pulsado)
     const el = e.target.closest?.('.card[data-key]');
     if (!el) return;
     clearTimeout(timer);
@@ -60,5 +63,26 @@ export function bindCardTip() {
     el.style.setProperty('--rx', (.5 - (e.clientY - r.top) / r.height) * 12 + 'deg');
   });
   window.addEventListener('pointerdown', hideCardTip, true);
+  // táctil: mantener pulsada una carta = qué hace (sin jugarla)
+  let press = null, heldAt = 0;
+  const release = () => { if (press) { clearTimeout(press.t); press = null; } };
+  for (const id of ['dock', 'seats']) {
+    const box = $(id);
+    box.addEventListener('pointerdown', e => {
+      heldAt = 0; // (cada toque nuevo empieza de cero)
+      if (!isPhone()) return;
+      const el = e.target.closest('.card[data-key]');
+      if (!el) return;
+      release();
+      press = { x: e.clientX, y: e.clientY, t: setTimeout(() => { press = null; heldAt = Date.now(); show(el); buzz(10); }, 430) };
+    });
+    box.addEventListener('pointermove', e => { if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) release(); });
+    box.addEventListener('pointerup', release);
+    box.addEventListener('pointercancel', release);
+    box.addEventListener('click', e => { // el toque que ha abierto la explicación no juega la carta
+      if (heldAt && Date.now() - heldAt < 1500) { heldAt = 0; e.stopPropagation(); e.preventDefault(); }
+    }, true);
+    box.addEventListener('contextmenu', e => { if (isPhone() && e.target.closest('.card')) e.preventDefault(); });
+  }
   window.addEventListener('scroll', hideCardTip, true);
 }

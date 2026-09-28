@@ -1,0 +1,306 @@
+/* =========================================================
+   Interfaz táctil (móviles y tabletas): html.phone, lo decide src/ui/device.js por el dispositivo
+   (nunca por el ancho de la ventana: una ventana estrecha del ordenador usa el diseño adaptable normal).
+
+   Partida: el tablero ocupa todo el hueco y la interfaz va encima, compacta y translúcida. Lo que no
+   importa ahora mismo pierde opacidad: los rivales que no juegan, tu mano mientras juega otro.
+     vertical     barra (menú · turno · mazo) / rivales / TABLERO / acción + mano y botones de turno
+     horizontal   izquierda: barra y rivales · centro: TABLERO a todo el alto · derecha: acción, mano y botones
+   Los menús usan el diseño adaptable de siempre; aquí solo márgenes seguros y detalles táctiles.
+   ========================================================= */
+
+/* ---------- gestos: sin zoom de página, sin selección de texto ni menú contextual en la partida ---------- */
+html.phone { -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; }
+html.phone body { overscroll-behavior: none; }
+html.phone #game { touch-action: none; user-select: none; -webkit-user-select: none; }
+html.phone button { touch-action: manipulation; }
+/* sin ratón no hay hover: la carta no se queda levantada después de tocarla */
+html.phone .card:hover:not(.cardSel):not(.discardSel):not(.ctaJaque):not(.caddiePick):not(.nudge) {
+  transform: none; box-shadow: 0 0 0 1px rgba(36,36,36,.08), 0 3px 9px var(--shadow); }
+html.phone .card.mini:hover { transform: none; }
+html.phone #deckPile:hover .pileStack > i:nth-child(3) { transform: none; }
+html.phone .card:active:not(.unplayable) { transform: scale(.96); }
+html.phone .card.cardSel:active { transform: translateY(-10px) scale(.97); }
+
+/* ---------- márgenes seguros (muesca, isla, barra de gestos) ---------- */
+html.phone #game {
+  --safeT: env(safe-area-inset-top, 0px); --safeR: env(safe-area-inset-right, 0px);
+  --safeB: env(safe-area-inset-bottom, 0px); --safeL: env(safe-area-inset-left, 0px);
+}
+html.phone #sfxBtn { left: calc(14px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+html.phone #sndCfgBtn { left: calc(56px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+html.phone #logPanel { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+html.phone #menuScreen, html.phone #storyScreen, html.phone #modesScreen, html.phone #pveScreen {
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+/* en la partida, ajustes y sonido están en el menú de pausa: fuera los botones redondos */
+html.phone body[data-screen="game"] #sfxBtn, html.phone body[data-screen="game"] #sndCfgBtn { display: none; }
+html.phone #toast { top: calc(env(safe-area-inset-top, 0px) + 58px); }
+
+/* =========================================================
+   Partida en vertical (y la base de la horizontal)
+   ========================================================= */
+html.phone #game {
+  display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "bar" "seats" "board" "dock";
+  row-gap: 6px;
+  padding: calc(var(--safeT) + 6px) calc(var(--safeR) + 6px) calc(var(--safeB) + 6px) calc(var(--safeL) + 6px);
+}
+html.phone #table { display: contents; } /* asientos, tablero y mazo pasan a ser piezas de la rejilla de la partida */
+html.phone #seats, html.phone #boardCol, html.phone #piles { position: relative; z-index: 1; }
+html.phone #gameDecor .dBunker, html.phone #gameDecor .dTree { display: none; } /* (sin márgenes donde ponerlos) */
+html.phone #gameDecor { display: block; }
+
+/* ---------- barra: menú (pausa) · de quién es el turno · mazo ---------- */
+html.phone #gameBar {
+  grid-area: bar; z-index: 30;
+  grid-template-columns: 72px minmax(0, 1fr) 72px; grid-template-rows: auto;
+  gap: 4px 6px; padding: 0; min-height: 44px;
+}
+html.phone #menuBtn, html.phone #resetBtn, html.phone #rulesBtn, html.phone #logTab { display: none; } /* (todo eso, en el menú de pausa) */
+html.phone #gameBar > .barSide, html.phone #gameBar > .barSide.right { grid-row: 1; grid-column: 1; justify-content: flex-start; padding: 0; gap: 0; }
+html.phone #pauseBtn { width: 44px; height: 44px; padding: 0; --b-bg: rgba(241,241,220,.9); --b-fg: var(--ink); --b-line: transparent; }
+html.phone #pauseBtn .i { width: 20px; height: 20px; }
+html.phone #gameBar > #turnPill { grid-row: 1; grid-column: 2; justify-self: center; max-width: 100%; min-width: 0; padding: 4px 12px 4px 4px; gap: 8px; }
+html.phone #turnPill .avatar { width: 34px; height: 34px; font-size: 11.5px; }
+html.phone .tpText { min-width: 0; }
+html.phone .tpText b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.phone .tpText small { display: none; }
+html.phone .pips { padding-left: 8px; }
+html.phone #gameBar > #modeChip { position: static; transform: none; grid-row: 2; grid-column: 1 / -1; justify-self: center; margin: 0; font-size: 11px; padding: 2px 10px; }
+html.phone #gameBar > #rushTimer { grid-row: 2; grid-column: 1 / -1; margin: 0; font-size: 15px; padding: 3px 10px 3px 8px; }
+html.phone #gameBar:has(#rushTimer:not([hidden])) > #modeChip { grid-row: 3; }
+html.phone #gameBar > .barSide:first-child { position: static; } /* (el aviso de guardado se coloca respecto a la barra) */
+html.phone .saveTick { position: absolute; left: 0; top: 50px; z-index: 5; padding: 3px 9px 3px 7px; font-size: 11px; }
+/* Ultimate: sobre el fondo claro el botón de menú va en blanco */
+html.phone #gameScreen[data-scene="prism"] #pauseBtn { --b-bg: rgba(255,255,255,.75); --b-fg: #3B2C63; }
+
+/* ---------- mazo: una ficha pequeña a la derecha de la barra (tocar = qué queda) ---------- */
+html.phone #table #piles { grid-area: bar; justify-self: end; align-self: start; display: flex; flex-direction: row; gap: 0; z-index: 31; }
+html.phone #discardPile, html.phone #lastPlay { display: none; }
+html.phone #deckPile {
+  flex-direction: row; gap: 6px; height: 44px; padding: 0 12px 0 10px; border-radius: 999px;
+  background-image: var(--grain); background-color: rgba(241,241,220,.9); color: var(--ink);
+}
+html.phone #deckPile .pileStack { width: 20px; height: 28px; }
+html.phone #deckPile .pileStack > i { border-width: 1.5px; border-radius: 4px; box-shadow: 0 1px 3px rgba(20,40,20,.25) !important; }
+html.phone #deckPile .pileLbl { font-size: 0; color: var(--ink); } /* solo el número */
+html.phone #gameScreen #deckPile .pileLbl { color: var(--ink); }
+html.phone #deckPile .pileLbl b { font-size: 15px; font-weight: 600; border: 0; padding: 0; margin: 0; min-width: 0; }
+html.phone #deckPop { left: auto; right: 0; top: calc(100% + 8px); transform: none; width: min(250px, calc(100vw - 20px)); }
+html.phone #deckPop.open { animation: popIn .2s var(--ease-out); }
+
+/* ---------- rivales: una fila de fichas (cara, cartas en la mano y nombre) ---------- */
+html.phone #table #seats {
+  grid-area: seats; flex-direction: row; justify-content: center; align-items: flex-start;
+  gap: 6px; padding: 0; overflow: visible; min-height: 0; scroll-snap-type: none;
+}
+html.phone #table.noSeats #seats { display: none; }
+html.phone .seat {
+  flex: 0 1 auto; min-width: 0; max-width: 84px; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 7px 4px; border-radius: 16px; border: 0;
+  background-image: var(--grain); background-color: rgba(241,241,220,.88); box-shadow: none;
+  opacity: .5; transform: none;
+  transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), background-color .3s;
+}
+html.phone .seat.active::before { display: none; }
+/* lo que pasa ahora: quien juega, quien puede reaccionar al JAQUE y quien ya ha embocado se ven enteros */
+html.phone .seat.active, html.phone .seat.cta, html.phone .seat.won { opacity: 1; transform: none; }
+html.phone .seat.active .avatar { box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--pc), 0 2px 6px var(--shadow); }
+html.phone .seat.cta .avatar { box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--accent-deep); }
+html.phone .seat.won .avatar { box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--accent); }
+html.phone .seat.active { transform: translateY(1px) scale(1.04); }
+html.phone .seatAv { position: relative; display: block; }
+html.phone .seat .avatar { width: clamp(32px, 8.6vmin, 46px); height: clamp(32px, 8.6vmin, 46px); font-size: 11px; }
+html.phone .seatBadge {
+  display: inline-flex; align-items: center; justify-content: center; position: absolute; right: -6px; top: -4px;
+  min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: var(--ink); color: var(--cream);
+  font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px var(--cream);
+}
+html.phone .seatBody { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; }
+html.phone .seatName { font-size: 11px; font-weight: 600; max-width: 100%; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+html.phone .seatName .botTag { display: none; }
+/* estado: en vertical solo los puntos de "pensando…" (el nombre y la píldora ya dicen el resto) */
+html.phone .seatStatus { font-size: 0; margin: 0; height: 6px; justify-content: center; }
+html.phone .seatStatus .thinkDots { margin: 0; }
+html.phone .seatCnt, html.phone .seatCards { display: none !important; }
+html.phone .seatReact { margin-top: 3px; padding: 3px 9px; font-size: 11px; }
+html.phone .seat:has(.seatReact) { max-width: 116px; opacity: .8; } /* (otra persona que puede pedir el móvil) */
+
+/* ---------- tablero: del borde al borde, con un marco fino ---------- */
+html.phone #table #boardCol { grid-area: board; } /* (#table #…: gana a las reglas de ventana estrecha) */
+html.phone #boardWrap { padding: 4px; border-radius: 12px; box-shadow: 0 4px 14px rgba(20,40,20,.2); }
+html.phone #zoomReset { width: 40px; height: 40px; }
+
+/* ---------- tu mano y los botones de turno ---------- */
+html.phone #dock { grid-area: dock; padding: 0; align-items: stretch; }
+/* aviso de acción: un hueco fijo sobre la mano; si el aviso ocupa más (botones 1-2-3, dos líneas), crece hacia
+   arriba por encima del tablero en lugar de empujar la mano (el tablero no cambia de tamaño a cada jugada) */
+html.phone #actionBar { position: relative; z-index: 22; height: 44px; min-height: 0; margin-bottom: 5px; }
+html.phone #actionBar > .hint { position: absolute; left: 0; right: 0; bottom: 0; margin-inline: auto; width: fit-content; max-width: 100%; }
+/* el aviso en una fila: el texto en dos líneas como mucho y los botones siempre a su lado */
+html.phone .hint { font-size: 13px; border-radius: 18px; flex-wrap: nowrap; gap: 8px; min-height: 44px; }
+html.phone .hint .hintText { flex: 1 1 auto; min-width: 0; padding-right: 2px; line-height: 1.2;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+html.phone .hint.idle { min-height: 0; padding: 7px 16px; }
+html.phone .hint.idle .hintText { display: block; }
+html.phone .hintBtns { flex: 0 0 auto; }
+html.phone .hintBtns .stepBtn { min-width: 38px; padding-inline: 8px; }
+html.phone .hint .hintCard { width: 28px; height: 28px; }
+html.phone .hintBtns .stepBtn { min-height: 36px; font-size: 15px; }
+html.phone .hint button { min-height: 36px; }
+html.phone #dockRow {
+  width: 100%; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
+  padding: 7px 8px 7px 8px; border-radius: 20px;
+  background-color: rgba(241,241,220,.92); box-shadow: 0 6px 18px rgba(20,40,20,.18);
+  transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), border-color .25s;
+}
+html.phone #dockOwner { display: none; }
+html.phone #hands { min-height: 0; gap: 7px; padding: 4px 0 0; justify-content: center; }
+html.phone #hands .card { --cw: clamp(58px, 17.5vmin, 96px); }
+/* manos grandes: las cartas se solapan un poco en lugar de salirse */
+html.phone #hands:has(.card:nth-child(4)) { gap: 0; }
+html.phone #hands:has(.card:nth-child(4)) .card + .card { margin-left: -10px; }
+html.phone #hands:has(.card:nth-child(5)) .card + .card { margin-left: -20px; }
+html.phone #turnActions {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "assist disc" "end end";
+  gap: 6px; align-content: center; width: clamp(122px, 34vw, 200px);
+}
+html.phone #turnActions .assistBtns { grid-area: assist; flex-direction: row; gap: 6px; }
+html.phone #turnActions .assistBtns button { width: 40px; height: 40px; padding: 0; flex: 0 0 auto; }
+html.phone .assistBtns .btn-icon span { display: none; }
+html.phone #discardBtn { grid-area: disc; min-height: 40px; padding: 4px 8px; min-width: 0; }
+html.phone #turnActions:not(:has(.assistBtns button:not([hidden]))) #discardBtn { grid-column: 1 / -1; }
+html.phone #endTurnBtn { grid-area: end; min-width: 0; min-height: 54px; padding: 6px 10px; font-size: 15px; }
+html.phone #turnActions button { flex: none; }
+html.phone #turnActions button small { font-size: .72em; }
+/* no es tu turno: la mano se aparta y pierde opacidad (salvo si puedes reaccionar al JAQUE) */
+html.phone #dock.waiting:not(.cta) #dockRow { opacity: .55; transform: translateY(4px) scale(.97); }
+/* zurdos: los botones de turno a la izquierda */
+html.phone.leftHand #dockRow { grid-template-columns: auto minmax(0, 1fr); }
+html.phone.leftHand #turnActions { order: -1; }
+
+/* ---------- JAQUE: arriba, sobre la fila de rivales (el tablero queda libre para reaccionar) ---------- */
+html.phone #jaque {
+  position: fixed; top: calc(var(--safeT) + 56px); bottom: auto; left: 50%; transform: translateX(-50%); z-index: 36;
+  width: min(460px, calc(100vw - 12px)); min-width: 0; flex-wrap: nowrap; gap: 9px; padding: 8px 8px 8px 10px;
+}
+html.phone .jqBadge { font-size: 13px; padding: 6px 10px; letter-spacing: .05em; }
+html.phone .jqText { flex: 1 1 auto; min-width: 0; }
+html.phone .jqText b { font-size: 14px; }
+html.phone .jqText small { font-size: 11.5px; }
+html.phone #jaque button { min-height: 40px; padding-inline: 12px; }
+
+/* ---------- ayudas y capas ---------- */
+html.phone .pauseLog { display: inline-flex; grid-column: auto; }
+html.phone .pausePhone { display: inline-flex; }
+html.phone #turnBanner b { font-size: 20px; }
+html.phone .bubble { max-width: 160px; font-size: 12.5px; }
+html.phone #cardTip { width: min(270px, calc(100vw - 16px)); }
+/* texto grande: sin zoom de bloques (no cabría); se agranda el texto clave */
+html.phone.bigText #gameBar, html.phone.bigText #dock, html.phone.bigText #seats, html.phone.bigText #piles { zoom: 1; }
+html.phone.bigText .hint { font-size: 14.5px; }
+html.phone.bigText .tpText b { font-size: 16.5px; }
+html.phone.bigText .seatName { font-size: 12.5px; }
+html.phone.bigText #turnActions button { font-size: 16px; }
+/* probar un nivel del creador: el laboratorio es un botón flotante que abre su panel */
+html.phone #labPanel { position: fixed; left: calc(8px + var(--safeL)); bottom: calc(var(--safeB) + 200px); z-index: 36; padding: 0; background: none; overflow: visible; max-height: none; }
+html.phone .labToggle { display: inline-flex; gap: 6px; }
+html.phone .labBody { display: none; }
+html.phone #labPanel.open .labBody { display: block; margin-top: 6px; width: min(340px, 92vw); max-height: 60vh; overflow: auto; border-radius: 16px; padding: 12px;
+  background-image: var(--grain); background-color: var(--cream); box-shadow: 0 16px 40px rgba(12,20,26,.3); }
+html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
+
+/* =========================================================
+   Partida en horizontal: izquierda barra y rivales · centro tablero · derecha mano
+   ========================================================= */
+@media (orientation: landscape) {
+  html.phone #game {
+    grid-template-columns: minmax(160px, 24vw) minmax(0, 1fr) minmax(206px, 30vw);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "bar board dock" "seats board dock";
+    column-gap: 10px; row-gap: 8px;
+  }
+  /* barra en columna: menú y mazo arriba, la píldora del turno debajo, a lo ancho */
+  html.phone #gameBar { grid-template-columns: auto minmax(0, 1fr); align-self: start; }
+  html.phone #gameBar > #turnPill { grid-row: 2; grid-column: 1 / -1; justify-self: stretch; }
+  html.phone #turnPill .pips { margin-left: auto; }
+  html.phone .tpText small { display: flex; }
+  html.phone #gameBar > #modeChip, html.phone #gameBar > #rushTimer { grid-row: 3; }
+  html.phone #gameBar:has(#rushTimer:not([hidden])) > #modeChip { grid-row: 4; }
+  html.phone #table #piles { grid-area: bar; align-self: start; }
+  html.phone .saveTick { left: 50px; top: 10px; width: 24px; height: 24px; padding: 0; justify-content: center; } /* (solo el tic) */
+  html.phone .saveTick span { display: none; }
+  html.phone #toast { top: calc(env(safe-area-inset-top, 0px) + 12px); }
+  /* rivales: una lista (cara, nombre y estado) */
+  html.phone #table #seats { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 6px; overflow: auto; }
+  html.phone .seat { flex-direction: row; justify-content: flex-start; max-width: none; gap: 9px; padding: 6px 10px 6px 6px; border-radius: 999px; }
+  html.phone .seat.active { transform: translateX(3px); }
+  html.phone .seatBody { align-items: flex-start; }
+  html.phone .seatName { font-size: 12.5px; }
+  html.phone .seatStatus { font-size: 11px; height: auto; justify-content: flex-start; }
+  html.phone .seatStatus .thinkDots { margin-left: 5px; }
+  /* derecha: aviso de acción arriba, mano y botones abajo */
+  html.phone #dock { display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; }
+  html.phone #actionBar { height: auto; margin-bottom: 8px; justify-content: center; }
+  html.phone #actionBar > .hint { position: static; }
+  html.phone #dockRow { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: 8px; padding: 8px; }
+  html.phone.leftHand #dockRow { grid-template-columns: minmax(0, 1fr); }
+  html.phone.leftHand #turnActions { order: 0; }
+  html.phone #hands { flex-wrap: wrap; }
+  html.phone #hands .card { --cw: clamp(56px, 15.5vmin, 92px); }
+  html.phone #turnActions { width: auto; }
+  html.phone #jaque { position: static; transform: none; width: 100%; margin-bottom: 8px; flex-wrap: wrap; }
+  html.phone .tpText b { font-size: 14px; }
+  html.phone .hint { flex-wrap: wrap; }
+  html.phone .hint .hintText { -webkit-line-clamp: 3; }
+  html.phone #jaque.visible { animation: popIn .28s var(--ease-out); }
+  html.phone .hint { width: 100%; justify-content: center; }
+}
+
+/* ---------- tabletas: la misma maqueta, con la interfaz más grande ---------- */
+@media (min-width: 700px) and (min-height: 700px) {
+  html.phone #gameBar, html.phone #dock, html.phone #table #seats, html.phone #table #piles { zoom: 1.28; }
+  html.phone #hands .card, html.phone #hands .card { --cw: 80px; }
+  html.phone .tpText small { display: flex; }
+  html.phone .seat { max-width: 96px; }
+}
+
+/* =========================================================
+   Menús en el móvil en horizontal (poca altura): el menú principal cabe entero, sin desplazarse
+   ========================================================= */
+@media (orientation: landscape) and (max-height: 540px) {
+  html.phone #menuScreen { padding: 10px max(12px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); align-items: stretch; }
+  html.phone .mFrame { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); min-height: 0; height: calc(100dvh - 20px); padding: 10px; gap: 10px; }
+  html.phone .mArt { order: 0; min-height: 0; }
+  html.phone .mContent { padding: 8px 12px 6px; justify-content: center; min-height: 0; }
+  html.phone .mTitle { font-size: clamp(34px, 12.5vh, 62px); margin-bottom: 10px; }
+  html.phone .mTag { display: none; }
+  html.phone .mActions { width: 100%; gap: 8px; }
+  html.phone .mDaily { padding: 8px 12px 8px 8px; gap: 10px; }
+  html.phone .dPreview { width: 46px; height: 46px; }
+  html.phone .mActions .mRow .mBtn, html.phone .mActions .mBtn { min-height: 42px; padding: 9px 14px; font-size: 14.5px; }
+  /* los botones redondos (sonido y ajustes), arriba a la derecha: abajo tapaban los del menú */
+  html.phone body:not([data-screen="game"]) #sfxBtn, html.phone body:not([data-screen="game"]) #sndCfgBtn { top: 12px; bottom: auto; left: auto; }
+  html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
+  html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(16px + env(safe-area-inset-right, 0px)); }
+  html.phone .mBottom { left: auto; right: calc(100px + env(safe-area-inset-right, 0px)); top: 12px; bottom: auto; }
+  /* Lo básico: cabecera compacta y tarjetas en horizontal (miniatura a la izquierda), 4 × 2 sin desplazarse */
+  html.phone #storyScreen { padding-top: 14px; padding-bottom: 12px; }
+  html.phone #storyScreen .sTitle { font-size: clamp(30px, 10vh, 46px); }
+  html.phone #storyScreen .sSub { display: none; }
+  html.phone #storyScreen #storyProgress { margin: 6px 0 8px; width: min(360px, 50vw); }
+  html.phone #storyScreen .spText { margin-bottom: 4px; font-size: 12.5px; }
+  html.phone #storyScreen .lvlSection { padding: 10px 12px 12px; }
+  html.phone #storyScreen .lvlSection h3 { margin-bottom: 6px; }
+  html.phone #storyScreen .lvlRow { gap: 8px; }
+  html.phone #storyScreen .lvlCard { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 1fr auto; column-gap: 8px; row-gap: 4px;
+    align-items: center; padding: 6px; }
+  html.phone #storyScreen .lvlPreview { grid-row: 1 / 3; height: 100%; max-height: none; min-height: 0; aspect-ratio: 3 / 4; width: auto; padding: 4px; }
+  html.phone #storyScreen .lvlName { align-self: end; padding: 0; font-size: 13px; }
+  html.phone #storyScreen .lvlFoot { align-self: start; margin: 0; }
+  html.phone #storyScreen .lvlNum { top: 9px; left: 9px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; }
+  html.phone #storyScreen .lvlState { font-size: 10.5px; padding: 2px 8px; }
+  html.phone #storyScreen .lvlCard.done .lsTxt { display: none; }
+  html.phone #storyScreen #storyContinue { margin: 0 0 8px; }
+}

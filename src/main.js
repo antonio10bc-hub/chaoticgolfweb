@@ -110,6 +110,21 @@ window.addEventListener('resize', () => {
   if (app.screen === 'editor' && ED.level) { fitEditorBoard(); edRender(); return; }
   if (app.game) { ctl.fitBoard(); if (!app.animating) ctl.render(); }
 });
+// el hueco del tablero también cambia sin que cambie la ventana (la fila de rivales con "Reaccionar", la etiqueta
+// del modo, girar el móvil…): se reajusta la casilla. Nunca a mitad de una animación (las piezas se descolocarían)
+let refitLater = null;
+function refitBoard() {
+  if (!app.game || app.screen !== 'game') return;
+  if (app.animating) { clearTimeout(refitLater); refitLater = setTimeout(refitBoard, 250); return; }
+  ctl.fitBoard(); ctl.render();
+}
+if (typeof ResizeObserver === 'function') {
+  let last = '';
+  new ResizeObserver(([e]) => {
+    const k = Math.round(e.contentRect.width) + 'x' + Math.round(e.contentRect.height);
+    if (k !== last) { last = k; refitBoard(); }
+  }).observe($('boardCol'));
+}
 // Escape cierra paneles flotantes / cancela la acción en curso
 window.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;

@@ -68,3 +68,15 @@ export function fitCellsTo(cols, rows, availW, availH, max = 64, min = 24) {
   setCellSize(w, Math.round(w * ratio));
   document.documentElement.classList.toggle('squareCells', ratio !== RATIO);
 }
+
+// interfaz táctil: el tablero llena el hueco. El ancho de casilla es el mayor que cabe (como mucho
+// cuadrada) y el alto crece hasta la proporción de carta si sobra sitio: casillas más grandes al dedo.
+// Los tableros enormes (Ultimate) pueden quedar pequeños: al elegir destino, la cámara se acerca (board-zoom.js)
+export function fitCellsFlex(cols, rows, availW, availH, max = 96, min = 12) {
+  const byW = Math.floor((availW - GAP * (cols - 1)) / cols);
+  const byH = Math.floor((availH - GAP * (rows - 1)) / rows);
+  const w = Math.max(min, Math.min(max, byW, byH));
+  const h = Math.max(w, Math.min(Math.round(w * RATIO), byH));
+  setCellSize(w, h);
+  document.documentElement.classList.toggle('squareCells', h / w < RATIO - .05);
+}

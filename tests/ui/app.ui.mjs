@@ -423,3 +423,117 @@ it('desafíos: todos arrancan con sus piezas dentro del tablero, sin solaparse n
     await click('#menuBtn'); await sleep(200);
   }
 });
+
+/* ---------- interfaz táctil (móvil y tableta): html.phone por dispositivo, no por ancho ---------- */
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+const PHONE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+// una página aparte emulando un móvil (la principal sigue siendo la del ordenador)
+async function phonePage(vp = PHONE) {
+  const p = await browser.newPage();
+  p.on('pageerror', e => errors.push(e.message));
+  p.on('dialog', d => d.accept());
+  await p.setUserAgent(IPHONE_UA); await p.setViewport(vp);
+  await p.goto(URL, { waitUntil: 'networkidle0' });
+  await p.evaluate(() => { localStorage.clear();
+    localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
+    localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 })); });
+  await p.reload({ waitUntil: 'networkidle0' });
+  await p.waitForFunction(() => window.chaoticGolf?.app.game); await sleep(500);
+  return p;
+}
+async function phoneQuick(p, cfg = {}, deck = 'classic') {
+  await p.evaluate(async (cfg, deck) => { const { app } = window.chaoticGolf; const m = await import('/src/ui/screen-pve.js');
+    app.pveCfg = { ...app.pveCfg, size: 'm', opps: 2, diff: 'normal', ...cfg, deck }; m.openPveSetup(deck); m.startPveMatch(); }, cfg, deck);
+  await sleep(500); await p.evaluate(() => document.querySelectorAll('#dialog[open]').forEach(d => d.close())); await sleep(700);
+  // turno de la persona, sin nada en marcha
+  await p.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting && !app.game.pending; }, { timeout: 60000 });
+}
+const rect = (p, sel) => p.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; }, sel);
+const overlap = (a, b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
+
+it('táctil: solo el dispositivo decide (ventana estrecha de ordenador = diseño de siempre; móvil = interfaz táctil)', async () => {
+  await fresh();
+  await page.setViewport({ width: 400, height: 800 }); await sleep(300);
+  assert.equal(await app(() => document.documentElement.classList.contains('phone')), false);
+  await page.setViewport({ width: 1280, height: 860 });
+  const p = await phonePage();
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('phone')), true);
+  assert.match(await p.evaluate(() => document.querySelector('meta[name="viewport"]').content), /viewport-fit=cover/);
+  // Ajustes → Interfaz: Ordenador la quita en el mismo momento
+  await p.evaluate(() => import('/src/ui/prefs.js').then(m => m.setPref('ui', 'desktop')));
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('phone')), false);
+  await p.evaluate(() => import('/src/ui/prefs.js').then(m => m.setPref('ui', 'auto')));
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('phone')), true);
+  await p.close();
+});
+
+it('táctil en vertical: tablero entero y a lo ancho, sin solapes, y rivales que no juegan con menos opacidad', async () => {
+  const p = await phonePage();
+  await phoneQuick(p);
+  const board = await rect(p, '#boardWrap'), bar = await rect(p, '#gameBar'), seats = await rect(p, '#seats'), dock = await rect(p, '#dockRow');
+  assert.ok(board.l >= 0 && board.r <= 390 && board.t >= 0 && board.b <= 844, 'el tablero cabe en pantalla');
+  assert.ok(board.w > 390 * .9, 'el tablero ocupa casi todo el ancho: ' + board.w);
+  for (const [n, r] of [['barra', bar], ['rivales', seats], ['mano', dock]]) assert.ok(!overlap(board, r), 'el tablero no pisa ' + n);
+  assert.ok(!overlap(await rect(p, '#pauseBtn'), await rect(p, '#turnPill')), 'menú y píldora no se pisan');
+  // ¿el tablero entero dentro de su marco? (última casilla visible)
+  const last = await rect(p, '#board .cell:last-child');
+  assert.ok(last.b <= board.b + 1 && last.r <= board.r + 1, 'la última casilla se ve');
+  assert.ok(last.w >= 40, 'casillas cómodas para el dedo: ' + last.w);
+  // en la barra solo el menú (pausa): lo demás está dentro
+  assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('menuBtn')).display), 'none');
+  // turno de un bot: su ficha entera, la otra y tu mano apagadas
+  await p.evaluate(() => window.chaoticGolf.ctl.endTurn());
+  await p.waitForFunction(() => document.querySelector('.seat.active'), { timeout: 8000 });
+  const op = await p.evaluate(() => [...document.querySelectorAll('.seat')].map(s => [s.classList.contains('active'), +getComputedStyle(s).opacity]));
+  assert.ok(op.some(([a, o]) => a && o > .95) && op.some(([a, o]) => !a && o < .7), JSON.stringify(op));
+  await sleep(400);
+  assert.ok(+await p.evaluate(() => getComputedStyle(document.getElementById('dockRow')).opacity) < .7, 'tu mano se aparta');
+  await p.close();
+});
+
+it('táctil: cartas de efecto inmediato con dos toques, mantener pulsado explica y el menú de pausa lo tiene todo', async () => {
+  const p = await phonePage();
+  await phoneQuick(p);
+  await p.evaluate(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.hands[S.human] = ['hoyoUp', 'palo3']; ctl.render(); });
+  const hole0 = await p.evaluate(() => ({ ...window.chaoticGolf.app.game.S.hole }));
+  await p.evaluate(() => document.querySelector('#hands .card[data-key="hoyoUp"]').click()); await sleep(250);
+  assert.equal(await p.evaluate(() => window.chaoticGolf.app.armed?.key), 'hoyoUp', 'primer toque: elegida');
+  assert.deepEqual(await p.evaluate(() => ({ ...window.chaoticGolf.app.game.S.hole })), hole0, 'aún no se ha jugado');
+  assert.ok(await p.$('#actionBar [data-act="playArmed"]'), 'aviso con "Jugar"');
+  assert.ok(await p.evaluate(() => document.getElementById('previewSvg')?.classList.contains('visible')), 'se ve qué hará');
+  await p.evaluate(() => document.querySelector('#hands .card[data-key="hoyoUp"]').click()); await sleep(900);
+  assert.notDeepEqual(await p.evaluate(() => ({ ...window.chaoticGolf.app.game.S.hole })), hole0, 'segundo toque: jugada');
+  // mantener pulsado: explicación, sin elegir la carta
+  await p.waitForFunction(() => !window.chaoticGolf.app.animating);
+  const c = await (await p.$('#hands .card[data-key="palo3"]')).boundingBox();
+  await p.touchscreen.touchStart(c.x + c.width / 2, c.y + c.height / 2); await sleep(650); await p.touchscreen.touchEnd(); await sleep(200);
+  assert.ok(await p.evaluate(() => document.getElementById('cardTip').classList.contains('visible')), 'explicación a la vista');
+  assert.equal(await p.evaluate(() => window.chaoticGolf.app.game.pending), null, 'mantener pulsado no la juega');
+  // menú de pausa: reglas, ajustes, historial y reiniciar
+  await p.evaluate(() => document.getElementById('pauseBtn').click()); await sleep(250);
+  for (const a of ['resume', 'rules', 'settings', 'log', 'restart', 'menu'])
+    assert.ok(await p.evaluate(a => { const b = document.querySelector(`#pauseOverlay [data-pause="${a}"]`); return !!b && b.getBoundingClientRect().width > 0; }, a), a);
+  await p.close();
+});
+
+it('táctil: con casillas pequeñas (Ultimate) la cámara se acerca al elegir destino y se aleja al acabar', async () => {
+  const p = await phonePage();
+  await phoneQuick(p, { opps: 3 }, 'ultimate');
+  assert.ok(await p.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-w')) < 30), 'Ultimate entero: casillas pequeñas');
+  await p.evaluate(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.hands[S.human][0] = 'palo3'; ctl.render(); ctl.clickCard(S.human, 0); });
+  await sleep(500);
+  assert.match(await p.evaluate(() => document.getElementById('boardZoom').style.transform), /scale/, 'se acerca');
+  await p.evaluate(() => window.chaoticGolf.ctl.cancel()); await sleep(500);
+  assert.equal(await p.evaluate(() => document.getElementById('boardZoom').style.transform), '', 'vuelve a verse entero');
+  await p.close();
+});
+
+it('táctil en horizontal: tablero a todo el alto entre la columna de rivales y la de la mano', async () => {
+  const p = await phonePage({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await phoneQuick(p, { opps: 3 });
+  const board = await rect(p, '#boardWrap'), seats = await rect(p, '#seats'), dock = await rect(p, '#dockRow'), bar = await rect(p, '#gameBar');
+  assert.ok(board.h > 390 * .9, 'a todo el alto: ' + board.h);
+  assert.ok(seats.r <= board.l && bar.r <= board.l && dock.l >= board.r, 'rivales y barra a la izquierda, mano a la derecha');
+  assert.ok(dock.b <= 390 + 1, 'la mano cabe');
+  await p.close();
+});

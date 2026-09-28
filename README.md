@@ -25,7 +25,7 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 ```
 index.html                 esqueleto de la página (sin lógica ni onclick)
 styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
-                           themes (temas del campo) y features (componentes nuevos)
+                           themes (temas del campo), features (componentes nuevos) y phone (interfaz táctil)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
   boot-watch.js            script clásico: "Reintentar" si el juego no arranca en 10 s
@@ -47,7 +47,8 @@ src/
     screen-story.js        Lo básico y puzles · screen-pve.js  Partida rápida (y rivales)
     screen-modes.js        reto diario, contrarreloj y desafíos · resume.js  continuar
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
-    board-zoom.js          pellizcar y desplazar el tablero
+    board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
+    device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
@@ -293,6 +294,29 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Caídas:** al salirse del tablero, el borde por el que cae la pieza destella con su color y una onda
   entra desde ese lado.
 - **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
+- **Interfaz táctil (móviles y tabletas, iPad incluido)** (`src/ui/device.js`, `styles/phone.css`): se decide por el
+  **dispositivo** (pantalla táctil sin ratón), nunca por el ancho: una ventana estrecha del ordenador sigue con el diseño
+  adaptable de siempre. Ajustes → **Interfaz** (automática / táctil / ordenador) la fuerza, y `?ui=phone` o `?ui=desktop`
+  en la URL, solo esa carga. En la partida el tablero ocupa todo el hueco (casillas que llenan ancho y alto,
+  `fitCellsFlex`) y la interfaz va encima, compacta y translúcida:
+  - **Vertical:** barra con el menú (la pausa, que reúne reglas, ajustes, historial, reiniciar y salir), la píldora del
+    turno y el mazo; debajo, los rivales como fichas (cara, cartas en la mano y nombre); el tablero de borde a borde;
+    el aviso de acción (si ocupa más, crece por encima del tablero sin moverlo) y la mano con los botones de turno a la
+    derecha (a la izquierda en modo zurdo). El JAQUE sale arriba, sobre los rivales, y deja el tablero libre.
+  - **Horizontal:** a la izquierda la barra y la lista de rivales, en el centro el tablero a todo el alto y a la derecha
+    el aviso, la mano y los botones. El menú principal y Lo básico caben sin desplazarse.
+  - **Lo que no importa ahora pierde opacidad:** los rivales que no juegan (quien juega, quien puede reaccionar al JAQUE
+    y quien ha embocado se ven enteros y con anillo), y tu mano se aparta mientras juega otro.
+  - **Entrada:** tocar = ver, tocar otra vez = hacer. Los destinos ya iban así; ahora también las cartas de efecto
+    inmediato (hoyo, NO…): el primer toque la elige y dibuja lo que hará, el segundo (o "Jugar") la juega. Mantener
+    pulsada una carta explica qué hace (sin jugarla). Botones de 40-54 px, sin zoom de página, selección de texto ni
+    menú contextual en la partida, márgenes seguros (muesca, barra de gestos) y vibración breve en Android.
+  - **Tableros grandes (Ultimate):** se ven enteros; al elegir destino con casillas de menos de 30 px la cámara se
+    acerca a tu pelota y a las casillas posibles, y al resolverse la jugada se aleja (`autoZoom` en `board-zoom.js`).
+  - En tabletas, la misma maqueta con la interfaz más grande. Si el hueco del tablero cambia sin que cambie la
+    ventana (la ficha con "Reaccionar", la etiqueta del modo, girar el móvil), el tablero se reajusta solo.
+  - `npm run test:ui` lo comprueba emulando un iPhone en vertical y en horizontal (tablero entero y sin solapes,
+    opacidades, dos toques, mantener pulsado, menú de pausa y la cámara en Ultimate).
 - **Tableros grandes** (minigolf, Ultimate): si las casillas quedarían pequeñas se hacen más cuadradas para
   crecer (`fitCellsTo` en `geometry.js`), y en el ordenador la rueda del ratón hace zoom y se arrastra para moverlo.
   Piezas y efectos usan la misma métrica que la rejilla (`GAP`/`PAD`), así que quedan centradas en cualquier tamaño.

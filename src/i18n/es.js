@@ -186,8 +186,9 @@ export default {
     lastChance: 'Última oportunidad: cartas naranjas.', nobody: 'Nadie reacciona',
   },
   hands: {
-    rotate: 'Girar', rotateTitle: 'Girar la pieza (R)', place: 'Colocar',
+    play: 'Jugar', rotate: 'Girar', rotateTitle: 'Girar la pieza (R)', place: 'Colocar',
     hint: {
+      armed: '{card}: toca otra vez para jugarla',
       move: '{card}: elige la casilla de destino',
       placeTile: '{card}: elige una casilla libre',
       placeRot: '{card}: elige dónde ponerla',
@@ -433,6 +434,7 @@ export default {
     botFastSub: 'Los bots juegan al doble de velocidad; tus jugadas, a tu ritmo',
     bigText: 'Texto grande', bigTextSub: 'Botones, paneles y avisos más grandes',
     contrast: 'Alto contraste', contrastSub: 'Bordes y textos más marcados; casillas válidas bien contorneadas',
+    ui: 'Interfaz', ui_auto: 'Automática', ui_touch: 'Táctil', ui_desktop: 'Ordenador',
     leftHand: 'Modo zurdo', leftHandSub: 'Los botones de turno pasan a la izquierda',
     reset: 'Restablecer ajustes', resetSub: 'Vuelve a los valores de fábrica (el idioma, tu perfil y las estadísticas se mantienen)',
     resetConfirm: '¿Restablecer todos los ajustes a sus valores por defecto?',

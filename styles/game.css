@@ -93,6 +93,7 @@
 .seat.cta { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,135,58,.22), var(--shadow-soft); }
 .seat.won { opacity: 1; border-color: var(--accent); }
 .seatBody { min-width: 0; flex: 1; }
+.seatAv { display: contents; } .seatBadge, .pausePhone { display: none; } /* (ficha del rival y Reiniciar en la pausa: interfaz táctil, phone.css) */
 .seatName { font-weight: 600; font-size: 14px; line-height: 1.1; display: flex; align-items: center; gap: 6px; letter-spacing: -.01em; }
 .botTag { font-size: 9.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
   padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ink-line); color: var(--ink-soft); }

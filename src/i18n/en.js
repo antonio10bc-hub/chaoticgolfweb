@@ -183,8 +183,9 @@ export default {
     lastChance: 'Last chance: orange cards.', nobody: 'Nobody reacts',
   },
   hands: {
-    rotate: 'Rotate', rotateTitle: 'Rotate the piece (R)', place: 'Place',
+    play: 'Play', rotate: 'Rotate', rotateTitle: 'Rotate the piece (R)', place: 'Place',
     hint: {
+      armed: '{card}: tap again to play it',
       move: '{card}: choose the destination square',
       placeTile: '{card}: choose a free square',
       placeRot: '{card}: choose where to put it',
@@ -430,6 +431,7 @@ export default {
     botFastSub: 'Bots play at double speed; your plays keep your pace',
     bigText: 'Large text', bigTextSub: 'Bigger buttons, panels and notices',
     contrast: 'High contrast', contrastSub: 'Stronger borders and text; valid squares clearly outlined',
+    ui: 'Interface', ui_auto: 'Automatic', ui_touch: 'Touch', ui_desktop: 'Desktop',
     leftHand: 'Left-handed mode', leftHandSub: 'Turn buttons move to the left',
     reset: 'Reset settings', resetSub: 'Back to factory values (language, profile and stats are kept)',
     resetConfirm: 'Reset all settings to their defaults?',

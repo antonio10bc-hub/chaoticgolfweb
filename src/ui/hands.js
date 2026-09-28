@@ -17,6 +17,7 @@ import { isBot, viewer, multiHuman, handRevealed, displayName, avatarHTML } from
 import { startReaction, endReaction } from './hotseat.js';
 import { previewCard, hidePreview } from './preview.js';
 import { botWhyHTML } from './hud.js';
+import { isPhone } from './device.js';
 
 let prevHands = []; // tamaños de mano en el último render (para el robo animado)
 let prevOwner = -1;
@@ -55,7 +56,8 @@ function cardHTML(g, p, idx, { mini = false } = {}) {
     return `<div class="${base} back" data-p="${p}" data-idx="${idx}" title="${esc(t('hands.hidden'))}"></div>`;
   }
   const discarding = pd?.kind === 'discard' && pd.p === p;
-  const selected = pd && pd.p === p && pd.idx === idx && SEL_KINDS.includes(pd.kind);
+  const armed = !mini && app.armed && app.armed.p === p && app.armed.idx === idx; // táctil: elegida, falta el segundo toque
+  const selected = armed || (pd && pd.p === p && pd.idx === idx && SEL_KINDS.includes(pd.kind));
   const playable = discarding || selected || g.canPlay(p, k);
   let c = `${base} ${def.color}` + (playable ? '' : pd ? ' dimmed' : ' unplayable');
   if (jaqueCta(g, p) && def.color === 'orange' && g.canPlay(p, k)) c += ' ctaJaque';
@@ -121,7 +123,15 @@ function renderActionBar(g, owner) {
   const S = g.S, pd = g.pending, bar = $('actionBar');
   const pendP = pendingOwner(pd);
   let html = '', kind = '';
-  if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
+  if (!pd && app.armed && app.armed.p === owner) {
+    // táctil: carta de efecto inmediato elegida (en el tablero se ve lo que hará)
+    const card = CARDS[app.armed.key];
+    kind = 'act';
+    html = `<div class="hint act"><span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` +
+      `<span class="hintText">${esc(t('hands.hint.armed', { card: card.short || card.name }))}</span>` +
+      `<span class="hintBtns"><button class="btn-secondary btn-sm" data-act="playArmed">${esc(t('hands.play'))}</button>` +
+      `<button class="btn-ghost btn-sm" data-act="disarm">${esc(t('common.cancel'))}</button></span></div>`;
+  } else if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
     const interactive = app.mode !== 'pve' || pendP === viewer(); // en PVE solo se interactúa con tus acciones
     const card = pendingCard(g);
     const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">${playerTag(pendP)}</span>` : '';
@@ -193,7 +203,7 @@ function renderSeats(g, owner) {
     const react = canAsk ? `<button class="btn-light btn-sm seatReact" data-act="react" data-n="${p}">${esc(t('hotseat.react'))}</button>` : '';
     const tag = isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))} · ${playerTag(p)}</span>` : '';
     return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
-      avatarHTML(p) +
+      `<span class="seatAv">${avatarHTML(p)}<b class="seatBadge" aria-hidden="true">${S.hands[p].length}</b></span>` +
       `<div class="seatBody"><div class="seatName">${esc(displayName(p))}${tag}</div>` +
       `<div class="seatStatus">${esc(status)}${dots}<span class="seatCnt" title="${esc(t('seat.cardsN', { n: S.hands[p].length }))}">` +
       `<svg class="i" aria-hidden="true"><use href="#i-hand"/></svg>${S.hands[p].length}</span></div>` +
@@ -229,6 +239,8 @@ export function bindHands() {
         case 'confirmPlace': ctl.confirmPlace(); break;
         case 'react': startReaction(n); break;
         case 'endReact': endReaction(); break;
+        case 'playArmed': ctl.playArmed(); break;
+        case 'disarm': ctl.disarm(); break;
       }
       return;
     }
@@ -236,11 +248,16 @@ export function bindHands() {
     if (card) ctl.clickCard(+card.dataset.p, +card.dataset.idx);
   };
   // cartas de efecto inmediato (hoyo…): al pasar por encima se ve en el tablero qué harán
+  // (en táctil no hay ratón: el primer toque las elige y enseña la jugada, ver ctl.clickCard)
   $('hands').addEventListener('mouseover', e => {
     const c = e.target.closest('.card[data-p]:not(.back)');
-    if (c) previewCard(+c.dataset.p, +c.dataset.idx);
+    if (c && !isPhone()) previewCard(+c.dataset.p, +c.dataset.idx);
   });
-  $('hands').addEventListener('mouseleave', hidePreview);
+  $('hands').addEventListener('mouseleave', () => { if (!isPhone()) hidePreview(); });
+  // táctil: tocar fuera de la carta elegida (y de su aviso) la suelta
+  window.addEventListener('pointerdown', e => {
+    if (app.armed && !e.target.closest('#hands .card, #actionBar')) ctl.disarm();
+  }, true);
   for (const id of ['dock', 'seats']) {
     const el = $(id);
     el.addEventListener('click', e => activate(e.target));

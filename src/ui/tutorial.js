@@ -9,6 +9,7 @@ import { t } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
 import { cardArtHTML } from './card-art.js';
 import { sfx } from '../audio/sfx.js';
+import { isPhone } from './device.js';
 
 const KEY = 'chaoticgolf_tutorial';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -66,7 +67,7 @@ export function tutorialEvent(kind, data = {}) {
   // fuera de la presentación: explicación de cada carta la primera vez que se usa
   if ((kind === 'selected' || kind === 'played') && firstCard && data.p === 0 && S.winner === null) {
     // señala la carta elegida (o, si ya se ha jugado, la última jugada)
-    showCoach({ target: kind === 'selected' ? '#hands .card.cardSel' : (window.innerWidth > 760 ? '#lastPlay' : null), card: data.key, btn: 'ok' });
+    showCoach({ target: kind === 'selected' ? '#hands .card.cardSel' : (window.innerWidth > 760 && !isPhone() ? '#lastPlay' : null), card: data.key, btn: 'ok' });
   }
 }
 

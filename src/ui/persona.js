@@ -1,6 +1,7 @@
 // Personalidad visible de los bots: nombre, cara (SVG plano que cambia de humor)
 // y bocadillos cortos cuando juegan, les golpean, se caen o embocan.
 // Todo es decorativo: nunca toca el estado del juego.
+import { isPhone, isPortrait } from './device.js';
 import { app } from './app.js';
 import { t } from '../i18n/index.js';
 import { REDUCED } from '../fx/juice.js';
@@ -120,6 +121,7 @@ let live = 0;
 // el ancla es el avatar del asiento del bot (o su pastilla de turno si es quien juega)
 function anchorOf(p) {
   const cands = [...document.querySelectorAll(`.seat[data-player="${p}"] .avatar, #turnPill .avatar[data-face="${p}"]`)];
+  if (isPhone()) cands.reverse(); // táctil: el bocadillo sale de la ficha del rival (no tapa la píldora del turno)
   return cands.find(el => el.getBoundingClientRect().width > 0) || null;
 }
 
@@ -146,7 +148,7 @@ export function say(p, kind, { chance = 1, force = false } = {}) {
   // a la derecha del avatar si cabe; si no, encima
   const bw = b.offsetWidth, bh = b.offsetHeight;
   let x = (seatR ? seatR.right : r.right) + 10, y = r.top + r.height / 2 - bh / 2, side = 'right';
-  if (seatR && window.innerWidth <= 760) { // móvil: los asientos van en fila arriba; el bocadillo, debajo
+  if (seatR && (window.innerWidth <= 760 || (isPhone() && isPortrait()))) { // móvil: los asientos van en fila arriba; el bocadillo, debajo
     x = Math.max(8, Math.min(window.innerWidth - bw - 8, seatR.left + 12)); y = seatR.bottom + 8; side = 'below';
   }
   if (x + bw > window.innerWidth - 8) { x = Math.max(8, r.left + r.width / 2 - bw / 2); y = r.top - bh - 10; side = 'top'; }

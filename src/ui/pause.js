@@ -7,12 +7,16 @@ import { aiKick } from './ai-driver.js';
 import { ensureGuard } from './back.js';
 import * as ctl from './controller.js';
 import { sfx } from '../audio/sfx.js';
+import { isPhone } from './device.js';
 
 // motivo de la pausa: 'user' (botón / tecla P) o el panel que la abrió ('settings', 'rules')
 export function pauseGame(reason = 'user') {
   if (app.screen !== 'game' || !app.game) return;
   const S = app.game.S;
-  if (S.winner !== null && !S.jaque) return; // partida terminada: nada que parar
+  if (S.winner !== null && !S.jaque) { // partida terminada: nada que parar (en táctil el botón es el menú: se abre igual)
+    if (reason === 'user' && isPhone()) show();
+    return;
+  }
   if (app.paused) { if (reason === 'user' && app.paused !== 'user') { app.paused = 'user'; show(); } return; }
   app.paused = reason;
   document.documentElement.classList.add('paused');
@@ -46,10 +50,11 @@ export function bindPause() {
     const b = e.target.closest('[data-pause]');
     if (!b) return;
     switch (b.dataset.pause) {
-      case 'resume': resumePlay(); break;
+      case 'resume': resumePlay(); clearPause(); break; // (clearPause: el menú abierto con la partida ya terminada)
       case 'rules': $('rulesBtn').click(); break;
       case 'settings': $('sndCfgBtn').click(); break;
-      case 'log': resumePlay(); $('logPanel').classList.add('open'); break;
+      case 'log': resumePlay(); clearPause(); $('logPanel').classList.add('open'); break;
+      case 'restart': resumePlay(); clearPause(); $('resetBtn').click(); break;
       case 'menu': clearPause(); $('menuBtn').click(); break;
     }
   });

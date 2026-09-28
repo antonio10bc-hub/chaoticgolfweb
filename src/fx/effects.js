@@ -221,6 +221,10 @@ export function fxWinConfetti(colors) {
 
 // carta de una mano en pantalla (dock o asiento)
 const handCard = (p, idx) => document.querySelector(`.card[data-p="${p}"][data-idx="${idx}"]`);
+// dónde está esa carta; si no se ve (interfaz táctil: las cartas de los rivales van en un contador), su asiento
+const seatRect = p => [...document.querySelectorAll(`.seat[data-player="${p}"] .avatar, .seat[data-player="${p}"]`)]
+  .map(el => el.getBoundingClientRect()).find(r => r.width) || null;
+const cardRect = (p, idx) => { const r = handCard(p, idx)?.getBoundingClientRect(); return r && r.width ? r : seatRect(p); };
 const rectOf = id => { const el = $(id); const r = el && el.getBoundingClientRect(); return r && r.width ? r : null; };
 const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
 
@@ -239,7 +243,7 @@ function floatingCard(def, w) {
 export function fxPlayCard(p, idx, cardKey, { fast = false } = {}) {
   const def = CARDS[cardKey];
   if (!def || REDUCED) return;
-  const src = handCard(p, idx)?.getBoundingClientRect() || $$(`.seat[data-player="${p}"]`)[0]?.getBoundingClientRect();
+  const src = cardRect(p, idx);
   if (!src) return;
   const W = 96, H = W * 1.4;
   const c = floatingCard(def, W);
@@ -272,10 +276,9 @@ export function fxPlayCard(p, idx, cardKey, { fast = false } = {}) {
 export function fxDiscardCard(p, idx, cardKey) {
   if (REDUCED) return;
   const def = CARDS[cardKey];
-  const el = handCard(p, idx);
   const pile = rectOf("discardPile");
-  if (!def || !el) return;
-  const src = el.getBoundingClientRect();
+  const src = cardRect(p, idx);
+  if (!def || !src) return;
   const W = 96, H = W * 1.4, c = floatingCard(def, W);
   const a = center(src);
   const at = (pt, sc) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${sc})`;
