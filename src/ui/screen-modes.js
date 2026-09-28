@@ -207,7 +207,7 @@ export function rushHoleDone() {
   let newBest = false;
   if (last) {
     store.set(RUSH_KEY, null);
-    updateRecords(d => { d.rush.runs++; if (sum > d.rush.best) { newBest = true; d.rush.best = sum; } d.won.rush++; });
+    updateRecords(d => { d.rush.runs++; d.rush.done = (d.rush.done ?? Math.floor((d.won.rush || 0) / 6)) + 1; if (sum > d.rush.best) { newBest = true; d.rush.best = sum; } d.won.rush++; });
   } else store.set(RUSH_KEY, { seeds: run.seeds, hole: run.hole + 1, total: run.total, scores });
   return { sc, sum, last, newBest, turns, best: loadRecords().rush.best };
 }

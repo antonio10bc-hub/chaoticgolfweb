@@ -25,6 +25,7 @@ const OVERLAYS = [
   [() => document.querySelector('dialog[open]'), () => document.querySelector('dialog[open]').close('cancel')],
   [() => $('rulesOverlay').classList.contains('visible'), () => $('rulesOverlay').querySelector('[data-rules="close"]').click()],
   [() => $('settingsOverlay').classList.contains('visible'), () => $('setBox').querySelector('[data-set-act="close"]').click()],
+  [() => $('profileOverlay')?.classList.contains('visible'), () => $('profileOverlay').querySelector('[data-pf="close"]')?.click()],
   [() => $('pauseOverlay').classList.contains('visible'), () => $('pauseOverlay').querySelector('[data-pause="resume"]').click()],
   [() => $('logPanel').classList.contains('open'), () => $('logPanel').classList.remove('open')],
   [() => $('deckPop').classList.contains('open'), () => $('deckPop').classList.remove('open')],

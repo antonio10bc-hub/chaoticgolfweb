@@ -1,5 +1,6 @@
 // Tablero de juego: cuadrícula persistente (las casillas se crean una vez por tamaño
 // y en cada render solo se actualiza lo que cambia) + capa de piezas móviles.
+import { skinSeat, equippedSkin, skinClasses, skinParts } from './skins.js';
 import { app } from './app.js';
 import { $, $$ } from './dom.js';
 import { ASSETS, pColor } from '../art.js';
@@ -194,8 +195,14 @@ export function clearPieces() { $('pieces').innerHTML = ''; }
 export function ensurePieces() {
   const g = app.game, S = g.S, pd = g.pending;
   ensurePiece('hole', ASSETS.holeHTML());
+  const seat = skinSeat(g);
   for (const b of S.balls) {
     const el = ensurePiece('b' + b.player, ASSETS.ballHTML(b.player) + '<div class="turnMark" aria-hidden="true"></div>');
+    if (!el._skin) { // tu pelota lleva la que te has puesto (una vez por partida: las piezas se crean al empezar)
+      el._skin = true;
+      const sk = b.player === seat && !b.decoy ? equippedSkin() : null, circ = el.querySelector('.circ');
+      if (sk && circ) { circ.className += skinClasses(sk); circ.insertAdjacentHTML('beforeend', skinParts(sk)); }
+    }
     el.style.setProperty('--pc', pColor(b.player));
     // marcador sobre la pelota de quien juega + halo en la pelota que se está moviendo/eligiendo
     el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && b.player === S.turn && S.winner === null);

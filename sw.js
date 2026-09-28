@@ -7,7 +7,7 @@
 // así la caché tiene el juego entero desde la primera visita y tras cada versión nueva
 // (esas cargas no pasan por aquí). Sin eso, un arranque con la red caída o lenta se
 // quedaba en la pantalla de carga: faltaban módulos en la caché.
-const CACHE = 'chaoticgolf-v55';
+const CACHE = 'chaoticgolf-v56';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'assets/icons/icon.svg'];
 const NET_WAIT = 3000;
 

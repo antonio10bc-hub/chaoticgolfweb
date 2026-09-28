@@ -41,7 +41,7 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 ```
 index.html                 esqueleto de la página (sin lógica ni onclick)
 styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
-                           themes (temas del campo), features (componentes nuevos) y phone (interfaz táctil)
+                           themes (temas del campo), features (componentes nuevos), skins (pelotas y "Tu pelota") y phone (interfaz táctil)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
   boot-watch.js            script clásico: "Reintentar" si el juego no arranca en 10 s
@@ -66,6 +66,7 @@ src/
     board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
     device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
     bake.js                texturas precocinadas: grano y fondo desenfocado de los menús como imagen
+    skins.js / my-ball.js  pelotas que se ganan (3 niveles cada una) y la ventana "Tu pelota"
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
@@ -264,6 +265,20 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las cinco cifras en una fila y, debajo, el recorrido y el resumen lado a lado (en el móvil estrecho, uno bajo otro;
   con poca altura, dos columnas con el mensaje y los botones a la izquierda). "¿Por qué he perdido?" se abre en el
   sitio del resumen ("Ver el resumen" vuelve), no debajo. `npm run test:ui` lo comprueba.
+- **Tu pelota** (botón de la camiseta en el menú, a la derecha de Ajustes; `src/ui/skins.js`, `src/ui/my-ball.js`,
+  `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
+  las 8 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
+  **Fuego** (racha del reto diario: 7 · 30 · 365 días; más llamas, más altas, brasas), **Clásica**, **Agua**, **Madera** y
+  **Prisma** (victorias con cada baraja: 3 · 15 · 50; aro de oro · laurel · destellos, agua dentro · ondas · gotas,
+  vetas · marco · molino que gira, brillo iridiscente · halo · destellos), **Rayo** (series de contrarreloj completas:
+  1 · 5 · 15; cronómetro con estela · esfera de reloj · rayos), **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
+  completo (calentamiento · intermedio · experto). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
+  un nivel lo enseña en grande (también los que aún no tienes) y los ganados se ponen con un toque. Decoran la pelota sin
+  cambiar su color (el color es quien juega) y se ven en el tablero en cualquier modo de una sola persona. En Partida
+  rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un
+  nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y el botón del menú lleva un
+  punto hasta que lo ves. Una pelota nueva = una entrada en `SKINS`, su objetivo en `skinProgress` y su aspecto en
+  `parts()` y `skins.css` (todo medido con `--bs`, el diámetro de la bola; solo se anima transform y opacity).
 - **Quién juega y cuál es tu color** (ordenador y móvil): tu bandeja de abajo va teñida suavemente de tu color de bola y,
   en tu turno, con el borde de tu color; la píldora del turno y el marcador sobre la pelota que juega llevan el color de
   quien juega; los rivales que no juegan y tu mano fuera de tu turno pierden opacidad, salvo las cartas naranjas (se

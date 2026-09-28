@@ -565,3 +565,31 @@ it('final de partida: cabe sin desplazarse (móvil pequeño y ordenador bajo), t
     await p.close();
   }
 });
+
+it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y se ve en la partida rápida y en el tablero', async () => {
+  await fresh({ chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {}, daily: { days: {}, streak: 0, bestStreak: 9 },
+    rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: { classic: { p: 5, w: 4 } }, chStats: {} } });
+  assert.equal(await app(() => getComputedStyle(document.getElementById('profileBtn')).display !== 'none'), true, 'botón en el menú');
+  assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
+  await click('#profileBtn'); await sleep(400);
+  assert.ok(await app(() => document.getElementById('profileOverlay').classList.contains('visible')));
+  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 8);
+  assert.equal(await app(() => document.querySelectorAll('.pfCard .pfNew').length), 2, 'fuego y clásica, nuevas');
+  // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
+  await click('[data-pfv="fire:2"]'); await sleep(200);
+  assert.equal(await app(() => !!document.querySelector('[data-pf="equip"]')), false);
+  await click('[data-pfv="fire:1"]'); await sleep(200);
+  await click('[data-pf="equip"]'); await sleep(300);
+  assert.deepEqual(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_profile')).skin), { id: 'fire', lvl: 1 });
+  await click('[data-pf="close"]'); await sleep(200);
+  assert.equal(await app(() => document.querySelector('#profileBtn .pfDot').hidden), true, 'vistas: sin punto');
+  // partida rápida: la pelota puesta, elegida bajo el color; y en el tablero, tu pelota la lleva
+  await openQuick();
+  assert.ok(await app(() => document.querySelector('#pveSkins .pveSkin.sel[data-pskin="fire:1"]')));
+  await click('#pveSkins [data-pskin="classic:1"]'); await sleep(200);
+  await click('#pvePlay'); await sleep(900);
+  const cls = await app(() => { const S = window.chaoticGolf.app.game.S; return document.querySelector(`#pieces .piece[data-id="b${S.human}"] .circ`).className; });
+  assert.match(cls, /sk-classic sl1/);
+  const other = await app(() => { const S = window.chaoticGolf.app.game.S; return document.querySelector(`#pieces .piece[data-id="b${(S.human + 1) % S.nPlayers}"] .circ`).className; });
+  assert.doesNotMatch(other, /sk-/, 'los bots, con la normal');
+});

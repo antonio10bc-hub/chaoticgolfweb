@@ -1,6 +1,8 @@
 // Final de partida (o de hoyo): mensaje, celebración según cómo se ha ganado, colores del
 // ganador, resumen, récords del modo y botones de lo que se puede hacer después.
 // También el aviso de puzle fallado y el panel de "¿Por qué he perdido?".
+import { takeNewSkins, skinBall } from './skins.js';
+import { openMyBall, myColor, skinName } from './my-ball.js';
 import { trackEnd } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
@@ -139,6 +141,9 @@ export function showWin() {
   }
   // fichas con el color del ganador en las partidas con varios jugadores
   const winnerChips = !solo ? S.winners.map(i => `<span class="winChip" style="background:${pColor(i)}">${esc(displayName(i))}</span>`).join('') : '';
+  // pelota nueva (o un nivel más): se anuncia una vez; tocarla abre "Tu pelota"
+  if (mode !== 'free' && mode !== 'test') chips += takeNewSkins().slice(0, 2).map(sk =>
+    `<button class="winRec skinNew" data-act="myball">${skinBall(sk, { size: 24, color: myColor() })}${esc(t('win.newSkin', { name: skinName(sk) }))}</button>`).join('');
   $('winChips').innerHTML = winnerChips + chips;
   box.style.borderColor = solo ? 'transparent' : pColor(S.winners[0]);
   box.style.boxShadow = '';
@@ -320,6 +325,7 @@ export function bindWin() {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
     const act = b.dataset.act;
+    if (act === 'myball') { openMyBall(); return; }
     if (act === 'why') { // el momento clave, en el sitio del resumen (así el final cabe siempre sin desplazarse)
       const p = $('winWhy').querySelector('.whyPanel');
       p.hidden = !p.hidden; b.setAttribute('aria-expanded', !p.hidden);

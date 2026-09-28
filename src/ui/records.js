@@ -22,7 +22,7 @@ const blank = () => ({
   puzzles: {},  // índice de puzle -> true
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
   daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null }, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
-  rush: { best: 0, runs: 0 },
+  rush: { best: 0, runs: 0 }, // (done: series completas, las cinco; lo añade rushHoleDone)
   challenges: {}, // id -> true
   weekly: { weeks: {} },  // semana "AAAA-Www" -> { best, strokes }
   rivals: {},     // personaje -> { w, l, beat } (tus victorias y derrotas contra él; beat: veces que ganó él)

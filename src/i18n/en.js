@@ -212,6 +212,7 @@ export default {
   },
   fx: { combo: 'Combo x{n}!', chainStop: 'Loop broken!' },
   win: {
+    newSkin: 'New ball: {name}',
     weeklyDone: 'Weekly challenge beaten!', weeklyBest: 'Record of the week!', weeklyToday: 'your best this week: {turns}',
     route: { title: 'Your route', aria: 'Map of your ball’s route ({n} steps)', start: 'start', hit: 'you hit', hitBy: 'you got hit',
       portal: 'portal', fall: 'fell off', sink: 'holed' },
@@ -259,6 +260,7 @@ export default {
     },
   },
   pve: {
+    skin: 'Your ball',
     rivalRecord: 'You {w} – {l}', rivalRecordTitle: 'You beat them {w} times, they beat you {l}', nemesis: 'Nemesis',
     title: 'Quick game',
     sub: 'You against the bots. Seats are drawn at random and whoever sits right of the centre starts.',
@@ -411,6 +413,24 @@ export default {
     },
   },
   preview: { tapAgain: 'Tap again' },
+  // custom balls (src/ui/skins.js) and the "Your ball" window (src/ui/my-ball.js)
+  skins: {
+    unit: { days1: '{n} day', wins1: '{n} win', series1: '{n} run', days: '{n} days', wins: '{n} wins', series: '{n} runs' },
+    fire: { name: 'Fire', goal: 'Daily challenge streak' },
+    classic: { name: 'Classic', goal: 'Wins with the classic deck' },
+    water: { name: 'Water', goal: 'Wins with the water deck' },
+    wood: { name: 'Wood', goal: 'Wins with the minigolf deck' },
+    prism: { name: 'Prism', goal: 'Wins with Ultimate' },
+    bolt: { name: 'Bolt', goal: 'Complete time-attack runs' },
+    crown: { name: 'Crown', goal: 'Challenges beaten' },
+    puzzle: { name: 'Puzzle', goal: 'Puzzles solved' },
+  },
+  profile: {
+    title: 'your ball', listH: 'Balls to earn', count: '{n} of {total} levels',
+    basic: 'Standard', basicSub: 'Your usual ball. Earn the ones below by playing and wear them here or in Quick game.',
+    equip: 'Wear it', useBasic: 'Use the standard one', worn: 'You’re wearing it', takeOff: 'Take it off',
+    locked: 'Not yours yet', missing: 'You have {n}', complete: 'Complete!', new: 'New!', color: 'Your color',
+  },
   settings: {
     themeFor_weekly: 'in the Weekly challenge',
     title: 'Settings', more: 'More settings…',

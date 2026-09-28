@@ -215,6 +215,7 @@ export default {
   },
   fx: { combo: '¡Combo x{n}!', chainStop: '¡Bucle cortado!' },
   win: {
+    newSkin: 'Pelota nueva: {name}',
     weeklyDone: '¡Desafío semanal superado!', weeklyBest: '¡Récord de la semana!', weeklyToday: 'tu mejor esta semana: {turns}',
     route: { title: 'Tu recorrido', aria: 'Mapa del recorrido de tu pelota ({n} pasos)', start: 'salida', hit: 'golpeas', hitBy: 'te golpean',
       portal: 'portal', fall: 'caída', sink: 'embocada' },
@@ -262,6 +263,7 @@ export default {
     },
   },
   pve: {
+    skin: 'Tu pelota',
     rivalRecord: 'Tú {w} – {l}', rivalRecordTitle: 'Le has ganado {w} y te ha ganado {l}', nemesis: 'Némesis',
     title: 'Partida rápida',
     sub: 'Tú contra la máquina. Los asientos se sortean y empieza quien esté a la derecha del centro.',
@@ -414,6 +416,24 @@ export default {
     },
   },
   preview: { tapAgain: 'Toca otra vez' },
+  // pelotas personalizadas (src/ui/skins.js) y la ventana "Tu pelota" (src/ui/my-ball.js)
+  skins: {
+    unit: { days1: '{n} día', wins1: '{n} victoria', series1: '{n} serie', days: '{n} días', wins: '{n} victorias', series: '{n} series' },
+    fire: { name: 'Fuego', goal: 'Racha del reto diario' },
+    classic: { name: 'Clásica', goal: 'Victorias con la baraja clásica' },
+    water: { name: 'Agua', goal: 'Victorias con la baraja de agua' },
+    wood: { name: 'Madera', goal: 'Victorias con la baraja de minigolf' },
+    prism: { name: 'Prisma', goal: 'Victorias con Ultimate' },
+    bolt: { name: 'Rayo', goal: 'Series de contrarreloj completas' },
+    crown: { name: 'Corona', goal: 'Desafíos superados' },
+    puzzle: { name: 'Puzle', goal: 'Puzles resueltos' },
+  },
+  profile: {
+    title: 'tu pelota', listH: 'Pelotas que se ganan', count: '{n} de {total} niveles',
+    basic: 'Normal', basicSub: 'Tu pelota de siempre. Gana las de abajo jugando y póntelas aquí o en Partida rápida.',
+    equip: 'Ponérmela', useBasic: 'Usar la normal', worn: 'La llevas puesta', takeOff: 'Quitármela',
+    locked: 'Aún no la tienes', missing: 'Llevas {n}', complete: '¡Completa!', new: '¡Nueva!', color: 'Tu color',
+  },
   settings: {
     themeFor_weekly: 'en el Desafío semanal',
     title: 'Ajustes', more: 'Más ajustes…',

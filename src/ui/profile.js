@@ -4,7 +4,9 @@
 const KEY = 'chaoticgolf_profile';
 const MAX_NAME = 14;
 
-const blank = () => ({ name: '', color: 0, people: [
+// skin: la pelota puesta ({ id, lvl } o null) · skinSeen / skinAnn: niveles ya vistos en el perfil / ya avisados al
+// terminar una partida (src/ui/skins.js)
+const blank = () => ({ name: '', color: 0, skin: null, skinSeen: {}, skinAnn: {}, people: [
   { name: '', color: 0 }, { name: '', color: 1 }, { name: '', color: 2 }, { name: '', color: 3 },
 ] });
 

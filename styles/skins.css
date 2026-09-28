@@ -1,0 +1,287 @@
+/* =========================================================
+   Pelotas personalizadas (src/ui/skins.js) y la pantalla "Tu pelota"
+   Una pelota = núcleo (.skCore, o .circ en el tablero) con las clases sk-<id> sl<nivel> y tres capas:
+   .skBack detrás · .skSurf sobre la superficie (recortada a la bola) · .skFront delante.
+   Todo se mide con --bs (diámetro de la bola). Solo se anima transform y opacity (nada que repinte).
+   ========================================================= */
+
+/* ---------- pelota suelta (perfil, partida rápida, avisos) ---------- */
+.skBall { --bs: 56px; position: relative; display: inline-grid; place-items: center; flex: 0 0 auto;
+  width: var(--bs); height: var(--bs); isolation: isolate; vertical-align: middle; }
+.skCore { position: relative; width: 100%; height: 100%; border-radius: 50%; background-color: var(--pc);
+  background-image: radial-gradient(circle at 31% 27%, rgba(255,255,255,.55) 0 12%, transparent 12.5%),
+    radial-gradient(circle, rgba(0,0,0,.13) 0 calc(var(--bs) * .014), transparent calc(var(--bs) * .018));
+  background-size: 100% 100%, calc(var(--bs) * .075) calc(var(--bs) * .075);
+  box-shadow: 0 calc(var(--bs) * .05) calc(var(--bs) * .14) rgba(20,40,20,.3), inset calc(var(--bs) * -.06) calc(var(--bs) * -.06) 0 rgba(0,0,0,.14); }
+/* en el tablero: la pelota del jugador (.circ) mide un 64 % de la casilla */
+.tile-ball .circ { --bs: calc((var(--cell-w) - 6px) * .64); }
+.tile-ball .circ .ballStamp { position: relative; z-index: 1; }
+
+.skBack, .skSurf, .skFront { position: absolute; inset: 0; pointer-events: none; }
+.skBack { z-index: -1; }
+.skSurf { z-index: 0; border-radius: 50%; overflow: hidden; }
+.skFront { z-index: 2; }
+.skBack i, .skSurf i, .skFront i { position: absolute; display: block; }
+.skBack svg, .skFront svg, .skSurf svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* piezas en órbita (gotas, destellos, piezas de puzle, la aguja del reloj) */
+.skFront .orb { inset: 0; animation: skSpin 7s linear infinite; }
+.skFront .orb.fast { animation-duration: 3s; }
+.skFront .orb > i { left: 50%; top: 50%; width: calc(var(--bs) * .26); height: calc(var(--bs) * .26); margin: calc(var(--bs) * -.13) 0 0 calc(var(--bs) * -.13);
+  transform: rotate(var(--a, 0deg)) translateY(calc(var(--bs) * -.74)) rotate(calc(var(--a, 0deg) * -1)); }
+@keyframes skSpin { to { transform: rotate(360deg); } }
+@keyframes skPulse { 0%, 100% { opacity: .55; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes skTwinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 45% { opacity: 1; transform: scale(1) rotate(45deg); } 70% { opacity: .2; } }
+.skFront .spk { width: calc(var(--bs) * .24); height: calc(var(--bs) * .24); left: var(--x, 0); top: var(--y, 0);
+  animation: skTwinkle 2.2s ease-in-out infinite; animation-delay: var(--d, 0s); filter: drop-shadow(0 0 calc(var(--bs) * .04) rgba(255,255,255,.9)); }
+.skFront .orb .spk { left: 50%; top: 50%; animation: none; filter: drop-shadow(0 0 calc(var(--bs) * .05) rgba(255,255,255,.9)); }
+.skBack .aura { inset: calc(var(--bs) * -.42); border-radius: 50%; animation: skPulse 2.4s ease-in-out infinite; }
+
+/* ---------- FUEGO · racha: más llamas, más altas, brasas ---------- */
+.sk-fire .fl { --h: calc(var(--bs) * .52); width: calc(var(--bs) * .42); height: var(--h); left: calc(50% - var(--bs) * .21); top: calc(50% - var(--bs) * .3 - var(--h));
+  transform-origin: 50% calc(var(--h) + var(--bs) * .3); transform: rotate(var(--a)); }
+.sl2.sk-fire .fl { --h: calc(var(--bs) * .7); }
+.sl3.sk-fire .fl { --h: calc(var(--bs) * .9); }
+.sk-fire .fl svg { transform-origin: 50% 100%; animation: skFlick .7s ease-in-out infinite alternate; animation-delay: var(--d); }
+.sk-fire .fl .flCore { opacity: 0; }
+.sl3.sk-fire .fl .flCore { opacity: .95; }
+@keyframes skFlick { 0% { transform: scale(var(--k)) scaleY(.86) skewX(-5deg); } 100% { transform: scale(var(--k)) scaleY(1.12) skewX(5deg); } }
+.sk-fire .aura { background: radial-gradient(circle, rgba(255,176,64,.6), rgba(255,110,40,.18) 45%, rgba(255,110,40,0) 68%); }
+.sk-fire .glow { inset: 0; background: radial-gradient(circle at 50% 112%, rgba(255,160,50,.75), rgba(255,120,40,0) 58%); }
+.sl3.sk-fire .lava { inset: -30%; background: conic-gradient(from 0deg, rgba(255,210,63,.0), rgba(255,140,40,.45), rgba(255,210,63,0) 30%, rgba(224,72,42,.4) 55%, rgba(255,210,63,0) 75%, rgba(255,140,40,.35)); animation: skSpin 5s linear infinite; }
+.sk-fire .em { width: calc(var(--bs) * .07 * var(--s)); height: calc(var(--bs) * .07 * var(--s)); left: calc(46% + var(--x)); top: 12%; border-radius: 50%;
+  background: #FFE066; box-shadow: 0 0 calc(var(--bs) * .06) #FF9A3C; animation: skEmber 1.8s ease-out infinite; animation-delay: var(--d);
+  will-change: transform, opacity; } /* (capa propia: si no, cada brasa repinta la pelota en cada fotograma) */
+@keyframes skEmber { 0% { opacity: 0; transform: translate(0, 0) scale(1); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(var(--bs) * .12), calc(var(--bs) * -1.1)) scale(.3); } }
+
+/* ---------- CLÁSICA · baraja clásica: aro de oro · laurel · destellos ---------- */
+.sk-classic .gr { inset: calc(var(--bs) * -.035); border-radius: 50%;
+  box-shadow: 0 0 0 calc(var(--bs) * .055) #D9A93A, inset 0 0 0 calc(var(--bs) * .02) rgba(255,240,190,.9), 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.35); }
+.sl3.sk-classic .gr { box-shadow: 0 0 0 calc(var(--bs) * .055) #E6B94A, inset 0 0 0 calc(var(--bs) * .02) #FFF4C2, 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.4), 0 0 calc(var(--bs) * .3) rgba(255,215,110,.7); }
+.sk-classic .laurel { inset: calc(var(--bs) * -.44); animation: skSway 4s ease-in-out infinite; }
+@keyframes skSway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.sl3.sk-classic .shine { inset: -10% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.75) 48%, rgba(255,245,200,.2) 54%, transparent 62%);
+  animation: skShine 2.8s ease-in-out infinite; }
+@keyframes skShine { 0%, 40% { transform: translateX(-55%); } 100% { transform: translateX(55%); } }
+
+/* ---------- AGUA · baraja de agua: agua dentro · ondas · gotas y burbujas ---------- */
+.sk-water .wv { left: 0; bottom: 0; width: 200%; height: 40%; fill: rgba(125,208,236,.62); animation: skWave 3.2s linear infinite; }
+.sk-water .wv.b { height: 34%; fill: rgba(91,182,214,.55); animation-duration: 4.6s; animation-direction: reverse; }
+.sl2.sk-water .wv { height: 52%; } .sl2.sk-water .wv.b { height: 45%; }
+.sl3.sk-water .wv { height: 62%; } .sl3.sk-water .wv.b { height: 55%; }
+@keyframes skWave { to { transform: translateX(-50%); } }
+.sk-water .gloss { left: 16%; top: 12%; width: 34%; height: 22%; border-radius: 50%; background: rgba(255,255,255,.55); transform: rotate(-28deg); }
+.sk-water .rp { inset: 0; border-radius: 50%; border: calc(var(--bs) * .04) solid rgba(150,222,244,.9); animation: skRipple 2.6s ease-out infinite; }
+.sk-water .rp.b { animation-delay: -1.3s; }
+@keyframes skRipple { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.95); opacity: 0; } }
+.sk-water .bb { left: var(--x); bottom: 6%; width: calc(var(--bs) * .09); height: calc(var(--bs) * .09); border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.85); background: rgba(255,255,255,.25); animation: skBubble 2.4s ease-in infinite; animation-delay: var(--d); }
+@keyframes skBubble { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(calc(var(--bs) * -.55)); opacity: 0; } }
+.sk-water .orb { animation-duration: 5.5s; }
+.sk-water .drop { width: calc(var(--bs) * .22); height: calc(var(--bs) * .29); filter: drop-shadow(0 calc(var(--bs) * .02) calc(var(--bs) * .03) rgba(20,70,90,.35)); }
+
+/* ---------- MADERA · minigolf: vetas · marco de madera · molino ---------- */
+.sk-wood .grain { inset: 0; background:
+  repeating-radial-gradient(ellipse 130% 70% at 22% 118%, transparent 0 7%, rgba(80,45,15,.24) 7% 9%, transparent 9% 13%),
+  linear-gradient(160deg, rgba(255,230,190,.18), rgba(90,55,25,.18)); }
+.sk-wood .wr { inset: calc(var(--bs) * -.1); border-radius: 50%;
+  background: repeating-linear-gradient(100deg, #B98552 0 calc(var(--bs) * .03), #A8743F calc(var(--bs) * .03) calc(var(--bs) * .06), #C99257 calc(var(--bs) * .06) calc(var(--bs) * .085));
+  -webkit-mask: radial-gradient(closest-side, transparent 83%, #000 84.5%); mask: radial-gradient(closest-side, transparent 83%, #000 84.5%);
+  box-shadow: 0 calc(var(--bs) * .03) calc(var(--bs) * .06) rgba(60,35,15,.35); }
+.sk-wood .mill { inset: calc(var(--bs) * -.5); }
+.sk-wood .mill .wmBlades { transform-box: view-box; transform-origin: 0 0; animation: skSpin 6s linear infinite; }
+
+/* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · destellos ---------- */
+.sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
+  background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }
+.sl3.sk-prism .ir { opacity: .62; }
+.sk-prism .halo { inset: calc(var(--bs) * -.2); border-radius: 50%; animation: skSpin 5s linear infinite;
+  background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4);
+  -webkit-mask: radial-gradient(closest-side, transparent 72%, #000 78%, #000 88%, transparent 100%); mask: radial-gradient(closest-side, transparent 72%, #000 78%, #000 88%, transparent 100%); }
+.sk-prism .aura { background: radial-gradient(circle, rgba(200,170,255,.55), rgba(255,160,210,.2) 45%, transparent 68%); }
+.sk-prism .orb { animation-duration: 6s; }
+
+/* ---------- RAYO · contrarreloj: estela · esfera de reloj · rayos ---------- */
+.sk-bolt .sp { right: 58%; top: var(--y); height: calc(var(--bs) * .09); width: calc(var(--bs) * .85 * var(--w)); border-radius: 999px;
+  background: linear-gradient(90deg, rgba(200,230,255,0), rgba(225,242,255,.98)); transform-origin: 100% 50%; box-shadow: 0 0 calc(var(--bs) * .05) rgba(127,196,255,.8);
+  animation: skStreak .9s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes skStreak { 0% { transform: scaleX(.4); opacity: .2; } 35% { opacity: 1; } 100% { transform: scaleX(1) translateX(calc(var(--bs) * -.14)); opacity: .1; } }
+.sk-bolt .knob { left: calc(50% - var(--bs) * .1); top: calc(var(--bs) * -.2); width: calc(var(--bs) * .2); height: calc(var(--bs) * .26); border-radius: calc(var(--bs) * .05) calc(var(--bs) * .05) 0 0;
+  background: linear-gradient(90deg, #2D4F7C, #5B84BC 45%, #2D4F7C); box-shadow: 0 calc(var(--bs) * -.07) 0 calc(var(--bs) * -.02) #FFD84A; }
+/* esfera de reloj: un bisel claro alrededor, con las 12 marcas de las horas */
+.sk-bolt .ck { inset: calc(var(--bs) * -.15); border-radius: 50%;
+  background: repeating-conic-gradient(from -2deg, #2D4F7C 0 4deg, #E4F0FF 4deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 79.5%); mask: radial-gradient(closest-side, transparent 78%, #000 79.5%);
+  box-shadow: 0 0 0 calc(var(--bs) * .018) #2D4F7C, 0 calc(var(--bs) * .03) calc(var(--bs) * .08) rgba(20,40,70,.35); }
+.sk-bolt .orb .tick { width: calc(var(--bs) * .12); height: calc(var(--bs) * .12); margin: calc(var(--bs) * -.06) 0 0 calc(var(--bs) * -.06); border-radius: 50%;
+  background: #FFD84A; box-shadow: 0 0 0 calc(var(--bs) * .02) #fff, 0 0 calc(var(--bs) * .12) #FFD84A; transform: translateY(calc(var(--bs) * -.585)); }
+.sk-bolt .aura { background: radial-gradient(circle, rgba(127,196,255,.6), rgba(63,111,168,.15) 50%, transparent 68%); animation-duration: 1.6s; }
+.sk-bolt .bz { left: var(--x); top: var(--y); width: calc(var(--bs) * .3); height: calc(var(--bs) * .48); transform: rotate(var(--r));
+  filter: drop-shadow(0 0 calc(var(--bs) * .06) #FFE27A); animation: skZap 1.3s steps(1) infinite; animation-delay: var(--d); }
+@keyframes skZap { 0%, 55%, 70%, 100% { opacity: 1; } 60%, 65% { opacity: .15; } 85% { opacity: .5; } }
+
+/* ---------- CORONA · desafíos: corona · con gemas y aura · con rayos ---------- */
+.sk-crown .cr { width: calc(var(--bs) * .56); height: calc(var(--bs) * .4); left: calc(50% - var(--bs) * .28); top: calc(var(--bs) * -.3);
+  transform: rotate(-8deg); animation: skBob 2.2s ease-in-out infinite; filter: drop-shadow(0 calc(var(--bs) * .03) calc(var(--bs) * .04) rgba(90,40,20,.35)); }
+.sl2.sk-crown .cr, .sl3.sk-crown .cr { width: calc(var(--bs) * .7); height: calc(var(--bs) * .5); left: calc(50% - var(--bs) * .35); top: calc(var(--bs) * -.4); }
+@keyframes skBob { 0%, 100% { transform: rotate(-8deg) translateY(0); } 50% { transform: rotate(-4deg) translateY(calc(var(--bs) * -.05)); } }
+.sk-crown .aura { background: radial-gradient(circle, rgba(232,110,90,.55), rgba(181,71,63,.18) 45%, transparent 68%); }
+.sk-crown .rays { inset: calc(var(--bs) * -.62); border-radius: 50%; animation: skSpin 16s linear infinite;
+  background: repeating-conic-gradient(rgba(240,150,90,.55) 0 9deg, rgba(240,150,90,0) 9deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, #000 28%, transparent 72%); mask: radial-gradient(closest-side, #000 28%, transparent 72%); }
+
+/* ---------- PUZLE · puzles: piezas dibujadas · una pieza en órbita · tres ---------- */
+.sk-puzzle .jig { inset: 0; }
+.sk-puzzle .pc { width: calc(var(--bs) * .3); height: calc(var(--bs) * .3); margin: calc(var(--bs) * -.15) 0 0 calc(var(--bs) * -.15);
+  filter: drop-shadow(0 calc(var(--bs) * .02) calc(var(--bs) * .03) rgba(20,40,20,.35)); }
+.sk-puzzle .pc svg { animation: skSpin 4s linear infinite reverse; }
+.sk-puzzle .aura { background: radial-gradient(circle, rgba(126,232,200,.55), rgba(46,138,128,.18) 45%, transparent 68%); }
+
+html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation: none !important; }
+
+/* =========================================================
+   "Tu pelota": botón del menú (camiseta) y la ventana
+   ========================================================= */
+#profileBtn { display: none; position: fixed; bottom: 14px; left: 98px; z-index: 65; width: 36px; height: 36px; padding: 0;
+  --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
+body[data-screen="menu"] #profileBtn { display: inline-flex; }
+#profileBtn .pfDot { position: absolute; top: -2px; right: -2px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--cream); }
+#profileBtn .pfDot[hidden] { display: none; }
+html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+@media (orientation: landscape) and (max-height: 540px) {
+  html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(100px + env(safe-area-inset-right, 0px)); }
+  html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
+  html.phone #profileBtn { top: 12px; bottom: auto; left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); }
+}
+
+#profileOverlay { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(20,40,20,.5); backdrop-filter: blur(6px); }
+#profileOverlay.visible { display: flex; animation: fadeIn .2s var(--ease-out); }
+.profBox { width: min(680px, 100%); }
+.profBox .setBody { padding-top: 0; }
+.profBox .pfLayout { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+
+/* ---- la pelota de arriba, en su green ---- */
+.pfHero { --sk: var(--grass-dark); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 22px 16px; border-bottom: 1px solid var(--cream-line); }
+.pfStage { position: relative; width: 168px; height: 150px; display: grid; place-items: center; }
+.pfStage::before { /* el green: césped segado y un halo del color de la pelota */
+  content: ''; position: absolute; left: 6px; right: 6px; bottom: 6px; height: 64px; border-radius: 50%;
+  background: repeating-linear-gradient(135deg, #8DB05F 0 10px, #94B665 10px 20px);
+  box-shadow: 0 0 0 5px #79A456, 0 10px 22px rgba(20,40,20,.22); }
+.pfStage::after { content: ''; position: absolute; left: 50%; bottom: 34px; width: 74px; height: 16px; margin-left: -37px; border-radius: 50%;
+  background: rgba(20,40,20,.28); animation: pfShadow 2.8s ease-in-out infinite; }
+.pfStage .pfFlag { position: absolute; right: 12px; bottom: 30px; width: 30px; height: 58px; z-index: 0; }
+.pfStage .skBall { --bs: 96px !important; z-index: 1; margin-bottom: 18px; animation: pfFloat 2.8s ease-in-out infinite; }
+.pfStage .skBall.pop { animation: pfPop .5s cubic-bezier(.3,1.5,.5,1), pfFloat 2.8s .5s ease-in-out infinite; }
+@keyframes pfFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes pfShadow { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(.82); opacity: .55; } }
+@keyframes pfPop { 0% { transform: scale(.55) rotate(-30deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+/* estallido al ponerse una pelota */
+.pfBurst { position: absolute; left: 50%; top: 42%; width: 0; height: 0; z-index: 2; pointer-events: none; }
+.pfBurst i { position: absolute; width: 9px; height: 9px; margin: -4.5px; border-radius: 50%; background: var(--sk); opacity: 0;
+  animation: pfBurst .7s var(--ease-out) forwards; animation-delay: var(--d, 0s); }
+@keyframes pfBurst { 0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(-78px) scale(.3); opacity: 0; } }
+.pfInfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pfName { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 24px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
+.pfName .lv { font-size: 14px; font-weight: 700; color: var(--sk); letter-spacing: .06em; }
+.pfSub { font-size: 13px; color: var(--ink-soft); line-height: 1.35; }
+.pfSub b { color: var(--ink); font-weight: 600; }
+.pfActs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.pfActs .btn-primary { --b-bg: var(--sk); --b-line: var(--sk); }
+.pfWorn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: color-mix(in srgb, var(--sk) 14%, transparent); color: color-mix(in srgb, var(--sk) 75%, var(--ink)); }
+.pfWorn .i { width: 14px; height: 14px; }
+.pfLockNote { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+.pfLockNote .i { width: 14px; height: 14px; }
+.pfColors { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.pfColors .pveColor { width: 26px; height: 26px; }
+
+/* ---- las pelotas que se ganan ---- */
+.pfListHead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 14px 0 10px; }
+.pfListHead h4 { margin: 0; }
+.pfCount { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.pfGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-bottom: 6px; }
+.pfCard { --sk: var(--ink); position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center;
+  padding: 12px 12px 11px; border-radius: 16px; border: 1.5px solid var(--cream-line); background: rgba(255,255,255,.4); text-align: left; cursor: pointer;
+  transition: transform .2s var(--ease-out), border-color .2s, background-color .2s; }
+.pfGrid.intro .pfCard { animation: btnUp .4s var(--ease-out) backwards; animation-delay: calc(var(--i) * 45ms); }
+.pfCard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--sk) 45%, var(--cream-line)); }
+.pfCard:hover .pfMini .skBall { transform: rotate(-12deg) scale(1.06); }
+.pfCard.sel { border-color: var(--sk); background: color-mix(in srgb, var(--sk) 8%, #fff); }
+.pfCard.worn::after { content: ''; position: absolute; top: 10px; right: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--sk); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sk) 25%, transparent); }
+.pfMini { grid-row: 1 / 4; position: relative; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 14px;
+  background: color-mix(in srgb, var(--sk) 12%, transparent); overflow: visible; }
+.pfMini .skBall { transition: transform .3s var(--ease-out); }
+.pfCard.locked .pfMini .skBall { filter: grayscale(1) opacity(.45); }
+.pfMini .pfLock { position: absolute; right: -5px; bottom: -5px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--ink); color: var(--cream); border: 2px solid var(--cream); }
+.pfMini .pfLock .i { width: 11px; height: 11px; }
+.pfCard b.nm { font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; display: flex; align-items: center; gap: 6px; }
+.pfCard .goal { font-size: 11.5px; color: var(--ink-soft); line-height: 1.25; }
+.pfNew { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: var(--accent); color: #fff;
+  animation: pfNewPulse 1.6s ease-in-out infinite; }
+@keyframes pfNewPulse { 50% { box-shadow: 0 0 0 4px rgba(232,135,58,.25); } }
+/* niveles I · II · III: tocar = ver en grande */
+.pfLvls { display: flex; gap: 5px; margin-top: 4px; }
+.pfLv { --b-bg: transparent; --b-line: var(--cream-line); --b-fg: var(--ink-soft); flex: 1 1 0; min-width: 0; flex-direction: column; gap: 0; padding: 4px 4px 3px; border-radius: 10px; font-size: 12px; line-height: 1.1; }
+.pfLv small { font-size: 9.5px; font-weight: 500; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pfLv.got { --b-bg: color-mix(in srgb, var(--sk) 16%, transparent); --b-line: color-mix(in srgb, var(--sk) 55%, transparent); --b-fg: color-mix(in srgb, var(--sk) 80%, var(--ink)); font-weight: 700; }
+.pfLv.cur { --b-bg: var(--sk); --b-line: var(--sk); --b-fg: #fff; }
+.pfLv.next { --b-line: color-mix(in srgb, var(--sk) 55%, transparent); border-style: dashed; }
+.pfLv:hover { background-color: color-mix(in srgb, var(--sk) 22%, transparent); }
+.pfLv.cur:hover { background-color: var(--sk); }
+/* hasta el siguiente nivel */
+.pfBar { grid-column: 2; display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.pfBar .tr { flex: 1; height: 6px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; }
+.pfBar .tr i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--sk); }
+.pfGrid.intro .pfBar .tr i { transition: width .9s cubic-bezier(.2,.8,.2,1); transition-delay: calc(var(--i) * 60ms + .15s); }
+.pfBar b { color: var(--ink); font-weight: 600; }
+.pfBar.done { color: color-mix(in srgb, var(--sk) 80%, var(--ink)); font-weight: 600; }
+
+/* ---- en Partida rápida: elegir tu pelota bajo el color ---- */
+#pveSkins { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+#pveSkins .skBall { --bs: 24px !important; }
+#pveSkins:empty { display: none; }
+.pveSkin { --b-bg: transparent; --b-line: var(--cream-line); width: 40px; height: 40px; padding: 0; border-radius: 12px; overflow: visible; }
+.pveSkin.sel { --b-line: var(--ink); --b-bg: rgba(163,193,115,.3); }
+.pveSkin .skBall { pointer-events: none; }
+.pveSkin.more { --b-line: var(--cream-line); color: var(--ink-soft); }
+.pveSkin.more .i { width: 18px; height: 18px; }
+
+/* ---- aviso al terminar una partida ---- */
+.winRec.skinNew { display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px 4px 6px; cursor: pointer;
+  background: var(--ink); border-color: var(--ink); color: var(--cream); font-weight: 600; animation: recPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
+.winRec.skinNew:hover { background: #3a3a3a; }
+
+/* ---- móvil: la pelota arriba en su green, pequeña; las tarjetas, una columna ---- */
+@media (max-width: 560px) {
+  .pfHero { grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 10px 16px 12px; }
+  .pfStage { width: 118px; height: 118px; }
+  .pfStage::before { height: 48px; left: 2px; right: 2px; }
+  .pfStage::after { bottom: 26px; width: 56px; margin-left: -28px; }
+  .pfStage .pfFlag { right: 2px; bottom: 22px; width: 22px; height: 44px; }
+  .pfName { font-size: 20px; }
+  .pfSub { font-size: 12px; }
+  .pfGrid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .pfColors { gap: 4px; }
+  .pfColors .pveColor { width: 22px; height: 22px; }
+  .pfStage .skBall { --bs: 74px !important; margin-bottom: 14px; }
+}
+@media (max-height: 560px) and (min-width: 600px) { /* poca altura: la pelota a la izquierda, las tarjetas a la derecha */
+  .profBox { width: min(900px, 100%); }
+  .profBox .pfLayout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 0; flex: 1; }
+  .profBox .pfHero { grid-template-columns: 1fr; justify-items: center; text-align: center; border-bottom: 0; border-right: 1px solid var(--cream-line); align-content: center; }
+  .profBox .pfInfo { align-items: center; }
+  .profBox .pfName, .profBox .pfActs, .profBox .pfColors { justify-content: center; }
+  .profBox .pfHero { padding: 8px 14px; gap: 6px; }
+  .profBox .pfStage { width: 140px; height: 104px; }
+  .profBox .pfStage .skBall { --bs: 64px !important; margin-bottom: 12px; }
+  .profBox .pfStage::before { height: 44px; }
+  .profBox .pfStage::after { bottom: 24px; width: 50px; margin-left: -25px; }
+  .profBox .pfName { font-size: 19px; }
+  .profBox .pfSub { font-size: 12px; }
+  .profBox .pfColors { gap: 4px; }
+  .profBox .pfColors .pveColor { width: 22px; height: 22px; }
+  .profBox .pfGrid { grid-template-columns: minmax(0, 1fr); }
+  .profBox header { padding-top: 12px; }
+  .profBox header h2 { font-size: 26px; }
+}

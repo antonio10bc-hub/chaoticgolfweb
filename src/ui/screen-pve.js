@@ -1,5 +1,6 @@
 // Partida rápida: configuración (personas, colores, tablero, rivales y dificultad), "Repetir la
 // última" y el arranque de partidas contra la máquina (también lo usan los desafíos).
+import { pveSkinsHTML, pickPveSkin } from './my-ball.js';
 import { app } from './app.js';
 import { $, $$, esc } from './dom.js';
 import { Game, PLAYER_COLORS } from '../engine/game.js';
@@ -104,6 +105,8 @@ function buildPveSetup() {
   $('pveColors').innerHTML = PVE_COLORS.map((c, i) =>
     `<button class="pveColor${cfg.color === i ? ' sel' : ''}" style="background:${c}" data-color="${i}"` +
     ` title="${esc(t('pve.pickColor'))}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${cfg.color === i}"></button>`).join('');
+  // tu pelota (las que has ganado, en "Tu pelota"): con una sola persona, bajo el color
+  $('pveSkins').innerHTML = cfg.humans === 1 ? pveSkinsHTML() : '';
   $$('#pveSizes .pveOpt').forEach(b => {
     b.classList.toggle('sel', cfg.size === b.dataset.size); b.setAttribute('aria-pressed', cfg.size === b.dataset.size);
     const sz = deckSize(dk, PVE_SIZES[b.dataset.size]); b.querySelector('small').textContent = `${sz.cols}×${sz.rows}`; // (tamaño real con la baraja)
@@ -209,6 +212,8 @@ export function bindPve() {
     const c = e.target.closest('[data-color]'), s = e.target.closest('[data-size]'), n = e.target.closest('#pveOpps [data-n]');
     const h = e.target.closest('#pveHumans [data-h]'), d = e.target.closest('#pveDiff [data-diff]');
     const cy = e.target.closest('[data-cycle]'), rv = e.target.closest('[data-rival]');
+    const sk = e.target.closest('[data-pskin]');
+    if (sk) { if (pickPveSkin(sk.dataset.pskin)) buildPveSetup(); return; }
     if (rv) { // rival: al azar ↔ cada personaje del catálogo (sin repetir los ya elegidos), en los dos sentidos
       const i = +rv.dataset.rival, dir = +rv.dataset.dir || 1, cfg = app.pveCfg, others = cfg.rivals.filter((_, j) => j !== i);
       const ids = [null, ...PERSONAS.map(p => p.id).filter(id => !others.includes(id))];
@@ -231,5 +236,6 @@ export function bindPve() {
     else return;
     buildPveSetup();
   });
+  document.addEventListener('myball:close', () => { if (app.screen === 'pve') buildPveSetup(); });
   MODE_NAV.pve = { back: () => openModes('quick'), restart: () => { if (app.lastPveCfg) app.pveCfg = { ...app.lastPveCfg }; startPveMatch(); } };
 }

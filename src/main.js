@@ -49,6 +49,7 @@ import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
 import { bakeGrain, bakeScene, sceneFromCache } from './ui/bake.js';
 import { UMAMI_ID, flushQueue, track } from './ui/analytics.js';
+import { bindMyBall } from './ui/my-ball.js';
 
 // texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
 sceneFromCache();
@@ -83,6 +84,7 @@ bindPause();
 bindRules();
 bindBack();
 bindLogFilter();
+bindMyBall();
 $('editorBtn').addEventListener('click', () => openEditor());
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
