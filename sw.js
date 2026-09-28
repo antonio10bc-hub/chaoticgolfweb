@@ -7,7 +7,7 @@
 // así la caché tiene el juego entero desde la primera visita y tras cada versión nueva
 // (esas cargas no pasan por aquí). Sin eso, un arranque con la red caída o lenta se
 // quedaba en la pantalla de carga: faltaban módulos en la caché.
-const CACHE = 'chaoticgolf-v48';
+const CACHE = 'chaoticgolf-v49';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'assets/icons/icon.svg'];
 const NET_WAIT = 3000;
 
@@ -40,7 +40,7 @@ const badNet = () => { badNetUntil = Date.now() + 15000; };
 self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
-  // (las analíticas de Vercel, siempre a la red y sin guardar)
+  // (analíticas y Speed Insights de Vercel, siempre a la red y sin guardar)
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/_vercel/')) return;
   const cached = () => caches.match(req, { ignoreSearch: true })
     .then(r => r || (req.mode === 'navigate' ? caches.match('index.html') : undefined));

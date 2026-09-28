@@ -197,11 +197,14 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); warm(); });
 }
 
-// analíticas de Vercel (visitas): el script lo sirve Vercel en cada despliegue; en local no existe
+// Vercel: analíticas (visitas) y Speed Insights (rendimiento real). Los scripts los sirve Vercel en
+// cada despliegue; en local no existen
 if (location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.)/.test(location.hostname)) {
-  const va = document.createElement('script');
-  va.defer = true; va.src = '/_vercel/insights/script.js';
-  document.head.append(va);
+  for (const src of ['/_vercel/insights/script.js', '/_vercel/speed-insights/script.js']) {
+    const sc = document.createElement('script');
+    sc.defer = true; sc.src = src;
+    document.head.append(sc);
+  }
 }
 
 // gancho de depuración para la consola y las pruebas de humo (tools/smoke.mjs)
