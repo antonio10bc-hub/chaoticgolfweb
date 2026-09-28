@@ -23,6 +23,7 @@ styles/                    CSS por área: base, board, hands, hud, screens, edit
                            themes (temas del campo) y features (componentes nuevos)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
+  boot-watch.js            script clásico: "Reintentar" si el juego no arranca en 10 s
   engine/                  REGLAS PURAS — sin DOM, sin sonido, sin timers
     game.js                clase Game: estado S + acción pendiente + eventos
     rng.js                 RNG con semilla (partidas reproducibles)
@@ -43,6 +44,7 @@ src/
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
+    link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
@@ -61,7 +63,7 @@ assets/icons/              iconos de la app
 assets/art/                arte bitmap opcional (ver más abajo)
 tests/                     node --test: oráculo de reglas, reglas concretas e IA
 tools/                     servidor, oráculo, simulador, prueba de humo, manifiesto de arte
-sw.js, manifest.webmanifest   PWA
+sw.js, manifest.webmanifest   PWA (sin conexión; launch_handler: los enlaces van a la ventana ya abierta)
 ```
 
 **Flujo:** la interfaz llama a una acción del motor (`game.clickCard`, `clickCell`, `endTurn`…), el motor
@@ -221,7 +223,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
   (`CG1…`, JSON compacto comprimido y validado al leerlo) o un enlace `…#nivel=CÓDIGO`. Quien abre el enlace ve
   "Te han pasado un nivel" (guardar / guardar y jugar); con el código, "Añadir código". Se guarda como recibido y
-  no se duplica. La ventana de compartir pone el enlace por delante (un botón grande "Copiar enlace": al abrirlo,
+  no se duplica: si ya lo tenías, el enlace avisa "¡Ya tienes este nivel guardado!" (cerrar / guardar de todas
+  formas; si lo guardaste con otro nombre, lo dice). Con el juego ya abierto en otra pestaña, la pestaña del enlace
+  le pasa el nivel (`src/ui/link-tabs.js`, BroadcastChannel) y se cierra, siempre que esa pestaña sea la que el
+  navegador vuelve a mostrar (la que estaba delante o una visible en otra ventana); si no, se abre donde se pulsa.
+  Con la app instalada, `launch_handler` + `launchQueue` lo llevan a la ventana abierta. Abrir el enlace con el
+  navegador cerrado funciona igual que abrir el juego: el service worker guarda el juego entero desde la primera
+  visita (la página le manda la lista de lo que ha cargado) y, si la red falla o no contesta en 3 s, sirve la
+  copia; antes, un arranque con la red lenta se quedaba en la pantalla de carga. La ventana de compartir pone el enlace por delante (un botón grande "Copiar enlace": al abrirlo,
   el nivel está listo para jugar; si el portapapeles falla, aparece el enlace para copiarlo a mano) y, debajo y en
   pequeño, el código con su botón de copiar. Sin botón de compartir del sistema; la confirmación sale en el botón.
   Lo básico tiene 8 niveles.

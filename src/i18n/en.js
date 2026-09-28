@@ -338,6 +338,8 @@ export default {
     copyFailed: 'Couldn’t copy: select it and copy it by hand',
     gotTitle: 'Someone sent you a level', gotHint: 'Save it to your levels (Game modes → Special games) to play it whenever you like.',
     notNow: 'Not now', save: 'Save', saveAndPlay: 'Save and play',
+    dupTitle: 'You already have this level saved!', dupAs: 'It’s saved as “{name}”.', saveAnyway: 'Save anyway',
+    inOtherTab: 'The level is in your other game tab',
   },
   lab: {
     title: 'Cheats', hint: 'Tap a card to add it to your hand.',

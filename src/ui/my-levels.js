@@ -1,12 +1,12 @@
 // Mis niveles: la lista de niveles del creador, propios y recibidos. Guardar, eliminar (con
 // deshacer: no hay diálogo de confirmación), compartir por código o enlace y recibir un nivel
-// (pegando el código o abriendo un enlace …#nivel=CÓDIGO). La usan el creador y "Tus niveles".
+// (pegando el código o abriendo un enlace …#nivel=CÓDIGO; ver también link-tabs.js). La usan el creador y "Tus niveles".
 import { app } from './app.js';
 import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
 import { loadLevels, saveLevels, loadProgress, saveProgress } from '../storage.js';
 import { updateRecords } from './records.js';
-import { encodeLevel, decodeLevel, levelLink, levelKey, LINK_KEY } from '../content/levels/share.js';
+import { encodeLevel, decodeLevel, levelLink, levelKey } from '../content/levels/share.js';
 import { openDialog } from './dialog.js';
 import { toast, actionToast } from './hud.js';
 import { sfx } from '../audio/sfx.js';
@@ -120,19 +120,39 @@ export async function addCodeDialog() {
   return r.idx;
 }
 
-// enlace con un nivel (…#nivel=CÓDIGO): se ofrece guardarlo. onPlay(idx) si elige jugarlo ya
-export async function checkLinkLevel(onPlay) {
-  const m = new RegExp('[#&?]' + LINK_KEY + '=([^&]+)').exec(location.hash || '');
-  if (!m) return;
-  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin history */ }
-  const L = await decodeLevel(decodeURIComponent(m[1]));
-  if (!L) { toast(t('lib.badCode'), 'warn'); return; }
-  const v = await openDialog({ title: t('lib.gotTitle'), cls: 'lvDlg', body: previewBlock(L) + `<p class="dlgHint">${esc(t('lib.gotHint'))}</p>`,
-    buttons: [{ value: 'no', label: t('lib.notNow') }, { value: 'save', label: t('lib.save') }, { value: 'play', label: t('lib.saveAndPlay') }] });
-  if (v !== 'save' && v !== 'play') return;
-  const r = receiveLevel(L);
-  toast(t(r.dup ? 'lib.already' : 'lib.added', { name: L.name || t('story.untitled') }));
-  if (v === 'play') onPlay?.(r.idx);
+// si hay otro diálogo abierto (el enlace llega a una pestaña en uso), se cierra antes de abrir el del nivel
+function freeDialog() {
+  const dlg = document.getElementById('dialog');
+  if (!dlg.open) return null;
+  return new Promise(r => { dlg.addEventListener('close', () => setTimeout(r), { once: true }); dlg.close('cancel'); });
+}
+
+// enlace con un nivel (código de …#nivel=CÓDIGO): se ofrece guardarlo; onPlay(idx) si elige jugarlo ya.
+// Si ya lo tenías guardado se avisa, y se puede guardar otra copia igualmente
+let offering = null; // (el mismo enlace puede llegar a la vez por el hash y por launchQueue)
+export async function offerLinkedLevel(code, onPlay) {
+  if (!code || code === offering) return;
+  offering = code;
+  try {
+    const L = await decodeLevel(decodeURIComponent(code));
+    if (!L) { toast(t('lib.badCode'), 'warn'); return; }
+    await freeDialog();
+    const name = L.name || t('story.untitled'), key = levelKey(L);
+    const saved = loadLevels().find(x => levelKey(x) === key);
+    if (saved) {
+      const other = (saved.name || '') !== (L.name || '') ? `<p class="dlgHint">${esc(t('lib.dupAs', { name: saved.name || t('story.untitled') }))}</p>` : '';
+      const v = await openDialog({ title: t('lib.dupTitle'), cls: 'lvDlg', body: previewBlock(L) + other,
+        buttons: [{ value: 'no', label: t('common.close') }, { value: 'copy', label: t('lib.saveAnyway') }] });
+      if (v === 'copy') { storeLevel({ ...L, origin: 'received' }); toast(t('lib.added', { name })); }
+      return;
+    }
+    const v = await openDialog({ title: t('lib.gotTitle'), cls: 'lvDlg', body: previewBlock(L) + `<p class="dlgHint">${esc(t('lib.gotHint'))}</p>`,
+      buttons: [{ value: 'no', label: t('lib.notNow') }, { value: 'save', label: t('lib.save') }, { value: 'play', label: t('lib.saveAndPlay') }] });
+    if (v !== 'save' && v !== 'play') return;
+    const r = receiveLevel(L);
+    toast(t(r.dup ? 'lib.already' : 'lib.added', { name }));
+    if (v === 'play') onPlay?.(r.idx);
+  } finally { offering = null; }
 }
 
 export { sizeLabel };

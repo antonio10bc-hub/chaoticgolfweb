@@ -338,6 +338,14 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   assert.equal(got.length, 1);
   assert.equal(got[0].name, 'Compartido');
   assert.equal(got[0].origin, 'received');
+  // lo vuelve a abrir: ya lo tiene → se avisa, y puede guardar otra copia igualmente
+  await page.goto(URL + '#nivel=' + code, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('#dialog[open] button[value="copy"]'); await sleep(200);
+  assert.match(await app(() => document.querySelector('#dialog h3').textContent), /ya tienes este nivel/i);
+  assert.equal(await page.$('#dialog[open] button[value="play"]'), null);
+  await page.click('#dialog[open] button[value="copy"]'); await sleep(300);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 2);
+  await app(() => { const s = JSON.parse(localStorage.getItem('chaoticgolf_levels')); s.levels.pop(); localStorage.setItem('chaoticgolf_levels', JSON.stringify(s)); });
   // en Tus niveles se elimina sin diálogo y se puede deshacer
   await click('#modesBtn'); await sleep(300);
   await click('[data-mtab="special"]'); await sleep(500);
@@ -345,6 +353,27 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 0);
   await click('#toast .toastAct'); await sleep(300);
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
+});
+
+it('enlace con el juego ya abierto: el nivel sale en esa pestaña y la nueva se cierra', async () => {
+  await fresh();
+  const code = await app(async () => { const m = await import('/src/content/levels/share.js'); return m.encodeLevel(window.chaoticGolf.app.storyLevels[1]); });
+  // la pestaña nueva, abierta desde fuera (como un enlace pulsado en otra app)
+  const cdp = await browser.target().createCDPSession();
+  const { targetId } = await cdp.send('Target.createTarget', { url: URL + '#nivel=' + code });
+  const gone = async () => !(await cdp.send('Target.getTargets')).targetInfos.some(t => t.targetId === targetId);
+  for (let i = 0; i < 40 && !(await gone()); i++) await sleep(150);
+  assert.ok(await gone(), 'la pestaña del enlace se cierra');
+  await page.waitForSelector('#dialog[open] button[value="save"]', { timeout: 3000 });
+  await page.click('#dialog[open] button[value="save"]'); await sleep(300);
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
+  // sin otra pestaña del juego abierta, el enlace se abre donde se pulsa
+  const p2 = await browser.newPage();
+  await page.close(); page = p2;
+  page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept());
+  await page.setViewport({ width: 1280, height: 860 }); await page.emulateTimezone('Europe/Madrid');
+  await page.goto(URL + '#nivel=' + code, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('#dialog[open] button[value="copy"]', { timeout: 3000 }); // (y ya lo tiene)
 });
 
 it('probar nivel: con trampas (cartas a mano, deshacer y mover piezas con la rueda del ratón)', async () => {

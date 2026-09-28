@@ -13,7 +13,7 @@
    ========================================================= */
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
-import { applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
+import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
 import { bindSave } from './ui/save.js';
 import { loadArt } from './art.js';
 import { loadStoryLevels, loadPuzzleLevels } from './content/levels/index.js';
@@ -30,7 +30,9 @@ import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
 import { bindLab } from './ui/lab.js';
 import { resetLevelProgressOnce } from './ui/records.js';
-import { checkLinkLevel } from './ui/my-levels.js';
+import { offerLinkedLevel } from './ui/my-levels.js';
+import { takeLinkedCode, handOffLink, bindLinkInbox } from './ui/link-tabs.js';
+import { toast } from './ui/hud.js';
 import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
 import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
@@ -46,6 +48,7 @@ import { bindRules, openRules, closeRules, rulesOpen } from './ui/rules.js';
 import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
 
+performance.setResourceTimingBufferSize?.(1000); // (la lista de archivos cargados que se guardan para jugar sin conexión)
 // preferencias (velocidad, tema del campo, accesibilidad) antes de pintar nada
 loadPrefs();
 // idioma: el elegido; si no, español en España e inglés fuera (por zona horaria)
@@ -147,33 +150,51 @@ fxAmbientStart();
 
 
 // arranque: niveles de historia + partida libre de fondo + arte
-// (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía)
+// (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía; con tope:
+// pase lo que pase, se quita)
 (async () => {
   const t0 = performance.now();
+  // enlace con un nivel compartido (…#nivel=CÓDIGO): si el juego ya está abierto en otra pestaña, el
+  // nivel va a esa y esta se cierra; si no, se ofrece aquí guardarlo en Tus niveles (y jugarlo)
+  let linked = takeLinkedCode();
+  const handOff = linked ? handOffLink(linked) : null;
   try { [app.storyLevels, app.puzzleLevels] = await Promise.all([loadStoryLevels(), loadPuzzleLevels()]); }
   catch (e) { console.error('No se pudieron cargar los niveles', e); }
-  newFreeGame();
-  showScreen('menu');
-  await Promise.all([loadArt(), document.fonts?.ready.catch(() => {})]);
-  // el arte que exista sustituye a los fallbacks: reconstruir piezas y re-renderizar
-  clearPieces();
-  applyArtExtras();
-  ctl.render();
+  if (handOff && await handOff) {
+    window.close();
+    await new Promise(r => setTimeout(r, 400));
+    linked = null; toast(t('lib.inOtherTab')); // (el navegador no ha dejado cerrarla: el juego sigue aquí)
+  }
+  try {
+    newFreeGame();
+    showScreen('menu');
+    const art = Promise.all([loadArt(), document.fonts?.ready.catch(() => {})]);
+    const late = await Promise.race([art.then(() => false), new Promise(r => setTimeout(r, 3000, true))]);
+    // el arte que exista sustituye a los fallbacks: reconstruir piezas y re-renderizar
+    const applyArt = () => { clearPieces(); applyArtExtras(); ctl.render(); };
+    if (late) art.then(() => { if (!app.animating) applyArt(); }); else applyArt();
+  } catch (e) { console.error('Arranque', e); }
   // un mínimo breve para que no parpadee; luego se desvanece y el menú hace su entrada
   await new Promise(r => setTimeout(r, Math.max(0, 450 - (performance.now() - t0))));
   const ld = $('loadScreen');
   ld.classList.add('done');
   document.body.classList.remove('loading'); // ahora sí: la entrada animada del menú
   setTimeout(() => ld.remove(), 500);
-  // enlace con un nivel compartido (…#nivel=CÓDIGO): se ofrece guardarlo en Tus niveles (y jugarlo)
   const playLinked = idx => { const gi = app.storyLevels.length + idx; startLevel(storyLevelAt(gi), 'story', gi); };
-  checkLinkLevel(playLinked);
-  window.addEventListener('hashchange', () => checkLinkLevel(playLinked)); // (enlace abierto con el juego ya en marcha)
+  const offer = code => offerLinkedLevel(code, playLinked);
+  offer(linked);
+  bindLinkInbox(offer); // (enlaces que otras pestañas o la app instalada pasan a esta)
+  window.addEventListener('hashchange', () => offer(takeLinkedCode())); // (enlace pegado en esta pestaña)
 })();
 
 // PWA: jugar sin conexión (solo en http/https)
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  // lo que esta página ya ha cargado, a la caché del service worker: la primera visita y la que estrena
+  // versión no pasan por él, y sin esto un arranque sin red se quedaba sin algunos módulos
+  const warm = () => navigator.serviceWorker.controller?.postMessage({ t: 'warm',
+    urls: [location.pathname + location.search, ...performance.getEntriesByType('resource').map(r => r.name)] });
+  navigator.serviceWorker.addEventListener('controllerchange', warm);
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); warm(); });
 }
 
 // gancho de depuración para la consola y las pruebas de humo (tools/smoke.mjs)

@@ -341,6 +341,8 @@ export default {
     copyFailed: 'No se pudo copiar: selecciónalo y cópialo a mano',
     gotTitle: 'Te han pasado un nivel', gotHint: 'Guárdalo en tus niveles (Modos de juego → Juegos especiales) para jugarlo cuando quieras.',
     notNow: 'Ahora no', save: 'Guardar', saveAndPlay: 'Guardar y jugar',
+    dupTitle: '¡Ya tienes este nivel guardado!', dupAs: 'Lo tienes como «{name}».', saveAnyway: 'Guardar de todas formas',
+    inOtherTab: 'El nivel está en tu otra pestaña del juego',
   },
   lab: {
     title: 'Trampas', hint: 'Toca una carta para añadirla a tu mano.',
