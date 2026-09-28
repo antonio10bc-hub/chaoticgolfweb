@@ -47,17 +47,28 @@ window.addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 
 const DISPLAY = { menu: 'flex', game: 'block', editor: 'grid', story: 'flex', pve: 'flex', modes: 'flex' };
 
+const shown = new Set(); // pantallas ya vistas: al volver, sin la presentación escalonada (styles/features.css)
 export function showScreen(s) {
   const prev = app.screen;
   app.screen = s;
   // transición: la pantalla que entra aparece con un fundido suave (salvo movimiento reducido)
   const el = $(s + 'Screen');
-  if (prev !== s && el && !REDUCED) { el.classList.remove('screenIn'); void el.offsetWidth; el.classList.add('screenIn'); }
+  if (s !== 'menu') document.body.classList.remove('menuIntro'); // (la entrada del menú, solo al arrancar)
+  if (el) el.classList.toggle('revisit', shown.has(s));
+  shown.add(s);
+
   setCourseSlot(s === 'game' ? app.variant : null); // cada modo con su color de campo
   musicScene(s === 'game' ? 'game' : 'menu'); // la música acompaña: menú ↔ partida con fundido cruzado
   if (s !== 'game') { tutorialStop(); clearBubbles(); } // ni tutorial ni bocadillos de los bots fuera de la partida
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
+  // fundido corto de la pantalla que entra (Web Animations: no obliga a maquetar antes de tiempo; sin fill, al
+  // terminar no deja transform y los botones fijos de dentro siguen fijos)
+  if (prev !== s && el && !REDUCED && el.animate) {
+    el._in?.cancel();
+    el._in = el.animate(s === 'game' ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
+      { duration: s === 'game' ? 250 : 200, easing: 'cubic-bezier(.2,.7,.2,1)' });
+  }
   $('logPanel').style.display = s === 'game' ? 'flex' : 'none';   // el historial solo vive en la partida
   if (s === 'game') $('gameScreen').dataset.scene = sceneOfGame(); // fondo propio de la baraja (lago…)
   if (s === 'game' && app.game) { resetZoom(); fitBoard(); render(); } // recalcular tamaños al hacerse visible

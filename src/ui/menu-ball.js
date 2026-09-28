@@ -23,14 +23,14 @@ export function syncMenuBall(done, date) {
   const g = $('menuBall');
   if (!g) return;
   clearTimeout(timer);
-  g.getAnimations?.().forEach(a => a.cancel());
+  (g._anims || []).forEach(a => a.cancel()); g._anims = []; // (las nuestras: getAnimations() obligaría a recalcular estilos)
   g.style.transformOrigin = `${START[0]}px ${START[1]}px`;
   g.style.transformBox = 'view-box';
   if (!done) { g.style.opacity = ''; return; }            // reto pendiente: la bola, en su sitio
   if (seenOn() === date || REDUCED || !g.animate) { g.style.opacity = 0; return; } // ya está en el hoyo
   markSeen(date);
   g.style.opacity = '';
-  timer = setTimeout(() => roll(g), 1000); // tras la entrada del menú
+  timer = setTimeout(() => roll(g), document.body.classList.contains('menuIntro') ? 1000 : 350); // tras la entrada del menú (solo al arrancar es larga)
 }
 
 function roll(g) {
@@ -44,12 +44,14 @@ function roll(g) {
   }
   const [hx, hy] = at(1);
   const rollAnim = g.animate(frames, { duration: 1500, easing: 'linear', fill: 'forwards' });
+  g._anims = [rollAnim];
   rollAnim.onfinish = () => {
     // cae dentro del hoyo
     const drop = g.animate([
       { transform: `translate(${hx}px, ${hy}px) scale(1)`, opacity: 1 },
       { transform: `translate(${hx}px, ${hy + 3}px) scale(.35)`, opacity: 0 },
     ], { duration: 260, easing: 'ease-in', fill: 'forwards' });
+    g._anims.push(drop);
     drop.onfinish = () => { g.style.opacity = 0; ripple(); };
     sfx('sink');
   };

@@ -49,6 +49,14 @@ html.phone #game {
 html.phone #table { display: contents; } /* asientos, tablero y mazo pasan a ser piezas de la rejilla de la partida */
 html.phone #seats, html.phone #boardCol, html.phone #piles { position: relative; z-index: 1; }
 html.phone #gameDecor .dBunker, html.phone #gameDecor .dTree { display: none; } /* (sin márgenes donde ponerlos) */
+/* Ultimate en el móvil: el degradado del fondo quieto (animarlo repintaba toda la pantalla en cada fotograma) y
+   las manchas de color sin desenfoque de 60px (ya son degradados suaves); siguen moviéndose, sin coste de pintado */
+html.phone #gameScreen[data-scene="prism"] #game { animation: none; }
+html.phone #gameScreen[data-scene="prism"] #gameDecor .dIri { filter: none; opacity: .5; }
+html.phone #gameDecor .dIri.a { background: radial-gradient(circle, #FF9FD0, rgba(255,159,208,0) 70%); }
+html.phone #gameDecor .dIri.b { background: radial-gradient(circle, #9FC2FF, rgba(159,194,255,0) 70%); }
+html.phone #gameDecor .dIri.c { background: radial-gradient(circle, #8DF0D2, rgba(141,240,210,0) 70%); }
+html.phone #gameDecor .dIri.d { background: radial-gradient(circle, #FFE59A, rgba(255,229,154,0) 70%); }
 html.phone #gameDecor { display: block; }
 
 /* ---------- barra: menú (pausa) · de quién es el turno · mazo ---------- */

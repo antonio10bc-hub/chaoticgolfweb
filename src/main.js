@@ -47,7 +47,11 @@ import { bindPause, pauseGame, resumePlay } from './ui/pause.js';
 import { bindRules, openRules, closeRules, rulesOpen } from './ui/rules.js';
 import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
+import { bakeGrain, bakeScene, sceneFromCache } from './ui/bake.js';
 
+// texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
+sceneFromCache();
+bakeGrain().then(() => setTimeout(bakeScene, 200));
 performance.setResourceTimingBufferSize?.(1000); // (la lista de archivos cargados que se guardan para jugar sin conexión)
 // preferencias (velocidad, tema del campo, accesibilidad) antes de pintar nada
 loadPrefs();

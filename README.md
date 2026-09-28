@@ -49,6 +49,7 @@ src/
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
     device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
+    bake.js                texturas precocinadas: grano y fondo desenfocado de los menús como imagen
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
@@ -104,6 +105,8 @@ aspecto (`cellClass`, `emoji`, `tileArt`…); regístrala en `tiles/index.js` y 
 (`decodeLevel` en `src/content/levels/share.js`, o el borrador en `localStorage.chaoticgolf_editor`), guarda el objeto del nivel como
 `src/content/levels/story/05.json` y añádelo a `story/index.json`. Campos opcionales: `name`,
 `extraBalls` (pelotas de obstáculo) y `tips` (bocadillos: `{ "hit" | "bunker" | "portal": "clave.i18n" }`).
+Tras añadir un módulo nuevo (carta, loseta…) o un nivel, `npm run preload` lo suma a la precarga de index.html
+(si se olvida, `npm test` lo recuerda).
 
 **Arte bitmap:** suelta los PNG en `assets/art/` con los nombres de `ART_FILES` (`src/art.js`) y ejecuta
 `npm run art-manifest`. Lo que no exista usa el respaldo emoji/CSS; el juego no pide archivos que no estén
@@ -323,6 +326,29 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Progreso:** barra de Lo básico, racha y victoria más rápida en Partida rápida, 10 logros y resumen final
   (jugada más larga, quién te golpeó más, tu carta más usada).
 
+## Rendimiento
+
+Medido navegando deprisa por los menús con un móvil emulado (pantalla ×3, CPU ×4) y pintado por software, y con
+la partida quieta. Reglas que hay que mantener:
+
+- **Nada de filtros SVG ni desenfoques en vivo en lo que se pinta mucho.** El grano (`--grain`) y el fondo
+  desenfocado de los menús se pintan una vez al arrancar (`src/ui/bake.js`): el grano es el mismo SVG rasterizado a
+  un PNG y el fondo, la ilustración ya desenfocada en un JPEG pequeño guardado en `localStorage` para el siguiente
+  arranque. Si el navegador no deja leer el lienzo, se quedan los estilos originales. Pintado al navegar: −42 %.
+- **La presentación escalonada, solo la primera vez.** El menú hace su entrada al arrancar (`body.menuIntro`); cada
+  pantalla ya vista (`.revisit`) entra con un fundido de 0,2 s y todo a la vista (antes volvía a escalonar botones y
+  tarjetas hasta 0,8 s y el título aparecía recortado). Las pestañas de Modos, más cortas.
+- **Sin maquetar a la fuerza.** El fundido entre pantallas es una Web Animation (antes `void el.offsetWidth`) y no se
+  pregunta `getAnimations()` (cada llamada recalcula estilos): cada módulo guarda las animaciones que lanza.
+  Abrir Modos de juego: de ~60 a ~9 ms con la CPU ×4.
+- **Nada que repinte la pantalla en cada fotograma.** Animar `background-position` a pantalla completa repinta todo:
+  el oleaje del lago es una capa que se desliza con `transform` (`.dWaves`) y en el móvil el degradado de Ultimate
+  queda quieto y sus manchas sin `blur(60px)`. Partida quieta con la baraja de agua: de ~1 s de pintado cada 3 s a
+  casi nada. El borde iridiscente de Ultimate en Modos va a 15 pasos por segundo.
+- **Precarga del arranque:** index.html pide de golpe los 85 módulos y los 32 niveles (bloque generado con
+  `npm run preload`; `tests/preload.test.mjs` avisa si falta alguno). Primera carga por HTTP/2 con red de móvil:
+  de 1,5 s a 1,16 s.
+
 ## Tests y herramientas
 
 ```bash
@@ -332,6 +358,7 @@ npm run simulate                  # telemetría: 500 partidas bot-contra-bot, vi
 npm run simulate -- --random 0 --players 4 --size l --games 2000
 npm run smoke                     # prueba de humo en Chrome real (capturas en smoke-out/)
 npm run golden                    # regenera el oráculo desde tests/oracle/original.html
+npm run preload                   # regenera la precarga de index.html (tras añadir un módulo o un nivel)
 ```
 
 **Diseño de niveles** (equilibrar con datos antes de tocar un campo o un puzle):

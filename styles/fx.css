@@ -93,9 +93,7 @@
 .mBallMenu { animation: ballBob 2.6s ease-in-out infinite; }
 @keyframes ballBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-/* transición corta entre pantallas (se dispara al pasar de display:none a visible) */
-#menuScreen .mContent, #gameScreen, #editorScreen, #storyScreen { animation: screenIn .3s ease-out; }
-@keyframes screenIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* (la transición entre pantallas la pone showScreen en src/ui/screens.js) */
 
 /* editor: flash al colocar/borrar */
 .cell.edFlash { animation: edFlash .38s ease-out; z-index: 2; }
@@ -188,8 +186,6 @@
 .piece.sunk .cardOnCell { filter: saturate(.9); }
 .piece.sunk::after { background: var(--sand); box-shadow: inset 0 2px 0 var(--sand-hi); border-radius: 50% 50% 40% 40%; }
 #boardFlash { background: rgba(241,241,220,.85); }
-#menuScreen .mContent, #gameScreen, #editorScreen, #storyScreen { animation: screenIn .3s var(--ease-out); }
-@keyframes screenIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .cell.edFlash { animation: edFlashSoft .35s var(--ease-out); }
 @keyframes edFlashSoft { from { box-shadow: inset 0 0 0 3px var(--accent); } to { box-shadow: inset 0 0 0 0 transparent; } }
 .trailDot { width: 8px; height: 8px; margin: -4px 0 0 -4px; box-shadow: 0 1.2px 3.6px var(--shadow); }

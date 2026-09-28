@@ -431,23 +431,24 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   const panels = [...track.children], to = panels.find(p => p.dataset.panel === tab);
   const from = panels.find(p => !p.classList.contains('off') && p !== to);
   const seq = ++tabSeq;
-  panels.forEach(p => p.getAnimations().forEach(a => a.cancel()));
+  panels.forEach(p => { (p._anims || []).forEach(a => a.cancel()); p._anims = []; }); // (las nuestras: getAnimations() obligaría a recalcular estilos)
   const show = () => panels.forEach(p => p.classList.toggle('off', p !== to));
   if (instant || REDUCED || !from || !to.animate) { show(); return; }
   sfx('select');
-  const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-26 * dir}px)` }],
-    { duration: 150, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-20 * dir}px)` }],
+    { duration: 110, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  from._anims.push(out);
   out.onfinish = () => {
     if (seq !== tabSeq) return;
     show();
     out.cancel();
     if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
-    to.animate([{ opacity: 0, transform: `translateX(${30 * dir}px)` }, { opacity: 1, transform: 'none' }],
-      { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    // las tarjetas llegan escalonadas (sutil)
-    const items = to.querySelectorAll(':scope > *, :scope .deckCard, :scope .chCard, :scope .lvlCard');
-    [...items].slice(0, 14).forEach((el, k) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
-      { duration: 320, delay: 40 + k * 28, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+    to._anims.push(to.animate([{ opacity: 0, transform: `translateX(${24 * dir}px)` }, { opacity: 1, transform: 'none' }],
+      { duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)' }));
+    // las primeras tarjetas llegan escalonadas (sutil y corto: lo de abajo ya está en su sitio)
+    const items = to.querySelectorAll(':scope > *, :scope .deckCard, :scope .chCard');
+    [...items].slice(0, 6).forEach((el, k) => to._anims.push(el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 220, delay: 20 + k * 20, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' })));
   };
 }
 

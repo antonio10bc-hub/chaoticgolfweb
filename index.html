@@ -24,8 +24,129 @@
 <link rel="stylesheet" href="styles/phone.css">
 <script src="src/boot-watch.js" defer></script>
 <script type="module" src="src/main.js"></script>
+<!-- precarga (npm run preload) -->
+<link rel="modulepreload" href="src/art.js">
+<link rel="modulepreload" href="src/audio/sfx.js">
+<link rel="modulepreload" href="src/content/levels/index.js">
+<link rel="modulepreload" href="src/fx/effects.js">
+<link rel="modulepreload" href="src/i18n/index.js">
+<link rel="modulepreload" href="src/ui/app.js">
+<link rel="modulepreload" href="src/ui/assist.js">
+<link rel="modulepreload" href="src/ui/back.js">
+<link rel="modulepreload" href="src/ui/bake.js">
+<link rel="modulepreload" href="src/ui/board-zoom.js">
+<link rel="modulepreload" href="src/ui/board.js">
+<link rel="modulepreload" href="src/ui/card-tip.js">
+<link rel="modulepreload" href="src/ui/controller.js">
+<link rel="modulepreload" href="src/ui/dom.js">
+<link rel="modulepreload" href="src/ui/editor.js">
+<link rel="modulepreload" href="src/ui/hands.js">
+<link rel="modulepreload" href="src/ui/hotseat.js">
+<link rel="modulepreload" href="src/ui/hud.js">
+<link rel="modulepreload" href="src/ui/lab.js">
+<link rel="modulepreload" href="src/ui/link-tabs.js">
+<link rel="modulepreload" href="src/ui/my-levels.js">
+<link rel="modulepreload" href="src/ui/pause.js">
+<link rel="modulepreload" href="src/ui/prefs.js">
+<link rel="modulepreload" href="src/ui/records.js">
+<link rel="modulepreload" href="src/ui/rules.js">
+<link rel="modulepreload" href="src/ui/save.js">
+<link rel="modulepreload" href="src/ui/screen-modes.js">
+<link rel="modulepreload" href="src/ui/screen-pve.js">
+<link rel="modulepreload" href="src/ui/screen-story.js">
+<link rel="modulepreload" href="src/ui/screens.js">
+<link rel="modulepreload" href="src/ui/settings.js">
+<link rel="modulepreload" href="src/ui/sound-panel.js">
+<link rel="modulepreload" href="src/ui/tutorial.js">
+<link rel="modulepreload" href="src/ui/win.js">
+<link rel="modulepreload" href="src/ai/bot.js">
+<link rel="modulepreload" href="src/content/cards/index.js">
+<link rel="modulepreload" href="src/content/challenges.js">
+<link rel="modulepreload" href="src/content/decks.js">
+<link rel="modulepreload" href="src/content/levels/generate.js">
+<link rel="modulepreload" href="src/content/levels/share.js">
+<link rel="modulepreload" href="src/content/tiles/index.js">
+<link rel="modulepreload" href="src/engine/game.js">
+<link rel="modulepreload" href="src/engine/rng.js">
+<link rel="modulepreload" href="src/fx/juice.js">
+<link rel="modulepreload" href="src/fx/particles.js">
+<link rel="modulepreload" href="src/i18n/en.js">
+<link rel="modulepreload" href="src/i18n/es.js">
+<link rel="modulepreload" href="src/storage.js">
+<link rel="modulepreload" href="src/ui/achievements.js">
+<link rel="modulepreload" href="src/ui/ai-driver.js">
+<link rel="modulepreload" href="src/ui/animations.js">
+<link rel="modulepreload" href="src/ui/bot-react.js">
+<link rel="modulepreload" href="src/ui/card-art.js">
+<link rel="modulepreload" href="src/ui/deck-intro.js">
+<link rel="modulepreload" href="src/ui/device.js">
+<link rel="modulepreload" href="src/ui/dialog.js">
+<link rel="modulepreload" href="src/ui/geometry.js">
+<link rel="modulepreload" href="src/ui/menu-ball.js">
+<link rel="modulepreload" href="src/ui/mode-intro.js">
+<link rel="modulepreload" href="src/ui/persona.js">
+<link rel="modulepreload" href="src/ui/players.js">
+<link rel="modulepreload" href="src/ui/preview.js">
+<link rel="modulepreload" href="src/ui/profile.js">
+<link rel="modulepreload" href="src/ui/reasons.js">
+<link rel="modulepreload" href="src/ui/resume.js">
+<link rel="modulepreload" href="src/ui/share-play.js">
+<link rel="modulepreload" href="src/ui/stats-charts.js">
+<link rel="modulepreload" href="src/ui/wake.js">
+<link rel="modulepreload" href="src/ui/why-lost.js">
+<link rel="modulepreload" href="src/ai/autoplay.js">
+<link rel="modulepreload" href="src/content/cards/dedo.js">
+<link rel="modulepreload" href="src/content/cards/hoyo.js">
+<link rel="modulepreload" href="src/content/cards/no.js">
+<link rel="modulepreload" href="src/content/cards/palo-reactivo.js">
+<link rel="modulepreload" href="src/content/cards/palo.js">
+<link rel="modulepreload" href="src/content/cards/place-tile.js">
+<link rel="modulepreload" href="src/content/tiles/block.js">
+<link rel="modulepreload" href="src/content/tiles/bunker.js">
+<link rel="modulepreload" href="src/content/tiles/corner.js">
+<link rel="modulepreload" href="src/content/tiles/lake.js">
+<link rel="modulepreload" href="src/content/tiles/launcher.js">
+<link rel="modulepreload" href="src/content/tiles/portal.js">
+<link rel="modulepreload" href="src/content/tiles/river.js">
+<link rel="modulepreload" href="src/content/tiles/tunnel.js">
+<link rel="modulepreload" href="src/content/tiles/wood.js">
+<link rel="preload" href="src/content/levels/story/index.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/01.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/02.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/03.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/04.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/05.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/06.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/07.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/story/08.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/index.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p01.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p02.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p03.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p04.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p05.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p06.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p07.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p08.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p09.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p10.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p11.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p12.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p13.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p14.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p15.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p16.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p17.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p18.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p19.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p20.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p21.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p22.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p23.json" as="fetch" crossorigin>
+<link rel="preload" href="src/content/levels/puzzles/p24.json" as="fetch" crossorigin>
+<!-- /precarga -->
 </head>
-<body class="loading">
+<body class="loading menuIntro">
 <noscript><p style="padding:20px;color:#fff">Chaotic Golf necesita JavaScript.</p></noscript>
 
 <svg id="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -42,6 +163,8 @@
       <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
+    <!-- el mismo grano ya pintado (src/ui/bake.js pone la imagen al arrancar y la ilustración deja el filtro) -->
+    <pattern id="grainP" width="180" height="180" patternUnits="userSpaceOnUse"><image id="grainImg" width="180" height="180"/></pattern>
     <clipPath id="greenClip"><path d="M548 128c126-18 262 58 290 186 26 122-54 256-190 286-150 34-296-40-318-178-20-128 78-276 218-294z"/></clipPath>
   </defs>
 
@@ -85,7 +208,7 @@
     <path d="M636 264 V150" stroke="#F1F1DC" stroke-width="6" stroke-linecap="round"/>
     <path d="M639 152 L690 170 L639 190 Z" fill="#E8873A"/>
     <!-- grano -->
-    <rect width="1000" height="700" filter="url(#grainF)" opacity=".07"/>
+    <rect id="aerialGrain" width="1000" height="700" filter="url(#grainF)" opacity=".07"/>
   </symbol>
 
   <!-- iconos de línea fina (24×24, trazo currentColor) -->
@@ -246,6 +369,8 @@
 <div id="storyTip" role="status" aria-live="polite"></div>
 <div id="game">
   <div id="gameDecor" aria-hidden="true">
+    <!-- oleaje del lago: una capa que se desliza (se mueve sin repintar la pantalla) -->
+    <div class="dWaves"></div>
     <!-- escena Ultimate: manchas de color iridiscente que flotan y un destello que cruza -->
     <div class="dIri a"></div><div class="dIri b"></div><div class="dIri c"></div><div class="dIri d"></div><div class="dIriSweep"></div>
     <!-- escena de lago (baraja de agua): nenúfares, juncos, piedras y ondas -->
