@@ -14,6 +14,7 @@ import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
+import { Game } from '../engine/game.js';
 import { aiStart, aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
@@ -65,7 +66,7 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
   const made = createVsGame({ humans: 1, ...cfg }, { extra, rivals, seed });
   startGame(made.game, 'pve', { variant, run });
   dressVsGame(made);
-  if (ch) app.game.S.tiles.push(...challengeTiles(ch, app.game.S, made.game.seed ?? 1)); // su campo diseñado (con la variación de esta partida)
+  if (ch) app.game.S.tiles.push(...Game.designed(challengeTiles(ch, app.game.S, made.game.seed ?? 1))); // su campo diseñado (con la variación de esta partida; su agua no cuenta para el máximo)
   updateMenuBtn();
   musicScene('game', { newGame: true });
   showScreen('game');

@@ -18,10 +18,10 @@ import { loadProfile, saveProfile } from './profile.js';
 export const GROUPS = CH_GROUPS; // (calentamiento, intermedio, experto: los tres niveles de corona y puzle)
 export const SKINS = [
   { id: 'fire', kind: 'streak', at: [7, 30, 365], accent: '#E8733A' },
-  { id: 'classic', kind: 'deck', deck: 'classic', at: [3, 15, 50], accent: '#C9962E' },
-  { id: 'water', kind: 'deck', deck: 'water', at: [3, 15, 50], accent: '#2F9CC4' },
-  { id: 'wood', kind: 'deck', deck: 'minigolf', at: [3, 15, 50], accent: '#A8743F' },
-  { id: 'prism', kind: 'deck', deck: 'ultimate', at: [3, 15, 50], accent: '#8E6BE0' },
+  { id: 'classic', kind: 'deck', deck: 'classic', at: [10, 50, 100], accent: '#C9962E' },
+  { id: 'water', kind: 'deck', deck: 'water', at: [10, 50, 100], accent: '#2F9CC4' },
+  { id: 'wood', kind: 'deck', deck: 'minigolf', at: [10, 50, 100], accent: '#A8743F' },
+  { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
   { id: 'puzzle', kind: 'groups', of: 'puzzles', accent: '#2E8A80' },
@@ -71,6 +71,8 @@ export function equipSkin(sk) { const p = loadProfile(); p.skin = sk ? { id: sk.
 function diff(map, levels) { return SKINS.filter(s => (levels[s.id] || 0) > (map?.[s.id] || 0)).map(s => ({ id: s.id, lvl: levels[s.id] })); }
 export const unseenSkins = (levels = unlockedLevels()) => diff(loadProfile().skinSeen, levels);
 export function markSkinsSeen(levels = unlockedLevels()) { const p = loadProfile(); p.skinSeen = { ...levels }; saveProfile(p); }
+// una sola (al tocar su nivel nuevo en "Tu pelota"): deja de ser nueva
+export function markSkinSeen(id, lvl) { const p = loadProfile(); p.skinSeen = { ...p.skinSeen, [id]: Math.max(lvl, p.skinSeen?.[id] || 0) }; saveProfile(p); }
 // lo ganado desde el último aviso (y se apunta como avisado)
 export function takeNewSkins(levels = unlockedLevels()) {
   const p = loadProfile(), out = diff(p.skinAnn, levels);

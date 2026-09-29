@@ -143,7 +143,11 @@ html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation
    ========================================================= */
 #profileBtn { display: none; position: fixed; bottom: 14px; left: 98px; z-index: 65; width: 36px; height: 36px; padding: 0;
   --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
-body[data-screen="menu"] #profileBtn { display: inline-flex; }
+body[data-screen="menu"] #profileBtn, body[data-screen="modes"] #profileBtn { display: inline-flex; }
+/* en Modos de juego, el creador de niveles (Juegos especiales) va detrás, al final de la fila */
+body[data-screen="modes"] .mBottom { left: 140px; }
+html.phone body[data-screen="modes"] .mBottom { left: calc(140px + env(safe-area-inset-left, 0px)); }
+@media (max-width: 820px) { body[data-screen="modes"] .mBottom { left: 140px; } }
 #profileBtn .pfDot { position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: #E0443A; box-shadow: 0 0 0 2px var(--cream); }
 #profileBtn .pfDot[hidden] { display: none; }
 /* aviso para quien aún no ha abierto "Tu pelota": el punto late con una onda y la camiseta se balancea cada pocos segundos */
@@ -153,11 +157,7 @@ body[data-screen="menu"] #profileBtn { display: inline-flex; }
 @keyframes pfPing { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
 html.reduceMotion #profileBtn.cta .i, html.reduceMotion #profileBtn.cta .pfDot::after { animation: none; }
 html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-@media (orientation: landscape) and (max-height: 540px) {
-  html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(100px + env(safe-area-inset-right, 0px)); }
-  html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
-  html.phone #profileBtn { top: 12px; bottom: auto; left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); }
-}
+/* (móvil en horizontal: la fila de botones redondos va arriba a la derecha, en styles/phone.css) */
 
 #profileOverlay { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 16px;
   background: rgba(20,40,20,.5); backdrop-filter: blur(6px); }
@@ -357,3 +357,9 @@ html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bott
   .wbStage .wbFlag { right: 16px; bottom: 12px; width: 18px; height: 36px; }
 }
 html.reduceMotion .wbStage .skBall, html.reduceMotion .wbStage::after { animation: none; }
+
+/* lo nuevo en "Tu pelota": punto rojo que late (como el del botón del menú) en el nivel recién ganado y, al verlo, en "Ponérmela" */
+.pfNewDot { position: absolute; top: -4px; right: -4px; z-index: 2; width: 10px; height: 10px; border-radius: 50%; background: #E0443A; box-shadow: 0 0 0 2px var(--cream); pointer-events: none; }
+.pfNewDot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #E0443A; animation: pfPing 1.8s ease-out infinite; }
+.pfLv, .pfActs .btn-primary { position: relative; overflow: visible; }
+html.reduceMotion .pfNewDot::after { animation: none; }

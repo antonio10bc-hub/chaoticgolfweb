@@ -168,6 +168,10 @@ export class Game {
     return g;
   }
 
+  // piezas de agua del diseño (nivel, puzle, desafío, reto diario, contrarreloj): marcadas como fijas (canPlaceTile).
+  // Solo el agua: el resto de piezas se queda tal cual (el oráculo de reglas se grabó sin agua)
+  static designed(tiles = []) { return tiles.map(t => isWater(t) ? { ...t, fixed: true } : t); }
+
   // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
   // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
   // hueco del mazo: las copias no cambian). Con el RNG de la partida: la misma semilla, el mismo reparto
@@ -191,7 +195,7 @@ export class Game {
       par: L.parCells.length ? Math.max(...L.parCells.map(p => p.n)) : 0,
       nPlayers: 1,
       hole: { x: L.hole.x, y: L.hole.y, initX: L.hole.x, initY: L.hole.y },
-      parCells: L.parCells, tiles: L.tiles,
+      parCells: L.parCells, tiles: Game.designed(L.tiles),
       balls: [{ player: 0, x: L.ball.x, y: L.ball.y, spawnX: L.ball.x, spawnY: L.ball.y, holed: false }],
       hands: [[]],
     }), opts);
@@ -289,18 +293,20 @@ export class Game {
   /* ---- agua (baraja de agua): dónde se puede colocar ---- */
   // río: una sola columna; la primera casilla donde sea, las demás alargan por arriba o por abajo.
   // lago: la primera donde sea, las demás pegadas por un lado a una casilla de lago.
+  // Solo cuentan los que ponen los jugadores: el agua que trae el nivel o el desafío (fixed) es parte del campo,
+  // no gasta el máximo de 5 ni obliga a alargarla (Game.designed la marca al montar la partida)
   canPlaceTile(type, x, y) {
     if (!this.cellFree(x, y)) return false;
     const def = TILES[type];
     if (def?.river) {
-      const r = this.S.tiles.filter(isRiver);
+      const r = this.S.tiles.filter(t => isRiver(t) && !t.fixed);
       if (r.length >= def.maxOnBoard) return false;
       if (!r.length) return true;
       const ys = r.map(t => t.y);
       return x === r[0].x && (y === Math.min(...ys) - 1 || y === Math.max(...ys) + 1);
     }
     if (def?.lake) {
-      const l = this.S.tiles.filter(isLake);
+      const l = this.S.tiles.filter(t => isLake(t) && !t.fixed);
       if (l.length >= def.maxOnBoard) return false;
       return !l.length || l.some(t => Math.abs(t.x - x) + Math.abs(t.y - y) === 1);
     }

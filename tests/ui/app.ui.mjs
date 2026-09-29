@@ -19,6 +19,7 @@ let server, browser, page, errors = [];
 
 // página limpia (sin nada guardado); `seed` rellena localStorage antes de arrancar
 async function fresh(seed = {}) {
+  await page.bringToFront();
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
@@ -36,7 +37,10 @@ const confirmIfAsked = async () => { await sleep(250); if (await page.$('#dialog
 before(async () => {
   if (!CHROME) return;
   server = await serve(PORT);
-  browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
+  // (sin frenar las pestañas en segundo plano: los tests abren y cierran páginas de móvil y la principal se quedaba
+  // atrás, con los temporizadores frenados: los bots tardaban tanto que alguna espera se agotaba)
+  browser = await puppeteer.launch({ executablePath: CHROME, headless: true,
+    args: ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
   page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 860 });
   await page.emulateTimezone('Europe/Madrid');
@@ -568,7 +572,7 @@ it('final de partida: cabe sin desplazarse (móvil pequeño y ordenador bajo), t
 
 it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y se ve en la partida rápida y en el tablero', async () => {
   await fresh({ chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {}, daily: { days: {}, streak: 0, bestStreak: 9 },
-    rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: { classic: { p: 5, w: 4 } }, chStats: {} } });
+    rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: { classic: { p: 14, w: 12 } }, chStats: {} } });
   assert.equal(await app(() => getComputedStyle(document.getElementById('profileBtn')).display !== 'none'), true, 'botón en el menú');
   assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
   await click('#profileBtn'); await sleep(400);
@@ -578,9 +582,18 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
   await click('[data-pfv="fire:2"]'); await sleep(200);
   assert.equal(await app(() => !!document.querySelector('[data-pf="equip"]')), false);
+  // el punto rojo guía: en el nivel recién ganado de cada una y, al tocarlo, en "Ponérmela"
+  assert.deepEqual(await app(() => [...document.querySelectorAll('.pfLv.fresh')].map(b => b.dataset.pfv).sort()), ['classic:1', 'fire:1']);
   await click('[data-pfv="fire:1"]'); await sleep(200);
+  assert.ok(await app(() => document.querySelector('[data-pf="equip"] .pfNewDot')), 'punto en "Ponérmela"');
+  assert.equal(await app(() => !!document.querySelector('[data-pfv="fire:1"].fresh')), false, 'visto: sin punto en su nivel');
   await click('[data-pf="equip"]'); await sleep(300);
   assert.deepEqual(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_profile')).skin), { id: 'fire', lvl: 1 });
+  assert.equal(await app(() => !!document.querySelector('.pfNewDot')), true, 'la clásica sigue nueva');
+  await click('[data-pf="close"]'); await sleep(200);
+  assert.equal(await app(() => document.querySelector('#profileBtn .pfDot').hidden), false, 'queda una por ver: el punto sigue');
+  await click('#profileBtn'); await sleep(300);
+  await click('[data-pfcard="classic"]'); await sleep(200);
   await click('[data-pf="close"]'); await sleep(200);
   assert.equal(await app(() => document.querySelector('#profileBtn .pfDot').hidden), true, 'vistas: sin punto');
   // partida rápida: la pelota puesta, elegida bajo el color; y en el tablero, tu pelota la lleva

@@ -22,7 +22,7 @@ test('racha: el nivel es la mejor racha alcanzada (7 · 30 · 365) y lo que falt
 });
 
 test('barajas: victorias con cada una (minigolf y Ultimate por su id) y series de contrarreloj', () => {
-  const R = rec({ decks: { classic: { w: 16 }, minigolf: { w: 3 }, ultimate: { w: 50 } }, rush: { done: 5 } });
+  const R = rec({ decks: { classic: { w: 50 }, minigolf: { w: 10 }, ultimate: { w: 100 } }, rush: { done: 5 } });
   assert.equal(skinProgress(skinById('classic'), R, PUZ).lvl, 2);
   assert.equal(skinProgress(skinById('water'), R, PUZ).lvl, 0);
   assert.equal(skinProgress(skinById('wood'), R, PUZ).lvl, 1);

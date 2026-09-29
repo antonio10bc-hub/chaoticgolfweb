@@ -5,7 +5,7 @@
 import { $, esc } from './dom.js';
 import { t } from '../i18n/index.js';
 import { PLAYER_COLORS } from '../engine/game.js';
-import { SKINS, GROUPS, ROMAN, skinById, skinProgress, unlockedLevels, equippedSkin, equipSkin, unseenSkins, markSkinsSeen, skinBall } from './skins.js';
+import { SKINS, GROUPS, ROMAN, skinById, skinProgress, unlockedLevels, equippedSkin, equipSkin, unseenSkins, markSkinSeen, skinBall } from './skins.js';
 import { loadRecords } from './records.js';
 import { loadProfile, saveProfile } from './profile.js';
 import { sfx } from '../audio/sfx.js';
@@ -14,7 +14,8 @@ import { track } from './analytics.js';
 
 const COLORS = [...PLAYER_COLORS, '#e8833a']; // (los mismos que en Partida rápida)
 export const myColor = () => COLORS[loadProfile().color % COLORS.length];
-let view = null, lastFocus = null; // pelota a la vista en grande: { id, lvl } o null (la normal)
+// view: pelota a la vista en grande ({ id, lvl } o null, la normal) · wearCta: la recién ganada a la vista ("Ponérmela" lleva el punto rojo)
+let view = null, lastFocus = null, wearCta = null;
 
 // lo que pide cada nivel ("7 días", "15 victorias", "Intermedio")
 export function goalLabel(s, lvl) {
@@ -26,6 +27,7 @@ const skinName = sk => sk ? `${t('skins.' + sk.id + '.name')} ${ROMAN[sk.lvl]}` 
 export { skinName };
 
 const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
+const NEW_DOT = '<span class="pfNewDot" aria-hidden="true"></span>'; // (el punto rojo de lo nuevo, como en el botón del menú)
 const FLAG = '<svg class="pfFlag" viewBox="0 0 30 58" aria-hidden="true"><path d="M5 56V5" stroke="#F1F1DC" stroke-width="2.6" stroke-linecap="round"/><path d="M6 6 27 13 6 20Z" fill="#E8873A"/><ellipse cx="5" cy="56" rx="5" ry="2.2" fill="#242424"/></svg>';
 
 function heroHTML(levels, eq, pop) {
@@ -40,7 +42,8 @@ function heroHTML(levels, eq, pop) {
     if (!got) sub += `<br>${esc(t('profile.missing', { n: s.kind === 'groups' ? `${p.value}/${p.target}` : `${p.value}/${s.at[view.lvl - 1]}` }))}`;
   }
   if (worn) acts = `<span class="pfWorn">${icon('i-check')}${esc(t('profile.worn'))}</span>`;
-  else if (got) acts = `<button class="btn-primary btn-sm" data-pf="equip">${esc(t(s ? 'profile.equip' : 'profile.useBasic'))}</button>`;
+  else if (got) acts = `<button class="btn-primary btn-sm" data-pf="equip">${esc(t(s ? 'profile.equip' : 'profile.useBasic'))}` +
+    `${s && wearCta && wearCta.id === s.id && wearCta.lvl === view.lvl ? NEW_DOT : ''}</button>`;
   else acts = `<span class="pfLockNote">${icon('i-lock')}${esc(t('profile.locked'))}</span>`;
   const colors = COLORS.map((c, i) => `<button class="pveColor${loadProfile().color % COLORS.length === i ? ' sel' : ''}" style="background:${c}" data-pfcolor="${i}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}"></button>`).join('');
   const burst = pop === 'equip' ? `<span class="pfBurst">${Array.from({ length: 10 }, (_, i) => `<i style="--a:${i * 36}deg;--d:${(i % 2) * .05}s"></i>`).join('')}</span>` : '';
@@ -56,7 +59,8 @@ function cardHTML(s, i, R, levels, eq, unseen) {
   const worn = eq && eq.id === s.id, sel = view && view.id === s.id;
   const lv = [1, 2, 3].map(l => {
     const cls = (l <= have ? ' got' : l === have + 1 ? ' next' : '') + (sel && view.lvl === l ? ' cur' : '');
-    return `<button class="pfLv${cls}" data-pfv="${s.id}:${l}" aria-label="${esc(skinName({ id: s.id, lvl: l }) + ' · ' + goalLabel(s, l))}">${ROMAN[l]}<small>${esc(goalLabel(s, l))}</small></button>`;
+    const fresh = unseen.has(s.id) && l === have; // (el nivel recién ganado: punto rojo hasta tocarlo)
+    return `<button class="pfLv${cls}${fresh ? ' fresh' : ''}" data-pfv="${s.id}:${l}" aria-label="${esc(skinName({ id: s.id, lvl: l }) + ' · ' + goalLabel(s, l))}">${ROMAN[l]}<small>${esc(goalLabel(s, l))}</small>${fresh ? NEW_DOT : ''}</button>`;
   }).join('');
   const bar = p.target == null
     ? `<div class="pfBar done">${icon('i-check')}${esc(t('profile.complete'))}</div>`
@@ -97,7 +101,7 @@ export function openMyBall() {
   paint('pop', true);
   $('profileOverlay').classList.add('visible');
   $('profBox').querySelector('.setClose')?.focus({ preventScroll: true });
-  markSkinsSeen(); // (las "¡Nueva!" se ven esta vez)
+  wearCta = null;
   const pf = loadProfile(); if (pf.myBallOpened !== MYBALL_CTA) { pf.myBallOpened = MYBALL_CTA; saveProfile(pf); } // (ya la has visto: sin aviso)
   paintProfileDot();
   track('perfil', { accion: 'abrir' });
@@ -107,6 +111,7 @@ export function openMyBall() {
 export function closeMyBall() {
   $('profileOverlay').classList.remove('visible');
   document.dispatchEvent(new CustomEvent('myball:close')); // (Partida rápida repinta tu pelota)
+  paintProfileDot(); // (lo que queda por ver: el punto sigue en el botón)
   lastFocus?.focus?.({ preventScroll: true });
 }
 export const myBallOpen = () => $('profileOverlay').classList.contains('visible');
@@ -153,7 +158,7 @@ export function bindMyBall() {
       return;
     }
     if (a?.dataset.pf === 'equip') {
-      equipSkin(view);
+      equipSkin(view); wearCta = null;
       track('pelota', { accion: 'poner', skin: view ? view.id : 'normal', nivel: view?.lvl || 0, desde: 'perfil' });
       sfx(view ? 'win' : 'select');
       paint('equip');
@@ -167,6 +172,10 @@ export function bindMyBall() {
       const lvl = v ? +v.dataset.pfv.split(':')[1] : Math.max(1, skinProgress(s).lvl);
       if (view && view.id === s.id && view.lvl === lvl && !v) { view = null; } // (tocar otra vez la tarjeta: la normal)
       else view = { id: s.id, lvl };
+      // el nivel recién ganado: deja de ser nuevo y el punto rojo pasa a "Ponérmela"
+      const have = skinProgress(s).lvl;
+      if (view && lvl === have && unseenSkins().some(x => x.id === s.id)) { markSkinSeen(s.id, have); wearCta = { id: s.id, lvl }; }
+      else if (!view || wearCta?.id !== view.id || wearCta?.lvl !== view.lvl) wearCta = null;
       sfx('select');
       paint('pop');
     }

@@ -20,7 +20,7 @@ const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 function make(ch, seed) {
   const { cfg, extra } = challengeCfg(ch);
   const g = Game.pve({ players: cfg.opps + 1, humans: 1, aiLevel: cfg.diff, ...extra, humanColor: PLAYER_COLORS[0] }, { seed });
-  g.S.tiles.push(...challengeTiles(ch, g.S, seed));
+  g.S.tiles.push(...Game.designed(challengeTiles(ch, g.S, seed))); // (como en el juego: su agua no cuenta para el máximo)
   return g;
 }
 function draw(S) {

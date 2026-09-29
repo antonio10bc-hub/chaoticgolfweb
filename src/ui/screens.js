@@ -82,7 +82,8 @@ export function showScreen(s) {
   if (s === 'game' && app.game) { resetZoom(); fitBoard(); render(); } // recalcular tamaños al hacerse visible
   paintRushTimer();   // la cuenta atrás del contrarreloj (y el tinte rojo) solo en su partida
   if (s === 'editor' && ED.level) { fitEditorBoard(); edRender(); }
-  if (s === 'menu') { renderDailyCard(); paintStoryBtn(); paintProfileDot(); }
+  if (s === 'menu') { renderDailyCard(); paintStoryBtn(); }
+  if (s === 'menu' || s === 'modes') paintProfileDot(); // (el botón de tu pelota, en el menú y en Modos de juego)
   syncWakeLock();     // en partida, la pantalla no se apaga (móvil)
   historyScreen(s);   // botón / gesto de atrás del sistema
   if (!usingKeyboard) return; // con ratón no se mueve el foco (evita anillos de foco inesperados)

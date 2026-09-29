@@ -265,19 +265,20 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las cinco cifras en una fila y, debajo, el recorrido y el resumen lado a lado (en el móvil estrecho, uno bajo otro;
   con poca altura, dos columnas con el mensaje y los botones a la izquierda). "¿Por qué he perdido?" se abre en el
   sitio del resumen ("Ver el resumen" vuelve), no debajo. `npm run test:ui` lo comprueba.
-- **Tu pelota** (botón de la camiseta en el menú, a la derecha de Ajustes; `src/ui/skins.js`, `src/ui/my-ball.js`,
+- **Tu pelota** (botón de la camiseta a la derecha de Ajustes, en el menú y en Modos de juego —en Juegos especiales, el creador de niveles va detrás, al final de la fila—; `src/ui/skins.js`, `src/ui/my-ball.js`,
   `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
   las 8 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días; más llamas, más altas, brasas), **Clásica**, **Agua**, **Madera** y
-  **Prisma** (victorias con cada baraja: 3 · 15 · 50; aro de oro · laurel · destellos, agua dentro · ondas · gotas,
+  **Prisma** (victorias con cada baraja: 10 · 50 · 100; aro de oro · laurel · destellos, agua dentro · ondas · gotas,
   vetas · marco · molino que gira, brillo iridiscente · halo · destellos), **Rayo** (series de contrarreloj completas:
   1 · 5 · 15; cronómetro con estela · esfera de reloj · rayos), **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
   completo (calentamiento · intermedio · experto). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
   un nivel lo enseña en grande (también los que aún no tienes) y los ganados se ponen con un toque. Decoran la pelota sin
   cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 8 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
   rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un
-  nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y el botón del menú lleva un
-  punto rojo hasta que lo ves. Hasta abrir "Tu pelota" por primera vez, el botón pide atención (el punto rojo late y la
+  nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y un punto rojo guía hasta
+  ella: en el botón de la camiseta, dentro en el nivel recién ganado de su tarjeta y, al tocarlo, en "Ponérmela" (se da
+  por vista al tocar su nivel o su tarjeta; el punto del botón sigue mientras quede alguna por ver). Hasta abrir "Tu pelota" por primera vez, el botón pide atención (el punto rojo late y la
   camiseta se balancea cada pocos segundos); `MYBALL_CTA` en `my-ball.js` lo vuelve a enseñar a todo el mundo si se sube. Una pelota nueva = una entrada en `SKINS`, su objetivo en `skinProgress` y su aspecto en
   `parts()` y `skins.css` (todo medido con `--bs`, el diámetro de la bola; solo se anima transform y opacity).
 - **Quién juega y cuál es tu color** (ordenador y móvil): tu bandeja de abajo va teñida suavemente de tu color de bola y,
@@ -295,7 +296,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   la corriente la lleva a través como un paso normal (túnel, esquina, portal; búnker y lanzadera se aplican igual);
   contra un bloque (o la espalda de una esquina) rebota un par de veces y acaba en una casilla libre cercana al azar
   (`riverThrough`, `holeRiverThrough`). La partida tiene fondo de lago (el campo es una isla), la bola
-  flota río abajo y hay chapuzón al caer al lago. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
+  flota río abajo y hay chapuzón al caer al lago. El máximo de 5 ríos y 5 lagos y la regla de colocación cuentan solo los que ponen los jugadores: el agua que trae el nivel, el puzle o el desafío es parte del campo (`fixed`, lo marca `Game.designed` al montar la partida) y no gasta ese máximo. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
 - **Baraja de minigolf** (piezas de madera, `tiles/block|corner|tunnel|launcher.js`; campo 8 columnas más ancho):
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),

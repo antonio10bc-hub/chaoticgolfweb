@@ -139,13 +139,15 @@ test('el hoyo también: el río lo arrastra y del lago vuelve a su casilla inici
 });
 
 test('colocar agua: el río crece en su columna por los extremos; el lago, pegado por un lado; máx. 5', () => {
-  const g = water([{ type: 'river', x: 2, y: 3 }, { type: 'lake', x: 0, y: 1 }]);
+  // (puestas por los jugadores: las del nivel no cuentan, ver "agua del diseño")
+  const placed = tiles => { const g = water([]); g.S.tiles.push(...tiles); return g; };
+  const g = placed([{ type: 'river', x: 2, y: 3 }, { type: 'lake', x: 0, y: 1 }]);
   assert.ok(g.canPlaceTile('river', 2, 2) && g.canPlaceTile('river', 2, 4));
   assert.ok(!g.canPlaceTile('river', 3, 3) && !g.canPlaceTile('river', 2, 5));
   assert.ok(g.canPlaceTile('lake', 1, 1) && g.canPlaceTile('lake', 0, 2));
   assert.ok(!g.canPlaceTile('lake', 1, 2));
   for (const y of [0, 1, 2, 4]) g.S.tiles.push({ type: 'river', x: 3, y });
-  const r = water([0, 1, 2, 3, 4].map(y => ({ type: 'river', x: 2, y })));
+  const r = placed([0, 1, 2, 3, 4].map(y => ({ type: 'river', x: 2, y })));
   assert.equal(r.anyPlaceFor('river'), false);
 });
 
@@ -471,4 +473,20 @@ test('barajas nuevas: con startWith, cada jugador empieza con una carta nueva, s
   // sin startWith, el reparto de siempre
   const cfg = { players: 3, par: 3, cols: 7, rows: 9, humanColor: '#f26d6d' };
   assert.deepEqual(Game.pve({ ...cfg, startWith: undefined }, { seed: 5 }).S.hands, Game.pve(cfg, { seed: 5 }).S.hands);
+});
+
+test('agua del diseño: los ríos y lagos que trae el nivel no cuentan para el máximo de 5 ni obligan a alargarlos', () => {
+  const L = { version: 1, cols: 9, rows: 11, hole: { x: 4, y: 1 }, ball: { x: 4, y: 9 }, parCells: [{ x: 4, y: 2, n: 1 }],
+    tiles: [0, 1, 2, 3, 4].map(y => ({ type: 'river', x: 0, y: y + 3 })).concat([0, 1, 2, 3, 4].map(x => ({ type: 'lake', x: x + 3, y: 10 }))),
+    deckCounts: { palo1: 4 } };
+  const g = Game.fromLevel(L, { seed: 3 }), S = g.S;
+  assert.ok(S.tiles.every(t => t.fixed), 'el agua del nivel, marcada como fija');
+  // con 5 ríos y 5 lagos ya en el campo, se pueden poner más: el primero donde sea, lejos de los del nivel
+  assert.ok(g.canPlaceTile('river', 7, 4) && g.canPlaceTile('lake', 7, 6));
+  // los tuyos siguen su regla: 5 como máximo y el río en una sola columna
+  for (let y = 2; y < 7; y++) { assert.ok(g.canPlaceTile('river', 7, y), 'río ' + y); S.tiles.push({ type: 'river', x: 7, y }); }
+  assert.equal(g.canPlaceTile('river', 7, 7), false, 'ya tienes 5');
+  assert.equal(g.canPlaceTile('river', 6, 5), false, 'mismo río: misma columna');
+  // sin agua en el diseño, todo como siempre
+  assert.equal(Game.designed([{ type: 'bunker', x: 1, y: 1 }])[0].fixed, undefined);
 });
