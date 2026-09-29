@@ -10,6 +10,8 @@ import { choosePlan, discardPlan, chooseReaction, farness } from '../ai/bot.js';
 import { jaqueSaver } from '../ai/autoplay.js';
 import * as ctl from './controller.js';
 import { isBot as botSeat, humansOf } from './players.js';
+import { mulberry32 } from '../engine/rng.js';
+import { seedOf } from '../content/levels/generate.js';
 
 const AI = JUICE.ai;
 let timer = null;
@@ -17,7 +19,15 @@ let turnLock = false;     // un único bucle de turno de IA a la vez
 let gen = 0;              // se incrementa al parar: invalida bucles en curso
 let reactedSeq = -1;      // última jugada ya evaluada para reacciones
 let pendSince = 0;        // watchdog de acciones pendientes huérfanas
-const rand = Math.random;
+const rand = Math.random; // (ritmo: pausas de "pensar")
+// decisiones de los bots: al azar, salvo en el reto diario y el semanal (la misma partida para todo el mundo): ahí
+// el azar sale de la semilla y del momento de la partida, así que con las mismas jugadas los bots juegan igual
+const SHARED = ['daily', 'weekly'];
+function decide(tag, p = -1) {
+  const g = G();
+  if (!SHARED.includes(app.variant) || g?.seed == null) return Math.random;
+  return mulberry32(seedOf(`${g.seed}|${g.S.log.length}|${g.S.turn}|${p}|${tag}`));
+}
 
 const G = () => app.game;
 const S = () => app.game.S;
@@ -93,15 +103,15 @@ export function aiKick() {
     const cands = [];
     for (let p = 0; p < s.nPlayers; p++) {
       if (!isBot(p) || p === app.lastActor) continue; // el autor no se sabotea
-      const r = chooseReaction(G(), p, rand);
+      const r = chooseReaction(G(), p, decide('react', p));
       if (r) cands.push({ p, ...r });
     }
     cands.sort((a, b) => b.gain - a.gain || farness(G(), b.p) - farness(G(), a.p));
     const c = cands[0];
-    if (c && rand() < c.chance) {
+    if (c && decide('chance', c.p)() < c.chance) {
       timer = setTimeout(async () => {
         if (!live(g) || app.paused || S().jaque || S().winner !== null || G().pending || turnLock) { aiKick(); return; }
-        const fresh = chooseReaction(G(), c.p, rand); // el tablero puede haber cambiado
+        const fresh = chooseReaction(G(), c.p, decide('react', c.p)); // el tablero puede haber cambiado
         if (fresh) await runPlan(fresh, g);
         if (live(g)) aiKick();
       }, AI.reactDelayMs + rand() * 500);
@@ -121,7 +131,7 @@ async function takeTurn(g) {
     for (let n = 0; n < 3; n++) {
       await idle();
       if (!live(g) || S().winner !== null || S().turn !== p || G().pending) break;
-      const plan = choosePlan(G(), p, rand);
+      const plan = choosePlan(G(), p, decide('plan', p));
       if (!plan) break;
       await runPlan(plan, g);
       await pwait(AI.betweenMs + rand() * 300);
@@ -151,7 +161,7 @@ async function takeTurn(g) {
 // se deja una ventana de reacción al humano y luego se confirma
 function handleJaque(g) {
   if (app.passFor != null) { timer = setTimeout(aiKick, 400); return; } // esperando a que se pase el dispositivo
-  const saver = jaqueSaver(G(), rand, isBot);
+  const saver = jaqueSaver(G(), decide('save'), isBot);
   if (saver) {
     timer = setTimeout(async () => {
       if (app.paused) return; // al reanudar, aiKick() lo reevalúa

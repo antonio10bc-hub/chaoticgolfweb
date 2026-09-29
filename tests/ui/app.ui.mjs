@@ -662,3 +662,14 @@ it('reto diario: "Compartir" copia imagen y resultado con el enlace (sin hoja de
   await page.goto(URL + '#reto', { waitUntil: 'networkidle0' }); await sleep(1200);
   assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.variant, location.hash]), ['game', 'daily', '']);
 });
+
+it('reto diario: el mismo reparto para todo el mundo, elijas el color que elijas (también el naranja)', async () => {
+  const deal = async color => {
+    await fresh({ chaoticgolf_profile: { color } });
+    await click('#dailyCard'); await sleep(700);
+    return app(() => { const S = window.chaoticGolf.app.game.S; return JSON.stringify([S.hands, S.deck, S.human, S.turn, S.tiles]); });
+  };
+  const red = await deal(0), orange = await deal(6);
+  assert.equal(orange, red);
+  assert.equal(await app(() => { const S = window.chaoticGolf.app.game.S; return S.colorMap[S.human]; }), '#e8833a', 'y con tu color');
+});

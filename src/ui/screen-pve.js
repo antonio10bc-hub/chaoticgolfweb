@@ -142,8 +142,11 @@ export function createVsGame(cfg, { extra = {}, rivals = [], seed } = {}) {
   const sz = deckSize(deckById(cfg.deck), PVE_SIZES[cfg.size] || PVE_SIZES.m); // (minigolf y Ultimate: campo más grande)
   const prof = loadProfile();
   const people = cfg.humans > 1 ? prof.people.slice(0, cfg.humans) : [{ name: prof.name, color: cfg.color ?? prof.color }];
+  // el motor recibe siempre el mismo color: el que elijas se aplica después (dressVsGame, solo aspecto). Si no, el
+  // barajado de colores gastaba más o menos azar según tu color (el naranja no está entre los de los bots) y el reparto
+  // del reto diario no era el mismo para todo el mundo
   const game = Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, ...extra,
-    humanColor: PVE_COLORS[people[0].color % PVE_COLORS.length] }, seed != null ? { seed } : {});
+    humanColor: PLAYER_COLORS[0] }, seed != null ? { seed } : {});
   return { game, people, rivals };
 }
 // tras startGame: aplica caras, nombres y colores (necesita app.mode = 'pve' ya puesto)
