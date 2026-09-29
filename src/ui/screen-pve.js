@@ -182,6 +182,7 @@ export function startPveMatch() {
   app.lastPveCfg = { ...cfg };
   const dk = deckById(cfg.deck);
   const extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
+  if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)
   const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra });
   startGame(made.game, 'pve');
   dressVsGame(made);

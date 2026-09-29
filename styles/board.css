@@ -184,10 +184,12 @@ html.reduceMotion .riverFlow, html.reduceMotion .lakeShine { animation: none; }
 
 /* corriente del río: chevrones finos en un patrón continuo en coordenadas del tablero (cada casilla
    lo desplaza por su fila), así los tramos seguidos, y los puentes sobre la junta, encajan sin cortes.
-   Un solo reloj para todo el tablero (--flow, animado en #board): los tramos colocados más tarde
-   van en fase con los demás */
+   El reloj (--flow) se anima en cada casilla de río, no en todo el tablero: animar una variable heredada en
+   #board obligaba a recalcular las 247 casillas de Ultimate en cada fotograma (la partida iba a tirones).
+   Avanza a saltos de 1 px (igual de fluido) y todas van en fase: cada casilla nueva empieza con un retraso
+   negativo según el reloj de la página (--wd, board.js), así un tramo puesto más tarde encaja con los demás */
 @property --flow { syntax: '<length>'; inherits: true; initial-value: 0px; }
-:is(#board, #edBoard):has(.cell.river) { animation: riverClock 1.6s linear infinite; }
+:is(#board, #edBoard) .cell.river { animation: riverClock 1.6s steps(28) infinite; animation-delay: var(--wd, 0s); }
 @keyframes riverClock { to { --flow: 28px; } }
 :is(#board, #edBoard) .cell.river {
   --step: calc(var(--cell-h) + 3px); --off: calc(var(--row) * var(--step) * -1 + var(--flow));
@@ -207,16 +209,15 @@ html.reduceMotion .riverFlow, html.reduceMotion .lakeShine { animation: none; }
 :is(#board, #edBoard) .cell.river.rEnd > .tile-river { background: radial-gradient(ellipse 70% 24% at 50% 100%, rgba(255,255,255,.5), transparent 70%); }
 :is(#board, #edBoard) .cell.river.rSrc.rEnd > .tile-river { background: radial-gradient(ellipse 60% 26% at 50% 0, rgba(255,255,255,.4), transparent 70%), radial-gradient(ellipse 70% 24% at 50% 100%, rgba(255,255,255,.5), transparent 70%); }
 :is(#board, #edBoard) .cell.river > .tile-river { position: absolute; inset: 0; width: auto; height: auto; border-radius: inherit; }
-@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard):has(.cell.river) { animation: none; } }
-html.reduceMotion :is(#board, #edBoard):has(.cell.river) { animation: none; }
+@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard) .cell.river { animation: none; } }
+html.reduceMotion :is(#board, #edBoard) .cell.river { animation: none; }
 
 /* ---------- lago continuo ----------
    El agua es un solo patrón en coordenadas del tablero (--col/--row): reflejos suaves y ondas que
    derivan despacio con un reloj común (--lflow). Borde oscuro solo en la orilla exterior (lados sin
    vecina de lago) y los bloques 2×2 rellenan también la esquina de la junta (wSE). */
 @property --lflow { syntax: '<length>'; inherits: true; initial-value: 0px; }
-:is(#board, #edBoard):has(.cell.lake) { animation: lakeClock 36s linear infinite; }
-:is(#board, #edBoard):has(.cell.lake):has(.cell.river) { animation: riverClock 1.6s linear infinite, lakeClock 36s linear infinite; }
+:is(#board, #edBoard) .cell.lake { animation: lakeClock 36s steps(90) infinite; animation-delay: var(--wd, 0s); } /* (en cada casilla: ver el río) */
 @keyframes lakeClock { to { --lflow: 180px; } }
 :is(#board, #edBoard) .cell.lake {
   --stepX: calc(var(--cell-w) + 3px); --stepY: calc(var(--cell-h) + 3px);
@@ -253,9 +254,9 @@ html.reduceMotion :is(#board, #edBoard):has(.cell.river) { animation: none; }
 /* el nenúfar se mece despacio (cada uno a su ritmo, según su casilla) */
 .cell.lake .padBob { transform-box: fill-box; transform-origin: 30% 60%; animation: padBob 7s ease-in-out infinite; animation-delay: calc(var(--col) * -1.3s - var(--row) * .7s); }
 @keyframes padBob { 0%, 100% { transform: rotate(-4deg) translate(0, 0); } 50% { transform: rotate(5deg) translate(1.5px, -1px); } }
-@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard):has(.cell.lake) { animation: none; } .cell.lake .padBob { animation: none; } }
+@media (prefers-reduced-motion: reduce) { :is(#board, #edBoard) .cell.lake { animation: none; } .cell.lake .padBob { animation: none; } }
 html.reduceMotion .cell.lake .padBob { animation: none; }
-html.reduceMotion :is(#board, #edBoard):has(.cell.lake) { animation: none; }
+html.reduceMotion :is(#board, #edBoard) .cell.lake { animation: none; }
 
 /* ---------- piezas de madera (baraja de minigolf) ---------- */
 .cell.wood { overflow: visible; }

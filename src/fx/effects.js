@@ -253,21 +253,25 @@ export function fxPlayCard(p, idx, cardKey, { fast = false } = {}) {
   const up = { x: Math.min(window.innerWidth - W * .7, Math.max(W * .7, a.x)), y: Math.max(H * .7, a.y - H * .35) };
   const at = (pt, sc) => `translate(${pt.x - W / 2}px, ${pt.y - H / 2}px) scale(${sc})`;
   const s0 = src.width / W;
+  // tu carta (fast) se va antes de encima de la mano: sube, se ve un momento y se desvanece en ~440 ms (las de
+  // los bots se quedan más: así se ve bien qué juegan); sin montón a la vista (móvil), la animación acaba ahí
+  const T = fast ? { up: .14, hold: .24, gone: .34, dur: 1300 } : { up: .16, hold: .4, gone: .52, dur: 1700 };
+  const k = pile || !fast ? 1 : T.gone; // (tu carta sin montón: solo la subida y el fundido, con su misma duración)
   const frames = [
     { transform: at(a, s0), opacity: 1, offset: 0 },
-    { transform: at(up, 1.12), opacity: 1, offset: .16 },
-    { transform: at(up, 1.1), opacity: 1, offset: .4 },
-    { transform: at(up, 1.16), opacity: 0, offset: pile ? .52 : 1 },
+    { transform: at(up, 1.12), opacity: 1, offset: T.up / k },
+    { transform: at(up, 1.1), opacity: 1, offset: T.hold / k },
+    { transform: at(up, 1.16), opacity: 0, offset: pile ? T.gone : 1 },
   ];
   if (pile) {
-    const d = center(pile);
+    const d = center(pile), r = (1 - T.gone) / (1 - .52); // (el montón, en lo que queda, con el mismo ritmo)
     frames.push(
-      { transform: at(d, .7), opacity: 0, offset: .53 },
-      { transform: at(d, .78), opacity: 1, offset: .66 },
-      { transform: at(d, .78), opacity: 1, offset: .82 },
+      { transform: at(d, .7), opacity: 0, offset: T.gone + .01 },
+      { transform: at(d, .78), opacity: 1, offset: T.gone + .14 * r },
+      { transform: at(d, .78), opacity: 1, offset: T.gone + .3 * r },
       { transform: at(d, .7), opacity: 0, offset: 1 });
   }
-  const anim = c.animate(frames, { duration: fast ? 1300 : 1700, easing: "ease-out", fill: "forwards" });
+  const anim = c.animate(frames, { duration: T.dur * k, easing: "ease-out", fill: "forwards" });
   anim.onfinish = () => c.remove();
   sfx("whoosh");
 }

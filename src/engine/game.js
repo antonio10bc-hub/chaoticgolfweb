@@ -163,8 +163,24 @@ export class Game {
     S.turn = (cx - startX + 1) % cfg.players;
     g.fillDeck(counts);
     for (let i = 0; i < cfg.players; i++) g.drawTo2(i);
+    if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
+  }
+
+  // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
+  // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
+  // hueco del mazo: las copias no cambian). Con el RNG de la partida: la misma semilla, el mismo reparto
+  dealOneOf(keys) {
+    const S = this.S, set = new Set(keys);
+    for (let p = 0; p < S.nPlayers; p++) {
+      const hand = S.hands[p];
+      if (!hand.length || hand.some(k => set.has(k))) continue;
+      const pool = S.deck.map((k, j) => set.has(k) ? j : -1).filter(j => j >= 0);
+      if (!pool.length) return;
+      const j = pool[Math.floor(this.rand() * pool.length)], h = Math.floor(this.rand() * hand.length);
+      [S.deck[j], hand[h]] = [hand[h], S.deck[j]];
+    }
   }
 
   // nivel (historia / creador), 1 jugador + pelotas de obstáculo opcionales

@@ -452,3 +452,23 @@ test('niveles generados: deterministas y con mano inicial', async () => {
   assert.deepEqual(g1.S.deck, g2.S.deck);
   assert.equal(g1.S.hands[0].length, 2);
 });
+
+test('barajas nuevas: con startWith, cada jugador empieza con una carta nueva, sin cambiar las copias del mazo', async () => {
+  const { DECKS } = await import('../src/content/decks.js');
+  const { CARDS } = await import('../src/content/cards/index.js');
+  const base = Object.fromEntries(Object.entries(CARDS).map(([k, d]) => [k, d.copies]));
+  for (const dk of DECKS.filter(d => d.newCards)) {
+    const counts = dk.counts(base);
+    for (let seed = 1; seed <= 40; seed++) {
+      const cfg = { players: 4, par: 3, cols: 9, rows: 9, humanColor: '#f26d6d', counts, startWith: dk.newCards };
+      const g = Game.pve(cfg, { seed }), S = g.S;
+      for (const h of S.hands) assert.ok(h.some(k => dk.newCards.includes(k)), `${dk.id} semilla ${seed}: ${h}`);
+      const all = {}; for (const k of [...S.deck, ...S.hands.flat()]) all[k] = (all[k] || 0) + 1;
+      for (const [k, n] of Object.entries(counts)) assert.equal(all[k] || 0, n, `${dk.id}: copias de ${k}`);
+      assert.deepEqual(Game.pve(cfg, { seed }).S.hands, S.hands, 'misma semilla, mismo reparto');
+    }
+  }
+  // sin startWith, el reparto de siempre
+  const cfg = { players: 3, par: 3, cols: 7, rows: 9, humanColor: '#f26d6d' };
+  assert.deepEqual(Game.pve({ ...cfg, startWith: undefined }, { seed: 5 }).S.hands, Game.pve(cfg, { seed: 5 }).S.hands);
+});

@@ -45,6 +45,9 @@ function buildGrid(board, cols, rows) {
 
 // agua: la casilla se une con las vecinas del mismo tipo (también en el creador de niveles).
 // tileAt(ox, oy): la loseta de la casilla vecina a esa distancia
+// agua: su reloj (styles/board.css) va en fase con el de la página: retraso negativo según la hora actual
+export const waterDelay = type => `${-(performance.now() % (type === 'river' ? 1600 : 36000)).toFixed(0)}ms`;
+const waterOf = cls => / river\b/.test(cls) ? 'river' : / lake\b/.test(cls) ? 'lake' : null;
 export function waterJoins(tileAt, x, y, tile) {
   if (!tileDef(tile.type).cellClass.startsWith('water')) return '';
   const same = (ox, oy) => tileAt(ox, oy)?.type === tile.type;
@@ -104,7 +107,11 @@ export function renderBoard() {
     if (sel === 'sel' && g.pending?.kind === 'placeTile') html += `<div class="ghostTile${staged ? ' on' : ''}">${tilePic({ type: g.pending.tileType, rot: g.pending.rot || 0 })}</div>`;
     if (sel === 'out') { cls += ' selectable-out'; title = t('board.outWarning'); aria.push(title); }
     const bg = ASSETS.cellArt(tile, par);
-    if (cell._cls !== cls) { cell.className = cls; cell._cls = cls; }
+    if (cell._cls !== cls) {
+      const w = waterOf(cls);
+      if (w && w !== waterOf(cell._cls || '')) cell.style.setProperty('--wd', waterDelay(w)); // (agua nueva: en fase con la otra)
+      cell.className = cls; cell._cls = cls;
+    }
     if (cell._html !== html) { cell.innerHTML = html; cell._html = html; }
     if (cell._bg !== bg) {
       cell.style.backgroundImage = bg ? `url(${bg})` : '';

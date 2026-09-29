@@ -284,6 +284,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   en tu turno, con el borde de tu color; la píldora del turno y el marcador sobre la pelota que juega llevan el color de
   quien juega; los rivales que no juegan y tu mano fuera de tu turno pierden opacidad, salvo las cartas naranjas (se
   pueden jugar fuera de turno).
+- **Cartas nuevas desde el principio:** en Partida rápida con una baraja nueva (agua, minigolf, Ultimate), cada jugador empieza con una de sus cartas especiales (`newCards`) en la mano: quien no tenga ninguna cambia una carta, al azar, por una de ellas del mazo (`dealOneOf` en el motor, con el azar de la partida; las copias del mazo no cambian).
 - **Baraja de agua** (`tiles/river.js`, `tiles/lake.js`): sin búnkeres ni portales; 5 cartas de río y 5 de lago
   (0 copias en el resto de barajas, así su reparto no cambia). **Río**: una sola columna; la primera carta va
   donde sea y las demás lo alargan por arriba o por abajo. Quien entra (pelota u hoyo) pierde el resto del
@@ -390,6 +391,11 @@ la partida quieta. Reglas que hay que mantener:
   el oleaje del lago es una capa que se desliza con `transform` (`.dWaves`) y en el móvil el degradado de Ultimate
   queda quieto y sus manchas sin `blur(60px)`. Partida quieta con la baraja de agua: de ~1 s de pintado cada 3 s a
   casi nada. El borde iridiscente de Ultimate en Modos va a 15 pasos por segundo.
+- **Nada de variables heredadas animadas en contenedores grandes.** La corriente del río y el lago se animaban con un
+  reloj (`--flow`, `--lflow`) en todo `#board`: cada fotograma recalculaba todas las casillas y su contenido. En
+  Ultimate (247 casillas, río y lago a la vez) el hilo principal estaba ocupado el 95 % del tiempo y la partida iba a
+  tirones. Ahora el reloj va en cada casilla de agua, a saltos de 1-2 px (igual de fluido), y en fase con el reloj de la
+  página (`--wd`, `waterDelay` en `board.js`): Ultimate quieto pasa al ~14 % y jugando al ~16-25 %.
 - **Precarga del arranque:** index.html pide de golpe los 85 módulos y los 32 niveles (bloque generado con
   `npm run preload`; `tests/preload.test.mjs` avisa si falta alguno). Primera carga por HTTP/2 con red de móvil:
   de 1,5 s a 1,16 s.

@@ -15,7 +15,7 @@ import { TILES, tilePic } from '../content/tiles/index.js';
 import { DECKS } from '../content/decks.js';
 import { ASSETS, pColor } from '../art.js';
 import { fitCellsTo } from './geometry.js';
-import { waterJoins } from './board.js';
+import { waterJoins, waterDelay } from './board.js';
 import { showScreen } from './screens.js';
 import { openModes } from './screen-modes.js';
 import { startLevel, levelPreviewSVG } from './screen-story.js';
@@ -314,7 +314,7 @@ export function edRender() {
     if (same(L.ball, x, y)) { inner += ASSETS.ballHTML(0); aria.push(toolName('ball')); }
     if (dset.has(x + ',' + y)) { inner += decoyHTML(); aria.push(toolName('decoy')); }
     const bg = ASSETS.cellArt(tile, par);
-    html += `<div class="${cls}" role="gridcell" data-x="${x}" data-y="${y}" aria-label="${esc(aria.join(', '))}" style="--row:${y};--col:${x}${bg ? `;background-image:url(${bg});background-size:cover` : ''}">${inner}</div>`;
+    html += `<div class="${cls}" role="gridcell" data-x="${x}" data-y="${y}" aria-label="${esc(aria.join(', '))}" style="--row:${y};--col:${x}${tile && (tile.type === 'river' || tile.type === 'lake') ? ';--wd:' + waterDelay(tile.type) : ''}${bg ? `;background-image:url(${bg});background-size:cover` : ''}">${inner}</div>`;
   }
   board.innerHTML = html;
   $('edRulerX').style.gridTemplateColumns = `repeat(${L.cols}, var(--cell-w))`;
