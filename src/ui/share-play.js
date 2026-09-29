@@ -13,6 +13,8 @@ import { displayName } from './players.js';
 import { playerTag } from '../engine/game.js';
 import { toast } from './hud.js';
 import { sfx } from '../audio/sfx.js';
+import { drawSkinBall } from './skin-canvas.js';
+import { skinSeat, equippedSkin } from './skins.js';
 
 /* ---------- registro de la última jugada (desde el controlador) ---------- */
 const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash', 'launch', 'bump']);
@@ -208,12 +210,51 @@ export async function buildShareImage({ title, meta }) {
     if (img) c.drawImage(img, PAD + 18, fy + 26, 76, 76);
     tx = PAD + 132;
   }
+  // tu pelota (con la que llevas puesta), abajo a la derecha, sobre su green: con una sola persona en la mesa
+  const seat = skinSeat(), ballW = seat != null ? 150 : 0;
+  if (seat != null) {
+    const bx = W - PAD - 62, by = fy + 60;
+    c.fillStyle = '#79A456'; c.beginPath(); c.ellipse(bx, by + 50, 70, 19, 0, 0, 7); c.fill();
+    c.save(); c.beginPath(); c.ellipse(bx, by + 50, 64, 15, 0, 0, 7); c.clip();
+    c.fillStyle = '#8DB05F'; c.fillRect(bx - 70, by + 30, 140, 40); c.fillStyle = '#94B665';
+    for (let i = -8; i < 8; i++) { c.beginPath(); c.moveTo(bx + i * 18, by + 70); c.lineTo(bx + i * 18 + 9, by + 70); c.lineTo(bx + i * 18 + 29, by + 30); c.lineTo(bx + i * 18 + 20, by + 30); c.fill(); }
+    c.restore();
+    await drawSkinBall(c, bx, by, 38, pColor(seat), equippedSkin());
+  }
   c.textAlign = 'left';
   c.fillStyle = '#66725F'; c.font = '600 22px Outfit, sans-serif'; c.fillText(t('share.finalPlay').toUpperCase(), tx, fy + 34);
   const who = fp.actor != null ? t('share.by', { card: def ? def.short || def.name : '', name: displayName(fp.actor) }) : (def ? def.short || def.name : '');
-  c.fillStyle = '#242424'; fit(c, who, W - tx - PAD - 12, 44); c.fillText(who, tx, fy + 86);
+  c.fillStyle = '#242424'; fit(c, who, W - tx - PAD - 12 - ballW, 44); c.fillText(who, tx, fy + 86);
   c.fillStyle = '#66725F'; c.font = '500 22px Outfit, sans-serif'; c.fillText((location.host || 'chaotic golf').replace(/^www\./, ''), tx, fy + 122);
   return new Promise(res => cv.toBlob(res, 'image/png'));
+}
+
+/* ---------- compartir con un solo botón (reto diario) ----------
+   La imagen se prepara al terminar (así, al pulsar, la hoja de compartir sale al momento: Safari solo la abre
+   justo tras el toque). Móvil (y ordenadores que lo admiten): la hoja del sistema con la imagen y el resultado en
+   texto. Si no: imagen y texto al portapapeles (o solo la imagen); y si tampoco, se descarga la imagen. */
+let prepared = null;
+export function prepareShare(info) { prepared = app.finalPlay && app.game ? { info, blob: buildShareImage(info) } : null; }
+export async function shareNow(info) {
+  const blob = await (prepared?.info === info ? prepared.blob : buildShareImage(info));
+  if (!blob) { toast(t('share.failed'), 'warn'); return; }
+  const file = new File([blob], 'chaotic-golf.png', { type: 'image/png' });
+  const text = info.text || t('share.caption') + ' ' + location.origin + location.pathname;
+  sfx('select');
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], text }); track('compartir', { que: 'resultado', como: 'sistema' }); return; }
+    catch (err) { if (err?.name === 'AbortError') return; } // (cancelado: no se hace nada más)
+  }
+  if (navigator.clipboard?.write && window.ClipboardItem) {
+    for (const item of [{ 'image/png': blob, 'text/plain': new Blob([text], { type: 'text/plain' }) }, { 'image/png': blob }]) {
+      try { await navigator.clipboard.write([new ClipboardItem(item)]); toast(t(item['text/plain'] ? 'share.bothCopied' : 'share.imgCopied')); track('compartir', { que: 'resultado', como: 'copiar' }); return; }
+      catch (err) { /* el siguiente */ }
+    }
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = 'chaotic-golf.png'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  try { await navigator.clipboard?.writeText(text); } catch (e) { /* sin portapapeles */ }
+  toast(t('share.downloaded')); track('compartir', { que: 'resultado', como: 'descargar' });
 }
 
 /* ---------- el diálogo de compartir ---------- */

@@ -178,5 +178,7 @@ function parts(id, lvl) {
 export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
+// (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
+export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, laurel };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;

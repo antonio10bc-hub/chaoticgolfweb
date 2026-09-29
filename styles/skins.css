@@ -144,8 +144,14 @@ html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation
 #profileBtn { display: none; position: fixed; bottom: 14px; left: 98px; z-index: 65; width: 36px; height: 36px; padding: 0;
   --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
 body[data-screen="menu"] #profileBtn { display: inline-flex; }
-#profileBtn .pfDot { position: absolute; top: -2px; right: -2px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--cream); }
+#profileBtn .pfDot { position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: #E0443A; box-shadow: 0 0 0 2px var(--cream); }
 #profileBtn .pfDot[hidden] { display: none; }
+/* aviso para quien aún no ha abierto "Tu pelota": el punto late con una onda y la camiseta se balancea cada pocos segundos */
+#profileBtn.cta .i { animation: pfShirt 4.2s ease-in-out infinite; transform-origin: 50% 20%; }
+#profileBtn.cta .pfDot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #E0443A; animation: pfPing 1.8s ease-out infinite; }
+@keyframes pfShirt { 0%, 76%, 100% { transform: none; } 80% { transform: rotate(-14deg) scale(1.08); } 85% { transform: rotate(12deg) scale(1.08); } 90% { transform: rotate(-7deg); } 95% { transform: rotate(3deg); } }
+@keyframes pfPing { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
+html.reduceMotion #profileBtn.cta .i, html.reduceMotion #profileBtn.cta .pfDot::after { animation: none; }
 html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 @media (orientation: landscape) and (max-height: 540px) {
   html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(100px + env(safe-area-inset-right, 0px)); }

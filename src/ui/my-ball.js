@@ -97,7 +97,9 @@ export function openMyBall() {
   paint('pop', true);
   $('profileOverlay').classList.add('visible');
   $('profBox').querySelector('.setClose')?.focus({ preventScroll: true });
-  markSkinsSeen(); paintProfileDot(); // (las "¡Nueva!" se ven esta vez; el punto del botón se apaga)
+  markSkinsSeen(); // (las "¡Nueva!" se ven esta vez)
+  const pf = loadProfile(); if (pf.myBallOpened !== MYBALL_CTA) { pf.myBallOpened = MYBALL_CTA; saveProfile(pf); } // (ya la has visto: sin aviso)
+  paintProfileDot();
   track('perfil', { accion: 'abrir' });
   ensureGuard();
   sfx('select');
@@ -109,7 +111,16 @@ export function closeMyBall() {
 }
 export const myBallOpen = () => $('profileOverlay').classList.contains('visible');
 // el punto del botón del menú: hay pelotas o niveles nuevos sin ver
-export function paintProfileDot() { const d = $('profileBtn')?.querySelector('.pfDot'); if (d) d.hidden = !unseenSkins().length; }
+// y, hasta que abres "Tu pelota" por primera vez, el botón pide atención (punto que late y la camiseta que se balancea).
+// MYBALL_CTA: subirlo vuelve a enseñar el aviso a todo el mundo (también a quien ya había entrado)
+const MYBALL_CTA = 1;
+export function paintProfileDot() {
+  const b = $('profileBtn'), d = b?.querySelector('.pfDot');
+  if (!d) return;
+  const cta = loadProfile().myBallOpened !== MYBALL_CTA;
+  d.hidden = !cta && !unseenSkins().length;
+  b.classList.toggle('cta', cta);
+}
 
 // Partida rápida: tu pelota, bajo el color (las ganadas, en su nivel más alto, y un acceso a "Tu pelota")
 export function pveSkinsHTML() {

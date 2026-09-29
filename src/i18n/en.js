@@ -359,7 +359,7 @@ export default {
     peek: 'Show bots’ cards', peekTitle: 'Debug: shows the bots’ hands',
   },
   lang: { label: 'Language', es: 'Español', en: 'English' },
-  share: { button: 'Share', title: 'Your final play', finalPlay: 'Final play', by: '{card} by {name}', previewAlt: 'Picture of the final play',
+  share: { bothCopied: 'Image and result copied: paste them anywhere', downloaded: 'Image downloaded (and the result copied)', button: 'Share', title: 'Your final play', finalPlay: 'Final play', by: '{card} by {name}', previewAlt: 'Picture of the final play',
     image: 'Share picture', copyImg: 'Copy picture', download: 'Download', copyText: 'Copy result', imgCopied: 'Picture copied: paste it anywhere',
     caption: 'Look how I finished my game of Chaotic Golf!', won: 'In {turns}', lost: 'Not this time', and: ' and ', copied: 'Result copied: paste it anywhere', failed: 'Couldn’t copy it' },
   intro: { go: 'Let’s play!',

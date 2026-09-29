@@ -6,6 +6,7 @@ const MAX_NAME = 14;
 
 // skin: la pelota puesta ({ id, lvl } o null) · skinSeen / skinAnn: niveles ya vistos en el perfil / ya avisados al
 // terminar una partida (src/ui/skins.js)
+// myBallOpened: versión del aviso de "Tu pelota" ya vista (src/ui/my-ball.js, MYBALL_CTA)
 const blank = () => ({ name: '', color: 0, skin: null, skinSeen: {}, skinAnn: {}, people: [
   { name: '', color: 0 }, { name: '', color: 1 }, { name: '', color: 2 }, { name: '', color: 3 },
 ] });

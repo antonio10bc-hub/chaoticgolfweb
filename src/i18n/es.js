@@ -362,7 +362,7 @@ export default {
     peek: 'Ver cartas rivales', peekTitle: 'Debug: muestra las manos de la máquina',
   },
   lang: { label: 'Idioma', es: 'Español', en: 'English' },
-  share: { button: 'Compartir', title: 'Tu jugada final', finalPlay: 'Jugada final', by: '{card} de {name}', previewAlt: 'Imagen de la jugada final',
+  share: { bothCopied: 'Imagen y resultado copiados: pégalos donde quieras', downloaded: 'Imagen descargada (y el resultado, copiado)', button: 'Compartir', title: 'Tu jugada final', finalPlay: 'Jugada final', by: '{card} de {name}', previewAlt: 'Imagen de la jugada final',
     image: 'Compartir imagen', copyImg: 'Copiar imagen', download: 'Descargar', copyText: 'Copiar resultado', imgCopied: 'Imagen copiada: pégala donde quieras',
     caption: '¡Mira cómo he terminado mi partida de Chaotic Golf!', won: 'En {turns}', lost: 'Esta vez no', and: ' y ', copied: 'Resultado copiado: pégalo donde quieras', failed: 'No se ha podido copiar' },
   intro: { go: '¡A jugar!',

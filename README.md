@@ -277,7 +277,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 8 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
   rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un
   nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y el botón del menú lleva un
-  punto hasta que lo ves. Una pelota nueva = una entrada en `SKINS`, su objetivo en `skinProgress` y su aspecto en
+  punto rojo hasta que lo ves. Hasta abrir "Tu pelota" por primera vez, el botón pide atención (el punto rojo late y la
+  camiseta se balancea cada pocos segundos); `MYBALL_CTA` en `my-ball.js` lo vuelve a enseñar a todo el mundo si se sube. Una pelota nueva = una entrada en `SKINS`, su objetivo en `skinProgress` y su aspecto en
   `parts()` y `skins.css` (todo medido con `--bs`, el diámetro de la bola; solo se anima transform y opacity).
 - **Quién juega y cuál es tu color** (ordenador y móvil): tu bandeja de abajo va teñida suavemente de tu color de bola y,
   en tu turno, con el borde de tu color; la píldora del turno y el marcador sobre la pelota que juega llevan el color de
@@ -320,7 +321,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
   como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.
-  En el reto diario, además, "Copiar resultado" (el texto estilo Wordle).
+  Con una sola persona en la mesa, la franja de abajo lleva tu pelota con la que llevas puesta sobre su green (dibujada en
+  el lienzo con las mismas piezas que en el juego: `src/ui/skin-canvas.js`). En el **reto diario** es un único botón
+  "Compartir" (`shareNow`): la imagen se prepara al terminar y, al pulsar, sale la hoja del sistema con la imagen y el
+  resultado estilo Wordle en texto; donde no hay hoja de compartir, imagen y texto se copian juntos al portapapeles
+  (o solo la imagen) y, si tampoco, se descarga la imagen y se copia el texto.
 - **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
   modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en

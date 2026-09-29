@@ -22,7 +22,7 @@ import { startPveMatch } from './screen-pve.js';
 import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
-import { openShareDialog } from './share-play.js';
+import { openShareDialog, prepareShare, shareNow } from './share-play.js';
 
 export const hideWin = () => $('winOverlay').classList.remove('visible');
 
@@ -183,7 +183,10 @@ export function showWin() {
   app.shareInfo = mode !== 'free' && app.finalPlay ? { title: $('winMsg').textContent, meta: shareMeta(slot, turns, lost),
     text: slot === 'daily' && mode === 'pve' ? app.shareText : null } : null;
   if (slot !== 'daily') app.shareText = null;
-  if (app.shareInfo) btns += `<button data-act="share" class="btn-light winShare"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg>${esc(t('share.button'))}</button>`;
+  // reto diario: un solo botón que comparte ya la imagen (con el resultado en texto); el resto de modos, la ventana de opciones
+  const direct = !!app.shareInfo && slot === 'daily' && mode === 'pve';
+  if (direct) prepareShare(app.shareInfo);
+  if (app.shareInfo) btns += `<button data-act="${direct ? 'shareNow' : 'share'}" class="btn-light winShare"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg>${esc(t('share.button'))}</button>`;
   $('winBtns').innerHTML = btns;
   $('winOverlay').classList.add('visible');
   $('winBtns').querySelector('button')?.focus();
@@ -357,6 +360,7 @@ export function bindWin() {
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
       case 'weekly': hideWin(); startWeekly(); break;
       case 'share': if (app.shareInfo) openShareDialog(app.shareInfo); break;
+      case 'shareNow': if (app.shareInfo) shareNow(app.shareInfo); break;
     }
   });
 }
