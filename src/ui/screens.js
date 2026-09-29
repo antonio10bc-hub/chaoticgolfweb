@@ -31,8 +31,10 @@ import { deckById } from '../content/decks.js';
 // escena de la partida en curso: la de su baraja (partida rápida y desafíos con piezas de otra baraja)
 // (los desafíos con piezas de otra baraja llevan su escena en app.run.scene)
 // (probar un nivel del creador: la alfombrilla de corte del taller)
-const sceneOfGame = () => app.mode === 'test' ? 'mat' : app.run?.scene || (app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
-import { renderDailyCard, paintRushTimer } from './screen-modes.js';
+// (reto diario: el de su mecánica; los guardados antes de existir, por su mecánica)
+const sceneOfGame = () => app.mode === 'test' ? 'mat' : app.run?.scene ||
+  (app.variant === 'daily' ? dailyScene(app.run?.feature) : app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
+import { renderDailyCard, paintRushTimer, dailyScene } from './screen-modes.js';
 import { paintStoryBtn } from './screen-story.js';
 
 // qué hacen "← Volver" y "Reiniciar" en cada modo (lo rellena cada módulo de pantalla)
@@ -65,6 +67,9 @@ export function showScreen(s) {
   document.body.dataset.screen = s; // los estilos recolocan controles globales (sonido) por pantalla
   if (prev !== s) trackScreen(s);     // (analíticas: cada pantalla, como una página)
   for (const id of Object.keys(DISPLAY)) $(id + 'Screen').style.display = id === s ? DISPLAY[id] : 'none';
+  // cada pantalla empieza arriba: si el menú estaba desplazado (móvil), la partida salía cortada por arriba
+  // y sin forma de volver (mide lo que la pantalla y no se puede desplazar)
+  if (prev !== s && (window.scrollY || document.scrollingElement?.scrollTop)) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   // fundido corto de la pantalla que entra (Web Animations: no obliga a maquetar antes de tiempo; sin fill, al
   // terminar no deja transform y los botones fijos de dentro siguen fijos)
   if (prev !== s && el && !REDUCED && el.animate) {

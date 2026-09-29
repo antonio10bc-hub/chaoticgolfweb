@@ -194,7 +194,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   repite dos días seguidos; algún día el tablero crece una o dos filas o columnas: `dailyChallenge` en
   `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
-  La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
+  La partida del reto lleva el fondo de su mecánica (`scene` en `DAILY_FEATURES`: río y charca, el lago; catapultas, caja con agujeros, bloque y esquina, la madera del minigolf; palo iridiscente, el de Ultimate; portales y arenero, el campo de siempre) y, al acabar, el final enseña tu pelota con la que llevas puesta sobre un green, en lugar del icono. La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
   (fecha y dificultad; título con la racha; la mecánica; rivales; estado), el tic verde de completado es
   una insignia sobre la miniatura de los rivales y en el móvil el botón es un círculo (flecha, o repetir si ya
   está completado).
@@ -335,7 +335,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   rápido, uno a uno, del primero al último (`fxTrailPush` / `fxTrailShow`, tiempos en `JUICE.trail`).
 - **Caídas:** al salirse del tablero, el borde por el que cae la pieza destella con su color y una onda
   entra desde ese lado.
-- **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo.
+- **Móvil:** pellizcar para hacer zoom en el tablero y arrastrar para moverlo. Cada pantalla empieza arriba y la partida mide lo visible (en Safari `100vh` es la altura con la barra del navegador escondida: con el menú desplazado, la partida salía cortada por arriba y sin forma de volver).
 - **Interfaz táctil (móviles y tabletas, iPad incluido)** (`src/ui/device.js`, `styles/phone.css`): se decide por el
   **dispositivo** (pantalla táctil sin ratón), nunca por el ancho: una ventana estrecha del ordenador sigue con el diseño
   adaptable de siempre. Ajustes → **Interfaz** (automática / táctil / ordenador) la fuerza, y `?ui=phone` o `?ui=desktop`

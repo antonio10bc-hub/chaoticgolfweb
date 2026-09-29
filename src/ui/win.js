@@ -1,7 +1,7 @@
 // Final de partida (o de hoyo): mensaje, celebración según cómo se ha ganado, colores del
 // ganador, resumen, récords del modo y botones de lo que se puede hacer después.
 // También el aviso de puzle fallado y el panel de "¿Por qué he perdido?".
-import { takeNewSkins, skinBall } from './skins.js';
+import { takeNewSkins, skinBall, equippedSkin } from './skins.js';
 import { openMyBall, myColor, skinName } from './my-ball.js';
 import { trackEnd } from './analytics.js';
 import { app } from './app.js';
@@ -39,6 +39,7 @@ const STYLE_FX = {
 
 const FIRE_C = ['#E8873A', '#F5A33A', '#FFD23F', '#D9603A', '#F1F1DC'];
 
+const WB_FLAG = '<svg class="wbFlag" viewBox="0 0 30 58" aria-hidden="true"><path d="M5 56V5" stroke="#F1F1DC" stroke-width="2.6" stroke-linecap="round"/><path d="M6 6 27 13 6 20Z" fill="#E8873A"/><ellipse cx="5" cy="56" rx="5" ry="2.2" fill="#242424"/></svg>';
 export function showWin() {
   clearSave(); // partida terminada: ya no hay nada que continuar
   const S = app.game.S, mode = app.mode, slot = slotOf();
@@ -145,6 +146,11 @@ export function showWin() {
   if (mode !== 'free' && mode !== 'test') chips += takeNewSkins().slice(0, 2).map(sk =>
     `<button class="winRec skinNew" data-act="myball">${skinBall(sk, { size: 24, color: myColor() })}${esc(t('win.newSkin', { name: skinName(sk) }))}</button>`).join('');
   $('winChips').innerHTML = winnerChips + chips;
+  // reto diario: tu pelota (con la que llevas puesta) en lo alto, sobre su green, en lugar del icono
+  const withBall = slot === 'daily' && mode === 'pve' && !multi;
+  box.classList.toggle('withBall', withBall);
+  $('winBall').innerHTML = withBall ? `<span class="wbStage${lost ? ' lost' : ''}">${WB_FLAG}` +
+    `${skinBall(equippedSkin(), { size: 68, color: pColor(me) })}</span>` : '';
   box.style.borderColor = solo ? 'transparent' : pColor(S.winners[0]);
   box.style.boxShadow = '';
 
@@ -190,6 +196,7 @@ export function showWin() {
 
 // contrarreloj: se ha acabado el tiempo (la serie termina con lo sumado)
 export function showRushTimeUp({ sum, newBest, hole, best }) {
+  $('winBall').innerHTML = ''; $('winOverlay').querySelector('.box').classList.remove('withBall');
   trackEnd('rush', { won: false, reason: 'tiempo' });
   $('winMsg').textContent = t('win.rushTimeUp');
   $('winIcon').innerHTML = `<svg class="i"><use href="#i-timer"/></svg>`;
@@ -209,6 +216,7 @@ export function showRushTimeUp({ sum, newBest, hole, best }) {
 
 // puzle: se ha terminado el turno sin embocar
 export function showPuzzleFail() {
+  $('winBall').innerHTML = ''; $('winOverlay').querySelector('.box').classList.remove('withBall');
   clearSave('puzzle');
   trackEnd('puzzle', { won: false });
   $('winMsg').textContent = t('win.puzzleFail');

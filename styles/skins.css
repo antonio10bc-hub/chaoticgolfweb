@@ -322,3 +322,32 @@ html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bott
   .profBox .pfBar { grid-column: 1 / -1; margin-top: 6px; }
 }
 @keyframes pfBurstBig { 0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(-104px) scale(.3); opacity: 0; } }
+
+/* ---------- final del reto diario: tu pelota (con la puesta) sobre su green, en lugar del icono ---------- */
+#winBall:empty { display: none; }
+#winOverlay .box.withBall { padding-top: 16px; }
+#winOverlay .box.withBall .winIcon { display: none; }
+.wbStage { position: relative; display: grid; place-items: end center; width: 150px; height: 118px; margin: 0 auto; }
+.wbStage::before { /* el green */
+  content: ''; position: absolute; left: 12px; right: 12px; bottom: 4px; height: 40px; border-radius: 50%;
+  background: repeating-linear-gradient(135deg, #8DB05F 0 9px, #94B665 9px 18px); box-shadow: 0 0 0 4px #79A456, 0 8px 16px rgba(20,40,20,.18); }
+.wbStage::after { content: ''; position: absolute; left: 50%; bottom: 16px; width: 54px; height: 12px; margin-left: -27px; border-radius: 50%;
+  background: rgba(20,40,20,.28); animation: pfShadow 2.8s ease-in-out infinite; }
+.wbStage .wbFlag { position: absolute; right: 22px; bottom: 18px; width: 22px; height: 44px; }
+.wbStage .skBall { z-index: 1; margin-bottom: 20px; animation: pfPop .55s cubic-bezier(.3,1.5,.5,1) backwards, pfFloat 2.8s .55s ease-in-out infinite; }
+.wbStage.lost .skBall { animation: pfPop .55s cubic-bezier(.3,1.5,.5,1) backwards; } /* (sin victoria, quieta) */
+.wbStage.lost::after { animation: none; }
+@media (max-width: 560px) {
+  #winOverlay .box.withBall { padding-top: 12px; }
+  .wbStage { width: 130px; height: 104px; }
+  .wbStage .skBall { --bs: 58px !important; margin-bottom: 18px; }
+}
+/* poca altura (horizontal): la pelota encabeza la columna de la izquierda */
+@media (max-height: 560px) and (min-width: 600px) {
+  #winOverlay .box.withBall .winHead { padding-top: 0; }
+  .wbStage { width: 120px; height: 92px; }
+  .wbStage::before { height: 32px; }
+  .wbStage .skBall { --bs: 50px !important; margin-bottom: 14px; }
+  .wbStage .wbFlag { right: 16px; bottom: 12px; width: 18px; height: 36px; }
+}
+html.reduceMotion .wbStage .skBall, html.reduceMotion .wbStage::after { animation: none; }

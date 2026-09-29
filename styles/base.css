@@ -76,6 +76,11 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+/* en la partida y en el creador la página mide lo visible y no se desplaza. En Safari (iPhone) 100vh es la altura con la
+   barra del navegador escondida: con el min-height de arriba la partida quedaba más alta que la pantalla, conservaba el
+   desplazamiento del menú y se veía cortada por arriba, sin forma de volver (en la partida el dedo no desplaza la página) */
+html:has(> body[data-screen="game"]), html:has(> body[data-screen="editor"]) { overflow: hidden; }
+body[data-screen="game"], body[data-screen="editor"] { overflow: hidden; min-height: 0; height: 100vh; height: 100dvh; }
 input, select, textarea { font-family: inherit; }
 h1, h2, h3, h4, h5 { font-weight: 600; letter-spacing: -.02em; }
 

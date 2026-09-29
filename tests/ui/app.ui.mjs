@@ -593,3 +593,33 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   const other = await app(() => { const S = window.chaoticGolf.app.game.S; return document.querySelector(`#pieces .piece[data-id="b${(S.human + 1) % S.nPlayers}"] .circ`).className; });
   assert.doesNotMatch(other, /sk-/, 'los bots, con la normal');
 });
+
+it('móvil: con el menú desplazado, la partida empieza arriba (Safari: 100vh más alto que lo visible)', async () => {
+  const p = await phonePage({ width: 375, height: 667, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  // lo que hace Safari con 100vh cuando la barra del navegador se esconde al desplazar: la página, más alta que la pantalla
+  await p.addStyleTag({ content: 'body { min-height: 757px; } #game { height: 757px; height: 100dvh; }' });
+  await p.evaluate(() => window.scrollTo(0, 90)); await sleep(150);
+  await p.evaluate(() => { document.getElementById('storyBtn').click(); document.querySelector('.lvlCard[data-level="0"]').click(); }); await sleep(1200);
+  const m = await p.evaluate(() => ({ y: window.scrollY, doc: document.scrollingElement.scrollHeight, top: document.getElementById('gameBar').getBoundingClientRect().top }));
+  assert.equal(m.y, 0, 'sin desplazar'); assert.ok(m.doc <= 668, 'la partida mide lo visible'); assert.ok(m.top >= 0, 'la barra de arriba se ve');
+  await p.close();
+});
+
+it('reto diario: fondo de su mecánica y, al acabar, tu pelota (con la puesta) en lo alto del final', async () => {
+  await fresh({ chaoticgolf_profile: { color: 1, skin: { id: 'fire', lvl: 1 }, skinAnn: { fire: 1 }, skinSeen: { fire: 1 } },
+    chaoticgolf_stats: { version: 1, daily: { days: {}, bestStreak: 8 } } });
+  const scenes = await app(async () => { const m = await import('/src/content/challenges.js'), sm = await import('/src/ui/screen-modes.js');
+    return Object.fromEntries(m.DAILY_FEATURES.map(f => [f.id, sm.dailyScene(f.id)])); });
+  assert.deepEqual(scenes, { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism' });
+  await click('#dailyCard'); await sleep(900);
+  assert.equal(await app(() => document.getElementById('gameScreen').dataset.scene), await app(() => { const s = { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism' }; return s[window.chaoticGolf.app.run.feature]; }));
+  await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 40000 });
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls.find(x => x.player === S.human);
+    for (const o of S.balls) if (o !== b && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;
+    S.tiles = S.tiles.filter(t => !(t.x === S.hole.x && t.y === S.hole.y + 1));
+    b.x = S.hole.x; b.y = S.hole.y + 1; S.hands[S.human][0] = 'palo1'; ctl.render(); ctl.clickCard(S.human, 0); ctl.clickCell(S.hole.x, S.hole.y); });
+  await sleep(2600); await app(() => { if (!document.getElementById('winOverlay').classList.contains('visible')) window.chaoticGolf.ctl.confirmWin(); });
+  await sleep(600);
+  assert.ok(await app(() => document.querySelector('#winBall .skCore.sk-fire.sl1')), 'tu pelota, con Fuego I');
+  assert.equal(await app(() => getComputedStyle(document.getElementById('winIcon')).display), 'none', 'en lugar del icono');
+});

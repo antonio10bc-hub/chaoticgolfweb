@@ -29,7 +29,7 @@ import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
-import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, dailyChallenge } from '../content/challenges.js';
+import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
@@ -72,10 +72,12 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
   saveGame();
   aiStart(900);
 }
+// fondo del reto diario: el de la mecánica del día (también para partidas guardadas antes de existir)
+export const dailyScene = feature => DAILY_FEATURES.find(f => f.id === feature)?.scene || '';
 function startDailyGame(date = dailyDate()) {
   const d = dailySetup(date);
   const { extra } = challengeCfg(d.ch);
-  startVsGame({ cfg: { opps: 2, diff: d.diff }, extra, ch: d.ch, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date, feature: d.ch.feature } });
+  startVsGame({ cfg: { opps: 2, diff: d.diff }, extra, ch: d.ch, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date, feature: d.ch.feature, scene: dailyScene(d.ch.feature) } });
 }
 export async function startDaily() {
   if (!await modeIntro('daily')) return;
