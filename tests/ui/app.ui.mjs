@@ -623,3 +623,29 @@ it('reto diario: fondo de su mecánica y, al acabar, tu pelota (con la puesta) e
   assert.ok(await app(() => document.querySelector('#winBall .skCore.sk-fire.sl1')), 'tu pelota, con Fuego I');
   assert.equal(await app(() => getComputedStyle(document.getElementById('winIcon')).display), 'none', 'en lugar del icono');
 });
+
+it('reto diario: "Compartir" copia imagen y resultado con el enlace (sin hoja del sistema), dice "¡Copiado!" y el enlace abre el reto', async () => {
+  const ctx = browser.defaultBrowserContext();
+  await ctx.overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  await page.evaluateOnNewDocument(() => { navigator.canShare = () => true; navigator.share = async () => { window.__shared = true; }; });
+  await fresh();
+  await click('#dailyCard'); await sleep(900);
+  await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 40000 });
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls.find(x => x.player === S.human);
+    for (const o of S.balls) if (o !== b && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;
+    S.tiles = S.tiles.filter(t => !(t.x === S.hole.x && t.y === S.hole.y + 1));
+    S.hands.forEach((h, i) => { if (i !== S.human) S.hands[i] = h.map(() => 'palo2'); }); // (sin naranjas: nadie evita el JAQUE)
+    b.x = S.hole.x; b.y = S.hole.y + 1; S.hands[S.human][0] = 'palo1'; ctl.render(); ctl.clickCard(S.human, 0); ctl.clickCell(S.hole.x, S.hole.y); });
+  await sleep(2600); await app(() => { if (!document.getElementById('winOverlay').classList.contains('visible')) window.chaoticGolf.ctl.confirmWin(); });
+  await sleep(900);
+  assert.equal(await app(() => document.querySelectorAll('#winBtns [data-act="shareNow"], #winBtns [data-act="share"]').length), 1, 'un solo botón');
+  await page.click('#winBtns [data-act="shareNow"]'); await sleep(700);
+  const r = await app(async () => { const [it] = await navigator.clipboard.read(); return { types: it.types, text: await (await it.getType('text/plain')).text(),
+    btn: document.querySelector('#winBtns [data-act="shareNow"]').textContent, shared: !!window.__shared }; });
+  assert.ok(r.types.includes('image/png') && r.types.includes('text/plain'), 'imagen y texto');
+  assert.match(r.text.split('\n').pop(), /\/#reto$/, 'el enlace al reto');
+  assert.equal(r.btn, '¡Copiado!'); assert.equal(r.shared, false, 'no abre la hoja del sistema');
+  // el enlace: entra directamente en el reto de hoy
+  await page.goto(URL + '#reto', { waitUntil: 'networkidle0' }); await sleep(1200);
+  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.variant, location.hash]), ['game', 'daily', '']);
+});

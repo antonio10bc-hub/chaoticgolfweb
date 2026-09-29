@@ -323,9 +323,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.
   Con una sola persona en la mesa, la franja de abajo lleva tu pelota con la que llevas puesta sobre su green (dibujada en
   el lienzo con las mismas piezas que en el juego: `src/ui/skin-canvas.js`). En el **reto diario** es un único botón
-  "Compartir" (`shareNow`): la imagen se prepara al terminar y, al pulsar, sale la hoja del sistema con la imagen y el
-  resultado estilo Wordle en texto; donde no hay hoja de compartir, imagen y texto se copian juntos al portapapeles
-  (o solo la imagen) y, si tampoco, se descarga la imagen y se copia el texto.
+  "Compartir" (`shareNow`) que copia directamente, sin hoja del sistema: la imagen y el resultado estilo Wordle en texto,
+  que acaba con el enlace `…/#reto` (quien lo abre entra directamente en el reto de ese día; `DAILY_HASHES`). La imagen se
+  prepara al terminar y el portapapeles se pide en el mismo toque (Safari solo lo permite así); si no admite imagen y
+  texto juntos, se copia el texto con el enlace. El botón pasa a "¡Copiado!".
 - **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
   modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en

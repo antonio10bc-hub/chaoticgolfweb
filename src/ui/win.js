@@ -360,7 +360,7 @@ export function bindWin() {
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
       case 'weekly': hideWin(); startWeekly(); break;
       case 'share': if (app.shareInfo) openShareDialog(app.shareInfo); break;
-      case 'shareNow': if (app.shareInfo) shareNow(app.shareInfo); break;
+      case 'shareNow': if (app.shareInfo) shareNow(app.shareInfo, b); break;
     }
   });
 }

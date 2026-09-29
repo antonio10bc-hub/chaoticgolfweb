@@ -21,10 +21,10 @@ import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
-import { bindScreens, showScreen, newFreeGame, applyArtExtras } from './ui/screens.js';
+import { bindScreens, showScreen, newFreeGame, applyArtExtras, suspendGame } from './ui/screens.js';
 import { bindStory, openStory, storyLevelAt, startLevel } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
-import { bindModes, openModes } from './ui/screen-modes.js';
+import { bindModes, openModes, startDaily, DAILY_HASHES } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
@@ -206,7 +206,17 @@ fxAmbientStart();
   const offer = code => offerLinkedLevel(code, playLinked);
   offer(linked);
   bindLinkInbox(offer); // (enlaces que otras pestañas o la app instalada pasan a esta)
-  window.addEventListener('hashchange', () => offer(takeLinkedCode())); // (enlace pegado en esta pestaña)
+  // enlace del reto diario (…/#reto, el que se comparte al terminarlo): directo al reto de hoy
+  const dailyFromLink = () => {
+    if (!DAILY_HASHES.includes(location.hash)) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin history */ }
+    if (app.screen === 'game' && app.variant === 'daily') return; // (ya está en él)
+    if (app.screen === 'game' && app.game) suspendGame(); // (la partida en curso queda guardada)
+    track('reto', { desde: 'enlace' });
+    startDaily();
+  };
+  dailyFromLink();
+  window.addEventListener('hashchange', () => { dailyFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
 })();
 
 // PWA: jugar sin conexión (solo en http/https)

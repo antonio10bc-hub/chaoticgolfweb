@@ -1517,3 +1517,6 @@ html.hiContrast .seat { opacity: .75; } html.hiContrast .seat.active, html.hiCon
 #turnPill { border-color: color-mix(in srgb, var(--pc) 60%, transparent); background-color: color-mix(in srgb, var(--pc) 10%, var(--cream)); }
 #turnPill.mine { border-color: var(--pc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc) 24%, transparent), var(--shadow-soft); }
 .piece.isTurn .turnMark { background: var(--pc); box-shadow: 0 0 0 1.5px var(--cream), 0 1.2px 3.6px var(--shadow); }
+
+/* compartir el reto diario: copiado (se queda así) */
+#winBtns .winShare.done, #winBtns .winShare.done:hover { --b-bg: var(--grass-dark); --b-fg: var(--cream); --b-line: var(--grass-dark); background-color: var(--grass-dark); animation: none; }

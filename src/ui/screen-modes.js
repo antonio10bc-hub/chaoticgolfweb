@@ -142,6 +142,9 @@ function syncBadge() {
 }
 
 // resultado del reto diario para compartir, estilo Wordle: un cuadrado por turno tuyo
+// enlace al reto diario: quien lo abre entra directamente en el reto de ese día (el de hoy, para él)
+export const DAILY_HASHES = ['#reto', '#daily'];
+export const dailyLink = () => location.origin + location.pathname + DAILY_HASHES[0];
 // (🟩 te acercas al hoyo, 🟨 igual, 🟥 te alejas) y ⛳ al embocar
 export function dailyShareText({ won, turns, st, S, date }) {
   const d = st?.dists || [], sq = [];
@@ -160,7 +163,7 @@ export function dailyShareText({ won, turns, st, S, date }) {
     `💥 ${count('hH')} · 🌀 ${count('t')} · 🕳️ ${count('f')}`,
     `🆚 ${rivals.join(t('share.and'))} · ${t('pve.diff' + diff[0].toUpperCase() + diff.slice(1))}`,
     `🔥 ${streakLabel(R.daily.streak || 1)}`,
-    location.origin + location.pathname,
+    dailyLink(), // (abre el juego directamente en el reto de hoy: main.js)
   ].filter(Boolean).join('\n');
 }
 // en el móvil, la hoja de compartir del sistema; si no, al portapapeles
