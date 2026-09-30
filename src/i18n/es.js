@@ -183,7 +183,7 @@ export default {
   jaque: {
     title: '¡JAQUE!',
     one: '{names} va a ganar', tie: 'Empate en juego: {names}',
-    lastChance: 'Última oportunidad: cartas naranjas.', nobody: 'Nadie reacciona',
+    lastChance: 'Última oportunidad: cartas naranjas.',
   },
   hands: {
     play: 'Jugar', rotate: 'Girar', rotateTitle: 'Girar la pieza (R)', place: 'Colocar',
@@ -220,7 +220,7 @@ export default {
     route: { title: 'Tu recorrido', aria: 'Mapa del recorrido de tu pelota ({n} pasos)', start: 'salida', hit: 'golpeas', hitBy: 'te golpean',
       portal: 'portal', fall: 'caída', sink: 'embocada' },
     levelDone: '¡Nivel completado!', youWon: '¡Has ganado!',
-    tieWithYou: 'Empate entre {names} — ¡te llevas parte de la gloria!',
+    tieWithYou: 'Empate entre {names}: ¡te llevas parte de la gloria!',
     tie: 'Empate entre {names}', one: '{names} mete la pelota en el hoyo y gana',
     stats: { strokes: 'golpes', sunk: 'embocadas', collisions: 'colisiones', portals: 'portales', falls: 'caídas fuera' },
     sum: { you: 'Tú', caddie: 'Consejos del caddie', caddieV: '{n} usados', undos: 'Deshacer', undosV: '{n} veces', longest: 'Jugada más larga', longestV: '{n} casillas · {name}', hitter: 'Quien más te golpeó', hitterV: '{name} ×{n}', card: 'Tu carta más usada', cardV: '{card} ×{n}' },
@@ -460,6 +460,7 @@ export default {
     resetConfirm: '¿Restablecer todos los ajustes a sus valores por defecto?',
   },
   stats: {
+    none: 'Aún no',
     mode_weekly: 'Desafío semanal',
     ch: { won: 'Ganadas', lost: 'Perdidas', evolution: 'Tu evolución · últimos 14 días', byMode: 'Victorias por modo',
       byRival: 'Contra cada rival', byCard: 'Tus cartas más usadas', dayTip: '{day}: {p} partidas, {w} ganadas',

@@ -383,8 +383,7 @@ export function renderJaque() {
   const jt = app.jaqueTimer;
   const timer = jt ? `<div class="jqTimer"><i style="animation-duration:${jt.ms}ms;animation-delay:-${Date.now() - jt.at}ms"></i></div>` : '';
   const html = `<div class="jqBadge">${t('jaque.title')}</div>` +
-    `<div class="jqText"><b>${msg}</b><small>${t('jaque.lastChance')}</small>${timer}</div>` +
-    `<button class="btn-light btn-sm" data-act="confirmWin">${t('jaque.nobody')}</button>`;
+    `<div class="jqText"><b>${msg}</b><small>${t('jaque.lastChance')}</small>${timer}</div>`; // (sin botón para confirmar: se resuelve sola, con la cuenta atrás si alguien puede reaccionar)
   if (el._html !== html || !jt) { el.innerHTML = html; el._html = html; }
 }
 

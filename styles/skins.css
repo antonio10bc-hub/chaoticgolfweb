@@ -363,3 +363,17 @@ html.reduceMotion .wbStage .skBall, html.reduceMotion .wbStage::after { animatio
 .pfNewDot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #E0443A; animation: pfPing 1.8s ease-out infinite; }
 .pfLv, .pfActs .btn-primary { position: relative; overflow: visible; }
 html.reduceMotion .pfNewDot::after { animation: none; }
+
+/* ---------- tu pelota en la bandeja de abajo (en partida): flota despacio, como en "Tu pelota" ---------- */
+.dockBall { position: relative; display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; }
+.dockBall::after { /* su sombra en el suelo, que respira con ella */
+  content: ''; position: absolute; left: 50%; bottom: -3px; width: 30px; height: 7px; margin-left: -15px; border-radius: 50%;
+  background: rgba(20,40,20,.22); animation: pfShadow 2.8s ease-in-out infinite; }
+.dockBall .skBall { animation: pfFloat 2.8s ease-in-out infinite; }
+#dockOwner .dockBall .skBall { --bs: 40px !important; }
+html.reduceMotion .dockBall .skBall, html.reduceMotion .dockBall::after { animation: none; }
+/* móvil: la pelota, más pequeña, a la izquierda de la mano (en horizontal, encima), sin el texto */
+html.phone .dockBall { width: 34px; height: 34px; }
+html.phone #dockOwner .dockBall .skBall { --bs: 30px !important; }
+html.phone .dockBall::after { width: 22px; height: 5px; margin-left: -11px; }
+/* (la rejilla de la bandeja en el móvil, con el hueco de la pelota: styles/phone.css) */

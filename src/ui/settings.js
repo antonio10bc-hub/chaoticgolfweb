@@ -73,7 +73,7 @@ function statsHTML() {
   const quick = `<div class="stTotals">` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(t('stats.streak'))} <b>${pv.streak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.bestStreak'))} <b>${pv.bestStreak}</b></div>` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('stats.fastest'))} <b>${pv.fastest != null ? esc(turnsLabel(pv.fastest)) : '—'}</b></div></div>`;
+    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('stats.fastest'))} <b>${esc(pv.fastest != null ? turnsLabel(pv.fastest) : t('stats.none'))}</b></div></div>`;
   const dl = r.daily, nCh = Object.keys(r.challenges).length, nPz = Object.keys(r.puzzles).length;
   const modes = `<div class="stTotals">` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t('stats.dailyStreak'))} <b>${dl.streak}</b> · ${esc(t('stats.bestStreak'))} <b>${dl.bestStreak}</b></div>` +

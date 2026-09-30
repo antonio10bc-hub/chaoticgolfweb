@@ -180,7 +180,7 @@ export default {
   jaque: {
     title: 'CHECK!',
     one: '{names} is about to win', tie: 'Tie in play: {names}',
-    lastChance: 'Last chance: orange cards.', nobody: 'Nobody reacts',
+    lastChance: 'Last chance: orange cards.',
   },
   hands: {
     play: 'Play', rotate: 'Rotate', rotateTitle: 'Rotate the piece (R)', place: 'Place',
@@ -217,7 +217,7 @@ export default {
     route: { title: 'Your route', aria: 'Map of your ball’s route ({n} steps)', start: 'start', hit: 'you hit', hitBy: 'you got hit',
       portal: 'portal', fall: 'fell off', sink: 'holed' },
     levelDone: 'Level complete!', youWon: 'You won!',
-    tieWithYou: 'Tie between {names} — you share the glory!',
+    tieWithYou: 'Tie between {names}: you share the glory!',
     tie: 'Tie between {names}', one: '{names} sinks the ball and wins',
     stats: { strokes: 'strokes', sunk: 'holed', collisions: 'collisions', portals: 'portals', falls: 'fell off' },
     sum: { you: 'You', caddie: 'Caddie tips', caddieV: '{n} used', undos: 'Undo', undosV: '{n} times', longest: 'Longest play', longestV: '{n} squares · {name}', hitter: 'Hit you the most', hitterV: '{name} ×{n}', card: 'Your most used card', cardV: '{card} ×{n}' },
@@ -457,6 +457,7 @@ export default {
     resetConfirm: 'Reset all settings to their defaults?',
   },
   stats: {
+    none: 'Not yet',
     mode_weekly: 'Weekly challenge',
     ch: { won: 'Won', lost: 'Lost', evolution: 'Your progress · last 14 days', byMode: 'Wins by mode',
       byRival: 'Against each rival', byCard: 'Your most played cards', dayTip: '{day}: {p} games, {w} won',

@@ -333,17 +333,42 @@ let modesTab = (() => { try { return TABS.includes(localStorage.getItem(TAB_KEY)
 const tabOfGame = () => app.mode === 'pve' && !app.variant ? 'quick' : 'special';
 
 // emblema del mazo: tres cartas apiladas con el dorso del color de la baraja
-const EMBLEM = {
-  club: '<path d="M34 16 26 42" stroke="#F1F1DC" stroke-width="3.4" stroke-linecap="round"/><path d="M22 41h9" stroke="#F1F1DC" stroke-width="4" stroke-linecap="round"/><circle cx="37" cy="41" r="3.4" fill="#F1F1DC"/>',
-  drop: '<path d="M30 14c6 9 11 15 11 21a11 11 0 0 1-22 0c0-6 5-12 11-21z" fill="#F1F1DC"/><path d="M25 35a5 5 0 0 0 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".45"/>',
-  mill: '<path d="M30 30 30 46M24 46h12" stroke="#F1F1DC" stroke-width="3" stroke-linecap="round"/><g fill="#F1F1DC"><path d="M30 30 22 18l5-2z"/><path d="M30 30 42 22l2 5z"/><path d="M30 30 38 42l-5 2z"/><path d="M30 30 18 38l-2-5z"/></g><circle cx="30" cy="30" r="3" fill="currentColor"/>',
-  prism: '<path d="M30 13 44 40H16Z" fill="rgba(255,255,255,.9)"/><path d="M30 13 44 40 30 33Z" fill="rgba(255,255,255,.55)"/><path d="M8 30h12M40 30l12-5M40 32l12 2M40 35l12 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+// icono de cada baraja: una carta con su escena (clásica: el green; agua: la gota sobre las olas; minigolf: el molino
+// de madera; Ultimate: el prisma que abre la luz en un arcoíris). Al pasar por la tarjeta se animan (features.css)
+const CARD_CLIP = id => `<clipPath id="dk-${id}-c"><rect x="11" y="5" width="38" height="50" rx="7"/></clipPath>`;
+const cardBase = (id, top, bottom) => `<defs><linearGradient id="dk-${id}-g" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>${CARD_CLIP(id)}</defs>` +
+  `<rect x="11" y="5" width="38" height="50" rx="7" fill="url(#dk-${id}-g)"/>`;
+const frame = '<rect x="14" y="8" width="32" height="44" rx="5" fill="none" stroke="rgba(241,241,220,.55)" stroke-width="1.2"/>';
+const FLAGP = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="1.4" fill="#242424"/><path d="M${x} ${y} V${y - 13}" stroke="#F1F1DC" stroke-width="1.4" stroke-linecap="round"/><path d="M${x + .4} ${y - 13} L${x + 7} ${y - 10.6} L${x + .4} ${y - 8.2} Z" fill="#E8873A"/>`;
+const DECK_ART = {
+  classic: () => cardBase('classic', '#6BAA60', '#3F7440') +
+    `<g clip-path="url(#dk-classic-c)"><g stroke="rgba(255,255,255,.08)" stroke-width="5">${[0, 10, 20, 30, 40, 50].map(i => `<path d="M${i - 10} 60 L${i + 22} 0"/>`).join('')}</g>` +
+    `<ellipse cx="30" cy="40" rx="15" ry="8.5" fill="#79A456"/><ellipse cx="30" cy="40" rx="12.5" ry="6.6" fill="#8DB05F"/></g>` +
+    FLAGP(33, 40) + `<circle cx="24" cy="42" r="2.3" fill="#fff"/><circle cx="24.6" cy="42.8" r="2.3" fill="rgba(20,40,20,.18)" style="mix-blend-mode:multiply"/>` +
+    `<path d="M20 15 L25 29" stroke="#F1F1DC" stroke-width="1.8" stroke-linecap="round"/><path d="M24 29 h4" stroke="#F1F1DC" stroke-width="2.4" stroke-linecap="round"/>` + frame,
+  water: () => cardBase('water', '#4FC1D6', '#1F6F80') +
+    `<g clip-path="url(#dk-water-c)"><g class="dkWave"><path d="M-10 43 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V60 H-10Z" fill="#2F8FA3"/>` +
+    `<path d="M-16 47 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V60 H-16Z" fill="#1F6F80" opacity=".9"/></g>` +
+    `<ellipse class="dkRipple" cx="30" cy="40" rx="9" ry="2.4" fill="none" stroke="rgba(241,251,255,.7)" stroke-width="1"/>` +
+    `<g transform="translate(40 45)"><ellipse rx="5" ry="2.2" fill="#5E9A58"/><path d="M0 0 L5 -1 L4 1Z" fill="#1F6F80"/></g></g>` +
+    `<path d="M30 12c5 7.5 9 12 9 17.5a9 9 0 0 1-18 0c0-5.5 4-10 9-17.5z" fill="#F1F1DC"/><path d="M30 14.5c4 6 7 10 7 14.5a7 7 0 0 1-3 5.8" fill="none" stroke="#9FDCEB" stroke-width="1.4" stroke-linecap="round"/>` +
+    `<ellipse cx="26.5" cy="27" rx="2" ry="3.4" fill="#fff" transform="rotate(-18 26.5 27)"/>` + frame,
+  mill: () => cardBase('mill', '#D8A46A', '#9C6A38') +
+    `<g clip-path="url(#dk-mill-c)"><g stroke="rgba(92,58,28,.22)" stroke-width=".9" fill="none">${[9, 15, 21, 27, 33, 39].map(y => `<path d="M8 ${y} q12 3 22 0 t24 0"/>`).join('')}</g>` +
+    `<rect x="11" y="42" width="38" height="14" fill="#5FA94F"/><rect x="11" y="42" width="38" height="2" fill="rgba(255,255,255,.18)"/></g>` +
+    `<path d="M26 44 L27.5 26 H32.5 L34 44 Z" fill="#F1F1DC" stroke="#7A5230" stroke-width="1"/><path d="M28.6 44 v-5 a1.4 1.4 0 0 1 2.8 0 v5" fill="#7A5230"/>` +
+    `<path d="M25.5 26.5 L30 21 L34.5 26.5 Z" fill="#B5473F"/>` +
+    `<g class="dkSpin">${[0, 90, 180, 270].map(a => `<g transform="rotate(${a + 20} 30 24)"><rect x="28.6" y="10" width="2.8" height="13" rx="1" fill="#F1F1DC" stroke="#7A5230" stroke-width=".7"/><path d="M28.6 13h2.8M28.6 16.5h2.8M28.6 20h2.8" stroke="#7A5230" stroke-width=".6"/></g>`).join('')}<circle cx="30" cy="24" r="1.6" fill="#7A5230"/></g>` +
+    `<circle cx="40" cy="47.5" r="2.2" fill="#fff"/><path d="M15 50 q8 -5 12 0" stroke="#F1F1DC" stroke-width="1.2" fill="none" opacity=".7"/>` + frame,
+  prism: () => cardBase('prism', '#4A3A86', '#241A4A') +
+    `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
+    `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +
+    `<path d="M8 36 L27 29" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>` +
+    `<g stroke-width="2.2" stroke-linecap="round">${['#FF6FA8', '#FFB347', '#FFE36B', '#7EE8C8', '#6FA8FF', '#B98CFF'].map((c, i) => `<path d="M33 ${28 + i * 1.1} L52 ${20 + i * 5}" stroke="${c}"/>`).join('')}</g></g>` +
+    `<path d="M30 15 L40 36 H20 Z" fill="rgba(255,255,255,.22)" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M30 15 L40 36 L30 31 Z" fill="rgba(255,255,255,.35)"/>` +
+    `<g class="dkTw" fill="#fff"><path d="M19 13 l1 2.6 2.6 1 -2.6 1 -1 2.6 -1 -2.6 -2.6 -1 2.6 -1z"/><path d="M41 44 l.7 1.8 1.8.7 -1.8.7 -.7 1.8 -.7 -1.8 -1.8 -.7 1.8 -.7z" opacity=".8"/></g>` + frame,
 };
-const IRI_DEF = '<defs><linearGradient id="iriDeck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#C39BFF"/></linearGradient></defs>';
-const deckArt = dk0 => { const dk = dk0.ultimate ? { ...dk0, color: 'url(#iriDeck)' } : dk0; return `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true" style="color:${dk0.color}">${dk0.ultimate ? IRI_DEF : ''}` +
-  // una sola carta (sin cartas desplazadas por detrás)
-  `<rect x="13" y="7" width="34" height="46" rx="6" fill="${dk.color}"/><rect x="16.5" y="10.5" width="27" height="39" rx="4" fill="none" stroke="rgba(241,241,220,.45)" stroke-width="1.4"/>` +
-  `<g transform="translate(0 0)">${EMBLEM[dk.emblem]}</g></svg>`; };
+const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true">${(DECK_ART[dk.emblem === 'club' ? 'classic' : dk.emblem === 'drop' ? 'water' : dk.emblem] || DECK_ART.classic)()}</svg>`;
 
 export function openModes(tab) {
   hideWin();
@@ -358,13 +383,13 @@ export function openModes(tab) {
   // mini estadísticas (jugadas · victorias · %), como las de las barajas pero en una línea
   const mini = (s = {}) => { const p = s.p || 0, w = Math.min(s.w || 0, p || s.w || 0);
     return `<span class="miniSt"><span><b>${p}</b> ${esc(t('decks.played').toLowerCase())}</span><span><b>${w}</b> ${esc(t('decks.won').toLowerCase())}</span>` +
-      `<span><b>${p ? Math.round(100 * Math.min(w, p) / p) + '%' : '—'}</b></span></span>`; };
+      `<span><b>${p ? Math.round(100 * Math.min(w, p) / p) : 0}%</b></span></span>`; };
 
   /* ---- partidas rápidas: una tarjeta por baraja ---- */
   const deckCard = dk => {
     const st = R.decks[dk.id] || { p: 0, w: 0 }, last = !dk.locked && lastPve(dk.id);
     const saved = !dk.locked && qsave && (qsave.pveCfg?.deck || 'classic') === dk.id;
-    const pct = st.p ? Math.round(100 * st.w / st.p) + '%' : '—';
+    const pct = (st.p ? Math.round(100 * st.w / st.p) : 0) + '%';
     const btns = dk.locked
       ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
       : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '') +

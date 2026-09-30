@@ -440,7 +440,8 @@ async function phonePage(vp = PHONE) {
   await p.goto(URL, { waitUntil: 'networkidle0' });
   await p.evaluate(() => { localStorage.clear();
     localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
-    localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 })); });
+    localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 }));
+    localStorage.setItem('chaoticgolf_prefs', JSON.stringify({ speed: 'fast', botFast: true })); }); // (los bots, rápidos: en Ultimate las jugadas son largas)
   await p.reload({ waitUntil: 'networkidle0' });
   await p.waitForFunction(() => window.chaoticGolf?.app.game); await sleep(500);
   return p;
@@ -450,7 +451,7 @@ async function phoneQuick(p, cfg = {}, deck = 'classic') {
     app.pveCfg = { ...app.pveCfg, size: 'm', opps: 2, diff: 'normal', ...cfg, deck }; m.openPveSetup(deck); m.startPveMatch(); }, cfg, deck);
   await sleep(500); await p.evaluate(() => document.querySelectorAll('#dialog[open]').forEach(d => d.close())); await sleep(700);
   // turno de la persona, sin nada en marcha
-  await p.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting && !app.game.pending; }, { timeout: 60000 });
+  await p.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting && !app.game.pending; }, { timeout: 120000 });
 }
 const rect = (p, sel) => p.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; }, sel);
 const overlap = (a, b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
@@ -557,13 +558,15 @@ it('final de partida: cabe sin desplazarse (móvil pequeño y ordenador bajo), t
       ctl.setStats({ golpes: 14, hundidas: 1, colisiones: 5, portales: 2, caidas: 1, turnos: 7, longest: { n: 7, p: me }, hitsOnMe: { [(me + 1) % S.nPlayers]: 3 }, cardsUsed: { palo3: 4 }, route });
       const w = S.balls.find(x => x.player !== me);
       for (const o of S.balls) if (o !== w && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;
+      S.hands.forEach((h, i) => { if (i !== w.player) S.hands[i] = h.map(() => 'palo2'); }); // (sin naranjas: nadie evita el JAQUE)
       w.x = S.hole.x; w.y = S.hole.y + 1; S.turn = w.player; S.hands[w.player][0] = 'palo1';
       app.ai.acting = true; ctl.clickCard(w.player, 0); ctl.clickCell(S.hole.x, S.hole.y); app.ai.acting = false; });
     await sleep(2500);
     await p.evaluate(() => { if (!document.getElementById('winOverlay').classList.contains('visible')) window.chaoticGolf.ctl.confirmWin(); });
     await sleep(900);
     const fits = () => p.evaluate(() => { const o = document.getElementById('winOverlay'); return o.classList.contains('visible') && o.scrollHeight <= o.clientHeight + 1; });
-    assert.ok(await fits(), 'el final cabe ' + vp.width + '×' + vp.height);
+    const dbg = await p.evaluate(() => { const o = document.getElementById('winOverlay'); return { visible: o.classList.contains('visible'), sobra: o.scrollHeight - o.clientHeight, winner: window.chaoticGolf.app.game.S.winner }; });
+    assert.ok(await fits(), 'el final cabe ' + vp.width + '×' + vp.height + ' ' + JSON.stringify(dbg));
     await p.evaluate(() => document.querySelector('[data-act="why"]')?.click()); await sleep(300);
     assert.ok(await fits(), 'con "¿por qué he perdido?" abierto, también ' + vp.width + '×' + vp.height);
     await p.close();

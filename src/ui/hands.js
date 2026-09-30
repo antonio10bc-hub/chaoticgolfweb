@@ -18,6 +18,7 @@ import { startReaction, endReaction } from './hotseat.js';
 import { previewCard, hidePreview } from './preview.js';
 import { botWhyHTML } from './hud.js';
 import { isPhone } from './device.js';
+import { skinSeat, equippedSkin, skinBall } from './skins.js';
 
 let prevHands = []; // tamaños de mano en el último render (para el robo animado)
 let prevOwner = -1;
@@ -172,8 +173,16 @@ function renderDock(g, owner) {
   const status = S.winners.includes(owner) ? t('seat.inHole')
     : jaqueCta(g, owner) ? t('seat.canReact')
     : myTurn ? t('seat.yourTurn') : t('seat.waitName', { name: displayName(S.turn) });
-  $('dockOwner').innerHTML = avatarHTML(owner) +
-    `<span class="ownerTxt"><b>${esc(name)}</b><small>${esc(status)}</small></span>`;
+  // tu pelota (con la que llevas puesta) en lugar del círculo con "J1", flotando: se repinta solo si cambia (si no,
+  // la animación volvería a empezar en cada jugada); el nombre y el estado, aparte
+  const box = $('dockOwner');
+  if (!box._ready) { box.innerHTML = '<span class="dockBall" aria-hidden="true"></span><span class="ownerTxt"></span>'; box._ready = true; }
+  const sk = owner === skinSeat(g) ? equippedSkin() : null;
+  const ball = skinBall(sk, { size: 40, color: col });
+  const bEl = box.firstChild, tEl = box.lastChild;
+  if (bEl._html !== ball) { bEl.innerHTML = ball; bEl._html = ball; }
+  const txt = `<b>${esc(name)}</b><small>${esc(status)}</small>`;
+  if (tEl._html !== txt) { tEl.innerHTML = txt; tEl._html = txt; }
   const hand = $('hands');
   hand.innerHTML = S.hands[owner].map((_, i) => cardHTML(g, owner, i)).join('') ||
     `<div class="emptyHand">${esc(t('hands.empty'))}</div>`;

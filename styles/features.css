@@ -1520,3 +1520,20 @@ html.hiContrast .seat { opacity: .75; } html.hiContrast .seat.active, html.hiCon
 
 /* compartir el reto diario: copiado (se queda así) */
 #winBtns .winShare.done, #winBtns .winShare.done:hover { --b-bg: var(--grass-dark); --b-fg: var(--cream); --b-line: var(--grass-dark); background-color: var(--grass-dark); animation: none; }
+
+/* iconos de las barajas: al pasar por la tarjeta, la escena se anima (quietos en reposo: sin gasto) */
+.dkArt .dkSpin { transform-box: view-box; transform-origin: 30px 24px; }
+.dkArt .dkWave { transform-box: view-box; }
+.dkArt .dkRipple { transform-box: fill-box; transform-origin: center; }
+.deckCard:hover .dkArt .dkSpin, .deckCard:focus-within .dkArt .dkSpin { animation: dkSpin 2.4s linear infinite; }
+.deckCard:hover .dkArt .dkWave, .deckCard:focus-within .dkArt .dkWave { animation: dkWave 1.6s ease-in-out infinite alternate; }
+.deckCard:hover .dkArt .dkRipple, .deckCard:focus-within .dkArt .dkRipple { animation: dkRipple 1.6s ease-out infinite; }
+.deckCard:hover .dkArt .dkTw, .deckCard:focus-within .dkArt .dkTw { animation: dkTw 1.2s ease-in-out infinite; }
+.dkArt .dkTw { transform-box: fill-box; transform-origin: center; }
+.deckCard:hover .dkArt, .deckCard:focus-within .dkArt { transform: rotate(-4deg) scale(1.06); }
+.dkArt { transition: transform .35s cubic-bezier(.3,1.4,.5,1); filter: drop-shadow(0 4px 8px rgba(20,40,20,.25)); }
+@keyframes dkSpin { to { transform: rotate(360deg); } }
+@keyframes dkWave { to { transform: translateX(-6px); } }
+@keyframes dkRipple { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+@keyframes dkTw { 50% { transform: scale(.4) rotate(45deg); opacity: .4; } }
+html.reduceMotion .deckCard .dkArt * { animation: none !important; }

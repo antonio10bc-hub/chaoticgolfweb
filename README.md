@@ -141,6 +141,10 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
 
+**Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
+
+**Textos:** sin rayas (—): el historial del motor las lleva (el oráculo compara su texto) y se cambian por dos puntos al mostrarlo (`logText` en `hud.js`).
+
 **Aspecto de las cartas:** cada carta declara `face: { art, value }` en su módulo; las ilustraciones SVG
 están en `src/ui/card-art.js` (añadir una ilustración = una función más en `ARTS`). La descripción del
 tooltip sale de `cards.<id>.desc` en i18n, y el motivo de bloqueo de `blockedReason`.
@@ -163,6 +167,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
  [ tu avatar ]            [ tus cartas ]            [Descartar] [TERMINAR TURNO]
 ```
 
+- **Tu pelota en la bandeja:** en lugar del círculo con "J1", tu pelota con la que llevas puesta, flotando (en el móvil, más pequeña a la izquierda de la mano; en horizontal, encima). Se repinta solo si cambia, así la animación no vuelve a empezar en cada jugada.
+- **JAQUE sin atajo:** no hay botón de "Nadie reacciona": la partida se resuelve sola, con la cuenta atrás si alguien puede reaccionar con una naranja (así nadie fuerza la victoria).
 - La píldora central dice siempre de quién es el turno (color del jugador) y cuántas negras le quedan.
 - Los asientos marcan al jugador activo, si un bot está pensando, si alguien puede reaccionar en un JAQUE.
 - Cada carta jugada (tuya o de un bot) crece sobre su origen y reaparece un instante en descartes; al robar,

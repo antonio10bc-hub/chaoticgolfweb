@@ -77,6 +77,8 @@ export function renderHud() {
 }
 
 /* ---------- historial legible: agrupado por turnos, con icono y color de cada jugador ---------- */
+// (el motor escribe el historial con rayas, "JAQUE — …"; el oráculo de reglas compara ese texto, así que se cambian al mostrarlo)
+const logText = x => String(x).replace(/\s+[—–]\s+/g, ': ');
 const LOG_ICON = {
   plays: 'i-hand', collision: 'i-burst', collisionDedo: 'i-burst', ballPortal: 'i-spiral', holePortal: 'i-spiral', holeInitPortal: 'i-spiral',
   ballFell: 'i-out', holeFell: 'i-out', ballHoled: 'i-flag', holeSwallows: 'i-flag', jaque: 'i-flag', tieInPlay: 'i-flag',
@@ -90,14 +92,14 @@ export const setLogMine = v => { logMine = v; };
 function logHTML(S) {
   const meta = S.logK && S.logK.length === S.log.length ? S.logK : null;
   const n = Math.min(S.log.length, 90);
-  if (!meta) return S.log.slice(0, 60).map(x => `<div class="lg">${esc(x)}</div>`).join(''); // partidas antiguas: texto plano
+  if (!meta) return S.log.slice(0, 60).map(x => `<div class="lg">${esc(logText(x))}</div>`).join(''); // partidas antiguas: texto plano
   const me = dockOwner(app.game);
   const line = i => {
     const [k, ...pl] = meta[i];
     const who = pl[0];
     const col = who != null && who < S.nPlayers ? pColor(who) : '';
     return `<div class="lg${who != null ? ' who' : ''}"${col ? ` style="--pc:${col}"` : ''}>` +
-      `<svg class="i" aria-hidden="true"><use href="#${LOG_ICON[k] || 'i-list'}"/></svg><span>${esc(S.log[i])}</span></div>`;
+      `<svg class="i" aria-hidden="true"><use href="#${LOG_ICON[k] || 'i-list'}"/></svg><span>${esc(logText(S.log[i]))}</span></div>`;
   };
   // de lo más nuevo a lo más viejo: cada "Turno de …" cierra el grupo de su turno
   const groups = []; let cur = [];
@@ -110,7 +112,7 @@ function logHTML(S) {
     const shown = logMine ? items.filter(i => meta[i].slice(1).includes(me)) : items;
     if (logMine && !shown.length) return '';
     const p = head != null ? meta[head][1] : null;
-    const h = head != null ? `<div class="lgHead" style="--pc:${pColor(p)}">${avatarHTML(p, 'xs')}<b>${esc(S.log[head])}</b></div>` : '';
+    const h = head != null ? `<div class="lgHead" style="--pc:${pColor(p)}">${avatarHTML(p, 'xs')}<b>${esc(logText(S.log[head]))}</b></div>` : '';
     return `<div class="lgGroup">${h}${shown.map(line).join('')}</div>`;
   }).join('') || `<div class="lg muted">${esc(t('hud.logNone'))}</div>`;
 }

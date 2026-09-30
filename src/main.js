@@ -88,7 +88,6 @@ bindMyBall();
 $('editorBtn').addEventListener('click', () => openEditor());
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
-$('jaque').addEventListener('click', e => { if (e.target.closest('[data-act="confirmWin"]')) ctl.confirmWin(); });
 $('logTab').addEventListener('click', () => $('logPanel').classList.toggle('open'));
 $('logClose').addEventListener('click', () => $('logPanel').classList.remove('open'));
 $('deckPile').addEventListener('click', () => $('deckPop').classList.toggle('open'));

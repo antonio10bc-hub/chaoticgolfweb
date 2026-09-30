@@ -158,12 +158,13 @@ html.phone .hint .hintCard { width: 28px; height: 28px; }
 html.phone .hintBtns .stepBtn { min-height: 36px; font-size: 15px; }
 html.phone .hint button { min-height: 36px; }
 html.phone #dockRow {
-  width: 100%; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
+  width: 100%; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px;
   padding: 7px 8px 7px 8px; border-radius: 20px;
   background-color: color-mix(in srgb, var(--dock-bg) 92%, transparent); box-shadow: 0 6px 18px rgba(20,40,20,.18);
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), border-color .25s;
 }
-html.phone #dockOwner { display: none; }
+html.phone #dockOwner { display: flex; } /* (solo tu pelota, sin texto: styles/skins.css) */
+html.phone #dockOwner .ownerTxt { display: none; }
 html.phone #hands { min-height: 0; gap: 7px; padding: 4px 0 0; justify-content: center; }
 html.phone #hands .card { --cw: clamp(58px, 17.5vmin, 96px); }
 /* manos grandes: las cartas se solapan un poco en lugar de salirse */
@@ -188,7 +189,7 @@ html.phone #dock.waiting:not(.cta) #dockRow { transform: translateY(4px) scale(.
 html.phone #dock.waiting:not(.cta) #hands .card:not(.orange), html.phone #dock.waiting:not(.cta) #turnActions { opacity: .55; }
 html.phone #turnActions { transition: opacity .3s var(--ease-out); }
 /* zurdos: los botones de turno a la izquierda */
-html.phone.leftHand #dockRow { grid-template-columns: auto minmax(0, 1fr); }
+html.phone.leftHand #dockRow { grid-template-columns: auto minmax(0, 1fr) auto; }
 html.phone.leftHand #turnActions { order: -1; }
 
 /* ---------- JAQUE: arriba, sobre la fila de rivales (el tablero queda libre para reaccionar) ---------- */
@@ -255,7 +256,8 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone #dock { display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; }
   html.phone #actionBar { height: auto; margin-bottom: 8px; justify-content: center; }
   html.phone #actionBar > .hint { position: static; }
-  html.phone #dockRow { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: 8px; padding: 8px; }
+  html.phone #dockRow { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 6px 8px; padding: 8px; }
+  html.phone #dockOwner { justify-content: center; } /* (tu pelota, encima de la mano) */
   html.phone.leftHand #dockRow { grid-template-columns: minmax(0, 1fr); }
   html.phone.leftHand #turnActions { order: 0; }
   html.phone #hands { flex-wrap: wrap; }

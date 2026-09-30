@@ -65,7 +65,7 @@ export function keyMomentHTML() {
   const card = CARDS[m.card];
   const tip = t('why.tip.' + (m.why?.key || 'generic'));
   return `<div class="whyHead"><b>${esc(t(key ? 'why.keyTitle' : 'why.finalTitle'))}</b>` +
-    `<p>${esc(t('why.played', { name: displayName(m.actor), card: card ? (card.short || card.name) : '' }))} — ${esc(whyText(m.why || { key: 'generic' }, m.actor))}</p></div>` +
+    `<p>${esc(t('why.played', { name: displayName(m.actor), card: card ? (card.short || card.name) : '' }))}: ${esc(whyText(m.why || { key: 'generic' }, m.actor))}</p></div>` +
     `<div class="whyBoards"><figure>${miniBoard(m.before)}<figcaption>${esc(t('why.before'))}</figcaption></figure>` +
     `<svg class="i whyArrow" aria-hidden="true"><use href="#i-arrow-r"/></svg>` +
     `<figure>${miniBoard(m.after)}<figcaption>${esc(t('why.after'))}</figcaption></figure></div>` +
