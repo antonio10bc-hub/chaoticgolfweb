@@ -477,6 +477,7 @@ export default {
     reset: 'Reset stats', resetSub: 'Sets every counter back to zero', resetConfirm: 'Reset all stats? This can’t be undone.',
   },
   tutorial: {
+    orange: 'Orange cards can be played at any time, even when it isn\'t your turn!',
     ball: 'This is your ball.', hole: 'And this is the hole: get the ball in to win.',
     hand: 'These are your cards. Tap one to use it.',
     target: 'The light squares are the possible destinations. Hover to see the path and tap one.',

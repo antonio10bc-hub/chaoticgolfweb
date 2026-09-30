@@ -299,7 +299,7 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(100px + env(safe-area-inset-right, 0px)); }
   html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
   html.phone body:not([data-screen="game"]) #profileBtn { top: 12px; bottom: auto; left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); }
-  html.phone .mBottom { left: auto; right: calc(142px + env(safe-area-inset-right, 0px)); top: 12px; bottom: auto; }
+  html.phone #langBtns { top: 15px; bottom: auto; right: calc(146px + env(safe-area-inset-right, 0px)); } /* (banderas: a la izquierda del sonido) */
   /* Lo básico: cabecera compacta y tarjetas en horizontal (miniatura a la izquierda), 4 × 2 sin desplazarse */
   html.phone #storyScreen { padding-top: 14px; padding-bottom: 12px; }
   html.phone #storyScreen .sTitle { font-size: clamp(30px, 10vh, 46px); }

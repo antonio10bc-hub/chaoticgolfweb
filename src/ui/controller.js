@@ -25,7 +25,7 @@ import { isBot, viewer, multiHuman, displayName, avatarHTML } from './players.js
 import { resetMoods, clearBubbles } from './persona.js';
 import { botPlayed, botsGameOver } from './bot-react.js';
 import { passCheck } from './hotseat.js';
-import { tutorialEvent } from './tutorial.js';
+import { tutorialEvent, orangeCheck } from './tutorial.js';
 import { unlock } from './achievements.js';
 import { setBotTempo } from './prefs.js';
 import { clearPause } from './pause.js';
@@ -352,6 +352,7 @@ export function render() {
   if (app.armed) previewCard(app.armed.p, app.armed.idx, { targets: app.armed.targets }); // táctil: lo que hará la carta elegida
   paintLab();       // panel del laboratorio del creador
   autoZoom();       // táctil, tableros grandes: la cámara se acerca a los destinos al elegir
+  orangeCheck();    // la primera naranja en tu mano: aviso de que se juegan en cualquier momento
 }
 
 function renderPieces() {

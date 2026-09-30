@@ -11,6 +11,7 @@ import { cardArtHTML } from './card-art.js';
 import { sfx } from '../audio/sfx.js';
 import { isPhone } from './device.js';
 import { track } from './analytics.js';
+import { viewer, isBot, handRevealed } from './players.js';
 
 const KEY = 'chaoticgolf_tutorial';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -90,6 +91,7 @@ function showCoach({ target, text = '', btn = null, card = null }) {
   const cardHtml = def ? `<div class="coachCard"><span class="hintCard ${def.color}">${cardArtHTML(def)}</span>` +
     `<span><b>${esc(t(groupOf(card) === 'hoyo' || groupOf(card) === 'oHoyo' ? 'tutorial.holeCards' : `cards.${card}.name`, { card: def.short || def.name }))}</b>` +
     `<small>${esc(t('cardKind.' + def.color))}</small></span></div><p>${esc(t(`tutorial.card.${groupOf(card)}`, { card: def.name }))}</p>` : '';
+  el.classList.remove('orange');
   el.innerHTML = `<div class="coachBody">${cardHtml}${text ? `<p>${esc(text)}</p>` : ''}</div>` +
     `<div class="coachBtns">${btn ? `<button class="btn-primary btn-sm" data-coach="${btn}">${esc(t(btn === 'next' ? 'tutorial.next' : 'tutorial.ok'))}</button>` : ''}` +
     `<button class="btn-text btn-sm" data-coach="skip">${esc(t(step ? 'tutorial.skip' : 'common.close'))}</button></div>`;
@@ -99,7 +101,7 @@ function showCoach({ target, text = '', btn = null, card = null }) {
   sfx('select');
 }
 function hideCoach() {
-  $('coach')?.classList.remove('visible');
+  $('coach')?.classList.remove('visible', 'orange');
   $('coachRing')?.classList.remove('visible');
 }
 
@@ -137,6 +139,37 @@ function place() {
   el.dataset.side = side;
   el.style.setProperty('--ax', Math.max(18, Math.min(w - 18, r.left + r.width / 2 - x)) + 'px');
   el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+}
+
+/* ---------- cartas naranjas: se pueden jugar en cualquier momento ----------
+   La primera vez que tienes una naranja en la mano (en cualquier modo), un aviso naranja bien claro que la
+   señala. Una sola vez en este dispositivo ("Repetir el tutorial" lo vuelve a enseñar). Espera a que no haya
+   animaciones, ni otro bocadillo, ni capas encima (pausa, fin de partida, pasar el móvil, diálogos). */
+let orangeTimer = null;
+export function orangeCheck() {
+  const el = $('coach');
+  // (ya jugada: el aviso no se queda flotando sin su carta)
+  if (el?.classList.contains('orange') && !document.querySelector(el.dataset.target)) hideCoach();
+  if (load().orangeTip || orangeTimer) return;
+  orangeTimer = setTimeout(() => {
+    orangeTimer = null;
+    const g = app.game, d = load();
+    if (d.orangeTip || !g || app.screen !== 'game' || step || app.animating || app.animQueue.length || el.classList.contains('visible')) return;
+    if (document.querySelector('dialog[open], #pauseOverlay.visible, #winOverlay.visible, #passScreen.visible')) return;
+    const me = viewer();
+    if (isBot(me) || !handRevealed(me)) return;
+    const idx = g.S.hands[me]?.findIndex(k => CARDS[k]?.color === 'orange');
+    const sel = `#hands .card[data-p="${me}"][data-idx="${idx}"]`;
+    if (idx == null || idx < 0 || !document.querySelector(sel)) return;
+    d.orangeTip = true; save(d);
+    el.innerHTML = `<div class="coachBody"><div class="coachCard"><span class="hintCard orange">${cardArtHTML(CARDS[g.S.hands[me][idx]])}</span>` +
+      `<b>${esc(t('tutorial.orange'))}</b></div></div>` +
+      `<div class="coachBtns"><button class="btn-sm" data-coach="ok">${esc(t('tutorial.ok'))}</button></div>`;
+    el.classList.add('visible', 'orange');
+    el.dataset.target = sel;
+    place();
+    sfx('select');
+  }, 650);
 }
 
 export function bindTutorial() {

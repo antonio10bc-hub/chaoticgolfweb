@@ -480,6 +480,7 @@ export default {
     reset: 'Borrar estadísticas', resetSub: 'Pone todos los contadores a cero', resetConfirm: '¿Borrar todas las estadísticas? No se puede deshacer.',
   },
   tutorial: {
+    orange: '¡Las cartas naranjas se pueden usar en cualquier momento, incluso aunque no sea tu turno!',
     ball: 'Esta es tu pelota.', hole: 'Y este es el hoyo: mete la pelota dentro para ganar.',
     hand: 'Estas son tus cartas. Toca una para usarla.',
     target: 'Las casillas claras son los destinos posibles. Pasa por encima para ver el recorrido y toca una.',

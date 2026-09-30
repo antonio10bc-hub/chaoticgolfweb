@@ -3,7 +3,7 @@
 // El panel rápido de sonido comparte los mismos ajustes (se mantienen sincronizados).
 import { app } from './app.js';
 import { $, esc } from './dom.js';
-import { t, getLang } from '../i18n/index.js';
+import { t } from '../i18n/index.js';
 import { prefs, setPref, resetPrefs, THEMES, TRACKS, UI_MODES, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
 import { resetModeIntros } from './mode-intro.js';
 import { resetDeckIntros } from './deck-intro.js';
@@ -39,7 +39,6 @@ function settingsHTML() {
   </section>
   <section><h4>${esc(t('settings.gameH'))}</h4>
     <div class="setRow seg"><span>${esc(t('settings.speed'))}</span>${seg('speed', ['slow', 'normal', 'fast'], prefs.speed)}</div>
-    <div class="setRow seg"><span>${esc(t('lang.label'))}</span><span class="segBtns">${['es', 'en'].map(l => `<button class="btn-sm" data-lang="${l}" aria-pressed="${l === getLang()}">${esc(t('lang.' + l))}</button>`).join('')}</span></div>
     <div class="setRow seg"><span>${esc(t('settings.ui'))}</span>${seg('ui', UI_MODES, prefs.ui, o => t('settings.ui_' + o))}</div>
     <div class="setRow col"><span>${esc(t('settings.theme'))}${currentThemeSlot() !== 'default' ? ` <small class="themeFor">· ${esc(t('settings.themeFor_' + currentThemeSlot()))}</small>` : ''}</span><div class="themeOpts">${THEMES.map(themeBtn).join('')}</div></div>
     ${toggle('setBotFast', prefs.botFast, t('settings.botFast'), t('settings.botFastSub'))}

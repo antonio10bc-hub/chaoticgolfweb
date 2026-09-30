@@ -22,7 +22,7 @@ async function fresh(seed = {}) {
   await page.bringToFront();
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
-    { chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
+    { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
       chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
@@ -197,6 +197,22 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
   assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
 });
 
+it('cartas naranjas: la primera vez que tienes una, un aviso naranja dice que se juegan en cualquier momento (una sola vez)', async () => {
+  await fresh({ chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no'].map(k => [k, 1])) } });
+  await click('#storyBtn'); await sleep(300);
+  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'no']; ctl.render(); });
+  await sleep(1100);
+  const tip = await app(() => { const c = document.getElementById('coach'); return { on: c.classList.contains('visible') && c.classList.contains('orange'), txt: c.textContent, target: c.dataset.target }; });
+  assert.ok(tip.on && /cualquier momento/.test(tip.txt) && /no sea tu turno/.test(tip.txt), JSON.stringify(tip));
+  assert.equal(tip.target, '#hands .card[data-p="0"][data-idx="1"]', 'señala la naranja');
+  await click('#coach [data-coach="ok"]'); await sleep(200);
+  assert.ok(!await app(() => document.getElementById('coach').classList.contains('visible')), 'se cierra');
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_tutorial')).orangeTip), true, 'recordado');
+  await app(() => window.chaoticGolf.ctl.render()); await sleep(1100);
+  assert.ok(!await app(() => document.getElementById('coach').classList.contains('visible')), 'una sola vez');
+});
+
 it('modos de juego: dos pestañas (una a la vez) y 4 barajas con estadísticas', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
@@ -242,6 +258,24 @@ it('baraja de agua: sin búnkeres ni portales, con río y lago, y fondo de lago'
     return { scene: document.getElementById('gameScreen').dataset.scene, bunker: all.filter(k => k === 'bunker' || k === 'portal').length,
       water: all.filter(k => k === 'river' || k === 'lake').length }; });
   assert.deepEqual(r, { scene: 'lake', bunker: 0, water: 10 });
+});
+
+it('idioma: dos banderas en el menú (abajo a la derecha) cambian el idioma en vivo; ya no está en Ajustes', async () => {
+  await fresh();
+  const flags = await app(() => [...document.querySelectorAll('#langBtns .langBtn')].map(b => { const r = b.getBoundingClientRect(); return { l: b.dataset.lang, on: b.getAttribute('aria-pressed'), w: Math.round(r.width), right: Math.round(innerWidth - r.right), bottom: Math.round(innerHeight - r.bottom) }; }));
+  assert.deepEqual(flags.map(f => [f.l, f.on]), [['es', 'true'], ['en', 'false']], JSON.stringify(flags));
+  assert.ok(flags.every(f => f.w === 30 && f.right < 70 && f.bottom < 30), 'pequeñas, abajo a la derecha: ' + JSON.stringify(flags));
+  await click('#langBtns [data-lang="en"]'); await sleep(250);
+  assert.equal(await app(() => document.documentElement.lang), 'en');
+  assert.equal(await app(() => document.querySelector('#langBtns [data-lang="en"]').getAttribute('aria-pressed')), 'true');
+  assert.match(await app(() => document.getElementById('storyBtn').textContent), /basics/i);
+  await click('#langBtns [data-lang="es"]'); await sleep(250);
+  assert.match(await app(() => document.getElementById('storyBtn').textContent), /básico/i);
+  // fuera del menú no se ven, y Ajustes ya no tiene idioma
+  await click('#modesBtn'); await sleep(400);
+  assert.equal(await app(() => getComputedStyle(document.getElementById('langBtns')).display), 'none');
+  await click('#sndCfgBtn'); await sleep(300);
+  assert.equal(await app(() => document.querySelectorAll('#setBox [data-lang], .setBox [data-lang]').length), 0);
 });
 
 it('menú: el botón de Lo básico dice cuántos llevas y, con todos, un tic', async () => {
@@ -439,7 +473,7 @@ async function phonePage(vp = PHONE) {
   await p.setUserAgent(IPHONE_UA); await p.setViewport(vp);
   await p.goto(URL, { waitUntil: 'networkidle0' });
   await p.evaluate(() => { localStorage.clear();
-    localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
+    localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
     localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 }));
     localStorage.setItem('chaoticgolf_prefs', JSON.stringify({ speed: 'fast', botFast: true })); }); // (los bots, rápidos: en Ultimate las jugadas son largas)
   await p.reload({ waitUntil: 'networkidle0' });

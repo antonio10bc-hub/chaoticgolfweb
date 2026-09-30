@@ -178,6 +178,13 @@ html.reduceMotion #previewSvg .pvTarget { animation: none; }
 #coachRing.visible { opacity: 1; animation: ringPulse 1.6s ease-in-out infinite; }
 #coachRing.round { border-radius: 50%; }
 @keyframes ringPulse { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 0 14px rgba(232,135,58,.12); } }
+/* aviso de las cartas naranjas: el bocadillo, en naranja y con letra grande */
+#coach.orange { width: min(300px, calc(100vw - 20px)); padding: 14px 16px 12px; background-color: var(--accent); color: var(--ink); box-shadow: var(--shadow-soft), 0 6px 18px rgba(120,60,10,.28); }
+#coach.orange::after { background: var(--accent); box-shadow: none !important; }
+#coach.orange .coachCard { margin: 0; gap: 12px; }
+#coach.orange .coachCard b { font-size: 16px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; }
+#coach.orange .coachBtns { margin-top: 12px; }
+#coach.orange .coachBtns button { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); margin-left: auto; padding-inline: 16px; }
 @keyframes coachIn { from { opacity: 0; scale: .96; } to { opacity: 1; scale: 1; } }
 
 /* ---------- ajustes y estadísticas ---------- */

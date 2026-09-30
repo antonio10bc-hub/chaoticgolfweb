@@ -144,6 +144,15 @@ html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation
 #profileBtn { display: none; position: fixed; bottom: 14px; left: 98px; z-index: 65; width: 36px; height: 36px; padding: 0;
   --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
 body[data-screen="menu"] #profileBtn, body[data-screen="modes"] #profileBtn { display: inline-flex; }
+/* idioma: dos banderas redondas y pequeñas, abajo a la derecha del menú principal (la elegida, entera y con aro) */
+#langBtns { display: none; position: fixed; right: 14px; bottom: 17px; z-index: 65; gap: 6px; }
+body[data-screen="menu"] #langBtns { display: flex; }
+.langBtn { width: 30px; height: 30px; padding: 0; border-radius: 50%; overflow: hidden; border-width: 2px; --b-bg: transparent; --b-line: rgba(241,241,220,.5);
+  opacity: .5; transition: opacity .2s var(--ease-out), border-color .2s; }
+.langBtn svg { width: 100%; height: 100%; display: block; }
+.langBtn:hover { opacity: .85; background-color: transparent; }
+.langBtn[aria-pressed="true"] { opacity: 1; --b-line: var(--cream); }
+html.phone #langBtns { right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(17px + env(safe-area-inset-bottom, 0px)); }
 #profileBtn .pfDot { position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: #E0443A; box-shadow: 0 0 0 2px var(--cream); }
 #profileBtn .pfDot[hidden] { display: none; }
 /* aviso para quien aún no ha abierto "Tu pelota": el punto late con una onda y la camiseta se balancea cada pocos segundos */

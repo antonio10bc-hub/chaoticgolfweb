@@ -72,7 +72,8 @@ src/
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
-    tutorial.js            presentación del nivel 1 y explicación de cada carta la primera vez
+    tutorial.js            presentación del nivel 1, explicación de cada carta la primera vez y el aviso naranja de
+                           la primera carta naranja en tu mano (se juegan en cualquier momento, también fuera de turno)
     settings.js / prefs.js   pantalla de Ajustes (velocidad, tema, accesibilidad…) y Estadísticas
     save.js / records.js   guardado por modo y estadísticas globales (rachas, récords)
     pause.js / rules.js    pausa real (congela la IA) y hoja de reglas
@@ -130,7 +131,8 @@ Tras añadir un módulo nuevo (carta, loseta…) o un nivel, `npm run preload` l
 en el manifiesto.
 
 **Textos / idioma:** español en `src/i18n/es.js` e inglés en `src/i18n/en.js` (misma estructura; una clave
-que falte cae al español). Idioma inicial: el elegido en Ajustes (🎚 → Idioma); si no hay, español si la zona
+que falte cae al español). Idioma inicial: el elegido con las banderas del menú principal (dos botones redondos pequeños abajo a la
+derecha: España y EE. UU.; en el móvil en horizontal, arriba junto al sonido); si no hay, español si la zona
 horaria del navegador es de España y si no inglés. Otro idioma = copiar `en.js` y registrarlo en
 `src/i18n/index.js`. Los niveles pueden traer `name_en`.
 
@@ -186,7 +188,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
 - **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; pestañas Ajustes y Estadísticas):
-  sonido y pista de música (con fundido menú ↔ partida), idioma,
+  sonido y pista de música (con fundido menú ↔ partida),
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
   contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
