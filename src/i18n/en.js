@@ -233,7 +233,7 @@ export default {
     backToEditor: 'Back to editor', newGame: 'New game', menu: 'Menu',
   },
   story: {
-    title: 'The basics', sub: 'Learn to play one hole at a time', builtIn: 'Levels', yours: 'Your levels',
+    title: 'The basics', sub: 'Learn to play one hole at a time', builtIn: 'Levels', yours: 'Your levels', yoursSub: 'Levels you make and ones you receive',
     play: 'Play', completed: 'Completed', next: 'Next!', untitled: 'Untitled',
     none: 'No levels yet: make one in the editor or add a code someone sent you.', openEditor: 'Open the level editor', create: 'Create level',
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',
@@ -549,7 +549,7 @@ export default {
     daily: { title: 'Daily challenge', sub: 'A small board against 2 bots, the same for everyone. A new mechanic and new rivals every day.', vs: 'vs {a} and {b}',
       bestToday: 'Your best today: {turns}', done: 'Completed today', notYet: 'Not completed yet', streak: 'Streak: {n} days', streak1: 'Streak: 1 day',
       risk: 'Don’t lose your streak!', lost: '{n}-day streak lost', start: 'Start your streak today' },
-    rush: { title: 'Time attack', holes: '{n} generated holes', sub: 'Every hole has its own countdown: fewer turns and more time to spare, more points. If time runs out, the run is over.',
+    rush: { statBest: 'Best', statDone: 'Completed', title: 'Time attack', holes: '{n} generated holes', sub: 'Every hole has its own countdown: fewer turns and more time to spare, more points. If time runs out, the run is over.',
       best: 'Record: {n} pts', continue: 'Continue · hole {n}', pts: '{n} pts' },
     challenge: { title: 'Challenge' },
   },

@@ -1537,3 +1537,65 @@ html.hiContrast .seat { opacity: .75; } html.hiContrast .seat.active, html.hiCon
 @keyframes dkRipple { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
 @keyframes dkTw { 50% { transform: scale(.4) rotate(45deg); opacity: .4; } }
 html.reduceMotion .deckCard .dkArt * { animation: none !important; }
+
+/* =========================================================
+   Juegos especiales: iconos ilustrados (src/ui/mode-art.js), cabeceras con progreso y grupos por dificultad
+   ========================================================= */
+/* cabecera de sección: icono, título grande, su barra de progreso y el número */
+#modesGrid .spHead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; font-size: inherit; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.spArt { flex: 0 0 auto; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 14px; background: rgba(36,36,36,.05); }
+.spArt .mdArt { width: 46px; height: 46px; overflow: visible; filter: drop-shadow(0 3px 6px rgba(20,40,20,.22)); transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
+.spTitle { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 1 180px; }
+.spTitle b { font-size: 19px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+.spTitle small { font-size: 12.5px; color: var(--ink-soft); font-weight: 400; }
+.spBar { display: block; width: min(240px, 100%); height: 6px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; margin-top: 3px; }
+.spBar i { display: block; height: 100%; border-radius: inherit; background: var(--sp, var(--grass-dark)); }
+#modesGrid .spHead .lvlCount { font-size: 12px; padding: 3px 10px; background: var(--sp, var(--grass-dark)); }
+#modesGrid .spHead .lvlHeadActs { margin-left: auto; }
+.mdSection.challenges { --sp: var(--mode-challenge); }
+.lvlSection.puzzles { --sp: #2E8A80; }
+.lvlSection.yours { --sp: #4E5E6A; }
+.mdSection:hover .spArt .mdArt, .lvlSection:hover .spArt .mdArt { transform: rotate(-5deg) scale(1.07); }
+/* al pasar: el trofeo destella, la pieza encaja, el lápiz dibuja */
+.mdArt .mdShine, .mdArt .mdPiece, .mdArt .mdPencil, .dkArt .mdHand { transform-box: view-box; }
+.dkArt .mdHand { transform-origin: 30px 32px; }
+.mdSection:hover .mdArt .mdShine { animation: mdShine 1.4s ease-in-out infinite; }
+.lvlSection:hover .mdArt .mdPiece { animation: mdPiece 1.4s ease-in-out infinite; }
+.lvlSection:hover .mdArt .mdPencil { animation: mdPencil 1.2s ease-in-out infinite; transform-origin: 32px 36px; }
+.rushCard:hover .dkArt .mdHand, .rushCard:focus-within .dkArt .mdHand { animation: dkSpin 1.6s linear infinite; }
+@keyframes mdShine { 50% { opacity: .1; transform: translateX(10px); } }
+@keyframes mdPiece { 0%, 100% { transform: translate(3px, -3px); } 50% { transform: none; } }
+@keyframes mdPencil { 50% { transform: rotate(-7deg) translate(-1px, 1px); } }
+html.reduceMotion .mdArt *, html.reduceMotion .rushCard .dkArt * { animation: none !important; }
+
+/* grupos de dificultad: marcas (1, 2 o 3), nombre, x/y y su barra */
+#modesGrid .lvlGroup { align-items: center; gap: 8px; }
+.gPips { display: inline-flex; gap: 3px; }
+.gPips i { width: 7px; height: 7px; border-radius: 50%; background: rgba(36,36,36,.14); }
+.gPips i.on { background: var(--gc, var(--sp, var(--grass-dark))); }
+.lvlGroup.g-warmup { --gc: #E8867A; } .lvlGroup.g-mid { --gc: #C9594E; } .lvlGroup.g-expert { --gc: #8E2E28; }
+.lvlSection.puzzles .lvlGroup.g-warmup { --gc: #7CCABF; } .lvlSection.puzzles .lvlGroup.g-mid { --gc: #3AA597; } .lvlSection.puzzles .lvlGroup.g-expert { --gc: #1E6B63; }
+.gBar { flex: 0 1 120px; height: 4px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; margin-left: 4px; }
+.gBar i { display: block; height: 100%; border-radius: inherit; background: var(--gc); }
+
+/* iconos de los desafíos: con relieve y un tono por dificultad */
+.chCard .mdIco { background: linear-gradient(145deg, var(--c1), var(--c2)); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.12); position: relative; overflow: hidden; }
+.chCard .mdIco::after { content: ''; position: absolute; left: -30%; top: -60%; width: 90%; height: 90%; border-radius: 50%; background: rgba(255,255,255,.18); }
+.chCard .mdIco .i { position: relative; z-index: 1; transition: transform .3s cubic-bezier(.3,1.5,.5,1); }
+button.chCard:hover .mdIco .i { transform: scale(1.15) rotate(-8deg); }
+.chCard.g-warmup { --c1: #EE8C80; --c2: #CC5A4E; }
+.chCard.g-mid { --c1: #D2574B; --c2: #A13A31; }
+.chCard.g-expert { --c1: #A83830; --c2: #6C1F1A; }
+/* desafío semanal: su calendario ilustrado */
+.wkArt { flex: 0 0 auto; width: 46px; height: 46px; display: grid; place-items: center; }
+.wkArt .mdArt { width: 46px; height: 46px; filter: drop-shadow(0 3px 6px rgba(120,30,20,.25)); transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
+button.chCard.weekly:hover .wkArt .mdArt { transform: rotate(-6deg) scale(1.08); }
+
+/* contrarreloj: tarjeta de baraja (styles de .deckCard) con su azul */
+.rushCard .dkPic { background: color-mix(in srgb, var(--mode-rush) 14%, transparent); }
+.rushCard .dkStats { background: color-mix(in srgb, var(--mode-rush) 9%, transparent); }
+@media (max-width: 560px) {
+  .spArt { width: 44px; height: 44px; } .spArt .mdArt { width: 40px; height: 40px; }
+  .spTitle b { font-size: 17px; }
+  .gBar { display: none; }
+}

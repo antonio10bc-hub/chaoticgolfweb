@@ -202,7 +202,7 @@ it('modos de juego: dos pestañas (una a la vez) y 4 barajas con estadísticas',
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
-  assert.equal(await app(() => document.querySelectorAll('.deckCard').length), 4);
+  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 4); // (el contrarreloj usa el mismo estilo de tarjeta)
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
   await click('[data-mtab="special"]'); await sleep(700);

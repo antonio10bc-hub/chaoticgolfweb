@@ -236,7 +236,7 @@ export default {
     backToEditor: 'Volver al editor', newGame: 'Nueva partida', menu: 'Menú',
   },
   story: {
-    title: 'Lo básico', sub: 'Aprende a jugar hoyo a hoyo', builtIn: 'Niveles', yours: 'Tus niveles',
+    title: 'Lo básico', sub: 'Aprende a jugar hoyo a hoyo', builtIn: 'Niveles', yours: 'Tus niveles', yoursSub: 'Los que creas y los que te pasan',
     play: 'Jugar', completed: 'Completado', next: '¡Siguiente!', untitled: 'Sin título',
     none: 'Aún no tienes niveles: créalos en el creador o añade el código que te hayan pasado.', openEditor: 'Abrir el creador', create: 'Crear nivel',
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',
@@ -552,7 +552,7 @@ export default {
     daily: { title: 'Reto diario', sub: 'Tablero pequeño contra 2 bots, igual para todo el mundo. Cada día, una mecánica y rivales nuevos.', vs: 'contra {a} y {b}',
       bestToday: 'Tu mejor hoy: {turns}', done: 'Completado hoy', notYet: 'Aún no lo has completado', streak: 'Racha: {n} días', streak1: 'Racha: 1 día',
       risk: '¡No pierdas tu racha!', lost: 'Perdiste tu racha de {n}', start: 'Empieza hoy tu racha' },
-    rush: { title: 'Contrarreloj', holes: '{n} hoyos generados', sub: 'Cada hoyo tiene su cuenta atrás: menos turnos y más tiempo de sobra, más puntos. Si se acaba el tiempo, se acaba la serie.',
+    rush: { statBest: 'Récord', statDone: 'Completas', title: 'Contrarreloj', holes: '{n} hoyos generados', sub: 'Cada hoyo tiene su cuenta atrás: menos turnos y más tiempo de sobra, más puntos. Si se acaba el tiempo, se acaba la serie.',
       best: 'Récord: {n} pts', continue: 'Seguir · hoyo {n}', pts: '{n} pts' },
     challenge: { title: 'Desafío' },
   },

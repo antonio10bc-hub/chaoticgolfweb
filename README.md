@@ -141,6 +141,8 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
 
+**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para el contrarreloj (cronómetro; su tarjeta es como la de las barajas, con récord, series completas y jugadas), los desafíos (trofeo), el semanal (calendario), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
+
 **Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
 
 **Textos:** sin rayas (—): el historial del motor las lleva (el oráculo compara su texto) y se cambian por dos puntos al mostrarlo (`logText` en `hud.js`).

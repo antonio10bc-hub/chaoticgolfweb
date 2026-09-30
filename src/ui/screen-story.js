@@ -1,6 +1,7 @@
 // Pantalla de Lo básico: los niveles integrados. Los puzles de "gana en 1 turno" y los niveles del
 // creador ("Tus niveles") se muestran en Modos de juego, con las mismas tarjetas (secciones de aquí).
 // También arranca cualquier nivel en solitario (y el "probar" del editor).
+import { sectionHead, groupHead } from './mode-art.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { Game } from '../engine/game.js';
@@ -91,8 +92,8 @@ export function puzzlesSectionHTML() {
     if (groups.at(-1)?.id !== g) groups.push({ id: g, items: [] });
     groups.at(-1).items.push(i);
   });
-  return `<section class="lvlSection puzzles"><h3>${esc(t('story.puzzlesH'))} <span class="lvlCount">${nDone}/${app.puzzleLevels.length}</span></h3>` +
-    groups.map(gr => (groups.length > 1 ? `<h4 class="lvlGroup">${esc(t('modes.groups.' + gr.id))} <span>${gr.items.filter(i => done[i]).length}/${gr.items.length}</span></h4>` : '') +
+  return `<section class="lvlSection puzzles">${sectionHead({ art: 'puzzle', title: t('story.puzzlesH'), done: nDone, total: app.puzzleLevels.length })}` +
+    groups.map(gr => (groups.length > 1 ? groupHead(gr.id, gr.items.filter(i => done[i]).length, gr.items.length) : '') +
       `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"`, compact: true })).join('') + `</div>`).join('') +
     `</section>`;
 }
@@ -100,9 +101,9 @@ export function puzzlesSectionHTML() {
 export function yoursSectionHTML() {
   const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story'), base = app.storyLevels.length;
   const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
-  return `<section class="lvlSection yours"><h3>${esc(t('story.yours'))}${levels.length ? ` <span class="lvlCount">${levels.length}</span>` : ''}` +
-    `<span class="lvlHeadActs"><button class="btn-light btn-sm btn-icon" data-mode="editor">${icon('i-plus')}${esc(t('story.create'))}</button>` +
-    `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span></h3><div class="lvlRow">` + (levels.length
+  const acts = `<span class="lvlHeadActs"><button class="btn-light btn-sm btn-icon" data-mode="editor">${icon('i-plus')}${esc(t('story.create'))}</button>` +
+    `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span>`;
+  return `<section class="lvlSection yours">${sectionHead({ art: 'yours', title: t('story.yours'), done: levels.length || null, extra: acts, sub: t('story.yoursSub') })}<div class="lvlRow">` + (levels.length
     ? levels.map((L, j) => { const i = base + j, name = L.name || t('story.untitled');
       return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[i], best: levelBest(i), saved: sv && sv.levelIndex === i, attr: `data-level="${i}"`, compact: true }) +
         (L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : '') + `<span class="lvlActs">` +

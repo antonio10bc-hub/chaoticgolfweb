@@ -15,6 +15,7 @@ import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { Game } from '../engine/game.js';
+import { modeArt, sectionHead, groupHead } from './mode-art.js';
 import { aiStart, aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
@@ -407,32 +408,38 @@ export function openModes(tab) {
 
   /* ---- juegos especiales ---- */
   // una sola línea con lo importante (récord, hoyo a medias) y el botón a la derecha
-  const rushCard = `<article class="modeCard rush">
-      <div class="mdHead"><span class="mdIco"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg></span><div><h3>${esc(t('modes.rush.title'))}</h3>` +
-    `<small>${esc([t('modes.rush.holes', { n: RUSH_HOLES }), t('modes.rush.best', { n: R.rush.best || 0 }), rush ? t('modes.holeN', { n: rush.hole + 1, total: rush.total }) : ''].filter(Boolean).join(' · '))}</small></div></div>
-      <div class="mdBtns">${rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'))}</div></article>`;
+  // contrarreloj: una tarjeta como las de las barajas (su cronómetro ilustrado, qué es, sus cifras y el botón)
+  const rushBtns = rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'));
+  const rushCard = `<article class="deckCard rushCard" style="--dk:var(--mode-rush)">` +
+    `<div class="dkPic">${modeArt('rush', 'dkArt')}</div>` +
+    `<div class="dkMain"><h3>${esc(t('modes.rush.title'))}</h3><p>${esc(t('modes.rush.sub'))}</p>` +
+    (rush ? `<div class="mdStats">${stat('i-timer', t('modes.holeN', { n: rush.hole + 1, total: rush.total }))}</div>` : '') + `</div>` +
+    `<dl class="dkStats"><div><dt>${esc(t('modes.rush.statBest'))}</dt><dd>${R.rush.best || 0}</dd></div>` +
+    `<div><dt>${esc(t('modes.rush.statDone'))}</dt><dd>${R.rush.done ?? Math.floor((R.won.rush || 0) / 6)}</dd></div>` +
+    `<div><dt>${esc(t('decks.played'))}</dt><dd>${R.rush.runs || 0}</dd></div></dl>` +
+    `<div class="dkBtns">${rushBtns}</div></article>`;
   // desafío: toda la tarjeta es el botón; a la derecha, jugar / continuar / superado y, si ya se ha jugado, victorias/partidas
   const chEnd = (saved, done, s) => `<span class="chEnd">${saved ? `<span class="chCont">${esc(t('menu.continue'))}</span>`
     : `<span class="chGo${done ? ' ok' : ''}"><svg class="i" aria-hidden="true"><use href="#${done ? 'i-check' : 'i-play'}"/></svg></span>`}` +
     (s?.p ? `<small class="chSt" title="${esc(t('modes.chStat', { w: s.w || 0, p: s.p }))}">${s.w || 0}/${s.p}</small>` : '') + `</span>`;
   const chCard = ch => {
     const done = R.challenges[ch.id], saved = csave?.run?.id === ch.id, name = t('challenges.' + ch.id + '.name'), desc = t('challenges.' + ch.id + '.desc');
-    return `<button class="chCard${done ? ' done' : ''}${saved ? ' saved' : ''}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" aria-label="${esc(name + '. ' + desc)}">` +
+    return `<button class="chCard g-${ch.group}${done ? ' done' : ''}${saved ? ' saved' : ''}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" aria-label="${esc(name + '. ' + desc)}">` +
       `<span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
       `<span class="chTxt"><b>${esc(name)}</b><small>${esc(desc)}</small></span>${chEnd(saved, done, R.chStats[ch.id])}</button>`;
   };
   const chGroups = CH_GROUPS.map(g => ({ g, list: CHALLENGES.filter(c => c.group === g) })).filter(x => x.list.length);
-  const chCards = chGroups.map(({ g, list }) => `<h4 class="lvlGroup">${esc(t('modes.groups.' + g))} <span>${list.filter(c => R.challenges[c.id]).length}/${list.length}</span></h4>` +
+  const chCards = chGroups.map(({ g, list }) => groupHead(g, list.filter(c => R.challenges[c.id]).length, list.length) +
     `<div class="chGrid">${list.map(chCard).join('')}</div>`).join('');
   const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
   const wk = weekKey(), { rule } = weeklySetup(wk), wbest = R.weekly.weeks[wk]?.best, left = weekDaysLeft();
   const wname = t('weekly.' + rule.id + '.name'), wdesc = t('weekly.' + rule.id + '.desc');
   const weeklyCard = `<button class="chCard weekly${wbest ? ' done' : ''}${wsave ? ' saved' : ''}" data-mode="${wsave ? 'resume:weekly' : 'weekly'}" aria-label="${esc(t('modes.weekly.title') + ': ' + wname + '. ' + wdesc)}">` +
-    `<span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${rule.icon}"/></svg></span>` +
+    `<span class="wkArt">${modeArt('weekly')}</span>` +
     `<span class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}${wbest ? ' · ' + esc(t('modes.weekly.best', { turns: turnsLabel(wbest) })) : ''}</small>` +
     `<b>${esc(wname)}</b><small>${esc(wdesc)}</small></span>${chEnd(wsave, !!wbest, R.weekly.weeks[wk])}</button>`;
   const specialPanel = rushCard +
-    `<section class="mdSection challenges"><h3>${esc(t('modes.challengesH'))} <span class="lvlCount">${nDone}/${CHALLENGES.length}</span></h3>${weeklyCard}${chCards}</section>` +
+    `<section class="mdSection challenges">${sectionHead({ art: 'challenge', title: t('modes.challengesH'), done: nDone, total: CHALLENGES.length })}${weeklyCard}${chCards}</section>` +
     puzzlesSectionHTML() + yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
