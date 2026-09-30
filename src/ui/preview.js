@@ -55,7 +55,7 @@ function layer() {
 }
 const colorOf = id => id === 'hole' ? '#242424' : pColor(+id.slice(1));
 
-function draw(res, { armedAt = null } = {}) {
+function draw(res, { armedAt = null, label = 'tapAgain' } = {}) {
   const svg = layer();
   if (!res) { hidePreview(); return; }
   const area = $('boardArea');
@@ -102,8 +102,12 @@ function draw(res, { armedAt = null } = {}) {
     if (m.kind === 'unknown') out += `<g class="pvUnknown" transform="translate(${c.px} ${c.py})"><circle r="${rBall * 1.2}"/><text y="${rBall * .45}">?</text></g>`;
   }
   if (armedAt) { // en pantallas táctiles: primer toque = vista previa, segundo = confirmar
-    const c = cellCenterPx(armedAt.x, armedAt.y);
-    out += `<g class="pvTap" transform="translate(${c.px} ${c.py - s.h * .62})"><rect x="-44" y="-12" width="88" height="22" rx="11"/><text y="4">${t('preview.tapAgain')}</text></g>`;
+    // (encima de la casilla; en la fila de arriba, debajo, y nunca fuera por los lados: el marco del tablero la cortaba)
+    const c = cellCenterPx(armedAt.x, armedAt.y), W = area.offsetWidth, H = area.offsetHeight;
+    const up = c.py - s.h * .62, y = up - 12 >= 0 ? up : Math.min(H - 11, c.py + s.h * .62);
+    const x = Math.max(45, Math.min(W - 45, c.px));
+    if (label === 'tapHere') out += `<circle cx="${c.px}" cy="${c.py}" r="${Math.min(s.w, s.h) * .44}" class="pvTarget"/>`;
+    out += `<g class="pvTap" transform="translate(${x} ${y})"><rect x="-44" y="-12" width="88" height="22" rx="11"/><text y="4">${t('preview.' + label)}</text></g>`;
   }
   svg.innerHTML = out;
   svg.classList.add('visible');
@@ -119,12 +123,23 @@ export function previewCell(x, y, opts) {
   draw(simulate(g, sim => sim.clickCell(x, y)), opts);
 }
 // carta de efecto inmediato (cartas de hoyo…): se ve qué hará antes de jugarla
-export function previewCard(p, idx) {
+const cardSim = (g, p, idx) => simulate(g, sim => sim.clickCard(p, idx) && !sim.pending);
+export function previewCard(p, idx, { targets = null } = {}) {
   const g = app.game;
   if (!g || g.pending || app.animating || !g.canPlay(p, g.S.hands[p][idx])) { hidePreview(); return; }
-  const res = simulate(g, sim => sim.clickCard(p, idx) && !sim.pending);
+  const res = cardSim(g, p, idx);
   if (!res || !Object.keys(res.paths).length) { hidePreview(); return; }
-  draw(res);
+  draw(res, targets?.length ? { armedAt: targets[0], label: 'tapHere' } : undefined);
+}
+// táctil: casillas donde acaba lo que mueve la carta elegida (el hoyo, si lo mueve). Tocar ahí la juega,
+// como el segundo toque del palo en su destino. Sin nada que se vea moverse, null (queda el botón Jugar).
+export function cardTargets(p, idx) {
+  const g = app.game, res = g && cardSim(g, p, idx);
+  if (!res) return null;
+  const end = id => { const pts = res.paths[id], l = pts[pts.length - 1]; return l.kind === 'fall' ? null : { x: l.x, y: l.y }; };
+  const ids = res.paths.hole ? ['hole'] : Object.keys(res.paths);
+  const out = ids.map(end).filter(Boolean);
+  return out.length ? out : null;
 }
 
 // una jugada completa (lista de acciones, como las de la IA): consejo del caddie

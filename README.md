@@ -251,7 +251,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Ctrl+S. El estado dice si está listo para jugar o qué falta (mazo, portal sin pareja…). El borrador se guarda solo.
   **Probar nivel** (naranja, junto al nombre en la barra) lo juega sobre la misma alfombrilla del taller con el panel de **trampas** (`src/ui/lab.js`): cualquier carta a mano, deshacer ilimitado
   y mover piezas (botón "Mover piezas", o con la rueda del ratón: clic central en una pieza y otro en una casilla
-  marcada, en cualquier momento). En el móvil, las herramientas van en una tira y las cartas en una hoja.
+  marcada, en cualquier momento). En el móvil, las herramientas van en una tira y las cartas en una hoja; en horizontal,
+  la barra en una fila, el tablero a todo el alto y las herramientas en una rejilla a la derecha. Sonido y ajustes, siempre
+  arriba a la derecha (no encima de "← Modos").
 - **Sin cuadrados desplazados:** ninguna pieza de la interfaz usa sombras duras desplazadas ni bordes gruesos en un
   solo lado; la profundidad va en sombras suaves y el tipo de carta (negra / naranja) en el borde completo.
 - **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
@@ -363,10 +365,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     derecha (a la izquierda en modo zurdo). El JAQUE sale arriba, sobre los rivales, y deja el tablero libre.
   - **Horizontal:** a la izquierda la barra y la lista de rivales, en el centro el tablero a todo el alto y a la derecha
     el aviso, la mano y los botones. El menú principal y Lo básico caben sin desplazarse.
+  - **Menús en vertical:** el menú principal mide la pantalla y acaba por encima de los botones redondos (la ilustración
+    encoge si falta alto); Lo básico va en una sola columna, una fila por nivel (número, miniatura, nombre y estado).
   - **Lo que no importa ahora pierde opacidad:** los rivales que no juegan (quien juega, quien puede reaccionar al JAQUE
     y quien ha embocado se ven enteros y con anillo), y tu mano se aparta mientras juega otro.
   - **Entrada:** tocar = ver, tocar otra vez = hacer. Los destinos ya iban así; ahora también las cartas de efecto
-    inmediato (hoyo, NO…): el primer toque la elige y dibuja lo que hará, el segundo (o "Jugar") la juega. Mantener
+    inmediato (hoyo, NO…): el primer toque la elige y marca en el tablero dónde acabará ("Toca aquí"); tocar esa marca
+    la juega, como el palo (o tocar otra vez la carta; "Jugar" solo si no mueve nada visible). La etiqueta "Toca otra
+    vez" se coloca debajo en la fila de arriba y nunca se sale por los lados (el marco del tablero la cortaba). Mantener
     pulsada una carta explica qué hace (sin jugarla). Botones de 40-54 px, sin zoom de página, selección de texto ni
     menú contextual en la partida, márgenes seguros (muesca, barra de gestos) y vibración breve en Android.
   - **Tableros grandes (Ultimate):** se ven enteros; al elegir destino con casillas de menos de 30 px la cámara se

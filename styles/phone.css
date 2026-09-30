@@ -319,3 +319,90 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone #storyScreen .lvlCard.done .lsTxt { display: none; }
   html.phone #storyScreen #storyContinue { margin: 0 0 8px; }
 }
+
+/* =========================================================
+   Menús en el móvil en vertical
+   ========================================================= */
+@media (orientation: portrait) and (max-width: 820px) {
+  /* menú principal: mide la pantalla y acaba por encima de los botones redondos (sonido, ajustes, tu pelota);
+     la ilustración se queda con el alto que sobra (encoge en los móviles bajos) y el título se ajusta al alto */
+  html.phone #menuScreen { height: 100dvh; min-height: 0; align-items: stretch;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 70px) max(12px, env(safe-area-inset-left, 0px)); }
+  html.phone .mFrame { height: 100%; grid-template-rows: minmax(0, 1fr) auto; padding: 10px; gap: 4px; }
+  html.phone .mArt { min-height: 0; }
+  html.phone .mContent { padding: clamp(10px, 2.4dvh, 22px) 12px clamp(8px, 1.6dvh, 14px); }
+  html.phone .mTitle { font-size: min(16vw, 8.6dvh, 84px); margin-bottom: clamp(12px, 2.6dvh, 24px); }
+  html.phone .mTag { margin-top: clamp(8px, 1.8dvh, 16px); }
+}
+@media (orientation: portrait) and (max-width: 820px) and (max-height: 640px) {
+  html.phone .mTag { display: none; }
+  html.phone .mDaily { padding-block: 9px; }
+}
+@media (orientation: portrait) {
+  /* Lo básico: una sola columna, una fila por nivel (número · miniatura · nombre · estado), todos a la vista */
+  html.phone #storyScreen .lvlSection { max-height: none; }
+  html.phone #storyScreen .lvlRow { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-rows: minmax(44px, 1fr); gap: 7px; overflow-y: auto; }
+  html.phone #storyScreen .lvlCard { grid-template-columns: 22px auto minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr); column-gap: 10px;
+    align-items: center; padding: 5px 10px 5px 8px; border-radius: 14px; }
+  html.phone #storyScreen .lvlNum { position: static; grid-column: 1; min-width: 22px; height: 22px; padding: 0; font-size: 11px; background: rgba(36,36,36,.07); }
+  html.phone #storyScreen .lvlCard.done .lvlNum { background: var(--grass-dark); color: var(--cream); }
+  html.phone #storyScreen .lvlPreview { grid-column: 2; grid-row: 1; height: 100%; max-height: 64px; aspect-ratio: 1; width: auto; padding: 3px; border-radius: 8px; }
+  html.phone #storyScreen .lvlName { grid-column: 3; align-self: center; font-size: 14.5px; min-height: 0; }
+  html.phone #storyScreen .lvlFoot { grid-column: 4; grid-row: 1; align-self: center; }
+  html.phone #storyScreen .lvlSaved { top: 50%; bottom: auto; right: auto; left: 50%; transform: translateY(-50%); }
+}
+/* poca altura (móviles bajos, o con las barras del navegador): cabecera compacta para que quepan todos */
+@media (orientation: portrait) and (max-height: 760px) {
+  html.phone #storyScreen { padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 62px); }
+  html.phone #storyScreen .sTitle { font-size: 36px; }
+  html.phone #storyScreen .sSub { display: none; }
+  html.phone #storyScreen #storyProgress { margin: 6px 0 10px; }
+  html.phone #storyScreen .lvlSection { padding: 10px; }
+  html.phone #storyScreen .lvlSection h3 { display: none; }
+  html.phone #storyScreen .lvlRow { grid-auto-rows: minmax(40px, 1fr); gap: 6px; }
+}
+
+/* ---------- creador de niveles: sonido y ajustes arriba a la derecha, en la barra (las reglas de los menús
+   los ponían a la izquierda, encima de "← Modos") ---------- */
+html.phone body[data-screen="editor"] #sfxBtn, html.phone body[data-screen="editor"] #sndCfgBtn { left: auto; bottom: auto; top: 14px; }
+html.phone body[data-screen="editor"] #sfxBtn { right: 58px; }
+html.phone body[data-screen="editor"] #sndCfgBtn { right: 16px; }
+@media (max-width: 900px) {
+  html.phone body[data-screen="editor"] #sndCfgBtn { top: 9px; right: 8px; }
+}
+/* creador en el móvil en horizontal: barra en una fila (nombre en medio), tablero a la izquierda a todo el alto
+   y las herramientas a la derecha en una rejilla; las cartas, en una hoja lateral (el botón Cartas, bajo el tablero) */
+@media (orientation: landscape) and (max-height: 540px) {
+  html.phone #edBar { grid-template-columns: auto minmax(0, 1fr) auto; padding: 6px 10px 4px 14px; gap: 8px; }
+  html.phone #edBar .lbl { display: none; }
+  html.phone #edBar button { padding: 6px 10px; }
+  html.phone #edBar .barSide { gap: 4px; }
+  html.phone #edBar .barSide.right { padding-right: 42px; }
+  html.phone #edCenter { grid-row: 1; grid-column: 2; width: auto; min-width: 0; gap: 8px; }
+  html.phone #edPill { flex: 1; width: auto; padding: 3px 12px; border-radius: 16px; }
+  html.phone #edTest { padding: 8px 12px; font-size: 13.5px; }
+  html.phone body[data-screen="editor"] #sfxBtn { display: none; }
+  html.phone body[data-screen="editor"] #sndCfgBtn { top: 9px; right: 8px; width: 32px; height: 32px; }
+  html.phone #edLayout { grid-template-columns: minmax(0, 1fr) minmax(200px, 32vw); grid-template-rows: minmax(0, 1fr); padding: 2px 10px 10px 14px; gap: 10px; }
+  html.phone #edMain { grid-row: 1; grid-column: 1; }
+  html.phone #edToolsPanel { grid-row: 1; grid-column: 2; align-self: stretch; max-height: none; overflow: auto; padding: 8px; border-radius: 14px; }
+  html.phone #edTools { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 5px; overflow: visible; padding: 0; }
+  html.phone .edGroup, html.phone .edToolRow { display: contents; }
+  html.phone .edGroup h3 { display: none; }
+  html.phone .edTool { width: auto; min-width: 0; }
+  html.phone #edToolOpts { margin-top: 8px; padding-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  html.phone #edToolOpts h3, html.phone #edToolOpts .edHint.soft { display: none; }
+  html.phone #edToolOpts .edHint { margin: 0; font-size: 11.5px; }
+  html.phone #edDock { display: flex; gap: 8px; }
+  html.phone #edDock button { padding: 7px 12px; font-size: 14px; }
+  html.phone #edDeckBtn { display: inline-flex; }
+  html.phone #edDeckPanel { position: fixed; left: auto; right: 8px; top: 8px; bottom: 8px; width: min(420px, 62vw); max-height: none; z-index: 35; display: none; }
+  html.phone #edDeckPanel.open { display: block; }
+  html.phone #edDeckClose { display: inline-flex; position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 50%; }
+  html.phone #edDeckPanel .edSeg { margin-right: 46px; }
+  html.phone #edStage { grid-template-columns: 18px auto 46px; grid-template-rows: 18px auto 44px; }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  html.phone .edTool { padding: 5px 3px 4px; }
+  html.phone .edTool .tiPic { width: 28px; height: 32px; }
+}

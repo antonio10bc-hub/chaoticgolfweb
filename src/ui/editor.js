@@ -15,6 +15,7 @@ import { TILES, tilePic } from '../content/tiles/index.js';
 import { DECKS } from '../content/decks.js';
 import { ASSETS, pColor } from '../art.js';
 import { fitCellsTo } from './geometry.js';
+import { isPhone } from './device.js';
 import { waterJoins, waterDelay } from './board.js';
 import { showScreen } from './screens.js';
 import { openModes } from './screen-modes.js';
@@ -395,7 +396,7 @@ export function fitEditorBoard() {
   const r = st.getBoundingClientRect();
   // reglas (22px), controles de tamaño (46px), marco del tablero (16px) y el dock de abajo
   const dock = $('edDock').getBoundingClientRect().height; // (0 en el ordenador: solo existe en el móvil)
-  const narrow = innerWidth <= 900; // (móvil: reglas y botones de tamaño más estrechos, casillas que pueden ser más pequeñas)
+  const narrow = innerWidth <= 900 || (isPhone() && innerHeight <= 540); // (móvil, también en horizontal: reglas y botones de tamaño más estrechos, casillas que pueden ser más pequeñas)
   fitCellsTo(L.cols, L.rows, Math.max(120, r.width - (narrow ? 18 + 46 : 22 + 56) - 24), Math.max(120, r.height - dock - (narrow ? 18 + 44 : 22 + 52) - 26), 60, narrow ? 16 : 24);
 }
 function refresh({ fit = true } = {}) {

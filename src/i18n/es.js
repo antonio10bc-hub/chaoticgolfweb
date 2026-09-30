@@ -189,6 +189,7 @@ export default {
     play: 'Jugar', rotate: 'Girar', rotateTitle: 'Girar la pieza (R)', place: 'Colocar',
     hint: {
       armed: '{card}: toca otra vez para jugarla',
+      armedTap: '{card}: toca la marca del tablero',
       move: '{card}: elige la casilla de destino',
       placeTile: '{card}: elige una casilla libre',
       placeRot: '{card}: elige dónde ponerla',
@@ -415,7 +416,7 @@ export default {
       lose: 'La próxima es mía.|Bien jugado…|¡Revancha!',
     },
   },
-  preview: { tapAgain: 'Toca otra vez' },
+  preview: { tapAgain: 'Toca otra vez', tapHere: 'Toca aquí' },
   // pelotas personalizadas (src/ui/skins.js) y la ventana "Tu pelota" (src/ui/my-ball.js)
   skins: {
     unit: { days1: '{n} día', wins1: '{n} victoria', series1: '{n} serie', days: '{n} días', wins: '{n} victorias', series: '{n} series' },

@@ -36,7 +36,7 @@ import { showPuzzleFail } from './win.js';
 import { musicMood } from '../audio/sfx.js';
 import { piecesBefore, notePlay } from './share-play.js';
 import { paintLab, labGodClick } from './lab.js';
-import { previewCard } from './preview.js';
+import { previewCard, cardTargets } from './preview.js';
 import { autoZoom } from './board-zoom.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
@@ -219,6 +219,8 @@ function armsFirst(p, idx) {
 }
 export function disarm() { if (app.armed) { app.armed = null; render(); } }
 export const playArmed = () => { const a = app.armed; return a ? clickCard(a.p, a.idx) : false; };
+// ¿es (x, y) la marca de la carta elegida en táctil? (tocarla la juega)
+export const armedTarget = (x, y) => !!app.armed?.targets?.some(c => c.x === x && c.y === y);
 
 export function clickCard(p, idx) {
   if (app.animating) return false;
@@ -261,6 +263,7 @@ export function clickCell(x, y) {
 // y "Colocar" (o Intro) la deja. La IA usa clickCell directamente.
 export function uiCell(x, y, { key = false } = {}) {
   const g = app.game, pd = g?.pending;
+  if (!app.animating && !pd && armedTarget(x, y)) return playArmed();
   if (!app.animating && pd?.kind === 'placeTile' && TILES[pd.tileType]?.rotates && g.selectableAt(x, y) === 'sel' && !isBot(pd.p)) {
     const same = app.placeAt && app.placeAt.x === x && app.placeAt.y === y;
     if (same && key) return confirmPlace();
@@ -333,6 +336,7 @@ export function render() {
   if (app.placeAt && (g.pending?.kind !== 'placeTile' || !g.selectableAt(app.placeAt.x, app.placeAt.y))) app.placeAt = null; // (pieza de prueba)
   const a = app.armed; // (carta elegida en táctil: se suelta si ya no se puede jugar tal cual)
   if (a && (g.pending || g.S.hands[a.p]?.[a.idx] !== a.key || !g.canPlay(a.p, a.key))) app.armed = null;
+  if (app.armed && !app.armed.targets) app.armed.targets = cardTargets(app.armed.p, app.armed.idx) || []; // (dónde tocar para jugarla)
   passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
   setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting)); // (ajuste: turnos de la máquina más rápidos)
   hud.renderTopbar();
@@ -345,7 +349,7 @@ export function render() {
   if (hud.modeChip()) requestAnimationFrame(() => { if (app.game === g) { fitBoard(); render(); } }); // etiqueta del modo (torneo, contrarreloj…)
   paintAssist();    // botones de consejo y deshacer
   redrawCaddie();   // el consejo sigue a la vista hasta que juegas
-  if (app.armed) previewCard(app.armed.p, app.armed.idx); // táctil: lo que hará la carta elegida
+  if (app.armed) previewCard(app.armed.p, app.armed.idx, { targets: app.armed.targets }); // táctil: lo que hará la carta elegida
   paintLab();       // panel del laboratorio del creador
   autoZoom();       // táctil, tableros grandes: la cámara se acerca a los destinos al elegir
 }

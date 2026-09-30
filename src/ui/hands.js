@@ -129,8 +129,9 @@ function renderActionBar(g, owner) {
     const card = CARDS[app.armed.key];
     kind = 'act';
     html = `<div class="hint act"><span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` +
-      `<span class="hintText">${esc(t('hands.hint.armed', { card: card.short || card.name }))}</span>` +
-      `<span class="hintBtns"><button class="btn-secondary btn-sm" data-act="playArmed">${esc(t('hands.play'))}</button>` +
+      `<span class="hintText">${esc(t(app.armed.targets?.length ? 'hands.hint.armedTap' : 'hands.hint.armed', { card: card.short || card.name }))}</span>` +
+      // (con marca en el tablero, se juega tocándola, como el palo: sin botón Jugar)
+      `<span class="hintBtns">${app.armed.targets?.length ? '' : `<button class="btn-secondary btn-sm" data-act="playArmed">${esc(t('hands.play'))}</button>`}` +
       `<button class="btn-ghost btn-sm" data-act="disarm">${esc(t('common.cancel'))}</button></span></div>`;
   } else if (pd && BAR_KINDS.includes(pd.kind) && pendP >= 0) {
     const interactive = app.mode !== 'pve' || pendP === viewer(); // en PVE solo se interactúa con tus acciones
@@ -265,7 +266,10 @@ export function bindHands() {
   $('hands').addEventListener('mouseleave', () => { if (!isPhone()) hidePreview(); });
   // táctil: tocar fuera de la carta elegida (y de su aviso) la suelta
   window.addEventListener('pointerdown', e => {
-    if (app.armed && !e.target.closest('#hands .card, #actionBar')) ctl.disarm();
+    if (!app.armed || e.target.closest('#hands .card, #actionBar')) return;
+    const cell = e.target.closest('#board .cell'); // (su marca en el tablero la juega)
+    if (cell && ctl.armedTarget(+cell.dataset.x, +cell.dataset.y)) return;
+    ctl.disarm();
   }, true);
   for (const id of ['dock', 'seats']) {
     const el = $(id);

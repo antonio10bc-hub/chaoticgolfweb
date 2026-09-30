@@ -186,6 +186,7 @@ export default {
     play: 'Play', rotate: 'Rotate', rotateTitle: 'Rotate the piece (R)', place: 'Place',
     hint: {
       armed: '{card}: tap again to play it',
+      armedTap: '{card}: tap the mark on the board',
       move: '{card}: choose the destination square',
       placeTile: '{card}: choose a free square',
       placeRot: '{card}: choose where to put it',
@@ -412,7 +413,7 @@ export default {
       lose: 'Next one’s mine.|Well played…|Rematch!',
     },
   },
-  preview: { tapAgain: 'Tap again' },
+  preview: { tapAgain: 'Tap again', tapHere: 'Tap here' },
   // custom balls (src/ui/skins.js) and the "Your ball" window (src/ui/my-ball.js)
   skins: {
     unit: { days1: '{n} day', wins1: '{n} win', series1: '{n} run', days: '{n} days', wins: '{n} wins', series: '{n} runs' },

@@ -509,10 +509,15 @@ it('táctil: cartas de efecto inmediato con dos toques, mantener pulsado explica
   await p.evaluate(() => document.querySelector('#hands .card[data-key="hoyoUp"]').click()); await sleep(250);
   assert.equal(await p.evaluate(() => window.chaoticGolf.app.armed?.key), 'hoyoUp', 'primer toque: elegida');
   assert.deepEqual(await p.evaluate(() => ({ ...window.chaoticGolf.app.game.S.hole })), hole0, 'aún no se ha jugado');
-  assert.ok(await p.$('#actionBar [data-act="playArmed"]'), 'aviso con "Jugar"');
-  assert.ok(await p.evaluate(() => document.getElementById('previewSvg')?.classList.contains('visible')), 'se ve qué hará');
-  await p.evaluate(() => document.querySelector('#hands .card[data-key="hoyoUp"]').click()); await sleep(900);
-  assert.notDeepEqual(await p.evaluate(() => ({ ...window.chaoticGolf.app.game.S.hole })), hole0, 'segundo toque: jugada');
+  assert.ok(!await p.$('#actionBar [data-act="playArmed"]'), 'sin botón "Jugar": se juega tocando la marca');
+  assert.ok(await p.evaluate(() => document.getElementById('previewSvg')?.classList.contains('visible') && !!document.querySelector('#previewSvg .pvTarget')), 'se ve qué hará, con su marca');
+  const tgt = await p.evaluate(() => window.chaoticGolf.app.armed.targets[0]);
+  assert.ok(tgt && tgt.x === hole0.x && tgt.y < hole0.y, 'la marca: donde irá el hoyo ' + JSON.stringify([hole0, tgt]));
+  // tocar la marca la juega (como el segundo toque del palo en su destino)
+  const cellBox = async (x, y) => (await p.$(`#board .cell[data-x="${x}"][data-y="${y}"]`)).boundingBox();
+  const tap = async b => { await p.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2); await sleep(300); };
+  await tap(await cellBox(tgt.x, tgt.y)); await sleep(700);
+  assert.deepEqual(await p.evaluate(() => { const h = window.chaoticGolf.app.game.S.hole; return { x: h.x, y: h.y }; }), tgt, 'tocar la marca: jugada');
   // mantener pulsado: explicación, sin elegir la carta
   await p.waitForFunction(() => !window.chaoticGolf.app.animating);
   const c = await (await p.$('#hands .card[data-key="palo3"]')).boundingBox();
