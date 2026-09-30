@@ -295,11 +295,11 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone .mActions .mRow .mBtn, html.phone .mActions .mBtn { min-height: 42px; padding: 9px 14px; font-size: 14.5px; }
   /* los botones redondos (sonido y ajustes), arriba a la derecha: abajo tapaban los del menú */
   html.phone body:not([data-screen="game"]) #sfxBtn, html.phone body:not([data-screen="game"]) #sndCfgBtn { top: 12px; bottom: auto; left: auto; }
-  /* (de izquierda a derecha: creador de niveles en Modos · sonido · ajustes · tu pelota) */
+  /* (de izquierda a derecha: sonido · ajustes · tu pelota) */
   html.phone body:not([data-screen="game"]) #sfxBtn { right: calc(100px + env(safe-area-inset-right, 0px)); }
   html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
   html.phone body:not([data-screen="game"]) #profileBtn { top: 12px; bottom: auto; left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); }
-  html.phone .mBottom, html.phone body[data-screen="modes"] .mBottom { left: auto; right: calc(142px + env(safe-area-inset-right, 0px)); top: 12px; bottom: auto; }
+  html.phone .mBottom { left: auto; right: calc(142px + env(safe-area-inset-right, 0px)); top: 12px; bottom: auto; }
   /* Lo básico: cabecera compacta y tarjetas en horizontal (miniatura a la izquierda), 4 × 2 sin desplazarse */
   html.phone #storyScreen { padding-top: 14px; padding-bottom: 12px; }
   html.phone #storyScreen .sTitle { font-size: clamp(30px, 10vh, 46px); }

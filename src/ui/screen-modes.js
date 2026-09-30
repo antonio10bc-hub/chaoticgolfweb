@@ -464,7 +464,7 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   const prev = modesTab, dir = TABS.indexOf(tab) >= TABS.indexOf(prev) ? 1 : -1;
   modesTab = tab;
   try { localStorage.setItem(TAB_KEY, tab); } catch (e) { /* sin storage */ }
-  document.body.dataset.modesTab = tab; // (el creador de niveles solo se ofrece en Juegos especiales)
+  document.body.dataset.modesTab = tab;
   grid.dataset.tab = tab;
   grid.querySelectorAll('[data-mtab]').forEach(b => { const on = b.dataset.mtab === tab; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
   if (focus) grid.querySelector(`[data-mtab="${tab}"]`)?.focus();

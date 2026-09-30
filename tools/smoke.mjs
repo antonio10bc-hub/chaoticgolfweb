@@ -135,7 +135,7 @@ try {
   await page.evaluate(() => { document.querySelectorAll('.screen, #winOverlay').forEach(() => {}); });
   await click('#modesBtn'); await sleep(300); // el creador vive en Modos de juego → Juegos especiales
   await click('[data-mtab="special"]'); await sleep(700);
-  await click('#editorBtn'); await sleep(300);
+  await click('.lvlSection.yours [data-mode="editor"]'); await sleep(300);
   await click('#edTools [data-tool="bunker"]');
   await click('#edBoard .cell[data-x="1"][data-y="1"]');
   await click('#edTools [data-tool="portal"]');

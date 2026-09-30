@@ -85,7 +85,6 @@ bindRules();
 bindBack();
 bindLogFilter();
 bindMyBall();
-$('editorBtn').addEventListener('click', () => openEditor());
 $('endTurnBtn').addEventListener('click', ctl.endTurn);
 $('discardBtn').addEventListener('click', ctl.startDiscard);
 $('logTab').addEventListener('click', () => $('logPanel').classList.toggle('open'));

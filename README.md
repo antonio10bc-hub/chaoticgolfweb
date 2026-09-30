@@ -191,7 +191,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
   contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
   modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa. El nombre y el color se eligen
-  en Partida rápida. El Creador de Niveles está en Modos de juego.
+  en Partida rápida. El Creador de Niveles se abre con «Crear nivel» (Juegos especiales → Tus niveles).
 - **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
@@ -273,7 +273,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las cinco cifras en una fila y, debajo, el recorrido y el resumen lado a lado (en el móvil estrecho, uno bajo otro;
   con poca altura, dos columnas con el mensaje y los botones a la izquierda). "¿Por qué he perdido?" se abre en el
   sitio del resumen ("Ver el resumen" vuelve), no debajo. `npm run test:ui` lo comprueba.
-- **Tu pelota** (botón de la camiseta a la derecha de Ajustes, en el menú y en Modos de juego —en Juegos especiales, el creador de niveles va detrás, al final de la fila—; `src/ui/skins.js`, `src/ui/my-ball.js`,
+- **Tu pelota** (botón de la camiseta a la derecha de Ajustes, en el menú y en Modos de juego; `src/ui/skins.js`, `src/ui/my-ball.js`,
   `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
   las 8 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días; más llamas, más altas, brasas), **Clásica**, **Agua**, **Madera** y

@@ -314,7 +314,7 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   await fresh();
   await click('#modesBtn'); await sleep(300);
   await click('[data-mtab="special"]'); await sleep(500);
-  await click('#editorBtn'); await sleep(500);
+  await click('.lvlSection.yours [data-mode="editor"]'); await sleep(500);
   const at = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
   await click('#edTools [data-tool="lake"]');
   const [a, b] = await at(0, 0), [c, d] = await at(2, 0);

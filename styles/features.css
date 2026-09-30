@@ -976,8 +976,6 @@ html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMot
 .setRow.seg .segBtns button { --b-bg: transparent; --b-line: transparent; border-radius: 9px; padding: 8px 6px; font-size: 13px; }
 .setRow.seg .segBtns button:hover { background-color: rgba(255,255,255,.6); }
 .setRow.seg .segBtns button[aria-pressed="true"] { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
-#modesBottom { display: none; }
-body[data-screen="modes"] #modesBottom { display: flex; animation: fadeIn .3s both; }
 
 /* ---------- aviso de guardado (barra de la partida) ---------- */
 #gameBar > .barSide:first-child { position: relative; }
@@ -1073,8 +1071,6 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 .mdPanel.off { display: none; }
 .mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.85); font-size: 14px; }
 html.reduceMotion .mdTabInd { transition: none; }
-/* el creador de niveles, solo con Juegos especiales a la vista */
-body[data-screen="modes"]:not([data-modes-tab="special"]) #modesBottom { display: none; }
 
 /* ---------- tarjeta de baraja (lista vertical) ---------- */
 .deckList { display: flex; flex-direction: column; gap: 14px; }
@@ -1599,3 +1595,7 @@ button.chCard.weekly:hover .wkArt .mdArt { transform: rotate(-6deg) scale(1.08);
   .spTitle b { font-size: 17px; }
   .gBar { display: none; }
 }
+
+/* "Crear nivel" (Tus niveles) es la entrada al creador: con el gris azulado de su alfombrilla y letra blanca */
+.lvlCreate { --b-bg: #3C4A55; --b-fg: #fff; --b-line: #3C4A55; font-weight: 600; }
+.lvlCreate:hover { background-color: #4B5C68; }

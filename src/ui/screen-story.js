@@ -101,7 +101,7 @@ export function puzzlesSectionHTML() {
 export function yoursSectionHTML() {
   const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story'), base = app.storyLevels.length;
   const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
-  const acts = `<span class="lvlHeadActs"><button class="btn-light btn-sm btn-icon" data-mode="editor">${icon('i-plus')}${esc(t('story.create'))}</button>` +
+  const acts = `<span class="lvlHeadActs"><button class="btn-sm btn-icon lvlCreate" data-mode="editor" title="${esc(t('menu.editorTitle'))}">${icon('i-plus')}${esc(t('story.create'))}</button>` +
     `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span>`;
   return `<section class="lvlSection yours">${sectionHead({ art: 'yours', title: t('story.yours'), done: levels.length || null, extra: acts, sub: t('story.yoursSub') })}<div class="lvlRow">` + (levels.length
     ? levels.map((L, j) => { const i = base + j, name = L.name || t('story.untitled');
