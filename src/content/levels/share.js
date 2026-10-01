@@ -6,6 +6,7 @@
 // dentro del tablero, piezas y cartas que existen), así que un código roto o manipulado no rompe nada.
 import { CARDS } from '../cards/index.js';
 import { TILES } from '../tiles/index.js';
+import { validPath, MAX_CARS } from '../../engine/train.js';
 
 export const LEVEL_SIZE = { minCols: 3, maxCols: 25, minRows: 5, maxRows: 25 };
 export const LINK_KEY = 'nivel';
@@ -32,6 +33,7 @@ export function packLevel(L) {
   const d = Object.entries(L.deckCounts || {}).filter(([k, n]) => CARDS[k] && n > 0);
   if (d.length) o.d = Object.fromEntries(d);
   if (L.hand?.length) o.k = L.hand.filter(k => CARDS[k]);
+  if (L.train?.path?.length) o.tr = { p: L.train.path.flat(), s: L.train.stations, i: L.train.pos, c: L.train.cars || 0 }; // (el circuito, casilla a casilla)
   return o;
 }
 
@@ -49,7 +51,7 @@ export function unpackLevel(o) {
   const free = (x, y) => { const k = x + ',' + y; if (used.has(k)) return false; used.add(k); return true; };
   const tiles = [];
   for (const a of Array.isArray(o.t) ? o.t : []) {
-    if (!Array.isArray(a) || !TILES[a[0]] || !inB(a[1], a[2]) || !free(a[1], a[2])) continue;
+    if (!Array.isArray(a) || !TILES[a[0]] || TILES[a[0]].virtual || !inB(a[1], a[2]) || !free(a[1], a[2])) continue;
     const tl = { type: a[0], x: a[1], y: a[2] };
     if (TILES[a[0]].rotates && Number.isInteger(a[3]) && a[3] > 0 && a[3] < 4) tl.rot = a[3];
     if (a[0] === 'portal' && Number.isInteger(a[4]) && a[4] > 0 && a[4] < 7) tl.pair = a[4];
@@ -64,6 +66,18 @@ export function unpackLevel(o) {
   if (extraBalls.length) L.extraBalls = extraBalls;
   const hand = (Array.isArray(o.k) ? o.k : []).filter(k => CARDS[k]).slice(0, 6);
   if (hand.length) L.hand = hand;
+  // el tren: una vuelta válida, 4 paradas distintas en ella, la locomotora en la vía y 0-3 vagones
+  const tr = o.tr, flat = Array.isArray(tr?.p) ? tr.p : [];
+  if (flat.length && flat.length % 2 === 0 && flat.length <= 2 * cols * rows) {
+    const path = []; for (let i = 0; i < flat.length; i += 2) path.push([flat[i], flat[i + 1]]);
+    const P = path.length, idx = v => Number.isInteger(v) && v >= 0 && v < P;
+    const st = Array.isArray(tr.s) ? tr.s.filter(idx) : [];
+    if (path.every(([x, y]) => inB(x, y)) && validPath(path, cols, rows) && st.length === 4 && new Set(st).size === 4 && idx(tr.i)) {
+      const cars = Number.isInteger(tr.c) ? Math.max(0, Math.min(MAX_CARS, tr.c)) : 0;
+      L.train = { path, stations: st, pos: tr.i, cars };
+      L.tiles = L.tiles.filter(tl => !path.some(([x, y]) => x === tl.x && y === tl.y));
+    }
+  }
   return L;
 }
 

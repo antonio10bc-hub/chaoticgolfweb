@@ -87,6 +87,9 @@ export function sfx(name) {
     case 'splash': noiseHit(.28, 900, .5, 'lowpass'); tone(420, 140, .2, 'sine', .35); noiseHit(.12, 2600, .18, 'highpass', .08); break; // chapuzón
     case 'water':  noiseHit(.5, 700, .16, 'bandpass', 0, 1.4); tone(620, 700, .12, 'sine', .08, .1); break; // corriente del río (suave)
     case 'fall':   tone(520, 130, .22, 'sine', .4); break;
+    case 'chug':   noiseHit(.08, 520, .26, 'lowpass'); noiseHit(.05, 1800, .08, 'bandpass', .05, 1.2); tone(92, 74, .06, 'sine', .22); break; // paso del tren
+    case 'whistle': // silbato de vapor: dos notas con su soplido
+      tone(784, 800, .42, 'sine', .14); tone(988, 1004, .42, 'triangle', .1, .02); noiseHit(.46, 2600, .07, 'highpass', 0, 1); break;
     case 'pop':    tone(340, 640, .09, 'triangle', .55, 0, r); chain++; break;    // reaparecer / colocar
     case 'sink':   // traqueteo en el borde de la taza, caída y "clonc" al fondo
       tone(2400, 2100, .025, 'square', .12); tone(2200, 1900, .025, 'square', .1, .07); tone(2000, 1700, .025, 'square', .08, .13);

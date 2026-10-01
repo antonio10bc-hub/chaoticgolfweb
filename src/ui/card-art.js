@@ -27,7 +27,38 @@ const woodGrain = (x, y, w, n) => Array.from({ length: n }, (_, i) => `<path d="
 let iriSeq = 0;
 const IRI = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9ECF"/><stop offset=".3" stop-color="#A8C8FF"/><stop offset=".55" stop-color="#9DF2D6"/><stop offset=".8" stop-color="#FFE59A"/><stop offset="1" stop-color="#C9A6FF"/></linearGradient></defs>`;
 
+// el tren: locomotora de vapor vista de frente sobre su vía (caldera negra, viga roja, remates dorados y humo)
+const RAIL = '#4B5057', TIE = '#8A5A33', RED = '#B5483B', GOLD = '#D9A441', IRON = '#2B2B30';
+const trackFront = () => `<path d="M34 90H66M38 82H62M41 75H59" stroke="${TIE}" stroke-width="3.4" stroke-linecap="round"/>` +
+  `<path d="M30 97 L44 70 M70 97 L56 70" stroke="${RAIL}" stroke-width="2.8" stroke-linecap="round"/>`;
+const locoFront = () =>
+  `<circle cx="58" cy="15" r="6" fill="#fff" stroke="${INK}" stroke-width="1.4"/><circle cx="68" cy="9" r="4.4" fill="#fff" stroke="${INK}" stroke-width="1.4"/><circle cx="76" cy="5" r="3" fill="#fff" stroke="${INK}" stroke-width="1.2"/>` +
+  `<path d="M42 21 H55 L53 35 H44 Z" fill="${IRON}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/><rect x="40" y="19" width="17" height="4" rx="1.5" fill="${IRON}" stroke="${INK}" stroke-width="1.4"/>` +
+  `<rect x="27" y="35" width="47" height="33" rx="6" fill="${RED}" stroke="${INK}" stroke-width="1.8"/>` +
+  `<rect x="27" y="35" width="47" height="4" rx="2" fill="${GOLD}"/>` +
+  `<circle cx="50.5" cy="51" r="15" fill="${IRON}" stroke="${INK}" stroke-width="1.8"/><circle cx="50.5" cy="51" r="10" fill="#3A3A40"/>` +
+  `<circle cx="50.5" cy="51" r="3.2" fill="${GOLD}"/><path d="M44 45a9 9 0 0 1 8-3.6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>` +
+  `<circle cx="50.5" cy="31" r="4.2" fill="#FFE38A" stroke="${INK}" stroke-width="1.4"/>` +
+  `<rect x="28" y="66" width="45" height="6" rx="2" fill="#8E3328" stroke="${INK}" stroke-width="1.4"/>` +
+  `<path d="M35 72 L50.5 82 L66 72 Z" fill="${GOLD}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
 const ARTS = {
+  tren: () => `<circle cx="50" cy="54" r="40" fill="${RED}" opacity=".12"/>` + trackFront() + locoFront(),
+  // vuelta entera: la locomotora (más pequeña) dentro de una flecha que da la vuelta
+  trenLoop: () => `<circle cx="50" cy="52" r="40" fill="${RED}" opacity=".12"/>` +
+    `<path d="M50 9 A43 43 0 1 1 13.5 31" fill="none" stroke="${ACC}" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 7.5"/>` +
+    `<path d="M5 26 L14 34 L21 23" fill="none" stroke="${ACC}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<g transform="translate(14 14) scale(.72)">${trackFront()}${locoFront()}</g>`,
+  // vagón plano con su montón de arena, visto de lado sobre la vía
+  vagon: () => `<circle cx="50" cy="54" r="40" fill="#E2D3A2" opacity=".45"/>` +
+    `<path d="M8 82 H92" stroke="${RAIL}" stroke-width="3" stroke-linecap="round"/><path d="M14 87H24M34 87H44M56 87H66M76 87H86" stroke="${TIE}" stroke-width="3.4" stroke-linecap="round"/>` +
+    `<path d="M22 60 C30 34 70 34 78 60 Z" fill="#E2D3A2" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>` +
+    `<path d="M32 50 C38 42 52 40 60 44" fill="none" stroke="#F6F0D8" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M40 54q6 2 12 0M54 56q5 2 10 0" fill="none" stroke="#C4AE76" stroke-width="1.4" stroke-linecap="round"/>` +
+    `<rect x="14" y="58" width="72" height="12" rx="2.5" fill="#9A6A3C" stroke="${INK}" stroke-width="1.8"/>` +
+    `<path d="M28 58v12M44 58v12M60 58v12M74 58v12" stroke="rgba(60,36,16,.4)" stroke-width="1.2"/>` +
+    `<path d="M8 64 H14 M86 64 H92" stroke="${IRON}" stroke-width="3" stroke-linecap="round"/>` +
+    `<circle cx="30" cy="76" r="6" fill="${IRON}" stroke="${INK}" stroke-width="1.4"/><circle cx="70" cy="76" r="6" fill="${IRON}" stroke="${INK}" stroke-width="1.4"/>` +
+    `<circle cx="30" cy="76" r="2" fill="${RED}"/><circle cx="70" cy="76" r="2" fill="${RED}"/>`,
   palo: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` + club() + ball(68, 76),
   // palo iridiscente: el palo y la estela brillan con los colores del arcoíris
   // (id único por dibujo: si el primero está oculto, Chrome no pinta el degradado en los demás)

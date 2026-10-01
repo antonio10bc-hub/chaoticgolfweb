@@ -14,6 +14,7 @@ import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
 import { dockOwner } from './hands.js';
 import { isBot } from './players.js';
+import { renderTrack, ensureTrain, syncTrain } from './train-view.js';
 
 let cells = [], dims = '';
 let justPlaced = null; // última loseta colocada, para su animación de aparición
@@ -74,7 +75,7 @@ export function renderBoard() {
     const cell = cells[y * S.cols + x];
     let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), html = '', title = ''; // mowB: banda de segado (decorativo)
     const aria = [t('a11y.cell', { x, y })];
-    const par = g.parAt(x, y), tile = g.tileAt(x, y), ball = g.ballAt(x, y);
+    const par = g.parAt(x, y), tile = g.realTileAt(x, y), ball = g.ballAt(x, y); // (la locomotora y los vagones van en la capa de piezas)
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);
@@ -90,6 +91,7 @@ export function renderBoard() {
         sfx(tileDef(tile.type).placeSound || 'pop');
       }
     }
+    if (S.train && g.trackIndex(x, y) >= 0) { cls += ' track'; const v = g.trainTileAt(x, y); aria.push(t(v ? `tiles.${v.type}.name` : 'a11y.track')); }
     if (g.isHole(x, y)) aria.push(t('a11y.hole'));
     if (ball) aria.push(t('player.name', { n: ball.player + 1 }));
     // marca sutil de las casillas iniciales reales (fijadas al empezar la partida)
@@ -123,6 +125,7 @@ export function renderBoard() {
     if (cell._aria !== a) { cell.setAttribute('aria-label', a); cell._aria = a; }
   }
   justPlaced = null;
+  renderTrack(g); // (baraja del tren) las vías, sobre las casillas
 }
 
 /* ---- interacción: click, teclado y previsualización de trayectoria ---- */
@@ -201,6 +204,7 @@ export function clearPieces() { $('pieces').innerHTML = ''; }
 
 export function ensurePieces() {
   const g = app.game, S = g.S, pd = g.pending;
+  ensureTrain(g); // (baraja del tren: locomotora y vagones, debajo de pelotas y hoyo)
   ensurePiece('hole', ASSETS.holeHTML());
   const seat = skinSeat(g);
   for (const b of S.balls) {
@@ -255,5 +259,6 @@ export function syncPieces() {
   // limpia clases transitorias de la reproducción para no dejar estados colgados
   $$('#pieces .piece').forEach(el =>
     el.classList.remove('glide', 'falling', 'dropping', 'sinking', 'warp', 'warpOut', 'warpIn', 'air', 'acting'));
+  syncTrain(g);
   fxRewindApply(); // si venimos de una carta NO, retrocede visualmente desde la posición previa
 }

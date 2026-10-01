@@ -354,6 +354,20 @@ const DECK_ART = {
     `<path d="M25.5 26.5 L30 21 L34.5 26.5 Z" fill="#B5473F"/>` +
     `<g class="dkSpin">${[0, 90, 180, 270].map(a => `<g transform="rotate(${a + 20} 30 24)"><rect x="28.6" y="10" width="2.8" height="13" rx="1" fill="#F1F1DC" stroke="#7A5230" stroke-width=".7"/><path d="M28.6 13h2.8M28.6 16.5h2.8M28.6 20h2.8" stroke="#7A5230" stroke-width=".6"/></g>`).join('')}<circle cx="30" cy="24" r="1.6" fill="#7A5230"/></g>` +
     `<circle cx="40" cy="47.5" r="2.2" fill="#fff"/><path d="M15 50 q8 -5 12 0" stroke="#F1F1DC" stroke-width="1.2" fill="none" opacity=".7"/>` + frame,
+  // el tren: una locomotora de vapor de perfil sobre su vía, con su humo (al pasar por la tarjeta, el humo sube)
+  train: () => cardBase('train', '#D9806A', '#7E2C24') +
+    `<g clip-path="url(#dk-train-c)"><circle cx="40" cy="20" r="14" fill="rgba(255,226,170,.16)"/>` +
+    `<path d="M8 47 H52" stroke="#4B5057" stroke-width="1.6"/><g stroke="#5A3A20" stroke-width="2.2">${[12, 18, 24, 30, 36, 42, 48].map(x => `<path d="M${x} 46.5v3.4"/>`).join('')}</g>` +
+    `<path d="M8 50.5 H52" stroke="#4B5057" stroke-width="1.6"/></g>` +
+    `<g class="dkSmoke" fill="#F1F1DC"><circle cx="22" cy="21" r="2.6"/><circle cx="25.5" cy="16" r="3.4" opacity=".85"/><circle cx="31" cy="11.5" r="4" opacity=".7"/></g>` +
+    `<path d="M19 30 h5 l-.6 -6 h-3.8z" fill="#242424"/>` +
+    `<rect x="16" y="29" width="20" height="11" rx="5.5" fill="#242424"/><path d="M22 29v11M29 29v11" stroke="#D9A441" stroke-width="1.2"/>` +
+    `<circle cx="28" cy="27.6" r="2" fill="#D9A441"/>` +
+    `<rect x="34" y="23" width="11" height="18" rx="2" fill="#B5483B"/><rect x="36.5" y="26" width="6" height="5.5" rx="1" fill="#FFE38A"/><rect x="33" y="21.6" width="13" height="2.6" rx="1.2" fill="#242424"/>` +
+    `<path d="M16 37 L11.5 43 H17 Z" fill="#D9A441"/><circle cx="14.6" cy="32.5" r="1.8" fill="#FFE38A"/>` +
+    `<g class="dkWheels"><circle cx="21" cy="43" r="3.4" fill="#242424"/><circle cx="29.5" cy="43" r="3.4" fill="#242424"/><circle cx="40" cy="42.6" r="3.8" fill="#242424"/>` +
+    `<circle cx="21" cy="43" r="1.2" fill="#B5483B"/><circle cx="29.5" cy="43" r="1.2" fill="#B5483B"/><circle cx="40" cy="42.6" r="1.4" fill="#B5483B"/></g>` +
+    `<path d="M21 43 H40" stroke="#8E8E96" stroke-width="1.1"/>` + frame,
   prism: () => cardBase('prism', '#4A3A86', '#241A4A') +
     `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
     `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +
@@ -392,10 +406,15 @@ export function openModes(tab) {
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
       `<p>${esc(t('decks.' + dk.id + '.desc'))}</p>` +
+      // Ultimate: las barajas que reúne (también las que se añadan)
+
       (last ? `<div class="mdStats">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</div>` : '') + `</div>` +
       `<dl class="dkStats"><div><dt>${esc(t('decks.played'))}</dt><dd>${st.p}</dd></div><div><dt>${esc(t('decks.won'))}</dt><dd>${st.w}</dd></div>` +
       `<div><dt>${esc(t('decks.pct'))}</dt><dd>${pct}</dd></div></dl>` +
-      `<div class="dkBtns">${btns}</div></article>`;
+      `<div class="dkBtns">${btns}` +
+      (dk.ultimate ? `<div class="ultIncl"><span>${esc(t('decks.includes'))}</span>${DECKS.filter(d => !d.ultimate && !d.locked).map(d => `<i title="${esc(t('decks.' + d.id + '.name'))}">${deckArt(d)}</i>`).join('')}</div>` : '') + `</div>` +
+      (dk.ultimate ? '<span class="ultSpark a" aria-hidden="true"></span><span class="ultSpark b" aria-hidden="true"></span><span class="ultSpark c" aria-hidden="true"></span><span class="ultSheen" aria-hidden="true"></span>' : '') +
+      `</article>`;
   };
   const quickPanel = `<div class="deckList">${DECKS.map(deckCard).join('')}</div>`;
 
@@ -504,7 +523,7 @@ function bindModesSwipe() {
 }
 
 // "Nueva partida": si hay una partida rápida guardada, se avisa y, al aceptar, se borra
-async function newQuick(deck = 'classic') {
+export async function newQuick(deck = 'classic') {
   if (loadSave('pve')) {
     if (!await confirmDialog(t('modes.quick.replace'), t('save.replaceOk'), true, t('save.title'))) return;
     clearSave('pve');

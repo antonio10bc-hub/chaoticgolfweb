@@ -21,6 +21,7 @@ import { hoyoUp, hoyoDown, hoyoLeft, hoyoRight, oHoyoUp, oHoyoDown, oHoyoLeft, o
 import { bunker, portal, river, lake, block, corner, tunnel, launcher } from './place-tile.js';
 import oPalo1 from './palo-reactivo.js';
 import no from './no.js';
+import { tren2, trenVuelta, oTren1, vagon } from './tren.js';
 
 const CARD_LIST = [
   palo1, palo2, palo3, dedo,
@@ -33,6 +34,7 @@ const CARD_LIST = [
   river, lake,                                      // baraja de agua
   palo4, palo5, block, corner, tunnel, launcher,    // baraja de minigolf
   palo10, paloIri,                                  // Ultimate
+  tren2, trenVuelta, oTren1, vagon,                 // baraja del tren
 ];
 
 for (const c of CARD_LIST) {

@@ -11,6 +11,7 @@
      audio/    efectos de sonido y música generativa
      i18n/     textos
    ========================================================= */
+import { maybeAnnounceDeck } from './ui/new-deck.js';
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
 import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
@@ -214,6 +215,8 @@ fxAmbientStart();
     startDaily();
   };
   dailyFromLink();
+  // baraja nueva: se anuncia una vez a quien ya jugaba (al llegar al menú, sin nada más abierto)
+  if (!linked) setTimeout(() => { if (app.screen === 'menu') maybeAnnounceDeck(); }, 1100);
   window.addEventListener('hashchange', () => { dailyFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
 })();
 

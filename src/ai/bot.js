@@ -86,6 +86,8 @@ export function sinkThreat(g, b) {
 export function evaluate(g, p, style = 'trick') {
   const S = g.S, W = STYLES[style] || STYLES.trick;
   if (S.winner !== null) return S.winners.includes(p) ? WIN : -WIN;
+  // (baraja del tren) si al acabar el turno el tren va a meter una pelota, pierde todo el mundo: casi tan malo como perder
+  if (S.train && S.turn === p && g.trainThreat()) return -WIN * .8;
   let score = 0;
   const me = g.ownBall(p);
   if (me && !me.holed) {
@@ -307,6 +309,8 @@ export function explainPlay(before, after, p, cardKey) {
     if (worst) return { key: 'holeAway', target: worst.r };
     if (me0 && me1 && hd(A, me1) < hd(B, me0)) return { key: 'holeCloser' };
   }
+  if (cardKey === 'vagon') return { key: 'wagon' };
+  if (['tren2', 'trenVuelta', 'oTren1'].includes(cardKey)) return { key: 'train' };
   const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
   if (placed) {
     // ¿en el camino de quién? (la pelota rival más cercana a la loseta)

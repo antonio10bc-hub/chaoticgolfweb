@@ -1,0 +1,108 @@
+/* =========================================================
+   Baraja del tren: vías, locomotora y vagones, su escena y sus presentaciones
+   (src/ui/train-view.js dibuja las vías y las piezas; src/ui/new-deck.js, el anuncio de baraja nueva)
+   ========================================================= */
+
+/* ---------- vías: una capa continua entre las casillas y las piezas ---------- */
+#trackSvg { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; overflow: visible; }
+/* las casillas por las que pasa la vía, con un poco de tierra bajo la grava */
+.cell.track { background-color: color-mix(in srgb, var(--grass-dark) 82%, #7A6A4E); }
+.cell.track.mowB { background-color: color-mix(in srgb, var(--grass-mid) 82%, #7A6A4E); }
+
+/* ---------- locomotora y vagones (piezas móviles, por debajo de pelotas y hoyo) ---------- */
+.piece.ptrain { z-index: 0; }
+.ptrain .trainBody { width: calc(var(--cell-w) * .9); height: calc(var(--cell-h) * .98); display: flex; transform-origin: 50% 50%; }
+html.squareCells .ptrain .trainBody { height: calc(var(--cell-h) * 1.12); }
+.ptrain .trainSvg { width: 100%; height: 100%; display: block; }
+.ploco.acting .trainBody { filter: none; }
+
+/* ---------- escena: campiña con sembrados y un andén de piedra alrededor del campo ---------- */
+#gameScreen[data-scene="rail"] #game {
+  --bg-a: #C9C98E; --bg-b: #D1D098;
+  background-image: var(--grain),
+    repeating-linear-gradient(90deg, rgba(120,96,52,.07) 0 3px, transparent 3px 34px),
+    repeating-linear-gradient(135deg, var(--bg-a) 0 90px, var(--bg-b) 90px 180px);
+}
+#gameScreen[data-scene="rail"] #boardWrap { background-color: #D8CDB4;
+  background-image: var(--grain), repeating-linear-gradient(90deg, rgba(120,104,76,.16) 0 1.5px, transparent 1.5px 28px);
+  box-shadow: inset 0 0 0 3px #B5483B, 0 8.4px 25.2px rgba(40,30,10,.22); }
+
+/* ---------- vista previa: el recorrido del tren y dónde parará ---------- */
+#previewSvg .pvTrainLine { fill: none; stroke: #FFE38A; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 7; opacity: .95; }
+#previewSvg .pvTrain { fill: rgba(181,72,59,.32); stroke: #fff; stroke-width: 2.2; stroke-dasharray: 5 4; }
+#previewSvg .pvTrain.wagon { fill: rgba(226,211,162,.45); }
+
+/* ---------- icono de la baraja (Modos de juego): al pasar por la tarjeta, el humo sube y la locomotora traquetea ---------- */
+.dkArt .dkSmoke { transform-box: view-box; }
+.deckCard:hover .dkArt .dkSmoke, .deckCard:focus-within .dkArt .dkSmoke { animation: dkSmoke 1.4s ease-out infinite; }
+.deckCard:hover .dkArt .dkWheels, .deckCard:focus-within .dkArt .dkWheels { animation: dkChug .32s steps(2) infinite; }
+@keyframes dkSmoke { 0% { transform: translate(0, 2px); opacity: .4; } 60% { opacity: 1; } 100% { transform: translate(4px, -4px); opacity: 0; } }
+@keyframes dkChug { 50% { transform: translateY(-.6px); } }
+html.reduceMotion .dkArt .dkSmoke, html.reduceMotion .dkArt .dkWheels { animation: none !important; }
+
+/* ---------- "¡Nueva baraja!": ventana pequeña con la ilustración, el anuncio y Jugar ahora / Luego ---------- */
+#dialog:has(.newDeck) { width: min(400px, calc(100vw - 24px)); }
+.dlgBox.newDeck { text-align: center; }
+.ndPic { position: relative; margin: -2px -2px 14px; }
+.ndArt { display: block; width: 100%; height: auto; border-radius: 16px; }
+.ndBadge { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); white-space: nowrap;
+  padding: 5px 14px; border-radius: 999px; background: var(--dk, #B5483B); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .04em;
+  animation: ndPop .5s .15s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes ndPop { from { transform: translateX(-50%) scale(.4); opacity: 0; } }
+.dlgBox.newDeck h3 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.02em; }
+.dlgBox.newDeck p { margin: 0 auto; max-width: 34ch; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.dlgBox.newDeck .dlgBtns { justify-content: center; margin-top: 16px; }
+.dlgBox.newDeck .btn-primary { --b-bg: var(--dk, #B5483B); --b-line: var(--dk, #B5483B); --b-fg: #fff; }
+html.reduceMotion .ndBadge { animation: none; }
+
+/* ---------- creador de niveles: las vías y el tren sobre la cuadrícula (los clics pasan a la casilla) ---------- */
+#edBoard { position: relative; }
+#edBoard .edTrack { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 3; }
+.edOptLbl { font-size: 12px; color: var(--ink-soft); margin-right: 2px; }
+
+/* aviso: si terminas el turno así, el tren mete una pelota en el hoyo */
+.hint.idle.trainDanger { background-color: #B5483B; color: #fff; font-weight: 600; animation: pulseDanger 1.4s ease-in-out infinite; }
+@keyframes pulseDanger { 50% { background-color: #C95A4C; } }
+html.reduceMotion .hint.idle.trainDanger { animation: none; }
+
+/* la próxima parada del tren (adonde irá solo al acabar el turno) */
+#trkNext { fill: rgba(255,227,138,.14); stroke: #FFE38A; stroke-width: 2.4; stroke-dasharray: 4 4; animation: trkNext 1.6s ease-in-out infinite; }
+@keyframes trkNext { 50% { opacity: .45; } }
+html.reduceMotion #trkNext { animation: none; }
+#edBoard .edTrack .edRailOpen { fill: rgba(217,96,58,.16); stroke: #D9603A; stroke-width: 2.4; stroke-dasharray: 4 3; }
+.edCount { font-size: 13px; font-weight: 600; color: #9A5F17; margin: 2px 2px 0; }
+.edCount.ok { color: var(--grass-dark); }
+
+/* ---------- pelota en la arena (búnker o vagón): medio enterrada en un montoncito que la rodea, con su borde de luz,
+   su sombra y granos sueltos (antes, una franja recta de arena en el fondo de la casilla) ---------- */
+.piece.pball.sunk .cardOnCell { transform: translateY(12%) scale(.9); }
+.piece.pball.sunk::after {
+  --d: calc((var(--cell-w) - 6px) * .64);
+  left: 50%; right: auto; bottom: auto; top: calc(50% + var(--d) * .2);
+  width: calc(var(--d) * 1.55); height: calc(var(--d) * .66); margin-left: calc(var(--d) * -.775);
+  border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+  background:
+    radial-gradient(circle at 22% 62%, #A88E58 0 .9px, transparent 1.4px),
+    radial-gradient(circle at 74% 48%, #A88E58 0 .8px, transparent 1.3px),
+    radial-gradient(circle at 58% 78%, #FFF8E2 0 .9px, transparent 1.4px),
+    radial-gradient(ellipse 70% 42% at 50% 8%, #FBF4DA 0 60%, transparent 62%),
+    radial-gradient(ellipse at 50% 30%, #F1E6C0, #E2D3A2 55%, #CDBB86);
+  box-shadow: 0 calc(var(--d) * .06) calc(var(--d) * .1) rgba(110,85,30,.28), inset 0 calc(var(--d) * -.05) 0 rgba(160,130,70,.3);
+}
+/* granitos que saltan un poco al caer en la arena (con el "plof") */
+.piece.pball.sunk::before { content: ''; display: block; position: absolute; left: 50%; top: calc(50% + (var(--cell-w) - 6px) * .1); width: 3px; height: 3px; margin-left: -1.5px;
+  border-radius: 50%; background: transparent; opacity: 1;
+  box-shadow: calc((var(--cell-w) - 6px) * -.42) 0 0 .5px #D8C68E, calc((var(--cell-w) - 6px) * .44) calc((var(--cell-w) - 6px) * -.04) 0 .4px #D8C68E,
+    calc((var(--cell-w) - 6px) * -.3) calc((var(--cell-w) - 6px) * -.12) 0 0 #E6D7A6, calc((var(--cell-w) - 6px) * .32) calc((var(--cell-w) - 6px) * .1) 0 .3px #CDBB86; }
+
+/* ---------- final "¡Gana el tren!": la locomotora arriba, donde iría la pelota ganadora ---------- */
+.wbStage.trainWin { place-items: end center; }
+.wbStage.trainWin::before, .wbStage.trainWin::after { display: none; }
+.wbStage.trainWin .twArt { width: 150px; height: 125px; overflow: visible; animation: pfPop .55s cubic-bezier(.3,1.5,.5,1) backwards; }
+.twArt .twLoco { transform-box: view-box; transform-origin: 60px 90px; animation: twChug .5s ease-in-out infinite alternate; }
+.twArt .twSmoke circle { transform-box: fill-box; transform-origin: center; animation: twPuff 1.8s ease-out infinite; }
+.twArt .twSmoke circle:nth-child(2) { animation-delay: -.6s; } .twArt .twSmoke circle:nth-child(3) { animation-delay: -1.2s; }
+@keyframes twChug { to { transform: translateY(-1.6px) scaleY(1.01); } }
+@keyframes twPuff { 0% { transform: translate(0, 6px) scale(.5); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(6px, -8px) scale(1.2); opacity: 0; } }
+@media (max-width: 640px) { .wbStage.trainWin .twArt { width: 124px; height: 104px; } }
+html.reduceMotion .twArt *, html.reduceMotion .wbStage.trainWin .twArt { animation: none !important; }

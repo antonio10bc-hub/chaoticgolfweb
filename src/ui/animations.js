@@ -17,6 +17,7 @@ import { toast } from './hud.js';
 import { botReact } from './bot-react.js';
 import { unlock } from './achievements.js';
 import { isBot } from './players.js';
+import { playTrain, playWagon, playTrainBump, markTrainRuns } from './train-view.js';
 
 let combo = 0;
 
@@ -29,6 +30,7 @@ export async function playQueue(onDone) {
   if (app.animLead) { const lead = app.animLead; app.animLead = 0; await wait(lead); }
   if (app.game !== game) return;
   const q = app.animQueue; app.animQueue = [];
+  markTrainRuns(q);
   const warped = new Set(); // pelotas que han cruzado un portal en esta jugada (logro "de portal a hoyo")
   for (const ev of q) {
     if (ev.t === 'teleport') warped.add(ev.p);
@@ -44,9 +46,13 @@ export async function playQueue(onDone) {
   fxTrailShow(); // estela fantasma del camino recorrido
   fxArmIdle();
   onDone?.();
+  const after = app.afterAnim; app.afterAnim = null; after?.(); // (lo que espera a ver la jugada entera: la victoria del tren)
 }
 
 async function playEvent(ev) {
+  if (ev.t === 'train') return playTrain(ev);
+  if (ev.t === 'wagon') return playWagon(ev);
+  if (ev.t === 'bump' && ev.p === 'loco') return playTrainBump(ev);
   const el = pieceEl(ev.p);
   if (!el) return;
   botReact(ev); // caras y bocadillos de los bots (decorativo)
@@ -63,6 +69,11 @@ async function playEvent(ev) {
   switch (ev.t) {
     case 'move': {    // deslizamiento con easing, squash & stretch, sombra y estela
       // (el iridiscente rueda más deprisa y sin frenar entre casillas: sus recorridos son largos)
+      if (ev.shove || ev.ride) { // empujada por el tren (o en su vagón): a la vez que la locomotora, sin esperar (ev._ms: su paso)
+        setPos(el, ev.x, ev.y, ev._ms || 210, 'linear');
+        if (ev.shove) { const { px, py } = cellCenterPx(ev.x, ev.y); fxSpawn(px, py, { n: 3, colors: GRASS_C, size: 5, dist: 18, dur: 360, gravity: 12 }); }
+        break;
+      }
       const ms = isHole ? JUICE.move.holeMs : ev.iri ? JUICE.move.iriMs : JUICE.move.ms;
       if (!isHole) { el.classList.remove('glide'); void el.offsetWidth; el.classList.add('glide'); }
       const left = pieceCenterPx(el); // la estela se queda en la casilla que abandona

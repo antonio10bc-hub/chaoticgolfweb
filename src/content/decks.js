@@ -16,6 +16,12 @@ export const DECKS = [
   { id: 'minigolf', color: '#A8743F', emblem: 'mill', scene: 'mini', grow: { cols: 8, rows: 0 }, par: 5,
     newCards: ['corner', 'block', 'tunnel', 'launcher', 'palo4', 'palo5'],
     counts: base => ({ ...base, bunker: 0, portal: 0, block: 4, corner: 4, tunnel: 2, launcher: 3, palo4: 4, palo5: 3 }) },
+  // el tren: un circuito de vías (distinto en cada partida) con 4 paradas; la locomotora avanza sola al acabar cada
+  // turno y empuja lo que encuentra. Sin búnkeres ni portales (sus vagones llevan la arena)
+  { id: 'train', color: '#B5483B', emblem: 'train', scene: 'rail', grow: { cols: 4, rows: 2 }, train: true,
+    newCards: ['tren2', 'trenVuelta', 'oTren1', 'vagon'],
+    counts: base => ({ ...base, bunker: 0, portal: 0, tren2: 4, trenVuelta: 2, oTren1: 2, vagon: 3 }) },
+  // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
   // Ultimate: las cartas de TODAS las demás barajas (las futuras también se suman solas), un campo
   // enorme, palos de 10 y el palo iridiscente
   { id: 'ultimate', color: '#8E6BE0', emblem: 'prism', scene: 'prism', grow: { cols: 12, rows: 4 }, par: 7, ultimate: true,
@@ -27,6 +33,8 @@ export const DECKS = [
     } },
 ];
 export const deckById = id => DECKS.find(d => d.id === id) || DECKS[0];
+// ¿la partida lleva tren? (su baraja, y Ultimate, que tiene todo lo de las demás)
+export const deckHasTrain = dk => !!(dk.train || (dk.ultimate && DECKS.some(d => d.train)));
 // tamaño del campo de una baraja a partir del tamaño elegido
 // (el tablero crece solo en filas si el PAR no cabe: hoyo + PAR + fila de pelotas)
 export const deckSize = (dk, sz) => {

@@ -19,7 +19,9 @@ function simulate(g, act) {
   const evs = sim.takeEvents();
   const pos = { hole: { x: g.S.hole.x, y: g.S.hole.y } };
   for (const b of g.S.balls) pos['b' + b.player] = { x: b.x, y: b.y };
-  const paths = {}, marks = [], unknown = new Set(); // (tras un túnel, el camino es incierto: se corta con un "?")
+  const paths = {}, marks = [], unknown = new Set();
+  // (baraja del tren) las casillas que recorre la locomotora y dónde se engancha un vagón nuevo
+  const train = g.S.train ? [g.S.train.pos] : null; let wagon = null; // (tras un túnel, el camino es incierto: se corta con un "?")
   const push = (id, pt) => {
     if (!pos[id] || unknown.has(id)) return;
     (paths[id] ||= [{ ...pos[id], kind: 'start' }]).push(pt);
@@ -38,9 +40,11 @@ function simulate(g, act) {
       case 'impact': if (pos[ev.p]) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break;
       case 'sink': if (pos[ev.p]) marks.push({ kind: 'sink', ...pos[ev.p] }); break;
       case 'settle': if (pos[ev.p]) marks.push({ kind: 'sand', ...pos[ev.p] }); break;
+      case 'train': train?.push(ev.i); break;
+      case 'wagon': wagon = { x: ev.x, y: ev.y }; break;
     }
   }
-  return { paths, marks, jaque: sim.S.winner !== null };
+  return { paths, marks, jaque: sim.S.winner !== null, train: train && train.length > 1 ? train : null, wagon };
 }
 
 function layer() {
@@ -63,6 +67,13 @@ function draw(res, { armedAt = null, label = 'tapAgain' } = {}) {
   svg.setAttribute('viewBox', `0 0 ${area.offsetWidth} ${area.offsetHeight}`);
   const s = cellStep(), rBall = Math.min(s.w, s.h) * .26;
   let out = '';
+  if (res.train) { // el tren: su recorrido por la vía (discontinuo) y la locomotora fantasma donde parará
+    const path = app.game.S.train.path, c = i => cellCenterPx(...path[i]);
+    out += `<polyline points="${res.train.map(i => { const q = c(i); return q.px + ',' + q.py; }).join(' ')}" class="pvTrainLine"/>`;
+    const e = c(res.train[res.train.length - 1]);
+    out += `<rect x="${e.px - s.w * .34}" y="${e.py - s.h * .4}" width="${s.w * .68}" height="${s.h * .8}" rx="${s.w * .14}" class="pvTrain"/>`;
+  }
+  if (res.wagon) { const e = cellCenterPx(res.wagon.x, res.wagon.y); out += `<rect x="${e.px - s.w * .34}" y="${e.py - s.h * .4}" width="${s.w * .68}" height="${s.h * .8}" rx="${s.w * .14}" class="pvTrain wagon"/>`; }
   const ids = Object.keys(res.paths).sort((a, b) => (b === 'hole') - (a === 'hole')); // el hoyo debajo
   for (const id of ids) {
     const pts = res.paths[id], col = colorOf(id);
@@ -128,7 +139,7 @@ export function previewCard(p, idx, { targets = null } = {}) {
   const g = app.game;
   if (!g || g.pending || app.animating || !g.canPlay(p, g.S.hands[p][idx])) { hidePreview(); return; }
   const res = cardSim(g, p, idx);
-  if (!res || !Object.keys(res.paths).length) { hidePreview(); return; }
+  if (!res || (!Object.keys(res.paths).length && !res.train && !res.wagon)) { hidePreview(); return; }
   draw(res, targets?.length ? { armedAt: targets[0], label: 'tapHere' } : undefined);
 }
 // táctil: casillas donde acaba lo que mueve la carta elegida (el hoyo, si lo mueve). Tocar ahí la juega,
@@ -139,6 +150,9 @@ export function cardTargets(p, idx) {
   const end = id => { const pts = res.paths[id], l = pts[pts.length - 1]; return l.kind === 'fall' ? null : { x: l.x, y: l.y }; };
   const ids = res.paths.hole ? ['hole'] : Object.keys(res.paths);
   const out = ids.map(end).filter(Boolean);
+  // el tren: primero la parada donde se detendrá (o la casilla del vagón nuevo)
+  if (res.train) { const [x, y] = g.S.train.path[res.train[res.train.length - 1]]; out.unshift({ x, y }); }
+  if (res.wagon) out.unshift({ ...res.wagon });
   return out.length ? out : null;
 }
 
@@ -147,5 +161,5 @@ export function previewPlan(actions) {
   const g = app.game;
   if (!g || g.pending || app.animating) return;
   const res = simulate(g, sim => { for (const a of actions) if (!applyAction(sim, a)) return false; return true; });
-  if (res && Object.keys(res.paths).length) draw(res);
+  if (res && (Object.keys(res.paths).length || res.train || res.wagon)) draw(res);
 }

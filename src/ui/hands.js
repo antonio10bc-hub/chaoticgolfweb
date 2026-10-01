@@ -150,10 +150,12 @@ function renderActionBar(g, owner) {
   } else if (!pd && !S.jaque && S.winner === null && owner === S.turn && !isBotSeat(owner) && handRevealed(owner)) {
     // consejo suave cuando es tu turno y no hay nada en curso
     const left = 2 - S.blackPlayed;
-    const txt = !hasPlayable(g, owner) ? t('hint.noMoves')
+    // (baraja del tren) aviso: si terminas así, el tren mete una pelota en el hoyo y gana
+    const danger = !!S.train && g.trainThreat();
+    const txt = danger ? t('hint.trainDanger') : !hasPlayable(g, owner) ? t('hint.noMoves')
       : S.blackPlayed === 0 ? t(S.nPlayers === 1 ? 'hint.startSolo' : 'hint.start') : t('hint.more', { n: left });
     kind = 'idle';
-    html = `<div class="hint idle">${esc(txt)}</div>`;
+    html = `<div class="hint idle${danger ? ' trainDanger' : ''}">${esc(txt)}</div>`;
   } else if (!pd && botWhyHTML()) {
     kind = 'idle'; html = botWhyHTML(); // por qué ha jugado así el bot
   }

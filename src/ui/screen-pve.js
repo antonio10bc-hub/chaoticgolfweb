@@ -18,7 +18,7 @@ import { PERSONAS, personaById, assignPersonas, faceSVG } from './persona.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
-import { deckById, deckSize } from '../content/decks.js';
+import { deckById, deckSize, deckHasTrain } from '../content/decks.js';
 import { deckIntro } from './deck-intro.js';
 import { defaultCounts } from '../content/cards/index.js';
 
@@ -186,6 +186,7 @@ export function startPveMatch() {
   const dk = deckById(cfg.deck);
   const extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
   if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)
+  if (deckHasTrain(dk)) extra.train = true; // (circuito de vías: la baraja del tren y Ultimate)
   const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra });
   startGame(made.game, 'pve');
   dressVsGame(made);

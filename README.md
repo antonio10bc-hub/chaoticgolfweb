@@ -22,7 +22,7 @@ dirección. Cada pantalla cuenta como una **página** (`/`, `/modos`, `/lo-basic
   `motivo` (contrarreloj sin tiempo). **abandona**: salir o reiniciar a medias (`como`, `turnos`, `segundos`).
   **continua**: se retoma una partida guardada.
 - **tutorial** (`completo` o saltado), **ayuda** (`tipo`: consejo / deshacer), **compartir** (`que`: resultado, jugada,
-  nivel), **creador** (`accion`: abrir / probar) e **instalar**.
+  nivel), **creador** (`accion`: abrir / probar), **baraja_nueva** (`baraja`, `jugar`: el anuncio de una baraja nueva) e **instalar**.
 Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Partidas y finales salen de `recordStart` / `recordEnd`
 (`src/ui/records.js`), el mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
 Un evento nuevo: `track('nombre', { dato: valor })` (valores cortos y con pocas variantes, nunca datos personales).
@@ -66,6 +66,8 @@ src/
     board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
     device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
     bake.js                texturas precocinadas: grano y fondo desenfocado de los menús como imagen
+    train-view.js          (baraja del tren) vías, andenes, locomotora y vagones; su animación
+    new-deck.js            "¡Nueva baraja!": el anuncio, una vez, de la baraja que se estrena
     skins.js / my-ball.js  pelotas que se ganan (3 niveles cada una) y la ventana "Tu pelota"
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
@@ -223,8 +225,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
-  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): Baraja clásica, **Baraja de agua** y
-  Baraja de minigolf (aún bloqueada, "Próximamente"). Cada una con su color, su última partida, "Repetir" y sus
+  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, **tren** y
+  **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
+  al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
+  desplazarse. Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -259,6 +264,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   marcada, en cualquier momento). En el móvil, las herramientas van en una tira y las cartas en una hoja; en horizontal,
   la barra en una fila, el tablero a todo el alto y las herramientas en una rejilla a la derecha. Sonido y ajustes, siempre
   arriba a la derecha (no encima de "← Modos").
+- **Pelota en la arena** (búnker o vagón): medio enterrada en un montoncito que la rodea, con su borde de luz, su
+  sombra y unos granos sueltos alrededor.
 - **Sin cuadrados desplazados:** ninguna pieza de la interfaz usa sombras duras desplazadas ni bordes gruesos en un
   solo lado; la profundidad va en sombras suaves y el tipo de carta (negra / naranja) en el borde completo.
 - **Compartir niveles** (`src/content/levels/share.js`, `src/ui/my-levels.js`): el nivel entero en un código corto
@@ -328,6 +335,41 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   nunca: rebota en los bloques, gira en las esquinas y sigue hasta chocar con otra pelota, que hereda el impulso y
   hace lo mismo, o hasta caerse del tablero; tras saltar una lanzadera sigue avanzando hacia donde volaba; si entra
   en un bucle sin fin, se corta; deja una estela iridiscente). Fondo iridiscente animado (manchas de color y un barrido de luz).
+- **Baraja del tren** (`src/engine/train.js`, cartas en `cards/tren.js`, vista en `src/ui/train-view.js`; +4 columnas y
+  +2 filas; sin búnkeres ni portales): un **circuito de vías** distinto en cada partida (un contorno con escalones,
+  tramos rectos largos y curvas; a veces rodea todo el campo y a veces cruza el recorrido), en el sentido del reloj,
+  con **4 paradas** más o menos a las 12, 3, 6 y 9. Nunca pasa por las salidas ni por el hoyo y la locomotora empieza en
+  una parada. Al acabar **cada turno** la locomotora va sola a la siguiente parada (se ve con un aro dorado en la vía).
+  - **Empuja** lo que encuentra: la pelota de delante (y las que tenga pegadas en fila) una casilla; en una recta las
+    sigue empujando y en la curva salen despedidas; el hoyo, igual que una pelota (en un JAQUE, se anula). Contra la
+    madera, o si no se puede apartar a nadie, espera. Si al empujar mete una pelota en el hoyo, el tren se para ahí.
+  - Para las reglas, la locomotora y los vagones son piezas "virtuales" en su casilla (`tileAt`): la locomotora es
+    maciza como un bloque (se rebota contra ella) y el **vagón de arena** atrapa como un búnker; lo que queda en su
+    arena (una pelota o el hoyo) viaja con el tren. Nada se puede colocar sobre las vías.
+  - **Gana el tren:** si al acabar un turno, sin que nadie juegue, mete una pelota en el hoyo, pierde todo el mundo
+    (sin JAQUE): primero se ve cómo la mete (y suena el silbato) y luego sale el final, con la locomotora echando humo
+    arriba, donde iría la pelota ganadora. Con una carta, la pelota cuenta para su dueño. Los bots lo ven venir (`trainThreat`) y, en tu turno, un
+    aviso rojo te dice si terminar así le daría la partida al tren.
+  - Cartas: **Tren 2** (negra, 2 paradas), **Vuelta** (negra, una vuelta entera), **Tren 1** (naranja, 1 parada en
+    cualquier momento) y **Vagón** (negra, engancha un vagón detrás; 3 como mucho; se queda en la mesa). En táctil se
+    juegan tocando la parada donde acabará el tren (o la casilla del vagón nuevo), con su recorrido dibujado.
+  - Locomotora de vapor (caldera negra, cabina roja, remates dorados) y vagones planos con su montón de arena, vistos
+    desde arriba y girados según la vía (el vagón, una tolva de tablones llena de arena con sus dunas y marcas de
+    rastrillo); vías continuas de traviesas y raíles; las paradas, una losa de cemento en el suelo alrededor de la vía
+    con sus líneas amarillas (no son una pieza: no bloquean nada); humo, silbato al
+    arrancar y "chu" a cada paso. Escena de campiña con un marco de andén. El circuito usa un azar aparte (el mazo sale
+    igual) y va también en Ultimate, en el creador y en el código para compartir niveles.
+  - **En el creador** (grupo Tren): **Vías** se ponen casilla a casilla (tocando o arrastrando; otra vez, se quitan),
+    **Parada** marca las 4 paradas sobre la vía y **Locomotora** dónde empieza (con 0-3 vagones). Lo que aún no enlaza
+    sale en rojo y no se puede probar ni guardar hasta que las vías forman una sola vuelta cerrada con 4 paradas
+    (también hay "Circuito al azar"; la plantilla Tren pone uno si no lo hay). El circuito ordenado, en el sentido del
+    reloj, se saca al probar o guardar (`orderLoop` / `trainOf` en `editor.js`).
+  - Pelota de logros **Vapor** (10 · 50 · 100 victorias): cinturón de hierro con remaches · bocanadas de vapor · una vía
+    alrededor con su tren.
+- **"¡Nueva baraja!"** (`src/ui/new-deck.js`): cuando el juego estrena una baraja, quien ya jugaba la ve anunciada una
+  vez al llegar al menú principal: una ventana pequeña con la ilustración (el circuito con el tren dando vueltas), el
+  anuncio, una frase y "Jugar ahora" (su partida rápida) o "Luego". A quien llega por primera vez no se le anuncia
+  (todo es nuevo). Para la próxima baraja: `ANNOUNCE` y su ilustración.
 - **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
   especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el

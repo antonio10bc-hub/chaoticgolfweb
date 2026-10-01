@@ -16,6 +16,10 @@ import { DECKS } from '../content/decks.js';
 import { ASSETS, pColor } from '../art.js';
 import { fitCellsTo } from './geometry.js';
 import { isPhone } from './device.js';
+import { makeCircuit, validPath, MAX_CARS } from '../engine/train.js';
+import { trackSVG, draftTrackSVG, LOCO, WAGON } from './train-view.js';
+import { cellCenterPx } from './geometry.js';
+import { mulberry32, randomSeed } from '../engine/rng.js';
 import { waterJoins, waterDelay } from './board.js';
 import { showScreen } from './screens.js';
 import { openModes } from './screen-modes.js';
@@ -42,6 +46,7 @@ const GROUPS = [
   ['classic', ['bunker', 'portal']],
   ['water', ['river', 'lake']],
   ['mini', ['block', 'corner', 'tunnel', 'launcher']],
+  ['train', ['track', 'station', 'loco']],
 ];
 const SHORTCUT = { b: 'ball', h: 'hole', p: 'par', o: 'decoy', x: 'erase' };
 const isTileTool = tool => !!TILES[tool];
@@ -60,22 +65,32 @@ function defaultLevel(cols = 12, rows = 9, par = 5) {
 // cualquier nivel (antiguo, recibido…) con todos los campos que usa el taller
 function normalize(L) {
   const out = JSON.parse(JSON.stringify(L));
-  out.tiles = (out.tiles || []).filter(tl => TILES[tl.type]).map(tl => tl.type === 'portal' && !tl.pair ? { ...tl, pair: 1 } : tl);
+  out.tiles = (out.tiles || []).filter(tl => TILES[tl.type] && !TILES[tl.type].virtual).map(tl => tl.type === 'portal' && !tl.pair ? { ...tl, pair: 1 } : tl);
   out.parCells = out.parCells || [];
   out.extraBalls = out.extraBalls || [];
   out.deckCounts = Object.fromEntries(CARD_KEYS.map(k => [k, out.deckCounts?.[k] || 0]));
   out.hand = (out.hand || []).filter(k => CARDS[k]);
+  // el tren se edita casilla a casilla (out.rails); el circuito ordenado (train) se saca al guardar o probar
+  if (out.train && validPath(out.train.path || [], out.cols, out.rows)) out.rails = railsFromTrain(out.train);
+  delete out.train;
+  if (out.rails) {
+    const inB = ([x, y]) => x >= 0 && y >= 0 && x < out.cols && y < out.rows, cells = (out.rails.cells || []).filter(inB);
+    const on = c => cells.some(q => q[0] === c[0] && q[1] === c[1]);
+    out.rails = { cells, stations: (out.rails.stations || []).filter(on).slice(0, 4), loco: out.rails.loco && on(out.rails.loco) ? out.rails.loco : null, cars: Math.max(0, Math.min(MAX_CARS, out.rails.cars || 0)) };
+    if (!cells.length) delete out.rails;
+  }
   delete out.at;
   return out;
 }
 // el nivel tal como se guarda y se juega (sin listas vacías)
 function exportable(L) {
   const out = JSON.parse(JSON.stringify(L));
+  if (out.rails) { const tr = trainOf(out); if (tr) out.train = tr; delete out.rails; }
   if (!out.extraBalls?.length) delete out.extraBalls;
   if (!out.hand?.length) delete out.hand;
   return out;
 }
-const snap = () => JSON.stringify(exportable(ED.level));
+const snap = () => JSON.stringify(ED.level); // (tal cual: con las vías a medias, para deshacer)
 const dirty = () => ED.saved !== snap();
 
 function persist() {
@@ -117,6 +132,76 @@ const parAt = (x, y) => ED.level.parCells.find(p => p.x === x && p.y === y);
 const decoyAt = (x, y) => ED.level.extraBalls.findIndex(e => e.x === x && e.y === y);
 // ¿puede estar una pelota o el hoyo en esa loseta? (solo en el búnker; en el resto no se para nadie)
 const standable = tl => !tl || tl.type === 'bunker';
+/* ---- el tren: vías, paradas y locomotora, casilla a casilla ----
+   L.rails = { cells: [[x, y]…], stations: [[x, y]…] (4), loco: [x, y] | null, cars }. Se puede jugar cuando las vías forman
+   una sola vuelta cerrada (cada casilla con dos vecinas de vía) y hay 4 paradas en ella: entonces trainOf da el circuito
+   ordenado del motor ({ path, stations, pos, cars }, en el sentido del reloj) */
+const key2 = (x, y) => x + ',' + y;
+const railAt = (x, y) => !!ED.level.rails?.cells.some(([cx, cy]) => cx === x && cy === y);
+const stationAt = (x, y) => !!ED.level.rails?.stations.some(([cx, cy]) => cx === x && cy === y);
+function railsFromTrain(tr) {
+  return { cells: tr.path.map(c => [...c]), stations: tr.stations.map(i => [...tr.path[i]]), loco: [...tr.path[tr.pos]], cars: tr.cars || 0 };
+}
+// las casillas como vuelta ordenada (en el sentido del reloj) o null si no son una sola vuelta cerrada
+function orderLoop(cells) {
+  if (cells.length < 4) return null;
+  const has = new Set(cells.map(([x, y]) => key2(x, y)));
+  const nb = ([x, y]) => [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).filter(([nx, ny]) => has.has(key2(nx, ny)));
+  if (cells.some(c => nb(c).length !== 2)) return null;
+  const path = [cells[0]];
+  let prev = null, cur = cells[0];
+  for (let guard = 0; guard < cells.length; guard++) {
+    const next = nb(cur).find(n => !prev || n[0] !== prev[0] || n[1] !== prev[1]);
+    if (next[0] === cells[0][0] && next[1] === cells[0][1]) break;
+    path.push(next); prev = cur; cur = next;
+  }
+  if (path.length !== cells.length) return null; // (varias vueltas sueltas)
+  let area = 0;
+  for (let i = 0; i < path.length; i++) { const [x0, y0] = path[i], [x1, y1] = path[(i + 1) % path.length]; area += x0 * y1 - x1 * y0; }
+  return area >= 0 ? path : [path[0], ...path.slice(1).reverse()]; // (en la pantalla, área positiva = sentido del reloj)
+}
+// lo que falta para jugar con este tren (claves de ed.st)
+function railProblems(L) {
+  const R = L.rails;
+  if (!R?.cells.length) return [];
+  const out = [];
+  const path = orderLoop(R.cells);
+  if (!path) out.push(t('ed.st.trackOpen'));
+  if (R.stations.length !== 4) out.push(t('ed.st.stations', { n: R.stations.length }));
+  if (path && R.stations.length === 4) {
+    const tr = trainOf(L, { check: false }), P = tr.path.length;
+    for (let k = 0; k <= tr.cars; k++) { const [x, y] = tr.path[(tr.pos - k + P) % P]; if (same(L.ball, x, y) || same(L.hole, x, y) || L.extraBalls.some(e => same(e, x, y))) { out.push(t('ed.st.trainCovers')); break; } }
+  }
+  return out;
+}
+function trainOf(L, { check = true } = {}) {
+  const R = L.rails, path = R && orderLoop(R.cells);
+  if (!path || R.stations.length !== 4) return null;
+  const idx = ([x, y]) => path.findIndex(c => c[0] === x && c[1] === y);
+  const stations = R.stations.map(idx).sort((a, b) => a - b), li = R.loco ? idx(R.loco) : -1;
+  const tr = { path, stations, pos: li >= 0 ? li : stations[0], cars: Math.min(R.cars || 0, MAX_CARS, path.length - 1) };
+  return check && railProblems(L).length ? null : tr;
+}
+// ¿la locomotora o sus vagones están ahí? (ni pelotas ni hoyo pueden empezar encima)
+function trainOn(x, y) {
+  const R = ED.level.rails;
+  if (!R) return false;
+  const tr = trainOf(ED.level, { check: false });
+  if (!tr) return !!R.loco && R.loco[0] === x && R.loco[1] === y;
+  const i = tr.path.findIndex(c => c[0] === x && c[1] === y);
+  return i >= 0 && (tr.pos - i + tr.path.length) % tr.path.length <= tr.cars;
+}
+// circuito nuevo al azar: sin pasar por la pelota, el hoyo, los obstáculos ni las piezas
+function newCircuit() {
+  const L = ED.level, avoid = [[L.hole.x, L.hole.y], [L.ball.x, L.ball.y], ...L.extraBalls.map(e => [e.x, e.y]), ...L.tiles.map(tl => [tl.x, tl.y])];
+  const c = makeCircuit(L.cols, L.rows, mulberry32(randomSeed()), avoid);
+  if (!c) { toast(t('ed.bad.noCircuit'), 'warn'); return false; }
+  L.rails = railsFromTrain({ path: c.path, stations: c.stations, pos: c.stations[0], cars: L.rails?.cars || 0 });
+  return true;
+}
+const dropRail = (x, y) => { const R = ED.level.rails, not = c => !(c[0] === x && c[1] === y);
+  R.cells = R.cells.filter(not); R.stations = R.stations.filter(not); if (R.loco && !not(R.loco)) R.loco = null;
+  if (!R.cells.length) delete ED.level.rails; };
 
 let badShown = 0;
 function bad(x, y, key) {
@@ -129,6 +214,9 @@ function bad(x, y, key) {
 function modeAt(x, y, erase) {
   if (erase) return 'erase';
   const tool = ED.tool, tl = tileAt(x, y);
+  if (tool === 'track') return railAt(x, y) ? 'unrail' : 'rail';
+  if (tool === 'station') return stationAt(x, y) ? 'unstation' : 'station';
+  if (tool === 'loco') return 'loco';
   if (tool === 'ball' || tool === 'hole') return 'move';
   if (tool === 'par') return parAt(x, y)?.n === ED.parN ? 'remove' : 'paint';
   if (tool === 'decoy') return decoyAt(x, y) >= 0 ? 'remove' : 'paint';
@@ -142,9 +230,32 @@ function applyAt(x, y, mode) {
   const isBall = same(L.ball, x, y), isHole = same(L.hole, x, y), di = decoyAt(x, y);
   const dropTile = () => { L.tiles = L.tiles.filter(q => q !== tl); };
   switch (mode) {
+    case 'rail': { // vía nueva (casilla a casilla; arrastrando, un tramo)
+      if (railAt(x, y)) return false;
+      if (tl) { bad(x, y, 'ed.bad.onTrack'); return false; }
+      (L.rails ||= { cells: [], stations: [], loco: null, cars: 0 }).cells.push([x, y]);
+      return true;
+    }
+    case 'unrail': if (!railAt(x, y)) return false; dropRail(x, y); return true;
+    case 'station': {
+      if (stationAt(x, y)) return false;
+      if (!railAt(x, y)) { bad(x, y, 'ed.bad.stationOffTrack'); return false; }
+      if (L.rails.stations.length >= 4) { bad(x, y, 'ed.bad.stationsFull'); return false; }
+      L.rails.stations.push([x, y]);
+      return true;
+    }
+    case 'unstation': L.rails.stations = L.rails.stations.filter(c => !(c[0] === x && c[1] === y)); return true;
+    case 'loco': {
+      if (!railAt(x, y)) { bad(x, y, 'ed.bad.locoOffTrack'); return false; }
+      if (L.rails.loco && L.rails.loco[0] === x && L.rails.loco[1] === y) return false;
+      if (isBall || isHole || di >= 0) { bad(x, y, 'ed.bad.onTrain'); return false; }
+      L.rails.loco = [x, y];
+      return true;
+    }
     case 'erase': {
-      const had = !!tl || !!parAt(x, y) || di >= 0;
+      const had = !!tl || !!parAt(x, y) || di >= 0 || railAt(x, y);
       if (tl) dropTile();
+      if (railAt(x, y)) dropRail(x, y);
       L.parCells = L.parCells.filter(p => !same(p, x, y));
       if (di >= 0) L.extraBalls.splice(di, 1);
       return had;
@@ -154,6 +265,7 @@ function applyAt(x, y, mode) {
       if (same(L[key], x, y)) return false;
       if (same(other, x, y)) { bad(x, y, 'ed.bad.ballHole'); return false; }
       if (!standable(tl)) { bad(x, y, 'ed.bad.onPiece'); return false; }
+      if (trainOn(x, y)) { bad(x, y, 'ed.bad.onTrain'); return false; }
       if (di >= 0) L.extraBalls.splice(di, 1);
       L[key] = { x, y };
       return true;
@@ -181,11 +293,13 @@ function applyAt(x, y, mode) {
       if (tool === 'decoy') {
         if (isBall || isHole || di >= 0) { if (isBall || isHole) bad(x, y, 'ed.bad.taken'); return false; }
         if (!standable(tl)) { bad(x, y, 'ed.bad.onPiece'); return false; }
+        if (trainOn(x, y)) { bad(x, y, 'ed.bad.onTrain'); return false; }
         L.extraBalls.push({ x, y });
         return true;
       }
       if (!isTileTool(tool)) return false;
       if (tl?.type === tool && (tool !== 'portal' || tl.pair === ED.pair)) return false;
+      if (railAt(x, y)) { bad(x, y, 'ed.bad.onTrack'); return false; } // (nada encima de las vías)
       if ((isBall || isHole || di >= 0) && tool !== 'bunker') { bad(x, y, 'ed.bad.taken'); return false; }
       if (tool === 'portal' && L.tiles.filter(q => q.type === 'portal' && q.pair === ED.pair && q !== tl).length >= 2) {
         bad(x, y, 'ed.bad.pairFull'); return false;
@@ -212,6 +326,8 @@ function resize(dc, dr) {
   L.cols = cols; L.rows = rows;
   const inB = p => p.x < cols && p.y < rows;
   L.tiles = L.tiles.filter(inB); L.parCells = L.parCells.filter(inB); L.extraBalls = L.extraBalls.filter(inB);
+  if (L.rails) { const R = L.rails, inC = ([x, y]) => x < cols && y < rows; // (las vías que quedan fuera, fuera)
+    R.cells = R.cells.filter(inC); R.stations = R.stations.filter(inC); if (R.loco && !inC(R.loco)) R.loco = null; if (!R.cells.length) delete L.rails; }
   for (const k of ['hole', 'ball']) {
     L[k] = { x: Math.min(L[k].x, cols - 1), y: Math.min(L[k].y, rows - 1) };
     L.tiles = L.tiles.filter(tl => !same(tl, L[k].x, L[k].y) || tl.type === 'bunker'); // (quien queda en el borde, fuera de piezas)
@@ -229,6 +345,7 @@ const levelPar = L => L.parCells.length ? Math.max(...L.parCells.map(p => p.n)) 
 function issues(L) {
   const errors = [], warns = [];
   if (deckTotal(L) < 3 && !L.hand.length) errors.push(t('ed.st.deck'));
+  errors.push(...railProblems(L)); // (el tren: vuelta cerrada y 4 paradas)
   for (const p of PAIRS) if (L.tiles.filter(q => q.type === 'portal' && q.pair === p).length === 1) warns.push(t('ed.st.pair', { l: PAIR_LETTER(p) }));
   if (!L.parCells.length) warns.push(t('ed.st.noPar'));
   return { errors, warns };
@@ -261,6 +378,11 @@ function toolPic(tool) {
     // el agua se dibuja con el fondo de la casilla: aquí, una muestra
     case 'river': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="9" y="2" width="22" height="44" rx="5" fill="#5BB6D6"/><path d="M14 2v44M26 2v44" stroke="rgba(20,80,110,.25)" stroke-width="3"/><path d="M15 14l5 5 5-5M15 26l5 5 5-5" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     case 'lake': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="3" y="6" width="34" height="36" rx="9" fill="#2E7E8C"/><path d="M9 20q5-3 10 0t10 0M11 31q5-3 10 0t10 0" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M24 30l7-3a7 7 0 1 1-.5 5z" fill="#5E9A58"/></svg>`;
+    case 'track': return `<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M8 44 C8 18 32 18 32 4" fill="none" stroke="#8A5A33" stroke-width="13" stroke-dasharray="2.6 4"/>` +
+      `<path d="M3 44 C3 14 27 14 27 4M13 44 C13 22 37 22 37 4" fill="none" stroke="#4B5057" stroke-width="2.2"/></svg>`;
+    case 'station': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="4" y="8" width="32" height="32" rx="5" fill="#CCC6B8" stroke="#ADA696" stroke-width="1.4"/>` +
+      `<path d="M20 4V44" stroke="#8A5A33" stroke-width="13" stroke-dasharray="2.6 4"/><path d="M15 4V44M25 4V44" stroke="#4B5057" stroke-width="2.2"/><path d="M8 12V36M32 12V36" stroke="#E8B23A" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+    case 'loco': return `<svg viewBox="0 0 40 48" aria-hidden="true">${LOCO.replace(/<svg class="trainSvg" viewBox="0 0 70 100" preserveAspectRatio="none"/, '<svg x="6" y="2" width="28" height="44" viewBox="0 0 70 100"')}</svg>`;
     default: return tilePic({ type: tool, rot: ED.rots[tool] || 0 });
   }
 }
@@ -287,6 +409,15 @@ function renderToolOpts() {
   } else if (TILES[tool]?.rotates) {
     html += `<div class="edChips rots" role="group" aria-label="${esc(t('ed.opt.rot'))}">` + [0, 1, 2, 3].map(r =>
       `<button class="chip rotChip${curRot() === r ? ' on' : ''}" data-rot="${r}" aria-pressed="${curRot() === r}" aria-label="${esc(t('ed.opt.rotN', { n: r * 90 }))}">${tilePic({ type: tool, rot: r })}</button>`).join('') + `</div>`;
+  }
+  else if (tool === 'track') {
+    html += `<div class="edChips"><button class="chip" data-train="new">${esc(t('ed.opt.trackRandom'))}</button>` +
+      (L.rails ? `<button class="chip" data-train="del">${esc(t('ed.opt.trackDel'))}</button>` : '') + `</div>`;
+  } else if (tool === 'station') {
+    html += `<p class="edCount${(L.rails?.stations.length || 0) === 4 ? ' ok' : ''}">${esc(t('ed.opt.stationsN', { n: L.rails?.stations.length || 0 }))}</p>`;
+  } else if (tool === 'loco') {
+    html += `<div class="edChips" role="group" aria-label="${esc(t('ed.opt.cars'))}"><span class="edOptLbl">${esc(t('ed.opt.cars'))}</span>` +
+      Array.from({ length: MAX_CARS + 1 }, (_, n) => `<button class="chip${(L.rails?.cars || 0) === n ? ' on' : ''}" data-cars="${n}" aria-pressed="${(L.rails?.cars || 0) === n}"${L.rails ? '' : ' disabled'}>${n}</button>`).join('') + `</div>`;
   }
   html += `<p class="edHint">${esc(t('ed.hint.' + (TILES[tool]?.rotates ? 'rotates' : tool), { l: PAIR_LETTER(ED.pair) }))}</p>`;
   html += `<p class="edHint soft">${esc(t('ed.hint.always'))}</p>`;
@@ -318,6 +449,7 @@ export function edRender() {
     html += `<div class="${cls}" role="gridcell" data-x="${x}" data-y="${y}" aria-label="${esc(aria.join(', '))}" style="--row:${y};--col:${x}${tile && (tile.type === 'river' || tile.type === 'lake') ? ';--wd:' + waterDelay(tile.type) : ''}${bg ? `;background-image:url(${bg});background-size:cover` : ''}">${inner}</div>`;
   }
   board.innerHTML = html;
+  if (L.rails) board.insertAdjacentHTML('beforeend', editorTrainSVG(L));
   $('edRulerX').style.gridTemplateColumns = `repeat(${L.cols}, var(--cell-w))`;
   $('edRulerY').style.gridTemplateRows = `repeat(${L.rows}, var(--cell-h))`;
   $('edRulerX').innerHTML = Array.from({ length: L.cols }, (_, i) => `<span>${i + 1}</span>`).join('');
@@ -332,13 +464,42 @@ export function edRender() {
   paintStatus();
 }
 
+// (baraja del tren) las vías del nivel y el tren en su sitio, sobre la cuadrícula del taller (no se pueden tocar: la
+// casilla de debajo recibe el clic)
+const ANG = { up: 0, right: 90, down: 180, left: 270 };
+function editorTrainSVG(L) {
+  const R = L.rails, board = $('edBoard'), w = board.offsetWidth || 1, h = board.offsetHeight || 1;
+  const center = (x, y) => { const c = cellCenterPx(x, y); return [c.px, c.py]; };
+  const s = cellCenterPx(1, 1), o = cellCenterPx(0, 0), cw = s.px - o.px, ch = s.py - o.py;
+  const piece = (svg, [x0, y0], d) => { const [x, y] = center(x0, y0);
+    return `<g transform="translate(${x} ${y}) rotate(${ANG[d]})">${svg.replace(/<svg class="trainSvg" viewBox="0 0 70 100" preserveAspectRatio="none"/, `<svg x="${-cw * .45}" y="${-ch * .49}" width="${cw * .9}" height="${ch * .98}" viewBox="0 0 70 100" preserveAspectRatio="none"`)}</g>`; };
+  const tr = trainOf(L, { check: false }), dirOf = (a, b) => b[0] > a[0] ? 'right' : b[0] < a[0] ? 'left' : b[1] > a[1] ? 'down' : 'up';
+  let out = '';
+  if (tr) { // vuelta cerrada con sus 4 paradas: como en la partida, con la locomotora y sus vagones
+    const P = tr.path.length, at = i => tr.path[(i + P) % P];
+    out += trackSVG(tr, center, w, h);
+    for (let k = tr.cars; k >= 1; k--) out += piece(WAGON, at(tr.pos - k), dirOf(at(tr.pos - k), at(tr.pos - k + 1)));
+    out += piece(LOCO, at(tr.pos), dirOf(at(tr.pos - 1), at(tr.pos)));
+  } else { // a medias: los tramos puestos y, en rojo, las casillas que aún no enlazan con dos vecinas
+    out += draftTrackSVG(R.cells, R.stations, center, w, h);
+    const has = new Set(R.cells.map(([x, y]) => key2(x, y)));
+    for (const [x, y] of R.cells) {
+      const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => has.has(key2(x + dx, y + dy))).length;
+      if (n !== 2) { const [px, py] = center(x, y); out += `<circle cx="${px}" cy="${py}" r="${Math.min(cw, ch) * .38}" class="edRailOpen"/>`; }
+    }
+    if (R.loco) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dx, dy]) => has.has(key2(R.loco[0] + dx, R.loco[1] + dy)));
+      out += piece(LOCO, R.loco, n ? dirOf(R.loco, [R.loco[0] + n[0], R.loco[1] + n[1]]) : 'up'); }
+  }
+  return `<svg class="edTrack" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${out}</svg>`;
+}
+
 // fantasma de la herramienta en la casilla bajo el ratón
 let hover = null;
 function showGhost(x, y) {
   $('edBoard').querySelectorAll('.edGhost').forEach(g => g.remove());
   $('edBoard').querySelectorAll('.edHover').forEach(c => c.classList.remove('edHover'));
   hover = x == null ? null : { x, y };
-  if (!hover || ED.tool === 'erase') return;
+  if (!hover || ED.tool === 'erase' || ['track', 'station', 'loco'].includes(ED.tool)) return;
   const cell = $('edBoard').children[y * ED.level.cols + x];
   if (!cell) return;
   cell.classList.add('edHover');
@@ -491,8 +652,16 @@ export function bindEditor() {
     ED.tool = b.dataset.tool; sfx('select'); renderTools();
   });
   $('edToolOpts').addEventListener('click', e => {
-    const b = e.target.closest('[data-parn], [data-pair], [data-rot]');
+    const b = e.target.closest('[data-parn], [data-pair], [data-rot], [data-train], [data-cars]');
     if (!b) return;
+    if (b.dataset.train || b.dataset.cars) { // (el tren cambia el nivel: con su deshacer)
+      const L = ED.level; pushUndo();
+      if (b.dataset.train === 'new' && !newCircuit()) { ED.undo.pop(); return; }
+      if (b.dataset.train === 'del') delete L.rails;
+      if (b.dataset.cars && L.rails) L.rails.cars = +b.dataset.cars;
+      sfx(b.dataset.train === 'del' ? 'card' : 'woodTick'); renderTools(); changed();
+      return;
+    }
     if (b.dataset.parn) ED.parN = +b.dataset.parn;
     if (b.dataset.pair) ED.pair = +b.dataset.pair;
     if (b.dataset.rot) setRot(+b.dataset.rot);
@@ -512,7 +681,7 @@ export function bindEditor() {
       drag.changed = true;
       const tl = tileAt(c.x, c.y);
       sfx(mode === 'erase' || mode === 'remove' ? 'card' : mode === 'rotate' ? 'woodTick' : tl ? (TILES[tl.type].placeSound || 'pop') : 'card');
-      changed({ tools: ED.tool === 'portal', deck: false });
+      changed({ tools: ['portal', 'track', 'station', 'loco'].includes(ED.tool), deck: false });
     }
   });
   board.addEventListener('pointermove', e => {
@@ -539,7 +708,8 @@ export function bindEditor() {
     const b = e.target.closest('button');
     if (!b || b.disabled) return;
     const L = ED.level, d = b.dataset;
-    if (d.preset) { pushUndo(); L.deckCounts = presetCounts(d.preset); }
+    if (d.preset) { pushUndo(); L.deckCounts = presetCounts(d.preset);
+      if (!L.rails && (d.preset === 'train' || d.preset === 'ultimate') && newCircuit()) renderTools(); } // (sus cartas necesitan vías)
     else if (d.add) { pushUndo(); L.deckCounts[d.add] = Math.min(30, (L.deckCounts[d.add] || 0) + (e.shiftKey ? -1 : 1)); L.deckCounts[d.add] = Math.max(0, L.deckCounts[d.add]); }
     else if (d.sub) { pushUndo(); L.deckCounts[d.sub] = Math.max(0, (L.deckCounts[d.sub] || 0) - 1); }
     else if (d.hand) { if (L.hand.length >= HAND_MAX) return; pushUndo(); L.hand.push(d.hand); }

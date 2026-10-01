@@ -23,7 +23,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, ...seed });
+      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'train', ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
@@ -231,12 +231,95 @@ it('cartas naranjas: la primera vez que tienes una, un aviso naranja dice que se
   assert.ok(!await app(() => document.getElementById('coach').classList.contains('visible')), 'una sola vez');
 });
 
-it('modos de juego: dos pestañas (una a la vez) y 4 barajas con estadísticas', async () => {
+it('baraja del tren: vías, locomotora en una parada y, al acabar el turno, avanza sola a la siguiente', async () => {
+  await fresh({ chaoticgolf_deckIntros: { train: true }, chaoticgolf_prefs: { speed: 'fast', botFast: true } });
+  await app(async () => { const { app } = window.chaoticGolf; const m = await import('/src/ui/screen-pve.js'); app.pveCfg = { ...app.pveCfg, size: 'm', opps: 1, deck: 'train', humans: 1 }; m.openPveSetup('train'); m.startPveMatch(); });
+  await sleep(500); await app(() => document.querySelectorAll('#dialog[open]').forEach(d => d.close()));
+  await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 90000 });
+  const st = await app(() => { const { app } = window.chaoticGolf, S = app.game.S, tr = S.train;
+    return { tr: !!tr, onStop: tr.stations.includes(tr.pos), rails: !!document.querySelector('#trackSvg path'), loco: !!document.querySelector('#pieces .ploco'),
+      scene: document.getElementById('gameScreen').dataset.scene, next: !!document.getElementById('trkNext'), hand: S.hands[S.human].some(k => ['tren2', 'trenVuelta', 'oTren1', 'vagon'].includes(k)) }; });
+  assert.deepEqual(st, { tr: true, onStop: true, rails: true, loco: true, scene: 'rail', next: true, hand: true });
+  // la locomotora en pantalla está en su casilla
+  const pos0 = await app(() => window.chaoticGolf.app.game.S.train.pos);
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.hands[S.human] = ['palo1', 'palo1']; ctl.endTurn(); });
+  await page.waitForFunction(p0 => window.chaoticGolf.app.game.S.train.pos !== p0, { timeout: 10000 }, pos0);
+  await page.waitForFunction(() => !window.chaoticGolf.app.animating, { timeout: 20000 });
+  const after = await app(() => { const { app } = window.chaoticGolf, S = app.game.S, tr = S.train, [x, y] = tr.path[tr.pos];
+    const el = document.querySelector('#pieces .ploco'), m = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(el.style.transform);
+    const c = document.querySelector(`#board .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(), b = document.getElementById('board').getBoundingClientRect();
+    return { onStop: tr.stations.includes(tr.pos), dx: Math.abs(+m[1] - (c.left - b.left)), dy: Math.abs(+m[2] - (c.top - b.top)) }; });
+  assert.ok(after.onStop && after.dx < 4 && after.dy < 4, JSON.stringify(after));
+});
+
+it('gana el tren: primero se ve cómo mete la pelota y después el final, con la locomotora arriba', async () => {
+  await fresh({ chaoticgolf_deckIntros: { train: true } });
+  await app(async () => { const { app } = window.chaoticGolf; const m = await import('/src/ui/screen-pve.js'); app.pveCfg = { ...app.pveCfg, size: 'm', opps: 1, deck: 'train', humans: 1 }; m.openPveSetup('train'); m.startPveMatch(); });
+  await sleep(500); await app(() => document.querySelectorAll('#dialog[open]').forEach(d => d.close()));
+  await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 90000 });
+  // una pelota en la vía, por delante de la locomotora, y el hoyo justo detrás en la dirección del tren
+  assert.ok(await app(() => { const { app, ctl } = window.chaoticGolf, g = app.game, S = g.S, tr = S.train, L = tr.path.length;
+    for (let k = 1; k < 5; k++) { const a = tr.path[(tr.pos + k) % L], b = tr.path[(tr.pos + k + 1) % L], hx = 2 * b[0] - a[0], hy = 2 * b[1] - a[1];
+      if (hx < 0 || hy < 0 || hx >= S.cols || hy >= S.rows) continue;
+      const bot = S.balls.find(o => o.player !== S.human); bot.x = b[0]; bot.y = b[1]; S.hole.x = hx; S.hole.y = hy;
+      S.hands[S.human] = ['palo1']; ctl.render(); return g.trainThreat(); }
+    return false; }), 'el tren lo va a meter');
+  assert.ok(await app(() => document.querySelector('#actionBar .hint.trainDanger')), 'aviso en tu turno');
+  await app(() => window.chaoticGolf.ctl.endTurn()); await sleep(400);
+  assert.ok(await app(() => !document.getElementById('winOverlay').classList.contains('visible') && window.chaoticGolf.app.animating), 'aún no: se ve la jugada');
+  await page.waitForFunction(() => document.getElementById('winOverlay').classList.contains('visible'), { timeout: 15000 });
+  assert.ok(await app(() => !!document.querySelector('#winBall .twArt') && /tren/i.test(document.getElementById('winMsg').textContent)));
+});
+
+it('creador: vías casilla a casilla; no se prueba hasta cerrar el circuito y poner 4 paradas', async () => {
+  await fresh();
+  await app(async () => { (await import('/src/ui/editor.js')).openEditor(); }); await sleep(700);
+  const cell = async (x, y) => { const b = await (await page.$(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`)).boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  const tap = async (x, y) => { const [px, py] = await cell(x, y); await page.mouse.click(px, py); await sleep(50); };
+  const st = () => app(() => ({ test: document.getElementById('edTest').disabled, status: document.getElementById('edStatus').textContent }));
+  await click('[data-tool="track"]');
+  const ring = []; for (let x = 0; x <= 5; x++) ring.push([x, 0]); for (let y = 1; y <= 3; y++) ring.push([5, y]); for (let x = 4; x >= 0; x--) ring.push([x, 3]); for (let y = 2; y >= 1; y--) ring.push([0, y]);
+  // arrastrando: un tramo (sin cerrar)
+  let [px, py] = await cell(...ring[0]); await page.mouse.move(px, py); await page.mouse.down();
+  for (const p of ring.slice(1, -1)) { [px, py] = await cell(...p); await page.mouse.move(px, py, { steps: 3 }); }
+  await page.mouse.up(); await sleep(150);
+  let s1 = await st();
+  assert.ok(s1.test && /cerrar el circuito/.test(s1.status), JSON.stringify(s1));
+  assert.ok(await app(() => document.querySelectorAll('#edBoard .edRailOpen').length === 2), 'en rojo, los dos extremos sueltos');
+  await tap(0, 1); // cierra la vuelta
+  s1 = await st(); assert.ok(s1.test && /4 paradas \(hay 0\)/.test(s1.status), JSON.stringify(s1));
+  await click('[data-tool="station"]');
+  for (const [x, y] of [[2, 0], [5, 2], [2, 3], [0, 2]]) await tap(x, y);
+  s1 = await st(); assert.ok(!s1.test && /Listo para jugar/.test(s1.status), JSON.stringify(s1));
+  await click('[data-tool="loco"]'); await tap(4, 0);
+  await click('#edTest'); await sleep(900);
+  assert.deepEqual(await app(() => { const S = window.chaoticGolf.app.game.S; return [window.chaoticGolf.app.mode, S.train?.path.length, S.train?.stations.length, S.train.path[S.train.pos]]; }), ['test', 16, 4, [4, 0]]);
+});
+
+it('baraja nueva: se anuncia una vez a quien ya jugaba ("Jugar ahora" lleva a su partida rápida); a quien llega nuevo, no', async () => {
+  await fresh({ chaoticgolf_newDeckSeen: null });
+  await sleep(900);
+  assert.ok(await app(() => !!document.querySelector('#dialog[open] .newDeck .ndArt')), 'el anuncio, con su ilustración');
+  await click('#dialog[open] button[value="play"]'); await sleep(500);
+  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.pveCfg.deck]), ['pve', 'train']);
+  await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
+  assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')), 'solo una vez');
+  // primera visita: nada (todo es nuevo), y queda apuntada
+  await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
+  assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')));
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'train');
+});
+
+it('modos de juego: dos pestañas (una a la vez) y 5 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
-  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 4); // (el contrarreloj usa el mismo estilo de tarjeta)
+  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 5); // (el contrarreloj usa el mismo estilo de tarjeta)
+  // las barajas nuevas van detrás de la última y Ultimate siempre al final, con las barajas que reúne
+  assert.deepEqual(await app(() => [...document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard [data-mode^="quick:"]')].map(b => b.dataset.mode.slice(6))),
+    ['classic', 'water', 'minigolf', 'train', 'ultimate']);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultIncl i').length), 4);
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
   await click('[data-mtab="special"]'); await sleep(700);
@@ -493,6 +576,7 @@ async function phonePage(vp = PHONE) {
   await p.evaluate(() => { localStorage.clear();
     localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
     localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 }));
+    localStorage.setItem('chaoticgolf_newDeckSeen', '"train"');
     localStorage.setItem('chaoticgolf_prefs', JSON.stringify({ speed: 'fast', botFast: true })); }); // (los bots, rápidos: en Ultimate las jugadas son largas)
   await p.reload({ waitUntil: 'networkidle0' });
   await p.waitForFunction(() => window.chaoticGolf?.app.game); await sleep(500);
@@ -637,7 +721,7 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
   await click('#profileBtn'); await sleep(400);
   assert.ok(await app(() => document.getElementById('profileOverlay').classList.contains('visible')));
-  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 8);
+  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 9); // (8 + la de vapor, del tren)
   assert.equal(await app(() => document.querySelectorAll('.pfCard .pfNew').length), 2, 'fuego y clásica, nuevas');
   // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
   await click('[data-pfv="fire:2"]'); await sleep(200);

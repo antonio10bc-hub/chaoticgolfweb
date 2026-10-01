@@ -65,7 +65,7 @@ function noteRoute(g, me, ev) {
 // jugador "tú" para el resumen: la persona en partida rápida con una sola persona, o el nivel
 const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
-const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch']);
+const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon']);
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
@@ -85,6 +85,7 @@ export function startGame(game, mode, { levelIndex = null, level = null, variant
   app.finalPlay = null;
   app.winStyle = {}; app.undo = null; app.caddie = null; app.lastWhy = null; // cómo ganó cada uno · deshacer · consejo del caddie
   app.armed = null; // (carta de efecto inmediato elegida en táctil, a la espera del segundo toque)
+  app.afterAnim = null; // (lo que esperaba al final de la animación de la partida anterior)
   resetMoments();
   clearPause();
   musicMood('calm');
@@ -197,7 +198,11 @@ function dispatch(fn) {
   render();
   saveGame({ flash: resolved || turnEnded }); // guardado automático (con aviso breve tras una jugada)
   if (resolved || turnEnded) tutorialEvent(turnEnded ? 'turnEnded' : 'resolved');
-  if (won) { botsGameOver(g.S.winners); showWin(); }
+  // el tren ha metido una pelota él solo: primero se ve cómo lo hace (silbato) y luego el final
+  if (won && g.S.trainWin) {
+    const fin = () => { sfx('whistle'); setTimeout(() => { if (app.game === g) { botsGameOver([]); showWin(); } }, 700); };
+    if (app.animating || app.animQueue.length) app.afterAnim = fin; else fin();
+  } else if (won) { botsGameOver(g.S.winners); showWin(); }
   // puzle: el turno ha terminado sin embocar
   if (turnEnded && app.variant === 'puzzle' && g.S.winner === null) setTimeout(() => { if (app.variant === 'puzzle' && app.game === g) showPuzzleFail(); }, 450);
   if (resolved) maybeSoloWin();

@@ -90,6 +90,23 @@
 .sk-wood .mill { inset: calc(var(--bs) * -.5); }
 .sk-wood .mill .wmBlades { transform-box: view-box; transform-origin: 0 0; animation: skSpin 6s linear infinite; }
 
+/* ---------- VAPOR · baraja del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren ---------- */
+.sk-steam .band { left: 0; right: 0; top: 41%; height: 18%;
+  background: radial-gradient(circle, #E6B94A 0 22%, transparent 27%) 0 50% / calc(var(--bs) * .16) 100% repeat-x, linear-gradient(#6A7078, #383C42);
+  box-shadow: inset 0 calc(var(--bs) * .012) 0 rgba(255,255,255,.35), inset 0 calc(var(--bs) * -.012) 0 rgba(0,0,0,.3); }
+.sk-steam .puff { left: var(--x); top: -2%; width: calc(var(--bs) * .26 * var(--s)); height: calc(var(--bs) * .26 * var(--s)); border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff, rgba(235,235,235,.85) 60%, rgba(220,220,220,0) 72%); animation: skPuff 2.4s ease-out infinite; animation-delay: var(--d);
+  will-change: transform, opacity; }
+@keyframes skPuff { 0% { transform: translate(0, 0) scale(.35); opacity: 0; } 25% { opacity: .95; } 100% { transform: translate(calc(var(--bs) * .2), calc(var(--bs) * -.8)) scale(1.35); opacity: 0; } }
+.sk-steam .rails { inset: calc(var(--bs) * -.36); border-radius: 50%; animation: skSpin 16s linear infinite;
+  background: repeating-conic-gradient(#8A5A33 0 5deg, transparent 5deg 13deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 70%, #000 71%, #000 96%, transparent 97%); mask: radial-gradient(closest-side, transparent 70%, #000 71%, #000 96%, transparent 97%); }
+.sk-steam .rails.in { animation: none; background: none; -webkit-mask: none; mask: none; inset: calc(var(--bs) * -.3);
+  box-shadow: 0 0 0 calc(var(--bs) * .025) #4B5057, inset 0 0 0 calc(var(--bs) * .02) #4B5057; }
+.sk-steam .rails.in::after { content: ''; position: absolute; inset: calc(var(--bs) * .1); border-radius: 50%; box-shadow: 0 0 0 calc(var(--bs) * .02) #4B5057; }
+.sk-steam .orb { animation-duration: 6s; }
+.sk-steam .orb .lc { width: calc(var(--bs) * .42); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.21); }
+
 /* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · destellos ---------- */
 .sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }

@@ -94,6 +94,17 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
         for (let i = 0; i < 36; i++) { const a = rad(i * 10); c.beginPath(); c.moveTo(x + Math.cos(a) * R, y + Math.sin(a) * R); c.lineTo(x + Math.cos(a + .08) * R * 1.2, y + Math.sin(a + .08) * R * 1.2); c.stroke(); }
         c.strokeStyle = '#7A5230'; c.lineWidth = D * .02; c.beginPath(); c.arc(x, y, R * 1.2, 0, 7); c.stroke(); });
       break;
+    case 'steam':
+      surf.push(() => { const g = c.createLinearGradient(0, y - D * .09, 0, y + D * .09); g.addColorStop(0, '#6A7078'); g.addColorStop(1, '#383C42');
+        c.fillStyle = g; c.fillRect(x - R, y - D * .09, D, D * .18); c.fillStyle = '#D9A441';
+        for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(x + i * D * .16, y, D * .025, 0, 7); c.fill(); } });
+      if (lvl >= 2) back.push(() => { c.fillStyle = 'rgba(255,255,255,.88)'; for (const [dx, dy, r] of [[-.12, -.62, .12], [.06, -.8, .15], [.24, -.98, .12]]) { c.beginPath(); c.arc(x + dx * D, y + dy * D, r * D, 0, 7); c.fill(); } });
+      if (lvl >= 3) {
+        back.push(() => { c.save(); c.strokeStyle = '#8A5A33'; c.lineWidth = D * .09; c.setLineDash([D * .05, D * .1]); c.beginPath(); c.arc(x, y, R * 1.62, 0, 7); c.stroke(); c.restore();
+          c.strokeStyle = '#4B5057'; c.lineWidth = D * .025; for (const s of [1.5, 1.74]) { c.beginPath(); c.arc(x, y, R * s, 0, 7); c.stroke(); } });
+        front.push(() => { const [ox, oy] = orbit(x, y, D, 60); return put(c, A.LOCO_MINI, ox, oy, D * .4, D * .3); });
+      }
+      break;
     case 'prism': {
       const IRI = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF', '#FF8FC4'];
       surf.push(() => { c.globalAlpha = lvl >= 3 ? .62 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });

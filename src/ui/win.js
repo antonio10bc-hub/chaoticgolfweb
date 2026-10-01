@@ -40,6 +40,19 @@ const STYLE_FX = {
 const FIRE_C = ['#E8873A', '#F5A33A', '#FFD23F', '#D9603A', '#F1F1DC'];
 
 const WB_FLAG = '<svg class="wbFlag" viewBox="0 0 30 58" aria-hidden="true"><path d="M5 56V5" stroke="#F1F1DC" stroke-width="2.6" stroke-linecap="round"/><path d="M6 6 27 13 6 20Z" fill="#E8873A"/><ellipse cx="5" cy="56" rx="5" ry="2.2" fill="#242424"/></svg>';
+// el tren, ganador: la locomotora de frente sobre su vía, con humo que sube y la pelota que ha metido en el hoyo
+const TRAIN_WIN = '<svg class="twArt" viewBox="0 0 120 100" aria-hidden="true">' +
+  '<ellipse cx="60" cy="90" rx="52" ry="8" fill="rgba(20,40,20,.18)"/>' +
+  '<path d="M40 92H80M45 84H75M48 77H72" stroke="#8A5A33" stroke-width="4" stroke-linecap="round"/><path d="M34 99L53 70M86 99L67 70" stroke="#4B5057" stroke-width="3.4" stroke-linecap="round"/>' +
+  '<g class="twSmoke"><circle cx="70" cy="16" r="7" fill="#fff" stroke="#242424" stroke-width="1.4"/><circle cx="82" cy="9" r="5.4" fill="#fff" stroke="#242424" stroke-width="1.4"/><circle cx="92" cy="4" r="3.8" fill="#fff" stroke="#242424" stroke-width="1.2"/></g>' +
+  '<g class="twLoco"><path d="M51 21H66L64 36H53Z" fill="#2B2B30" stroke="#242424" stroke-width="1.6" stroke-linejoin="round"/><rect x="49" y="19" width="19" height="4.4" rx="1.6" fill="#2B2B30"/>' +
+  '<rect x="33" y="35" width="54" height="36" rx="7" fill="#B5483B" stroke="#242424" stroke-width="2"/><rect x="33" y="35" width="54" height="4.4" rx="2" fill="#D9A441"/>' +
+  '<circle cx="60" cy="52" r="16.5" fill="#2B2B30" stroke="#242424" stroke-width="2"/><circle cx="60" cy="52" r="11" fill="#3A3A40"/><circle cx="60" cy="52" r="3.4" fill="#D9A441"/>' +
+  '<path d="M52.5 45a10 10 0 0 1 9-4" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2.2" stroke-linecap="round"/>' +
+  '<circle cx="60" cy="30" r="4.6" fill="#FFE38A" stroke="#242424" stroke-width="1.4"/>' +
+  '<rect x="34" y="68" width="52" height="6.4" rx="2.2" fill="#8E3328" stroke="#242424" stroke-width="1.4"/><path d="M42 74.4L60 85L78 74.4Z" fill="#D9A441" stroke="#242424" stroke-width="1.4" stroke-linejoin="round"/></g>' +
+  '<g class="twHole"><ellipse cx="101" cy="86" rx="9" ry="4" fill="#242424"/><path d="M101 86V64" stroke="#F1F1DC" stroke-width="1.8" stroke-linecap="round"/><path d="M101.6 64.6l9 3.4-9 3.4z" fill="#E8873A"/></g>' +
+  '</svg>';
 export function showWin() {
   clearSave(); // partida terminada: ya no hay nada que continuar
   const S = app.game.S, mode = app.mode, slot = slotOf();
@@ -47,9 +60,11 @@ export function showWin() {
   const multi = multiHuman(), me = S.human;
   const solo = mode === 'story' || mode === 'test';
   // con varias personas nadie "pierde" frente a la pantalla salvo que ganen los bots
-  const lost = mode === 'pve' && !humansOf().some(h => S.winners.includes(h));
+  // (el tren ha metido una pelota él solo: pierde todo el mundo, también en un nivel)
+  const lost = !!S.trainWin || (mode === 'pve' && !humansOf().some(h => S.winners.includes(h)));
   let msg;
-  if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
+  if (S.trainWin) msg = t('win.trainWins');
+  else if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
   else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
@@ -80,7 +95,7 @@ export function showWin() {
     case 'story': {
       chips = recChip((rec.newBest ? t('stats.newBest') + ' · ' : '') + turnsLabel(turns) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? ` · ${t('stats.bestN', { n: rec.best.turns })}` : ''), rec.newBest);
-      if (app.levelIndex !== null) {
+      if (app.levelIndex !== null && !lost) {
         const prog = loadProgress();
         prog[app.levelIndex] = true;
         saveProgress(prog);
@@ -147,11 +162,13 @@ export function showWin() {
     `<button class="winRec skinNew" data-act="myball">${skinBall(sk, { size: 24, color: myColor() })}${esc(t('win.newSkin', { name: skinName(sk) }))}</button>`).join('');
   $('winChips').innerHTML = winnerChips + chips;
   // reto diario: tu pelota (con la que llevas puesta) en lo alto, sobre su green, en lugar del icono
-  const withBall = slot === 'daily' && mode === 'pve' && !multi;
+  // (o, si ha ganado el tren, la locomotora echando humo donde iría la pelota ganadora)
+  const withBall = (slot === 'daily' && mode === 'pve' && !multi) || !!S.trainWin;
   box.classList.toggle('withBall', withBall);
-  $('winBall').innerHTML = withBall ? `<span class="wbStage${lost ? ' lost' : ''}">${WB_FLAG}` +
+  $('winBall').innerHTML = S.trainWin ? `<span class="wbStage trainWin">${TRAIN_WIN}</span>`
+    : withBall ? `<span class="wbStage${lost ? ' lost' : ''}">${WB_FLAG}` +
     `${skinBall(equippedSkin(), { size: 68, color: pColor(me) })}</span>` : '';
-  box.style.borderColor = solo ? 'transparent' : pColor(S.winners[0]);
+  box.style.borderColor = S.trainWin ? '#B5483B' : solo ? 'transparent' : pColor(S.winners[0]);
   box.style.boxShadow = '';
 
   // resumen post-partida: estadísticas contadas durante la partida (decorativo)
@@ -173,7 +190,7 @@ export function showWin() {
 
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
-  if (slot === 'story' && (stats?.turnos || 0) === 0) unlock('holeInOne');
+  if (slot === 'story' && !lost && (stats?.turnos || 0) === 0) unlock('holeInOne');
   if (['pve', 'challenge', 'daily', 'weekly'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');

@@ -21,11 +21,14 @@
      { t:'undo' }                deshacer (debug)
      { t:'notice', text }        aviso para el jugador (toast)
      { t:'chainStop', p }        la cadena de choques se ha cortado (tope anti-bucle)
+     { t:'train', p:'loco', i, cars, dir }  (baraja del tren) la locomotora avanza a la casilla i de la vía
+     { t:'wagon', p:'loco', cars }          se engancha un vagón de arena
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
 import { TILES, isTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
+import { makeCircuit, stepDir, stepsToNext, MAX_CARS } from './train.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
@@ -164,6 +167,7 @@ export class Game {
     g.fillDeck(counts);
     for (let i = 0; i < cfg.players; i++) g.drawTo2(i);
     if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
+    if (cfg.train) g.setupTrain();
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
   }
@@ -187,6 +191,16 @@ export class Game {
     }
   }
 
+  // (baraja del tren) circuito de vías al azar, sin pasar por las salidas ni por el hoyo, y la locomotora en una de
+  // sus 4 paradas. Con un RNG aparte (sacado de la semilla): el mazo sale igual que sin tren
+  setupTrain() {
+    const S = this.S, rand = mulberry32(((this.seed ?? 1) ^ 0x7a11c0de) >>> 0);
+    const avoid = [[S.hole.x, S.hole.y], ...S.balls.map(b => [b.x, b.y])];
+    const c = makeCircuit(S.cols, S.rows, rand, avoid);
+    if (!c) return; // (no cabe: partida sin tren; sus cartas no se pueden jugar)
+    S.train = { path: c.path, stations: c.stations, pos: c.stations[Math.floor(rand() * 4)], cars: 0 };
+  }
+
   // nivel (historia / creador), 1 jugador + pelotas de obstáculo opcionales
   static fromLevel(level, opts) {
     const L = clone(level);
@@ -205,6 +219,7 @@ export class Game {
       S.balls.push({ player: S.balls.length, x: eb.x, y: eb.y, spawnX: eb.x, spawnY: eb.y, holed: false, decoy: true });
     }
     g.initMarks = g.marksFromBalls();
+    if (L.train?.path?.length) S.train = { path: L.train.path, stations: L.train.stations, pos: L.train.pos ?? L.train.stations[0], cars: L.train.cars || 0 };
     g.fillDeck(L.deckCounts);
     if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
     else g.drawTo2(0);
@@ -282,7 +297,10 @@ export class Game {
   /* ---------- consultas ---------- */
   inBoard(x, y) { const S = this.S; return x >= 0 && x < S.cols && y >= 0 && y < S.rows; }
   ballAt(x, y) { return this.S.balls.find(b => !b.holed && b.x === x && b.y === y); }
-  tileAt(x, y) { return this.S.tiles.find(t => t.x === x && t.y === y); }
+  // (baraja del tren) la locomotora y los vagones son piezas "virtuales" en su casilla de la vía: la locomotora,
+  // como un bloque de madera (se rebota contra ella); el vagón, como un búnker (la arena atrapa)
+  tileAt(x, y) { return (this.S.train && this.trainTileAt(x, y)) || this.S.tiles.find(t => t.x === x && t.y === y); }
+  realTileAt(x, y) { return this.S.tiles.find(t => t.x === x && t.y === y); }
   parAt(x, y) { return this.S.parCells.find(p => p.x === x && p.y === y); }
   isHole(x, y) { const h = this.S.hole; return h.x === x && h.y === y; }
   // las casillas PAR son solo una referencia impresa: no bloquean colocación
@@ -297,6 +315,7 @@ export class Game {
   // no gasta el máximo de 5 ni obliga a alargarla (Game.designed la marca al montar la partida)
   canPlaceTile(type, x, y) {
     if (!this.cellFree(x, y)) return false;
+    if (this.S.train && this.trackIndex(x, y) >= 0) return false; // (nada encima de las vías)
     const def = TILES[type];
     if (def?.river) {
       const r = this.S.tiles.filter(t => isRiver(t) && !t.fixed);
@@ -722,7 +741,7 @@ export class Game {
     const startX = ball.x, startY = ball.y;
     let cx = ball.x, cy = ball.y, dir = dirKey;
     let remaining = untilHit ? MAX_RUN : steps;
-    const mv = untilHit ? { iri: true } : {}; // (iri: estela iridiscente)
+    const mv = untilHit ? { iri: true } : this._shove ? { shove: true } : {}; // (iri: estela iridiscente · shove: la empuja el tren, a la vez que avanza)
     const onPortal = (px, py, other) => {
       this.log('log.ballPortal', { b });
       this.tip('portal');
@@ -805,6 +824,10 @@ export class Game {
     if (wb && wb.decoy) { // pelota de obstáculo: no gana; se queda en el hoyo y desaparece para siempre
       this.log('log.decoyGone', { b: playerTag(wb.player) });
       this.tip('decoy');
+      return;
+    }
+    if (this._trainAuto) { // el tren, solo (al acabar un turno, sin que nadie juegue), ha metido una pelota: gana el tren
+      S.winner = -1; S.winners = []; S.trainWin = true;
       return;
     }
     if (S.winner === null) {
@@ -1282,13 +1305,174 @@ export class Game {
 
   boardSnap() {
     const S = this.S;
-    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners });
+    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train }); // (sin tren, la clave no se guarda)
   }
   restoreBoardSnap(snap) {
     const S = this.S;
     S.balls = clone(snap.balls); S.hole = clone(snap.hole);
     S.tiles = clone(snap.tiles); S.winner = snap.winner;
     S.winners = clone(snap.winners || []);
+    if (snap.train) S.train = clone(snap.train);
+  }
+
+  /* ---------- el tren ----------
+     La locomotora va por la vía en el sentido del reloj, de parada en parada. Lo que haya en la casilla siguiente:
+       pelota  la empuja una casilla (y a las que tenga pegadas delante, en fila: en una recta las sigue empujando)
+       hoyo    lo empuja igual que a una pelota (durante un JAQUE, las pelotas embocadas salen y se anula)
+       pieza de madera (o una fila de pelotas que no se puede mover): el tren espera ahí
+     Los vagones van pegados detrás y llevan consigo lo que haya en su arena (pelotas o el hoyo). */
+  trackIndex(x, y) {
+    const tr = this.S.train;
+    if (!tr) return -1;
+    if (this._tPath !== tr.path) { this._tPath = tr.path; this._tIdx = new Map(tr.path.map(([px, py], i) => [px + ',' + py, i])); }
+    const i = this._tIdx.get(x + ',' + y);
+    return i === undefined ? -1 : i;
+  }
+  trainTileAt(x, y) {
+    const tr = this.S.train, i = this.trackIndex(x, y);
+    if (i < 0) return null;
+    if (i === tr.pos) return { type: 'loco', x, y, virtual: true };
+    const k = (tr.pos - i + tr.path.length) % tr.path.length;
+    return k >= 1 && k <= tr.cars ? { type: 'wagon', x, y, virtual: true, car: k } : null;
+  }
+  trainCell(k = 0) { const tr = this.S.train; return tr.path[((tr.pos - k) % tr.path.length + tr.path.length) % tr.path.length]; }
+
+  // avanza `stops` paradas, o una vuelta entera (loop); devuelve cuántas casillas ha recorrido
+  trainRun({ stops = 0, loop = false } = {}) {
+    const tr = this.S.train;
+    if (!tr) return 0;
+    const L = tr.path.length;
+    let moved = 0, left = loop ? L : stops;
+    const sunk = () => this.S.balls.reduce((n, b) => n + (b.holed && !b.decoy ? 1 : 0), 0), sunk0 = sunk();
+    this.log(loop ? 'log.trainLoop' : 'log.trainGoes', { n: stops });
+    for (let guard = 0; left > 0 && guard < L * 5; guard++) {
+      if (!this.trainStep()) { this.log('log.trainBlocked'); break; }
+      moved++;
+      if (loop) left--;
+      else if (tr.stations.includes(tr.pos)) left--;
+      if (this.S.trainWin || sunk() > sunk0) break; // (ha metido una pelota en el hoyo: el tren se para ahí)
+    }
+    return moved;
+  }
+
+  // una casilla; false si no puede avanzar
+  trainStep() {
+    const S = this.S, tr = S.train, L = tr.path.length, ni = (tr.pos + 1) % L;
+    const [cx, cy] = tr.path[tr.pos], [nx, ny] = tr.path[ni], dir = stepDir([cx, cy], [nx, ny]);
+    const block = () => { this.anim({ t: 'bump', p: 'loco', x: nx, y: ny, dir }); return false; };
+    if (isDevice(this.realTileAt(nx, ny))) return block();
+    const ball = this.ballAt(nx, ny);
+    if (ball && !this.trainPush(ball, dir)) return block();
+    if (!ball && this.isHole(nx, ny) && !this.trainPushHole(dir)) return block();
+    if (this.ballAt(nx, ny) || this.isHole(nx, ny)) return block(); // (no se ha podido apartar)
+    // lo que va en la arena de los vagones viaja con ellos
+    const riders = [];
+    for (let k = 1; k <= tr.cars; k++) {
+      const [wx, wy] = this.trainCell(k), b = this.ballAt(wx, wy);
+      riders.push({ k, b, hole: this.isHole(wx, wy) });
+    }
+    tr.pos = ni;
+    // (lo que viaja va antes del paso de la locomotora en la cola: la interfaz los mueve a la vez)
+    for (const r of riders) {
+      const [wx, wy] = this.trainCell(r.k);
+      if (r.b) { r.b.x = wx; r.b.y = wy; this.anim({ t: 'move', p: 'b' + r.b.player, x: wx, y: wy, ride: true }); }
+      if (r.hole) { S.hole.x = wx; S.hole.y = wy; this.anim({ t: 'move', p: 'hole', x: wx, y: wy, ride: true }); }
+    }
+    this.anim({ t: 'train', p: 'loco', i: ni, cars: tr.cars, dir });
+    return true;
+  }
+
+  // empuja una casilla hacia dir la pelota de delante (y la fila de pelotas pegadas a ella); false si no se mueve
+  trainPush(ball, dir) {
+    const { dx, dy } = DIRS[dir], line = [ball];
+    let fx = ball.x + dx, fy = ball.y + dy, o;
+    while (this.inBoard(fx, fy) && (o = this.ballAt(fx, fy))) { line.push(o); fx += dx; fy += dy; }
+    if (this.inBoard(fx, fy) && isDevice(this.tileAt(fx, fy))) return false; // contra la madera no se aparta nadie
+    this.log('log.trainPush', { b: joinAnd(line.map(b => playerTag(b.player))) });
+    this.tip('train');
+    const from = line.map(b => [b.x, b.y]);
+    for (let i = line.length - 1; i >= 0; i--) {
+      const b = line[i];
+      if (i === line.length - 1) { // la de delante: un paso con todas sus reglas (caerse, agua, portal, búnker, hoyo…)
+        this._shove = true;
+        try { this.moveBallRaw(b, dir, 1); } finally { this._shove = false; }
+        if (b.x === from[i][0] && b.y === from[i][1] && !b.holed) return false;
+        continue;
+      }
+      const [tx, ty] = from[i + 1];
+      if (this.ballAt(tx, ty)) return false; // (la de delante no ha dejado sitio)
+      b.x = tx; b.y = ty;
+      this.anim({ t: 'move', p: 'b' + b.player, x: tx, y: ty, shove: true });
+      if (this.waterAt(tx, ty)) this.ballInWater(b);
+      this.finishMoveChecks(b);
+    }
+    return true;
+  }
+
+  // empuja el hoyo una casilla (como una pelota); durante el JAQUE las pelotas embocadas salen a su lado
+  trainPushHole(dir) {
+    const S = this.S, hx = S.hole.x, hy = S.hole.y, holed = S.balls.filter(b => b.holed && !b.decoy);
+    this.log('log.trainPushHole');
+    this.moveHole(dir, 1);
+    if (S.hole.x === hx && S.hole.y === hy) return false;
+    if (S.jaque && S.winner !== null && holed.length) {
+      for (const b of holed) {
+        const spot = this.nearestFree(hx, hy) || { x: hx, y: hy };
+        b.holed = false; b.x = spot.x; b.y = spot.y;
+        this.anim({ t: 'appear', p: 'b' + b.player, x: spot.x, y: spot.y });
+        this.log('log.ballLeavesHole', { b: playerTag(b.player), x: spot.x, y: spot.y });
+      }
+      S.winner = null; S.winners = []; S.jaque = false;
+      this.log('log.jaqueCancelled');
+    }
+    return true;
+  }
+
+  // engancha un vagón de arena detrás del último (si en esa casilla hay una pelota o el hoyo, se quedan en la arena)
+  canAddWagon() {
+    const tr = this.S.train;
+    if (!tr || tr.cars >= MAX_CARS || tr.cars + 2 > tr.path.length) return false;
+    const [x, y] = this.trainCell(tr.cars + 1);
+    return !isDevice(this.realTileAt(x, y));
+  }
+  addWagon() {
+    const tr = this.S.train;
+    tr.cars++;
+    const [x, y] = this.trainCell(tr.cars);
+    this.anim({ t: 'wagon', p: 'loco', cars: tr.cars, x, y });
+    this.log('log.wagonAdded', { n: tr.cars });
+    const b = this.ballAt(x, y);
+    if (b) { this.log('log.ballStaysTrap', { b: playerTag(b.player) }); this.anim({ t: 'settle', p: 'b' + b.player }); }
+  }
+
+  // al acabar cada turno el tren va solo a la siguiente parada. Si así mete una pelota en el hoyo, gana el tren
+  trainTurn() {
+    const S = this.S;
+    if (!S.train || S.winner !== null) return;
+    this._trainAuto = true;
+    try {
+      this.log('log.trainTurn');
+      this.trainRun({ stops: 1 });
+      for (const b of S.balls) if (!b.holed && this.isHole(b.x, b.y)) { // (regla general: pelota y hoyo en la misma casilla)
+        b.holed = true; this.anim({ t: 'sink', p: 'b' + b.player }); this.registerWin(b.player);
+      }
+    } finally { this._trainAuto = false; }
+    if (S.trainWin) { S.jaque = false; this.log('log.trainWins'); this.emit({ t: 'win' }); }
+  }
+  stepsToStation() { return this.S.train ? stepsToNext(this.S.train) : 0; }
+  // ¿el tren, al acabar este turno, metería una pelota en el hoyo (y ganaría)? Solo se simula si el hoyo está cerca de
+  // su camino hasta la siguiente parada (la IA lo pregunta en cada jugada que piensa)
+  trainThreat() {
+    const S = this.S, tr = S.train;
+    if (!tr || S.winner !== null) return false;
+    const L = tr.path.length, n = stepsToNext(tr), h = S.hole;
+    let near = false;
+    for (let k = 1; k <= n && !near; k++) { const [x, y] = tr.path[(tr.pos + k) % L]; near = Math.abs(x - h.x) + Math.abs(y - h.y) <= 2; }
+    if (!near) return false;
+    const sim = this.clone({ lite: true });
+    sim.events = [];
+    sim.trainTurn();
+    return !!sim.S.trainWin;
   }
 
   /* ---------- turno ---------- */
@@ -1337,6 +1521,7 @@ export class Game {
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();
+    if (S.train) this.trainTurn();
   }
 
   // regla especial (desafío): al empezar cada turno el hoyo se desplaza 1 casilla al azar

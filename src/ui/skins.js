@@ -4,6 +4,7 @@
 //   clásica  victorias con la baraja clásica: aro de oro · laurel · destellos
 //   agua     victorias con la baraja de agua: agua dentro · ondas · gotas en órbita
 //   madera   victorias con la de minigolf: vetas · marco de madera · molino que gira detrás
+//   vapor    victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren
 //   prisma   victorias con Ultimate: brillo iridiscente · halo arcoíris · destellos
 //   rayo     series de contrarreloj completas: estela · esfera de reloj · rayos
 //   corona   desafíos superados por grupo (calentamiento · intermedio · experto)
@@ -21,6 +22,7 @@ export const SKINS = [
   { id: 'classic', kind: 'deck', deck: 'classic', at: [10, 50, 100], accent: '#C9962E' },
   { id: 'water', kind: 'deck', deck: 'water', at: [10, 50, 100], accent: '#2F9CC4' },
   { id: 'wood', kind: 'deck', deck: 'minigolf', at: [10, 50, 100], accent: '#A8743F' },
+  { id: 'steam', kind: 'deck', deck: 'train', at: [10, 50, 100], accent: '#B5483B' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
@@ -108,6 +110,12 @@ const JIGSAW = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M0 20h8a3.5
 const WINDMILL = '<svg viewBox="-50 -50 100 100" aria-hidden="true"><g class="wmBlades">' +
   [0, 90, 180, 270].map(a => `<g transform="rotate(${a})"><rect x="-5" y="-48" width="10" height="36" rx="2" fill="#C99257" stroke="#7A5230" stroke-width="1.6"/>` +
     `<path d="M-5-40h10M-5-32h10M-5-24h10" stroke="#7A5230" stroke-width="1.2"/></g>`).join('') + '</g></svg>';
+// una locomotora de vapor de perfil, pequeñita (la que da vueltas a la pelota de vapor III)
+const LOCO_MINI = '<svg viewBox="0 0 32 24" aria-hidden="true"><path d="M6 3h4l-.5 5h-3z" fill="#242424"/><rect x="3" y="8" width="17" height="9" rx="4.5" fill="#242424"/>' +
+  '<path d="M9 8v9M14 8v9" stroke="#D9A441" stroke-width="1.1"/><rect x="18" y="4" width="10" height="14" rx="1.6" fill="#B5483B"/><rect x="20.5" y="6.5" width="5" height="4.5" rx="1" fill="#FFE38A"/>' +
+  '<rect x="17" y="2.6" width="12" height="2.4" rx="1.2" fill="#242424"/><path d="M3 14 L0 19 H4Z" fill="#D9A441"/>' +
+  '<circle cx="8" cy="19.5" r="3" fill="#242424"/><circle cx="15" cy="19.5" r="3" fill="#242424"/><circle cx="24" cy="19" r="3.6" fill="#242424"/>' +
+  '<circle cx="8" cy="19.5" r="1" fill="#B5483B"/><circle cx="15" cy="19.5" r="1" fill="#B5483B"/><circle cx="24" cy="19" r="1.2" fill="#B5483B"/></svg>';
 function laurel() { // dos ramas de laurel que suben por los lados desde abajo: tallo y hojas por parejas
   let out = '';
   const R = 41, f = v => v.toFixed(1), leaf = (x, y, rot, k = 1) =>
@@ -153,6 +161,11 @@ function parts(id, lvl) {
       if (lvl >= 2) front += '<i class="wr"></i>';
       if (lvl >= 3) back += `<i class="mill">${WINDMILL}</i>`;
       break;
+    case 'steam':
+      surf += '<i class="band"></i>';
+      if (lvl >= 2) back += is('puff', 3, i => `--x:${22 + i * 16}%;--d:${(-i * .8).toFixed(1)}s;--s:${[.9, 1.15, 1][i]}`);
+      if (lvl >= 3) { back += '<i class="rails"></i><i class="rails in"></i>'; front += `<i class="orb"><i class="lc">${LOCO_MINI}</i></i>`; }
+      break;
     case 'prism':
       surf += '<i class="ir"></i>';
       if (lvl >= 2) back += '<i class="halo"></i>';
@@ -181,6 +194,6 @@ export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
 // (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
-export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, laurel };
+export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, LOCO_MINI, laurel };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;
