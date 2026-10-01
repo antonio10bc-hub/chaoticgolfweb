@@ -7,6 +7,7 @@
 import { mulberry32 } from '../engine/rng.js';
 import { CARDS, defaultCounts } from './cards/index.js';
 import { deckById } from './decks.js';
+import { outline, clockStations } from '../engine/train.js';
 
 export const CH_GROUPS = ['warmup', 'mid', 'expert'];
 
@@ -20,6 +21,7 @@ export const DECKS = {
   water: () => deckOf('water'),
   minigolf: () => deckOf('minigolf'),
   ultimate: () => deckOf('ultimate'),
+  train: () => deckOf('train'),
   // paso corto: sin palo 3, más palos cortos y más dedo (precisión)
   short: () => ({ ...zero(), ...BASE, dedo: 4 }),
   // solo reacciones
@@ -117,6 +119,11 @@ export const CHALLENGES = [
       ...cells('lake', v.pick([[[C.cx - 2, C.by + 1], [C.cx - 1, C.by + 1]], [[C.cx + 1, C.by + 1], [C.cx + 2, C.by + 1]]])),
     ] },
 
+  // paso a nivel: una vía entre la salida y el hoyo, a lo ancho: hay que cruzarla dos veces sin que te pille el tren
+  { id: 'crossing', group: 'warmup', icon: 'i-train', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'train', scene: 'rail', noPar: true,
+    track: (C, v) => { const x0 = v.pick([0, 1]), x1 = C.cols - 1 - v.pick([0, 1]), n = x1 - x0 + 1;
+      return { path: outline(x0, Array(n).fill(C.hy + 1), Array(n).fill(C.by - 1)) }; } },
+
   /* --- intermedio: la mecánica pide pensar la jugada --- */
   { id: 'portals', group: 'mid', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', mirror: true,
     layout: (C, v) => [
@@ -153,6 +160,11 @@ export const CHALLENGES = [
       { type: 'bunker', x: C.cx - 1, y: C.hy + 1 }, { type: 'bunker', x: C.cx + 1, y: C.hy + 1 },
     ] },
 
+  // estación central: el hoyo, dentro de un circuito pequeño por el que el tren da vueltas (con un vagón de arena)
+  { id: 'station', group: 'mid', icon: 'i-train', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'train', scene: 'rail', noPar: true, mirror: true,
+    layout: C => [{ type: 'bunker', x: C.cx - 3, y: C.by - 2 }, { type: 'bunker', x: C.cx + 2, y: C.by - 1 }],
+    track: (C, v) => { const x0 = C.cx - v.pick([2, 3]), x1 = C.cx + 2, n = x1 - x0 + 1, bot = C.hy + v.pick([2, 3]);
+      return { path: outline(x0, Array(n).fill(C.hy - 1), Array(n).fill(bot)), cars: 1 }; } },
   { id: 'onlyOrange', group: 'mid', icon: 'i-bolt', board: { cols: 5, rows: 5, par: 1 }, opps: 1, diff: 'normal', deck: 'orange', rules: { onlyOrange: true } },
   /* --- experto: combinaciones y mucho que leer --- */
   { id: 'sawmill', group: 'expert', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'mill', scene: 'lake', mirror: true,
@@ -181,6 +193,12 @@ export const CHALLENGES = [
       { type: 'bunker', x: C.cx - 2, y: C.hy }, { type: 'bunker', x: C.cx + 2, y: C.hy }, { type: 'bunker', x: C.cx, y: C.hy - 1 },
       { type: 'bunker', x: 1, y: C.by }, { type: 'bunker', x: C.cols - 2, y: C.by }, { type: 'block', x: C.cx, y: C.by + 1 },
     ] },
+  // expreso: una vía larga, con escalón, entre la salida y el hoyo y charcas en sus curvas: lo que el tren empuja en una
+  // esquina sale despedido al agua (y vuelve a su salida). Dos vagones de arena y tres rivales
+  { id: 'express', group: 'expert', icon: 'i-train', board: { cols: 9, rows: 10, par: 5 }, opps: 2, diff: 'normal', deck: 'train', scene: 'rail', noPar: true, mirror: true,
+    layout: (C, v) => [...cells('lake', [[6, C.hy + 1], [7, C.hy + 1]]), ...cells('lake', [[C.cols - 1, C.by]]), { type: 'bunker', x: v.pick([2, 3]), y: C.hy + 3 }], // (charcas: a la salida de las curvas)
+    track: C => { const n = C.cols, top = Array.from({ length: n }, (_, i) => i < 5 ? C.hy + 1 : C.hy + 2);
+      return { path: outline(0, top, Array(n).fill(C.by - 1)), cars: 2 }; } },
   { id: 'crowd', group: 'expert', icon: 'i-users', board: { cols: 9, rows: 9, par: 4 }, opps: 6, diff: 'hard',
     layout: C => [{ type: 'bunker', x: C.cx - 2, y: C.hy }, { type: 'bunker', x: C.cx + 2, y: C.hy }] },
   { id: 'fullChaos', group: 'expert', icon: 'i-chaos', board: { cols: 11, rows: 10, par: 5 }, opps: 3, diff: 'normal', deck: 'chaos', scene: 'prism', mirror: true,
@@ -232,7 +250,28 @@ export function challengeTiles(ch, S, seed) {
   const v = variation(seed ?? 1);
   let tiles = ch.layout(C, v);
   if (ch.mirror && v.chance(.5)) tiles = mirrorTiles(tiles, C.cols);
-  return sanitize(tiles, C);
+  const tr = challengeTrain(ch, S, seed), onTrack = t => tr?.path.some(([x, y]) => x === t.x && y === t.y);
+  return sanitize(tiles, C).filter(t => !onTrack(t)); // (nada encima de las vías)
+}
+// (desafíos del tren) el circuito diseñado para esta partida: con el mismo reflejo que sus piezas, 4 paradas y la
+// locomotora en una de ellas
+export function challengeTrain(ch, S, seed) {
+  if (!ch.track) return null;
+  const C = courseOf({ cols: S.cols, rows: S.rows, par: S.par }, S.nPlayers), v = variation(seed ?? 1);
+  if (ch.layout) ch.layout(C, v); // (el mismo sorteo que challengeTiles: el reflejo sale igual)
+  const mirrored = ch.mirror && v.chance(.5);
+  let { path, cars = 0 } = ch.track(C, v);
+  if (mirrored) path = path.map(([x, y]) => [C.cols - 1 - x, y]).reverse(); // (al reflejar, se recorre al revés: sigue yendo con el reloj)
+  const L = path.length, stations = clockStations(path, v.r) || [0, 1, 2, 3].map(k => Math.floor(k * L / 4));
+  return { path, stations, pos: v.pick(stations), cars };
+}
+// el campo entero de un desafío sobre su partida: piezas (designed: Game.designed, para que su agua sea fija), tren y,
+// si lo pide (el tren cruza la columna), sin PAR
+export function setupChallenge(S, ch, seed, designed = t => t) {
+  S.tiles.push(...designed(challengeTiles(ch, S, seed)));
+  const tr = challengeTrain(ch, S, seed);
+  if (tr) S.train = tr;
+  if (ch.noPar) S.parCells = [];
 }
 export const challengeById = id => CHALLENGES.find(c => c.id === id);
 export const weeklyById = id => WEEKLY.find(c => c.id === id);

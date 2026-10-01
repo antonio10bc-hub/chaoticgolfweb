@@ -5,7 +5,6 @@ export default {
     name: 'Player {n}',
   },
   cards: {
-    tren2: { name: 'Train: 2 stops', short: 'Train 2', desc: 'The engine moves 2 stops and pushes whatever it finds on the track.' },
     trenVuelta: { name: 'Train: full loop', short: 'Loop', desc: 'The engine runs a full loop of the circuit, pushing everything in its way.' },
     oTren1: { name: 'Train: 1 stop', short: 'Train 1', desc: 'Any time (even during a CHECK): the engine moves 1 stop.' },
     vagon: { name: 'Sand wagon', short: 'Wagon', desc: 'Hook a sand wagon behind the train (3 at most): it traps like a bunker and carries whatever lands in it.' },
@@ -506,8 +505,7 @@ export default {
     end: 'You can play up to 2 black cards per turn. When you’re done, press End turn to draw.',
     next: 'Next', ok: 'Got it', skip: 'Skip tutorial', holeCards: 'Hole cards',
     card: {
-      tren2: 'The engine moves 2 stops. Whatever it finds on the track, it pushes: on a straight it keeps pushing, and if it sinks a ball, it counts for its owner!',
-      trenVuelta: 'The engine runs a full loop of the circuit and pushes everything in its way.',
+      trenVuelta: 'The engine runs a full loop of the circuit and pushes everything in its way: on a straight it keeps pushing and, if it sinks a ball, it counts for its owner!',
       oTren1: 'Orange: any time, even during a CHECK, the engine moves 1 stop. If it pushes the hole, the CHECK is cancelled.',
       vagon: 'You hook a sand wagon behind the train (3 at most). It traps like a bunker, and whatever stays in it rides along with the train.',
       palo4: 'Your ball moves 4 squares in a straight line.',
@@ -583,6 +581,9 @@ export default {
     challenge: { title: 'Challenge' },
   },
   challenges: {
+    crossing: { name: 'Level crossing', desc: 'A track between the start and the hole: cross it before the train gets you.' },
+    station: { name: 'Central station', desc: 'The hole sits inside a circuit: the train circles it with its wagon.' },
+    express: { name: 'Express', desc: 'A long track between ponds: at every curve, the train throws you in.' },
     noPalo3: { name: 'Short game', desc: 'No 3-clubs and bunkers on the way to the hole.' },
     holeDrift: { name: 'Restless hole', desc: 'The hole takes a random step every turn.' },
     bunkers: { name: 'Sea of sand', desc: 'A slalom between two walls of bunkers.' },

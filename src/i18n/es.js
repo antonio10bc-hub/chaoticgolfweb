@@ -8,7 +8,6 @@ export default {
     name: 'Jugador {n}',
   },
   cards: {
-    tren2: { name: 'Tren: 2 paradas', short: 'Tren 2', desc: 'La locomotora avanza 2 paradas y empuja lo que encuentre en la vía.' },
     trenVuelta: { name: 'Tren: vuelta entera', short: 'Vuelta', desc: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra.' },
     oTren1: { name: 'Tren: 1 parada', short: 'Tren 1', desc: 'En cualquier momento (también en un JAQUE): la locomotora avanza 1 parada.' },
     vagon: { name: 'Vagón de arena', short: 'Vagón', desc: 'Engancha un vagón de arena detrás del tren (3 como mucho): atrapa como un búnker y se lleva lo que caiga en él.' },
@@ -509,8 +508,7 @@ export default {
     end: 'Puedes jugar hasta 2 cartas negras por turno. Cuando acabes, pulsa Terminar turno para robar.',
     next: 'Siguiente', ok: 'Entendido', skip: 'Saltar tutorial', holeCards: 'Cartas de hoyo',
     card: {
-      tren2: 'La locomotora avanza 2 paradas. Lo que encuentra en la vía, lo empuja: en una recta sigue empujando, y si mete una pelota en el hoyo, ¡cuenta para su dueño!',
-      trenVuelta: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra por el camino.',
+      trenVuelta: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra: en una recta sigue empujando y, si mete una pelota en el hoyo, ¡cuenta para su dueño!',
       oTren1: 'Naranja: en cualquier momento, también durante un JAQUE, la locomotora avanza 1 parada. Si empuja el hoyo, el JAQUE se anula.',
       vagon: 'Enganchas un vagón de arena detrás del tren (3 como mucho). Atrapa como un búnker y lo que se queda en él viaja con el tren.',
       palo4: 'Tu pelota avanza 4 casillas en línea recta.',
@@ -586,6 +584,9 @@ export default {
     challenge: { title: 'Desafío' },
   },
   challenges: {
+    crossing: { name: 'Paso a nivel', desc: 'Una vía entre la salida y el hoyo: crúzala sin que te pille el tren.' },
+    station: { name: 'Estación central', desc: 'El hoyo, dentro de un circuito: el tren le da vueltas con su vagón.' },
+    express: { name: 'Expreso', desc: 'Vía larga entre charcas: en cada curva, el tren te tira al agua.' },
     noPalo3: { name: 'Paso corto', desc: 'Sin palos de 3 y búnkeres en la calle del hoyo.' },
     holeDrift: { name: 'Hoyo inquieto', desc: 'El hoyo da un paso al azar cada turno.' },
     bunkers: { name: 'Mar de arena', desc: 'Un eslalon entre dos barreras de búnkeres.' },

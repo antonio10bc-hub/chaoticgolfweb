@@ -310,7 +310,7 @@ export function explainPlay(before, after, p, cardKey) {
     if (me0 && me1 && hd(A, me1) < hd(B, me0)) return { key: 'holeCloser' };
   }
   if (cardKey === 'vagon') return { key: 'wagon' };
-  if (['tren2', 'trenVuelta', 'oTren1'].includes(cardKey)) return { key: 'train' };
+  if (['trenVuelta', 'oTren1'].includes(cardKey)) return { key: 'train' };
   const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
   if (placed) {
     // ¿en el camino de quién? (la pelota rival más cercana a la loseta)

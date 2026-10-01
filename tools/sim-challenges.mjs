@@ -9,7 +9,7 @@
 import { Game, PLAYER_COLORS } from '../src/engine/game.js';
 import { mulberry32 } from '../src/engine/rng.js';
 import { simulateGame } from '../src/ai/autoplay.js';
-import { CHALLENGES, WEEKLY, challengeCfg, challengeTiles } from '../src/content/challenges.js';
+import { CHALLENGES, WEEKLY, challengeCfg, challengeTiles, setupChallenge } from '../src/content/challenges.js';
 const [which = 'all', Narg = '40', show = '1', variantsFile] = process.argv.slice(2);
 const N = +Narg;
 const BASES = [{ id: 'base7', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal' }, { id: 'base9', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal' }, { id: 'baseMini', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'minigolf' }];
@@ -20,7 +20,7 @@ const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 function make(ch, seed) {
   const { cfg, extra } = challengeCfg(ch);
   const g = Game.pve({ players: cfg.opps + 1, humans: 1, aiLevel: cfg.diff, ...extra, humanColor: PLAYER_COLORS[0] }, { seed });
-  g.S.tiles.push(...Game.designed(challengeTiles(ch, g.S, seed))); // (como en el juego: su agua no cuenta para el máximo)
+  setupChallenge(g.S, ch, seed, Game.designed); // (como en el juego: su agua no cuenta para el máximo; su tren)
   return g;
 }
 function draw(S) {
@@ -30,6 +30,8 @@ function draw(S) {
       const tl = S.tiles.find(t => t.x === x && t.y === y), b = S.balls.find(q => q.x === x && q.y === y);
       let ch = S.parCells.some(p => p.x === x && p.y === y) ? ':' : '.';
       if (tl) ch = tl.type === 'corner' ? CR[tl.rot || 0] : tl.type === 'launcher' ? LA[tl.rot || 0] : tl.type === 'portal' ? 'ABC'[(tl.pair || 1) - 1] : SYM[tl.type];
+      if (S.train?.path.some(([px, py]) => px === x && py === y)) ch = S.train.stations.some(i => S.train.path[i][0] === x && S.train.path[i][1] === y) ? 'S' : '=';
+      if (S.train && S.train.path[S.train.pos][0] === x && S.train.path[S.train.pos][1] === y) ch = 'T';
       if (S.hole.x === x && S.hole.y === y) ch = 'H';
       if (b) ch = String(b.player + 1);
       s += ch + ' ';
@@ -38,11 +40,11 @@ function draw(S) {
   }
   return s;
 }
-const MECH = ['drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'teleport', 'fall', 'settle', 'iri', 'impact'];
+const MECH = ['train', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'teleport', 'fall', 'settle', 'iri', 'impact'];
 for (const ch of list) {
   const rand = mulberry32(4242);
   if (show === '1') { const g = make(ch, 12345); console.log(`\n== ${ch.id} ${g.S.cols}x${g.S.rows} par ${g.S.par} · ${ch.opps + 1} jug · ${ch.diff}`); console.log(draw(g.S)); }
-  let fin = 0, turns = [], mech = Object.fromEntries(MECH.map(m => [m, 0])), seatW = {}, stuck = 0, err = 0, placed = 0, t0 = performance.now();
+  let fin = 0, trainW = 0, turns = [], mech = Object.fromEntries(MECH.map(m => [m, 0])), seatW = {}, stuck = 0, err = 0, placed = 0, t0 = performance.now();
   for (let i = 0; i < N; i++) {
     const seed = (rand() * 2 ** 32) >>> 0;
     let g;
@@ -53,11 +55,12 @@ for (const ch of list) {
     g.emit = ev => { if (ev.t === 'tilePlaced') placed++; return origE(ev); };
     try {
       const r = simulateGame(g, { rand, maxTurns: 300 });
-      if (g.S.winner !== null) { fin++; turns.push(r.turns / g.S.nPlayers); const sx = g.S.balls[g.S.winner].spawnX - Math.floor(g.S.cols / 2); seatW[sx] = (seatW[sx] || 0) + 1; } else stuck++;
+      if (g.S.trainWin) { fin++; trainW++; turns.push(r.turns / g.S.nPlayers); } // (el tren ha metido una pelota él solo)
+      else if (g.S.winner !== null) { fin++; turns.push(r.turns / g.S.nPlayers); const sx = g.S.balls[g.S.winner].spawnX - Math.floor(g.S.cols / 2); seatW[sx] = (seatW[sx] || 0) + 1; } else stuck++;
     } catch (e) { err++; if (err < 3) console.log(e.stack); }
   }
   turns.sort((a, b) => a - b);
   const avg = turns.reduce((a, b) => a + b, 0) / (turns.length || 1);
   const per = Object.fromEntries(Object.entries(mech).filter(([, n]) => n).map(([k, n]) => [k, +(n / N).toFixed(1)]));
-  console.log(`${ch.id}: fin ${fin}/${N} err ${err} · rondas media ${avg.toFixed(1)} p10 ${(turns[Math.floor(turns.length * .1)] || 0).toFixed(1)} p90 ${(turns[Math.floor(turns.length * .9)] || 0).toFixed(1)} · gana por salida ${JSON.stringify(seatW)} · por partida ${JSON.stringify(per)}${placed ? ' · piezas puestas ' + (placed / N).toFixed(1) : ''} · ${Math.round((performance.now() - t0) / N)}ms`);
+  console.log(`${ch.id}: fin ${fin}/${N} err ${err} · rondas media ${avg.toFixed(1)} p10 ${(turns[Math.floor(turns.length * .1)] || 0).toFixed(1)} p90 ${(turns[Math.floor(turns.length * .9)] || 0).toFixed(1)} · gana por salida ${JSON.stringify(seatW)}${trainW ? ` · gana el tren ${trainW}` : ''} · por partida ${JSON.stringify(per)}${placed ? ' · piezas puestas ' + (placed / N).toFixed(1) : ''} · ${Math.round((performance.now() - t0) / N)}ms`);
 }

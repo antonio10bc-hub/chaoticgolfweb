@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import { Game, PLAYER_COLORS } from '../src/engine/game.js';
 import { mulberry32 } from '../src/engine/rng.js';
 import { simulateGame } from '../src/ai/autoplay.js';
-import { CHALLENGES, WEEKLY, CH_GROUPS, challengeCfg, challengeTiles } from '../src/content/challenges.js';
+import { CHALLENGES, WEEKLY, CH_GROUPS, challengeCfg, challengeTiles, setupChallenge } from '../src/content/challenges.js';
 import { TILES } from '../src/content/tiles/index.js';
 
 const make = (ch, seed) => {
   const { cfg, extra } = challengeCfg(ch);
   const g = Game.pve({ players: cfg.opps + 1, humans: 1, aiLevel: cfg.diff, ...extra, humanColor: PLAYER_COLORS[0] }, { seed });
-  g.S.tiles.push(...Game.designed(challengeTiles(ch, g.S, seed))); // (como en el juego: su agua no cuenta para el máximo)
+  setupChallenge(g.S, ch, seed, Game.designed); // (como en el juego: su agua no cuenta para el máximo; su tren)
   return g;
 };
 
@@ -82,5 +82,25 @@ test('reto diario: cada mecánica se juega hasta el final entre bots', async () 
       if (g.S.winner !== null) won++;
     }
     assert.ok(won >= 2, `${ch.feature}: ${won}/3`);
+  }
+});
+
+test('desafíos del tren (uno por dificultad): circuito cerrado con 4 paradas, sin pisar hoyo, salidas ni piezas, y sin PAR', async () => {
+  const { validPath } = await import('../src/engine/train.js');
+  const trains = CHALLENGES.filter(c => c.track);
+  assert.deepEqual(CH_GROUPS.map(g => trains.filter(c => c.group === g).length), [1, 1, 1]);
+  for (const ch of trains) for (const seed of [1, 2, 3, 7, 99]) {
+    const S = make(ch, seed).S, tr = S.train, where = `${ch.id} (semilla ${seed})`;
+    assert.ok(tr && validPath(tr.path, S.cols, S.rows), 'vuelta válida: ' + where);
+    assert.equal(new Set(tr.stations).size, 4, where);
+    assert.ok(tr.stations.includes(tr.pos), 'la locomotora en una parada: ' + where);
+    const on = (x, y) => tr.path.some(p => p[0] === x && p[1] === y);
+    assert.ok(!on(S.hole.x, S.hole.y) && !S.balls.some(b => on(b.x, b.y)), 'no pisa hoyo ni salidas: ' + where);
+    assert.ok(!S.tiles.some(t => on(t.x, t.y)), 'ninguna pieza en la vía: ' + where);
+    assert.equal(S.parCells.length, 0, 'sin PAR (la vía cruza su columna): ' + where);
+    // para llegar al hoyo hay que cruzar la vía (la salida y el hoyo, a distinto lado de un tramo)
+    const cross = S.balls.every(b => { const lo = Math.min(b.y, S.hole.y), hi = Math.max(b.y, S.hole.y);
+      return tr.path.some(([x, y]) => y > lo && y < hi); });
+    assert.ok(cross, 'la vía, entre las salidas y el hoyo: ' + where);
   }
 });

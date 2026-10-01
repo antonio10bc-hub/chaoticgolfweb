@@ -238,7 +238,7 @@ it('baraja del tren: vías, locomotora en una parada y, al acabar el turno, avan
   await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 90000 });
   const st = await app(() => { const { app } = window.chaoticGolf, S = app.game.S, tr = S.train;
     return { tr: !!tr, onStop: tr.stations.includes(tr.pos), rails: !!document.querySelector('#trackSvg path'), loco: !!document.querySelector('#pieces .ploco'),
-      scene: document.getElementById('gameScreen').dataset.scene, next: !!document.getElementById('trkNext'), hand: S.hands[S.human].some(k => ['tren2', 'trenVuelta', 'oTren1', 'vagon'].includes(k)) }; });
+      scene: document.getElementById('gameScreen').dataset.scene, next: !!document.getElementById('trkNext'), hand: S.hands[S.human].some(k => ['trenVuelta', 'oTren1', 'vagon'].includes(k)) }; });
   assert.deepEqual(st, { tr: true, onStop: true, rails: true, loco: true, scene: 'rail', next: true, hand: true });
   // la locomotora en pantalla está en su casilla
   const pos0 = await app(() => window.chaoticGolf.app.game.S.train.pos);

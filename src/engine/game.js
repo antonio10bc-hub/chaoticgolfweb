@@ -48,6 +48,7 @@ const FLY = 3;           // casillas que vuela una pieza desde la lanzadera
 const MAX_CHAIN = 12;
 
 export const clone = o => JSON.parse(JSON.stringify(o));
+const randInt = (rand, a, b) => a + Math.floor(rand() * (b - a + 1));
 export const manhattan = (ax, ay, bx, by) => Math.abs(ax - bx) + Math.abs(ay - by);
 export const playerTag = i => t('player.tag', { n: i + 1 });
 // jugadores que aparecen en una línea de log (etiquetas "J3" en p / b / a; el JAQUE lleva el número)
@@ -167,7 +168,7 @@ export class Game {
     g.fillDeck(counts);
     for (let i = 0; i < cfg.players; i++) g.drawTo2(i);
     if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
-    if (cfg.train) g.setupTrain();
+    if (cfg.train) g.setupTrain({ layout: !!cfg.trainLayout });
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
   }
@@ -193,10 +194,26 @@ export class Game {
 
   // (baraja del tren) circuito de vías al azar, sin pasar por las salidas ni por el hoyo, y la locomotora en una de
   // sus 4 paradas. Con un RNG aparte (sacado de la semilla): el mazo sale igual que sin tren
-  setupTrain() {
+  // layout: la maqueta de la baraja del tren — las salidas abajo y el hoyo arriba, cada uno en una columna al azar, y la
+  // vuelta en medio, a lo ancho: para llegar hay que cruzar las vías (pelotas · vía · césped · vía · hoyo). Sin columna
+  // de PAR (cruzaría las vías)
+  setupTrain({ layout = false } = {}) {
     const S = this.S, rand = mulberry32(((this.seed ?? 1) ^ 0x7a11c0de) >>> 0);
+    let band = null;
+    if (layout) {
+      // (la vía, una banda de 5-6 filas, y el bloque entero centrado con algo de juego: ni tan lejos que la partida se
+      // eternice ni tan cerca que no haya que cruzarla)
+      const n = S.balls.length, H = Math.min(S.rows - 2, randInt(rand, 5, 6)), top = Math.floor((S.rows - H - 2) / 2);
+      const hy = Math.max(0, Math.min(S.rows - H - 2, top + randInt(rand, -1, 1))), by = hy + H + 1;
+      const hx = randInt(rand, 1, S.cols - 2), sx = randInt(rand, 0, S.cols - n);
+      S.hole = { x: hx, y: hy, initX: hx, initY: hy };
+      S.balls.forEach((b, i) => { b.x = b.spawnX = sx + i; b.y = b.spawnY = by; });
+      S.parCells = [];
+      this.initMarks = this.marksFromBalls();
+      band = [hy + 1, by - 1];
+    }
     const avoid = [[S.hole.x, S.hole.y], ...S.balls.map(b => [b.x, b.y])];
-    const c = makeCircuit(S.cols, S.rows, rand, avoid);
+    const c = makeCircuit(S.cols, S.rows, rand, avoid, { band });
     if (!c) return; // (no cabe: partida sin tren; sus cartas no se pueden jugar)
     S.train = { path: c.path, stations: c.stations, pos: c.stations[Math.floor(rand() * 4)], cars: 0 };
   }
@@ -261,6 +278,10 @@ export class Game {
   }
   static restore(data) {
     const g = new Game(clone(data.S), { seed: data.seed ?? undefined });
+    // (cartas que ya no existen en el juego, en una partida guardada antes: fuera de manos, mazo y descartes)
+    const S = g.S, known = k => !!CARDS[k];
+    const gone = S.hands.some(h => !h.every(known)) || !S.deck.every(known) || !S.discard.every(known);
+    if (gone) { S.hands = S.hands.map(h => h.filter(known)); S.deck = S.deck.filter(known); S.discard = S.discard.filter(known); data = { ...data, pending: null }; }
     if (data.rngState != null) g.rand = mulberry32(data.rngState); // el mazo sigue saliendo igual que sin cerrar
     g.initMarks = data.initMarks || g.marksFromBalls();
     if (data.pending) {

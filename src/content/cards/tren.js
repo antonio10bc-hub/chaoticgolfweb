@@ -1,5 +1,4 @@
 // Cartas de la baraja del tren (0 copias fuera de su baraja: el resto de barajas no cambia).
-//   tren2       (negra)   la locomotora avanza 2 paradas
 //   trenVuelta  (negra)   da una vuelta entera al circuito
 //   oTren1      (naranja) avanza 1 parada, en cualquier momento (también durante un JAQUE)
 //   vagon       (negra)   engancha un vagón de arena detrás del tren (3 como mucho); se queda en la mesa
@@ -15,16 +14,6 @@ const hasTrain = g => !!g.S.train;
 const RING = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4], [4, 4], [3, 4], [2, 4], [1, 4], [0, 4], [0, 3], [0, 2], [0, 1]];
 const scene = (pos, rest, cars = 0) => ({ cols: 6, rows: 5, seed: 5, train: { path: RING, stations: [2, 7, 12, 16], pos, cars }, ...rest });
 
-export const tren2 = {
-  id: 'tren2', color: 'black', copies: 0,
-  icon: '<span class="ico ico-train"></span>',
-  face: { art: 'tren', value: '2' },
-  blockedReason: 'reason.noTrain',
-  canPlay: hasTrain,
-  play: run({ stops: 2 }),
-  // empuja la pelota por la recta de arriba y, en la curva, la saca del tablero
-  demo: scene(16, { hole: { x: 3, y: 2 }, ball: { x: 2, y: 0 }, spawn: { x: 2, y: 3 }, card: 'tren2' }),
-};
 export const trenVuelta = {
   id: 'trenVuelta', color: 'black', copies: 0,
   icon: '<span class="ico ico-train"></span>',

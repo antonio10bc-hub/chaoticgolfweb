@@ -23,6 +23,12 @@ import { openModes } from './screen-modes.js';
 // nivel de Lo básico por índice global: primero los integrados, luego los del creador
 export const storyLevelAt = i => i < app.storyLevels.length ? app.storyLevels[i] : loadLevels()[i - app.storyLevels.length];
 export const puzzleAt = i => app.puzzleLevels[i] || null;
+// los puzles en el orden de la pantalla: por dificultad (calentamiento, intermedio, experto) y, dentro, como en el índice
+// (los nuevos se añaden al final del índice para no mover el progreso guardado, que va por posición)
+const PZ_GROUPS = ['warmup', 'mid', 'expert'];
+export const puzzleOrder = () => app.puzzleLevels.map((L, i) => i)
+  .sort((a, b) => PZ_GROUPS.indexOf(app.puzzleLevels[a].group || 'warmup') - PZ_GROUPS.indexOf(app.puzzleLevels[b].group || 'warmup') || a - b);
+const nextPuzzleIdx = i => { const o = puzzleOrder(), k = o.indexOf(i); return k >= 0 && k + 1 < o.length ? o[k + 1] : null; };
 // ¿es un nivel del creador? (van a continuación de los integrados y viven en Modos de juego)
 export const isUserLevelIdx = i => i != null && i >= app.storyLevels.length;
 // ¿la partida en curso vuelve a Modos de juego? (puzles y niveles del creador)
@@ -42,12 +48,12 @@ export function startLevel(level, mode, idx = null, { variant = null, run = null
 
 // tarjeta de nivel (miniatura, número, nombre y estado)
 // compact (Modos de juego): tarjeta pequeña, sin "Jugar" (toda la tarjeta lo es): solo el estado si lo hay
-function levelCard(i, L, { done, next, best, saved, attr, compact = false }) {
+function levelCard(i, L, { done, next, best, saved, attr, compact = false, num = i + 1 }) {
   const state = done ? 'done' : next ? 'next' : '';
   const label = compact && !done && !next ? '' : done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="lsTxt">${t('story.completed')}</span>` : next ? t('story.next') : t('story.play');
   return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${Math.min(i, 8) * 45}ms" ${attr}` +
-    ` aria-label="${esc(t('story.levelAria', { n: i + 1, name: levelName(L) }))}${done ? ` · ${esc(t('story.done'))}` : ''}">` +
-    `<span class="lvlNum">${i + 1}</span>` +
+    ` aria-label="${esc(t('story.levelAria', { n: num, name: levelName(L) }))}${done ? ` · ${esc(t('story.done'))}` : ''}">` +
+    `<span class="lvlNum">${num}</span>` +
     `<span class="lvlPreview">${levelPreviewSVG(L)}</span>` +
     `<span class="lvlName">${esc(levelName(L) || t('story.untitled'))}</span>` +
     (label || best ? `<span class="lvlFoot">${label ? `<span class="lvlState">${label}</span>` : ''}` +
@@ -83,18 +89,19 @@ export function openStory() {
 export function puzzlesSectionHTML() {
   if (!app.puzzleLevels.length) return '';
   const done = loadRecords().puzzles, sv = loadSave('puzzle');
-  const next = app.puzzleLevels.findIndex((_, i) => !done[i]);
+  const order = puzzleOrder(), next = order.find(i => !done[i]) ?? -1;
   const nDone = app.puzzleLevels.filter((_, i) => done[i]).length;
-  // en grupos por dificultad: calentamiento, intermedio y experto ("group" en su JSON)
+  // en grupos por dificultad: calentamiento, intermedio y experto ("group" en su JSON), numerados en ese orden
   const groups = [];
-  app.puzzleLevels.forEach((L, i) => {
-    const g = L.group || 'warmup';
+  order.forEach(i => {
+    const g = app.puzzleLevels[i].group || 'warmup';
     if (groups.at(-1)?.id !== g) groups.push({ id: g, items: [] });
     groups.at(-1).items.push(i);
   });
+  const num = i => order.indexOf(i) + 1;
   return `<section class="lvlSection puzzles">${sectionHead({ art: 'puzzle', title: t('story.puzzlesH'), done: nDone, total: app.puzzleLevels.length })}` +
     groups.map(gr => (groups.length > 1 ? groupHead(gr.id, gr.items.filter(i => done[i]).length, gr.items.length) : '') +
-      `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"`, compact: true })).join('') + `</div>`).join('') +
+      `<div class="lvlRow">` + gr.items.map(i => levelCard(i, app.puzzleLevels[i], { done: done[i], next: i === next, saved: sv && sv.levelIndex === i, attr: `data-puzzle="${i}"`, compact: true, num: num(i) })).join('') + `</div>`).join('') +
     `</section>`;
 }
 // tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
@@ -142,14 +149,14 @@ export function replayLevel() {
 }
 export function nextLevel() {
   const i = app.levelIndex + 1;
-  if (app.variant === 'puzzle') { const P = puzzleAt(i); if (P) { hideWin(); startLevel(P, 'story', i, { variant: 'puzzle' }); } return; }
+  if (app.variant === 'puzzle') { const n = nextPuzzleIdx(app.levelIndex), P = n != null && puzzleAt(n); if (P) { hideWin(); startLevel(P, 'story', n, { variant: 'puzzle' }); } return; }
   const L = hasNextLevel() && storyLevelAt(i);
   if (L) { hideWin(); startLevel(L, 'story', i); }
 }
 // el siguiente de su grupo: tras el último de Lo básico no se salta a tus niveles
 export const hasNextLevel = () => {
   const i = app.levelIndex;
-  if (app.variant === 'puzzle') return !!puzzleAt(i + 1);
+  if (app.variant === 'puzzle') return nextPuzzleIdx(i) != null;
   if (i === null) return false;
   return isUserLevelIdx(i) ? !!storyLevelAt(i + 1) : i + 1 < app.storyLevels.length;
 };
@@ -168,6 +175,11 @@ export function levelPreviewSVG(L) {
     if (tp === 'block' || tp === 'corner' || tp === 'tunnel' || tp === 'launcher') out += `<rect x="${x * (s + g) + 2}" y="${y * (s + g) + 2}" width="${s - 4}" height="${s - 4}" rx="1.5" fill="#C99257"/>`;
   }
   const c = (x, y) => [x * (s + g) + s / 2, y * (s + g) + s / 2];
+  if (L.train?.path?.length) { // (el tren) la vuelta de las vías y la locomotora
+    out += `<polygon points="${L.train.path.map(([x, y]) => c(x, y).join(',')).join(' ')}" fill="none" stroke="#8A5A33" stroke-width="5" stroke-linejoin="round"/>` +
+      `<polygon points="${L.train.path.map(([x, y]) => c(x, y).join(',')).join(' ')}" fill="none" stroke="#C9CED3" stroke-width="1.2" stroke-linejoin="round"/>`;
+    const [lx, ly] = c(...L.train.path[L.train.pos ?? 0]); out += `<rect x="${lx - 3.6}" y="${ly - 3.6}" width="7.2" height="7.2" rx="2" fill="#242424" stroke="#B5483B" stroke-width="1.4"/>`;
+  }
   for (const eb of L.extraBalls || []) { const [cx, cy] = c(eb.x, eb.y); out += `<circle cx="${cx}" cy="${cy}" r="3.4" fill="#F1F1DC"/>`; }
   const [hx, hy] = c(L.hole.x, L.hole.y); out += `<circle cx="${hx}" cy="${hy}" r="4.2" fill="#242424"/><path d="M${hx} ${hy} v-7 l4.5 1.6 -4.5 1.6" fill="#E8873A" stroke="#F1F1DC" stroke-width=".8"/>`;
   const [bx, by] = c(L.ball.x, L.ball.y); out += `<circle cx="${bx + 1.2}" cy="${by + 1.2}" r="3.8" fill="rgba(20,40,20,.35)"/><circle cx="${bx}" cy="${by}" r="3.8" fill="#fff"/>`;

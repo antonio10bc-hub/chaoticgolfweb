@@ -336,10 +336,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   hace lo mismo, o hasta caerse del tablero; tras saltar una lanzadera sigue avanzando hacia donde volaba; si entra
   en un bucle sin fin, se corta; deja una estela iridiscente). Fondo iridiscente animado (manchas de color y un barrido de luz).
 - **Baraja del tren** (`src/engine/train.js`, cartas en `cards/tren.js`, vista en `src/ui/train-view.js`; +4 columnas y
-  +2 filas; sin búnkeres ni portales): un **circuito de vías** distinto en cada partida (un contorno con escalones,
-  tramos rectos largos y curvas; a veces rodea todo el campo y a veces cruza el recorrido), en el sentido del reloj,
-  con **4 paradas** más o menos a las 12, 3, 6 y 9. Nunca pasa por las salidas ni por el hoyo y la locomotora empieza en
-  una parada. Al acabar **cada turno** la locomotora va sola a la siguiente parada (se ve con un aro dorado en la vía).
+  +2 filas; sin búnkeres ni portales; con un palo 2 más): su **maqueta** pone las salidas abajo y el hoyo arriba, cada uno
+  en una columna al azar y sin columna de PAR, y entre medias un **circuito de vías** a lo ancho (una banda de 5-6 filas):
+  para llegar hay que cruzarla (pelotas · vía · césped · vía · hoyo). El circuito, distinto en cada partida, es un
+  contorno con tramos rectos largos y escalones suaves (nada de serpentear), en el sentido del reloj, con **4 paradas**
+  más o menos a las 12, 3, 6 y 9; nunca pasa por las salidas ni por el hoyo y la locomotora empieza en una parada.
+  (En Ultimate, el mismo tipo de circuito alrededor de su recorrido de siempre.) Unas 11 rondas por partida entre bots
+  y el tren gana alrededor del 8 %. Al acabar **cada turno** la locomotora va sola a la siguiente parada (se ve con un aro dorado en la vía).
   - **Empuja** lo que encuentra: la pelota de delante (y las que tenga pegadas en fila) una casilla; en una recta las
     sigue empujando y en la curva salen despedidas; el hoyo, igual que una pelota (en un JAQUE, se anula). Contra la
     madera, o si no se puede apartar a nadie, espera. Si al empujar mete una pelota en el hoyo, el tren se para ahí.
@@ -350,8 +353,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     (sin JAQUE): primero se ve cómo la mete (y suena el silbato) y luego sale el final, con la locomotora echando humo
     arriba, donde iría la pelota ganadora. Con una carta, la pelota cuenta para su dueño. Los bots lo ven venir (`trainThreat`) y, en tu turno, un
     aviso rojo te dice si terminar así le daría la partida al tren.
-  - Cartas: **Tren 2** (negra, 2 paradas), **Vuelta** (negra, una vuelta entera), **Tren 1** (naranja, 1 parada en
-    cualquier momento) y **Vagón** (negra, engancha un vagón detrás; 3 como mucho; se queda en la mesa). En táctil se
+  - Cartas: **Vuelta** ×3 (negra, una vuelta entera), **Tren 1** ×3 (naranja, 1 parada en cualquier momento) y
+    **Vagón** ×3 (negra, engancha un vagón detrás; 3 como mucho; se queda en la mesa). (La de 2 paradas ya no existe:
+    las partidas guardadas que la tuvieran la pierden al continuar.) En táctil se
     juegan tocando la parada donde acabará el tren (o la casilla del vagón nuevo), con su recorrido dibujado.
   - Locomotora de vapor (caldera negra, cabina roja, remates dorados) y vagones planos con su montón de arena, vistos
     desde arriba y girados según la vía (el vagón, una tolva de tablones llena de arena con sus dunas y marcas de
@@ -366,6 +370,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     reloj, se saca al probar o guardar (`orderLoop` / `trainOf` en `editor.js`).
   - Pelota de logros **Vapor** (10 · 50 · 100 victorias): cinturón de hierro con remaches · bocanadas de vapor · una vía
     alrededor con su tren.
+  - **Desafíos del tren** (uno por dificultad; `track` en `challenges.js`, un circuito diseñado con `outline` y su
+    variación, `setupChallenge` lo monta): **Paso a nivel** (calentamiento: una vía a lo ancho entre la salida y el
+    hoyo), **Estación central** (intermedio: el hoyo dentro de un circuito pequeño, con un vagón) y **Expreso** (experto:
+    vía larga con escalón y charcas a la salida de sus curvas; dos vagones).
+  - **Puzles del tren** (p25-p27, al final del índice para no mover el progreso guardado; en pantalla se ordenan y
+    numeran por dificultad): **Último tren** (llévala a la vía y que el tren la empuje al hoyo), **Vagón exprés** (súbete
+    al vagón, viaja y sal de la arena) y **Hoyo en marcha** (pon el hoyo en la vía y que el tren se lo lleve hasta la
+    pelota; con una pista falsa).
 - **"¡Nueva baraja!"** (`src/ui/new-deck.js`): cuando el juego estrena una baraja, quien ya jugaba la ve anunciada una
   vez al llegar al menú principal: una ventana pequeña con la ilustración (el circuito con el tren dando vueltas), el
   anuncio, una frase y "Jugar ahora" (su partida rápida) o "Luego". A quien llega por primera vez no se le anuncia

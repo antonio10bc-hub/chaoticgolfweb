@@ -19,32 +19,43 @@ export const MAX_CARS = 3;
 const key = (x, y) => x + ',' + y;
 const randInt = (rand, a, b) => a + Math.floor(rand() * (b - a + 1));
 
-// perfil a escalones de `len` columnas: arranca en `start` y cada tramo (de 2 a 5 casillas) sube o baja
+// perfil a escalones de `len` columnas: arranca en `start` y cada tramo (de 3 a 6 casillas: pocas curvas seguidas,
+// nada de serpentear) sube o baja
 function profile(rand, len, start, lo, hi, maxStep) {
   const out = [];
-  let v = start, run = randInt(rand, 2, 5);
+  let v = start, run = randInt(rand, 3, 6);
   for (let i = 0; i < len; i++) {
-    if (run <= 0 && i < len - 2) { // (sin escalón en las dos últimas: la esquina queda limpia)
+    if (run <= 0 && i < len - 3) { // (sin escalón en las tres últimas: la esquina queda limpia)
       const d = randInt(rand, 1, maxStep) * (rand() < .5 ? -1 : 1);
       v = Math.max(lo, Math.min(hi, v + d));
-      run = randInt(rand, 2, 5);
+      run = randInt(rand, 3, 6);
     }
     out.push(v); run--;
   }
   return out;
 }
 
-// un intento: contorno con el lado de arriba t(x) y el de abajo b(x), de x0 a x1 (C columnas × R filas)
-function attempt(rand, C, R) {
-  // ancho y alto muy variables: a veces el circuito rodea todo el campo y a veces solo una parte (y cruza el recorrido)
-  const mx = Math.floor(C * .3), my = Math.floor(R / 3);
+// un intento: contorno con el lado de arriba t(x) y el de abajo b(x), de x0 a x1 (C columnas × R filas).
+// band: [y0, y1] filas que puede ocupar (la maqueta del tren: entre las salidas y el hoyo); sin ella, todo el campo
+function attempt(rand, C, R, band = null) {
+  const lo = band ? band[0] : 0, hi = band ? band[1] : R - 1;
+  if (hi - lo < 3) return null;
+  // casi siempre a lo ancho del campo (repartido por todo el escenario); a veces, algo más estrecho
+  const mx = rand() < .75 ? 1 : Math.max(1, Math.floor(C * .2));
   const x0 = randInt(rand, 0, mx), x1 = C - 1 - randInt(rand, 0, mx);
   if (x1 - x0 < 3) return null;
-  const n = x1 - x0 + 1, deep = rand() < .35; // a veces escalones grandes: formas muy distintas
-  const maxStep = deep ? Math.max(1, Math.floor(R / 4)) : 1 + (rand() < .5 ? 1 : 0);
-  const top = profile(rand, n, randInt(rand, 0, my), 0, R - 4, maxStep);
-  const bot = profile(rand, n, R - 1 - randInt(rand, 0, my), 3, R - 1, maxStep);
+  const n = x1 - x0 + 1, my = band ? 1 : Math.max(1, Math.floor(R / 5));
+  const maxStep = rand() < .2 ? 2 : 1; // (escalones suaves; alguna vez, uno más hondo)
+  const top = profile(rand, n, lo + randInt(rand, 0, my), lo, hi - 3, maxStep);
+  const bot = profile(rand, n, hi - randInt(rand, 0, my), lo + 3, hi, maxStep);
   for (let i = 0; i < n; i++) if (bot[i] - top[i] < 3) return null; // (los dos lados, con dos filas de césped entre medias como poco)
+  return outline(x0, top, bot);
+}
+
+// la vuelta (en el sentido del reloj) de un contorno: desde la columna x0, el lado de arriba top[i] y el de abajo bot[i]
+// de cada columna (los escalones suben o bajan por la columna nueva). Lo usan el generador y los desafíos diseñados
+export function outline(x0, top, bot) {
+  const n = top.length, x1 = x0 + n - 1;
   const path = [];
   const push = (x, y) => path.push([x, y]);
   const t = i => top[i], b = i => bot[i];
@@ -87,6 +98,7 @@ export function validPath(path, C, R) {
   return true;
 }
 
+export const clockStations = (path, rand) => stationsFor(path, rand);
 // las 4 paradas: la casilla de la vía más cerca de las 12, las 3, las 6 y las 9 (con un desvío al azar), en
 // orden de recorrido y separadas por 2 casillas como poco
 function stationsFor(path, rand) {
@@ -109,12 +121,13 @@ function stationsFor(path, rand) {
   return ord;
 }
 
-// circuito nuevo para un tablero C×R sin pasar por `avoid` ([[x, y], …]); null si no cabe
-export function makeCircuit(C, R, rand, avoid = []) {
+// circuito nuevo para un tablero C×R sin pasar por `avoid` ([[x, y], …]); null si no cabe.
+// band: [y0, y1] (la maqueta del tren) — el circuito va entre esas filas, a lo ancho
+export function makeCircuit(C, R, rand, avoid = [], { band = null } = {}) {
   const bad = new Set(avoid.map(([x, y]) => key(x, y)));
   for (let tries = 0; tries < 400; tries++) {
-    const flip = rand() < .4 && R >= 7; // girado: los lados irregulares son los de izquierda y derecha
-    let path = flip ? attempt(rand, R, C) : attempt(rand, C, R);
+    const flip = !band && rand() < .3 && R >= 7; // girado: los lados irregulares son los de izquierda y derecha
+    let path = flip ? attempt(rand, R, C) : attempt(rand, C, R, band);
     if (!path) continue;
     if (flip) path = path.map(([x, y]) => [y, x]).reverse(); // (al girar se invierte el sentido: se recorre al revés)
     if (rand() < .5) path = path.map(([x, y]) => [C - 1 - x, y]).reverse(); // espejo

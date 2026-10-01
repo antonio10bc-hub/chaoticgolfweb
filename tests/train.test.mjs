@@ -29,9 +29,13 @@ test('circuito: vuelta cerrada válida, sin pasar por salidas ni hoyo, con 4 par
     const L = c.path.length;
     for (let i = 0; i < 4; i++) assert.ok((c.stations[(i + 1) % 4] - c.stations[i] + L) % L >= 3, 'paradas separadas y en orden');
   }
-  // las formas cambian mucho de una partida a otra
-  const lens = new Set(Array.from({ length: 30 }, (_, s) => makeCircuit(11, 11, mulberry32(s + 1), []).path.length));
-  assert.ok(lens.size >= 8, 'longitudes muy distintas: ' + [...lens]);
+  // las formas cambian de una partida a otra (casi nunca dos iguales), con tramos rectos largos: sin serpentear
+  const shapes = Array.from({ length: 30 }, (_, s) => makeCircuit(11, 11, mulberry32(s + 1), []).path);
+  assert.ok(new Set(shapes.map(p => JSON.stringify(p))).size >= 27, 'formas distintas');
+  for (const p of shapes) { // (curvas: casillas donde la vía cambia de dirección; como mucho una de cada tres)
+    const L = p.length, turns = p.filter((c, i) => { const a = p[(i - 1 + L) % L], b = p[(i + 1) % L]; return a[0] !== b[0] && a[1] !== b[1]; }).length;
+    assert.ok(turns <= L / 3, `demasiadas curvas: ${turns}/${L}`);
+  }
 });
 
 test('partida rápida del tren: circuito en Game.pve con su RNG aparte (el mazo sale igual) y en Ultimate también', () => {
@@ -44,10 +48,27 @@ test('partida rápida del tren: circuito en Game.pve con su RNG aparte (el mazo 
   assert.ok(!a.S.balls.some(bl => a.trackIndex(bl.x, bl.y) >= 0) && a.trackIndex(a.S.hole.x, a.S.hole.y) < 0, 'sin obstaculizar a nadie');
   assert.ok(deckHasTrain(deckById('ultimate')), 'Ultimate tiene el tren');
   const ult = deckById('ultimate').counts(defaultCounts());
-  for (const k of ['tren2', 'trenVuelta', 'oTren1', 'vagon']) assert.ok(ult[k] > 0, 'Ultimate suma ' + k);
+  for (const k of ['trenVuelta', 'oTren1', 'vagon']) assert.ok(ult[k] > 0, 'Ultimate suma ' + k);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate', 'Ultimate, siempre la última');
   assert.equal(DECKS[DECKS.length - 2].id, 'train', 'la baraja nueva, detrás de la anterior');
-  for (const k of ['tren2', 'trenVuelta', 'oTren1', 'vagon']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
+  for (const k of ['trenVuelta', 'oTren1', 'vagon']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
+});
+
+test('maqueta de la baraja del tren: salidas abajo y hoyo arriba (en columnas al azar) y la vuelta en medio, a lo ancho', () => {
+  const dk = deckById('train'), counts = dk.counts(defaultCounts());
+  for (const sz of [{ cols: 5, rows: 5, par: 2 }, { cols: 7, rows: 9, par: 3 }, { cols: 9, rows: 11, par: 4 }]) for (let seed = 1; seed <= 40; seed++) {
+    const g = Game.pve({ players: 3, ...deckSize(dk, sz), counts, train: true, trainLayout: true, humanColor: '#f26d6d' }, { seed }), S = g.S, tr = S.train;
+    assert.ok(tr, 'con tren');
+    const ys = tr.path.map(p => p[1]), xs = tr.path.map(p => p[0]), by = S.balls[0].y;
+    assert.ok(S.balls.every(b => b.y === by && b.spawnY === by) && S.hole.y < Math.min(...ys) && by > Math.max(...ys), 'pelotas · vía · hoyo');
+    assert.ok(Math.max(...xs) - Math.min(...xs) >= S.cols - 1 - 2 * Math.max(1, Math.floor(S.cols * .2)), 'repartida a lo ancho');
+    assert.equal(S.parCells.length, 0, 'sin columna de PAR');
+    // por cada columna, la vuelta tiene dos lados entre las salidas y el hoyo: hay que cruzarla (y su césped)
+    const inside = tr.path.filter(([x]) => x === S.hole.x).length;
+    if (inside) assert.ok(inside >= 2, 'dos tramos que cruzar');
+  }
+  const holes = new Set(Array.from({ length: 30 }, (_, s) => Game.pve({ players: 2, ...deckSize(dk, { cols: 7, rows: 9, par: 3 }), counts, train: true, trainLayout: true, humanColor: '#f26d6d' }, { seed: s + 1 }).S.hole.x));
+  assert.ok(holes.size >= 4, 'el hoyo, en columnas distintas');
 });
 
 test('al acabar el turno la locomotora va sola a la siguiente parada', () => {
@@ -134,9 +155,9 @@ test('nada encima de las vías; NO deshace lo que hizo el tren; el tren se guard
   const g = level({ ball: { x: 2, y: 2 } }, { pos: 16 });
   assert.equal(g.canPlaceTile('bunker', 3, 0), false, 'vía');
   assert.equal(g.canPlaceTile('bunker', 3, 3), true, 'césped');
-  g.S.hands[0] = ['tren2', 'no'];
+  g.S.hands[0] = ['oTren1', 'no'];
   g.clickCard(0, 0);
-  assert.equal(g.S.train.pos, 7);
+  assert.equal(g.S.train.pos, 2);
   g.clickCard(0, 0); // NO
   assert.equal(g.S.train.pos, 16, 'el tren vuelve a donde estaba');
   const r = Game.restore(JSON.parse(JSON.stringify(g.serialize())));
@@ -146,7 +167,7 @@ test('nada encima de las vías; NO deshace lo que hizo el tren; el tren se guard
 });
 
 test('compartir un nivel con tren: el circuito va en el código; uno inválido o piezas "virtuales" no se aceptan', () => {
-  const L = { version: 1, name: 't', cols: 6, rows: 5, hole: { x: 3, y: 2 }, ball: { x: 2, y: 2 }, parCells: [], tiles: [], deckCounts: { tren2: 3 },
+  const L = { version: 1, name: 't', cols: 6, rows: 5, hole: { x: 3, y: 2 }, ball: { x: 2, y: 2 }, parCells: [], tiles: [], deckCounts: { trenVuelta: 3 },
     train: { path: RING, stations: [2, 7, 12, 16], pos: 16, cars: 2 } };
   const back = unpackLevel(JSON.parse(JSON.stringify(packLevel(L))));
   assert.deepEqual(back.train, L.train);
