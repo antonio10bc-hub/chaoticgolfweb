@@ -5,6 +5,7 @@
 // El menú ofrece "Continuar partida" con la más reciente; cada pantalla, la suya.
 import { app } from './app.js';
 import { stats, setStats } from './controller.js';
+import { dateKey, weekKey } from '../content/levels/generate.js';
 
 const KEY = slot => 'chaoticgolf_save_' + slot;
 const OLD_KEY = 'chaoticgolf_save'; // formato anterior: un único guardado
@@ -51,12 +52,22 @@ function migrate() {
   } catch (e) { /* sin storage */ }
 }
 
-// guardado de una ranura (válido y sin terminar) o null
+// el reto diario y el desafío semanal caducan: el de ayer (o el de la semana pasada) ya no es el de hoy
+// (salía la partida del día anterior, con otra mecánica, en lugar del reto nuevo). Se borra al cargarlo.
+function expired(d) {
+  const when = new Date(d.savedAt || 0);
+  if (d.slot === 'daily') return (d.run?.date || dateKey(when)) !== dateKey();
+  if (d.slot === 'weekly') return (d.run?.week || weekKey(when)) !== weekKey();
+  return false;
+}
+
+// guardado de una ranura (válido, sin terminar y aún vigente) o null
 export function loadSave(slot) {
   migrate();
   try {
     const d = JSON.parse(localStorage.getItem(KEY(slot)));
     if (!d || d.version !== VERSION || (d.slot || d.mode) !== slot || !d.game?.S || finished(d.game.S)) return null;
+    if (expired({ ...d, slot })) { clearSave(slot); return null; }
     return d;
   } catch (e) { return null; }
 }

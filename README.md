@@ -142,6 +142,8 @@ continuar la partida sigue exactamente igual. Cada pantalla (Lo básico, Modos, 
 muestra su "Continuar partida" en naranja; se borra al terminar.
 
 **Sensación de juego:** duraciones, partículas, volumen y ritmo de la IA en `src/fx/juice.js`.
+De vez en cuando cruza el tablero una ráfaga de viento (`shape: 'wind'` en `src/fx/particles.js`): una estela que
+se traza, avanza ondulando y acaba en un remolino pequeño; a veces va acompañada de otra más fina.
 
 **Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para el contrarreloj (cronómetro; su tarjeta es como la de las barajas, con récord, series completas y jugadas), los desafíos (trofeo), el semanal (calendario), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
 
@@ -187,6 +189,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
+  El reto diario y el desafío semanal caducan: la partida guardada de ayer (o de la semana pasada) se borra y sale el reto nuevo.
 - **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; pestañas Ajustes y Estadísticas):
   sonido y pista de música (con fundido menú ↔ partida),
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,

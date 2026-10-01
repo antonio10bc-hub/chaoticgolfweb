@@ -23,7 +23,7 @@ import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
 import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
-import { generateLevel, dateKey, seedOf } from '../content/levels/generate.js';
+import { generateLevel, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
 import { openEditor, edLibraryChanged } from './editor.js';
@@ -242,14 +242,7 @@ export async function startChallenge(id) {
 
 /* =============== desafío semanal =============== */
 // cada semana (lunes a domingo) toca una de estas reglas; tablero, mazo y rivales iguales para todos
-// semana ISO "AAAA-Www"
-export function weekKey(d = new Date()) {
-  const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const wd = u.getUTCDay() || 7;
-  u.setUTCDate(u.getUTCDate() + 4 - wd);
-  const y = u.getUTCFullYear(), w = Math.ceil(((u - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
-  return `${y}-W${String(w).padStart(2, '0')}`;
-}
+export { weekKey }; // (semana ISO: content/levels/generate.js)
 const weekDaysLeft = () => 8 - (new Date().getDay() || 7); // incluido hoy
 export function weeklySetup(week = weekKey()) {
   const r = mulberry32(seedOf('weeklyBots:' + week));

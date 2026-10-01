@@ -188,7 +188,7 @@ export function fxArmIdle() {
   }, JUICE.idle.ms);
 }
 
-// pétalos ambientales que cruzan el tablero de vez en cuando
+// ráfagas de viento que cruzan el tablero de vez en cuando (a veces dos juntas, una más pequeña)
 let ambientT = null;
 export function fxAmbientStart() {
   if (REDUCED || ambientT) return;
@@ -196,10 +196,11 @@ export function fxAmbientStart() {
     if (document.hidden || app.screen !== 'game' || fxRand() < 0.45) return;
     const area = $('boardArea');
     if (!area || !area.offsetWidth) return;
-    fxSpawn(-12, 10 + fxRand() * area.offsetHeight * 0.6, {
-      n: 1, colors: ['#cfe8a8', '#ffffff', '#f3d9e6', '#b9de90'], size: 9,
-      dist: area.offsetWidth * 1.05, dur: 7000, angMin: -0.22, angMax: 0.22, shape: 'leaf', alpha: .75,
-    });
+    const y = 16 + fxRand() * area.offsetHeight * 0.7, w = area.offsetWidth;
+    const gust = (dy, size, alpha) => fxSpawn(-8, y + dy, {
+      n: 1, colors: ['#ffffff', '#F4FAE8'], size, dist: w * 1.05, dur: 5600, angMin: -0.1, angMax: 0.1, shape: 'wind', alpha });
+    gust(0, 13, .7);
+    if (fxRand() < 0.5) gust((fxRand() < .5 ? -1 : 1) * (16 + fxRand() * 10), 8, .45);
   }, JUICE.ambientMs);
 }
 

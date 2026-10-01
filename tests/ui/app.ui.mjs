@@ -166,6 +166,24 @@ it('desafío semanal: misma regla, semilla y rivales en dos cargas', async () =>
   assert.equal(await take(), a);
 });
 
+it('reto diario y semanal: la partida guardada de ayer (o de la semana pasada) caduca y sale el reto nuevo', async () => {
+  await fresh();
+  await click('#dailyCard'); await sleep(900);
+  await app(async () => { const { app } = window.chaoticGolf; (await import('/src/ui/save.js')).saveGame(); });
+  // la de hoy se puede continuar
+  assert.ok(await app(async () => !!(await import('/src/ui/save.js')).loadSave('daily')), 'la de hoy sigue');
+  // la misma partida, pero de ayer (y una semanal de otra semana)
+  await app(() => { for (const [slot, f] of [['daily', r => ({ ...r, date: '2000-01-01' })], ['weekly', r => ({ ...r, week: '2000-W01' })]]) {
+    const d = JSON.parse(localStorage.getItem('chaoticgolf_save_daily')); d.slot = slot; d.variant = slot; d.run = f(d.run); localStorage.setItem('chaoticgolf_save_' + slot, JSON.stringify(d)); } });
+  for (const slot of ['daily', 'weekly']) {
+    assert.equal(await app(async s => (await import('/src/ui/save.js')).loadSave(s), slot), null, slot + ': caducada');
+    assert.equal(await app(s => localStorage.getItem('chaoticgolf_save_' + s), slot), null, slot + ': borrada');
+  }
+  // nada que continuar: ni en el menú ("Continuar partida") ni en la tarjeta del reto, que empieza el de hoy
+  assert.equal(await app(async () => (await import('/src/ui/save.js')).latestSave()), null);
+  assert.ok(await app(async () => (await import('/src/ui/screens.js')).confirmReplaceSave?.('daily') ?? true), 'empezar el de hoy sin preguntar');
+});
+
 it('reto diario: texto para compartir con un cuadrado por turno', async () => {
   await fresh();
   await click('#dailyCard'); await confirmIfAsked(); await sleep(400);

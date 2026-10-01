@@ -114,6 +114,14 @@ export function dateKey(d = new Date()) {
   const p = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
+// semana ISO "AAAA-Www" (desafío semanal)
+export function weekKey(d = new Date()) {
+  const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const wd = u.getUTCDay() || 7;
+  u.setUTCDate(u.getUTCDate() + 4 - wd);
+  const y = u.getUTCFullYear(), w = Math.ceil(((u - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+  return `${y}-W${String(w).padStart(2, '0')}`;
+}
 export function seedOf(str) { // FNV-1a
   let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
