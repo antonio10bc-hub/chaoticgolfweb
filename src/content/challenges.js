@@ -260,10 +260,12 @@ export function challengeTrain(ch, S, seed) {
   const C = courseOf({ cols: S.cols, rows: S.rows, par: S.par }, S.nPlayers), v = variation(seed ?? 1);
   if (ch.layout) ch.layout(C, v); // (el mismo sorteo que challengeTiles: el reflejo sale igual)
   const mirrored = ch.mirror && v.chance(.5);
-  let { path, cars = 0 } = ch.track(C, v);
-  if (mirrored) path = path.map(([x, y]) => [C.cols - 1 - x, y]).reverse(); // (al reflejar, se recorre al revés: sigue yendo con el reloj)
-  const L = path.length, stations = clockStations(path, v.r) || [0, 1, 2, 3].map(k => Math.floor(k * L / 4));
-  return { path, stations, pos: v.pick(stations), cars };
+  let { path, cars = 0, stops = null, maxCars } = ch.track(C, v);
+  // stops: paradas a mano (casillas [[x, y]…]: el reto diario lleva solo 2); si no, las 4 del reloj
+  if (mirrored) { path = path.map(([x, y]) => [C.cols - 1 - x, y]).reverse(); stops = stops?.map(([x, y]) => [C.cols - 1 - x, y]); } // (al reflejar, se recorre al revés: sigue yendo con el reloj)
+  const L = path.length, at = ([x, y]) => path.findIndex(p => p[0] === x && p[1] === y);
+  const stations = stops ? stops.map(at).sort((a, b) => a - b) : clockStations(path, v.r) || [0, 1, 2, 3].map(k => Math.floor(k * L / 4));
+  return { path, stations, pos: v.pick(stations), cars, ...(maxCars != null ? { maxCars } : {}) };
 }
 // el campo entero de un desafío sobre su partida: piezas (designed: Game.designed, para que su agua sea fija), tren y,
 // si lo pide (el tren cruza la columna), sin PAR
@@ -312,17 +314,34 @@ export const DAILY_FEATURES = [
     layout: C => [{ type: 'corner', x: 0, y: C.hy, rot: 0 }] },
   // palo iridiscente: tres en el mazo; en un tablero tan pequeño, las demás pelotas son los topes
   { id: 'iri', scene: 'prism', icon: 'i-prism', sizes: [S5], deck: 'dailyIri' },
+  // tren (versión mínima): una vía alrededor de las salidas, por todo el borde de abajo y entre ellas y el hoyo; solo
+  // 2 paradas (a los lados o arriba y abajo) y como mucho 1 vagón. Para salir hacia el hoyo hay que cruzarla
+  { id: 'train', scene: 'rail', icon: 'i-train', sizes: [{ cols: 5, rows: 6, par: 2 }], deck: 'dailyTrain', noPar: true,
+    track: (C, v) => { const n = C.cols, top = C.hy + 1, bot = C.rows - 1;
+      const stops = v.chance(.5) ? [[0, top + 1], [n - 1, bot - 1]] : [[C.cx, top], [C.cx, bot]];
+      return { path: outline(0, Array(n).fill(top), Array(n).fill(bot)), stops, maxCars: 1 }; } },
 ];
 DECKS.daily = () => ({ ...defaultCounts(), bunker: 0, portal: 0 }); // (solo la pieza del día en el campo)
 DECKS.dailyIri = () => ({ ...DECKS.daily(), paloIri: 3 });
-const DAILY_ORDER = ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'];
+DECKS.dailyTrain = () => ({ ...DECKS.daily(), trenVuelta: 1, oTren1: 2, vagon: 1 });
+// el orden de las mecánicas; el tren entra el 2 de octubre de 2026 y la rueda sigue donde iba (ese día y los de antes,
+// lo mismo para todo el mundo)
+const DAILY_ORDER_V1 = ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'];
+const DAILY_ORDER = [...DAILY_ORDER_V1, 'train'];
+const TRAIN_FROM = '2026-10-02';
 // número de día desde el 1 de enero de 2026 (fechas "AAAA-MM-DD" en hora local)
 const dayNumber = date => { const [y, m, d] = date.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 0, 1)) / 864e5); };
 // el reto del día como un desafío más (tamaño, mazo, reglas y campo)
 export function dailyChallenge(date, seed) {
-  const n = dayNumber(date), id = DAILY_ORDER[((n % DAILY_ORDER.length) + DAILY_ORDER.length) % DAILY_ORDER.length];
+  const n = dayNumber(date), mod = (a, m) => ((a % m) + m) % m;
+  let id;
+  if (date < TRAIN_FROM) id = DAILY_ORDER_V1[mod(n, DAILY_ORDER_V1.length)];
+  else { // (la rueda nueva arranca con la mecánica que sigue a la del día anterior)
+    const n0 = dayNumber(TRAIN_FROM), j = DAILY_ORDER.indexOf(DAILY_ORDER_V1[mod(n0 - 1, DAILY_ORDER_V1.length)]);
+    id = DAILY_ORDER[mod(n - n0 + j + 1, DAILY_ORDER.length)];
+  }
   const f = DAILY_FEATURES.find(x => x.id === id), r = mulberry32((seed ^ 0x6a09e667) >>> 0);
   // uno de cada cuatro días (si la mecánica lo admite), el tablero crece un poco
   const board = f.sizes.length > 1 && r() < .25 ? f.sizes[1 + Math.floor(r() * (f.sizes.length - 1))] : f.sizes[0];
-  return { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror };
+  return { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror, track: f.track, noPar: f.noPar };
 }

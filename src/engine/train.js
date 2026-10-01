@@ -21,14 +21,14 @@ const randInt = (rand, a, b) => a + Math.floor(rand() * (b - a + 1));
 
 // perfil a escalones de `len` columnas: arranca en `start` y cada tramo (de 3 a 6 casillas: pocas curvas seguidas,
 // nada de serpentear) sube o baja
-function profile(rand, len, start, lo, hi, maxStep) {
+function profile(rand, len, start, lo, hi, maxStep, runs = [3, 6]) {
   const out = [];
-  let v = start, run = randInt(rand, 3, 6);
+  let v = start, run = randInt(rand, runs[0], runs[1]);
   for (let i = 0; i < len; i++) {
     if (run <= 0 && i < len - 3) { // (sin escalón en las tres últimas: la esquina queda limpia)
       const d = randInt(rand, 1, maxStep) * (rand() < .5 ? -1 : 1);
       v = Math.max(lo, Math.min(hi, v + d));
-      run = randInt(rand, 3, 6);
+      run = randInt(rand, runs[0], runs[1]);
     }
     out.push(v); run--;
   }
@@ -37,17 +37,19 @@ function profile(rand, len, start, lo, hi, maxStep) {
 
 // un intento: contorno con el lado de arriba t(x) y el de abajo b(x), de x0 a x1 (C columnas × R filas).
 // band: [y0, y1] filas que puede ocupar (la maqueta del tren: entre las salidas y el hoyo); sin ella, todo el campo
-function attempt(rand, C, R, band = null) {
+// fill (creador de niveles): estirado hasta casi los bordes y con más entrantes, para que la vía llene el campo
+function attempt(rand, C, R, band = null, fill = false) {
   const lo = band ? band[0] : 0, hi = band ? band[1] : R - 1;
   if (hi - lo < 3) return null;
   // casi siempre a lo ancho del campo (repartido por todo el escenario); a veces, algo más estrecho
-  const mx = rand() < .75 ? 1 : Math.max(1, Math.floor(C * .2));
+  const mx = fill || rand() < .75 ? 1 : Math.max(1, Math.floor(C * .2));
   const x0 = randInt(rand, 0, mx), x1 = C - 1 - randInt(rand, 0, mx);
   if (x1 - x0 < 3) return null;
-  const n = x1 - x0 + 1, my = band ? 1 : Math.max(1, Math.floor(R / 5));
-  const maxStep = rand() < .2 ? 2 : 1; // (escalones suaves; alguna vez, uno más hondo)
-  const top = profile(rand, n, lo + randInt(rand, 0, my), lo, hi - 3, maxStep);
-  const bot = profile(rand, n, hi - randInt(rand, 0, my), lo + 3, hi, maxStep);
+  const n = x1 - x0 + 1, my = band || fill ? 1 : Math.max(1, Math.floor(R / 5));
+  const maxStep = fill ? (rand() < .5 ? 2 : 1) : rand() < .2 ? 2 : 1; // (escalones suaves; alguna vez, uno más hondo)
+  const runs = fill ? [2, 4] : [3, 6];
+  const top = profile(rand, n, lo + randInt(rand, 0, my), lo, hi - 3, maxStep, runs);
+  const bot = profile(rand, n, hi - randInt(rand, 0, my), lo + 3, hi, maxStep, runs);
   for (let i = 0; i < n; i++) if (bot[i] - top[i] < 3) return null; // (los dos lados, con dos filas de césped entre medias como poco)
   return outline(x0, top, bot);
 }
@@ -123,11 +125,17 @@ function stationsFor(path, rand) {
 
 // circuito nuevo para un tablero C×R sin pasar por `avoid` ([[x, y], …]); null si no cabe.
 // band: [y0, y1] (la maqueta del tren) — el circuito va entre esas filas, a lo ancho
-export function makeCircuit(C, R, rand, avoid = [], { band = null } = {}) {
+// fill: (creador de niveles) entre 30 circuitos válidos, el que más vía pone (el que más rellena el campo)
+export function makeCircuit(C, R, rand, avoid = [], { band = null, fill = false } = {}) {
+  if (fill === true) {
+    let best = null;
+    for (let k = 0; k < 30; k++) { const c = makeCircuit(C, R, rand, avoid, { band, fill: 'one' }); if (c && (!best || c.path.length > best.path.length)) best = c; }
+    return best;
+  }
   const bad = new Set(avoid.map(([x, y]) => key(x, y)));
   for (let tries = 0; tries < 400; tries++) {
     const flip = !band && rand() < .3 && R >= 7; // girado: los lados irregulares son los de izquierda y derecha
-    let path = flip ? attempt(rand, R, C) : attempt(rand, C, R, band);
+    let path = flip ? attempt(rand, R, C, null, !!fill) : attempt(rand, C, R, band, !!fill);
     if (!path) continue;
     if (flip) path = path.map(([x, y]) => [y, x]).reverse(); // (al girar se invierte el sentido: se recorre al revés)
     if (rand() < .5) path = path.map(([x, y]) => [C - 1 - x, y]).reverse(); // espejo

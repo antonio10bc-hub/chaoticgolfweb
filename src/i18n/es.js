@@ -566,7 +566,7 @@ export default {
     loop: { name: 'Bucle infinito', desc: 'Provoca un bucle de choques entre portales.' },
   },
 
-  dailyFeat: { portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
+  dailyFeat: { train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },

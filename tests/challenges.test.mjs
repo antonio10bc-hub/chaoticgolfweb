@@ -104,3 +104,22 @@ test('desafíos del tren (uno por dificultad): circuito cerrado con 4 paradas, s
     assert.ok(cross, 'la vía, entre las salidas y el hoyo: ' + where);
   }
 });
+
+test('reto diario del tren: entra en la rueda el 2 de octubre sin cambiar los días de antes; versión mínima (2 paradas, 1 vagón)', async () => {
+  const { dailyChallenge } = await import('../src/content/challenges.js');
+  const OLD = ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'];
+  const day = d => Math.round((Date.UTC(...d.split('-').map((v, i) => i === 1 ? v - 1 : +v)) - Date.UTC(2026, 0, 1)) / 864e5);
+  for (const d of ['2026-09-20', '2026-09-30', '2026-10-01']) assert.equal(dailyChallenge(d, 1).feature, OLD[day(d) % 9], d + ': como siempre');
+  const trainDay = ['2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']
+    .find(d => dailyChallenge(d, 1).feature === 'train');
+  assert.ok(trainDay, 'sale en los primeros 10 días');
+  for (const seed of [1, 2, 3, 4]) {
+    const ch = dailyChallenge(trainDay, seed), g = make({ ...ch, diff: 'normal' }, seed), S = g.S, tr = S.train;
+    assert.equal(tr.stations.length, 2, '2 paradas');
+    assert.equal(tr.maxCars, 1);
+    S.hands[S.turn] = ['vagon', 'vagon']; S.blackPlayed = 0;
+    assert.ok(g.canAddWagon()); g.addWagon();
+    assert.equal(g.canAddWagon(), false, 'como mucho 1 vagón');
+    assert.ok(S.balls.every(b => b.y > Math.min(...tr.path.map(p => p[1]))) && S.hole.y < Math.min(...tr.path.map(p => p[1])), 'la vía, entre las salidas y el hoyo');
+  }
+});

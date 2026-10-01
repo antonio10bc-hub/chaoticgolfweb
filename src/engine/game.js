@@ -1452,7 +1452,7 @@ export class Game {
   // engancha un vagón de arena detrás del último (si en esa casilla hay una pelota o el hoyo, se quedan en la arena)
   canAddWagon() {
     const tr = this.S.train;
-    if (!tr || tr.cars >= MAX_CARS || tr.cars + 2 > tr.path.length) return false;
+    if (!tr || tr.cars >= (tr.maxCars ?? MAX_CARS) || tr.cars + 2 > tr.path.length) return false; // (maxCars: el reto diario, 1)
     const [x, y] = this.trainCell(tr.cars + 1);
     return !isDevice(this.realTileAt(x, y));
   }

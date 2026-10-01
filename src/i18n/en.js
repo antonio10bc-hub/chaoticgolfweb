@@ -563,7 +563,7 @@ export default {
     loop: { name: 'Infinite loop', desc: 'Trigger a collision loop between portals.' },
   },
 
-  dailyFeat: { portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
+  dailyFeat: { train: 'Train', portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
   modes: {
     chStat: '{w} wins out of {p} games',
     groups: { warmup: 'Warm-up', mid: 'Intermediate', expert: 'Expert' },

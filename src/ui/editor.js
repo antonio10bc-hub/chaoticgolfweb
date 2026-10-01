@@ -191,10 +191,10 @@ function trainOn(x, y) {
   const i = tr.path.findIndex(c => c[0] === x && c[1] === y);
   return i >= 0 && (tr.pos - i + tr.path.length) % tr.path.length <= tr.cars;
 }
-// circuito nuevo al azar: sin pasar por la pelota, el hoyo, los obstáculos ni las piezas
+// circuito nuevo al azar: estirado hasta casi los bordes, sin pasar por la pelota, el hoyo, los obstáculos ni las piezas
 function newCircuit() {
   const L = ED.level, avoid = [[L.hole.x, L.hole.y], [L.ball.x, L.ball.y], ...L.extraBalls.map(e => [e.x, e.y]), ...L.tiles.map(tl => [tl.x, tl.y])];
-  const c = makeCircuit(L.cols, L.rows, mulberry32(randomSeed()), avoid);
+  const c = makeCircuit(L.cols, L.rows, mulberry32(randomSeed()), avoid, { fill: true }); // (estirado: la vía llena el campo)
   if (!c) { toast(t('ed.bad.noCircuit'), 'warn'); return false; }
   L.rails = railsFromTrain({ path: c.path, stations: c.stations, pos: c.stations[0], cars: L.rails?.cars || 0 });
   return true;

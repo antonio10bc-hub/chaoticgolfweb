@@ -366,7 +366,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - **En el creador** (grupo Tren): **Vías** se ponen casilla a casilla (tocando o arrastrando; otra vez, se quitan),
     **Parada** marca las 4 paradas sobre la vía y **Locomotora** dónde empieza (con 0-3 vagones). Lo que aún no enlaza
     sale en rojo y no se puede probar ni guardar hasta que las vías forman una sola vuelta cerrada con 4 paradas
-    (también hay "Circuito al azar"; la plantilla Tren pone uno si no lo hay). El circuito ordenado, en el sentido del
+    (también hay "Circuito al azar", estirado hasta casi los bordes: entre 30 circuitos válidos, el que más vía pone;
+    la plantilla Tren pone uno si no lo hay). El circuito ordenado, en el sentido del
     reloj, se saca al probar o guardar (`orderLoop` / `trainOf` en `editor.js`).
   - Pelota de logros **Vapor** (10 · 50 · 100 victorias): cinturón de hierro con remaches · bocanadas de vapor · una vía
     alrededor con su tren.
@@ -374,6 +375,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     variación, `setupChallenge` lo monta): **Paso a nivel** (calentamiento: una vía a lo ancho entre la salida y el
     hoyo), **Estación central** (intermedio: el hoyo dentro de un circuito pequeño, con un vagón) y **Expreso** (experto:
     vía larga con escalón y charcas a la salida de sus curvas; dos vagones).
+  - **Reto diario del tren** (en la rueda desde el 2 de octubre de 2026, sin cambiar los días anteriores): versión mínima
+    en 5×6, con la vía alrededor de las salidas (entre ellas y el hoyo), solo 2 paradas y como mucho 1 vagón (`maxCars`).
   - **Puzles del tren** (p25-p27, al final del índice para no mover el progreso guardado; en pantalla se ordenan y
     numeran por dificultad): **Último tren** (llévala a la vía y que el tren la empuje al hoyo), **Vagón exprés** (súbete
     al vagón, viaja y sal de la arena) y **Hoyo en marcha** (pon el hoyo en la vía y que el tren se lo lleve hasta la
