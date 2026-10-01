@@ -404,15 +404,18 @@ export function openModes(tab) {
         (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '');
     return `<article class="deckCard${dk.locked ? ' locked' : ''}${dk.ultimate ? ' ultimate' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
-      `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
+      // (Ultimate: las barajas que reúne, a la derecha de su nombre)
+      `<div class="dkMain">${dk.ultimate ? `<div class="ultHead"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
+        `<div class="ultIncl"><span>${esc(t('decks.includes'))}</span>${DECKS.filter(d => !d.ultimate && !d.locked).map(d => `<i title="${esc(t('decks.' + d.id + '.name'))}">${deckArt(d)}</i>`).join('')}</div></div>`
+        : `<h3>${esc(t('decks.' + dk.id + '.name'))}</h3>`}` +
       `<p>${esc(t('decks.' + dk.id + '.desc'))}</p>` +
       // Ultimate: las barajas que reúne (también las que se añadan)
 
-      (last ? `<div class="mdStats">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</div>` : '') + `</div>` +
+      `</div>` +
       `<dl class="dkStats"><div><dt>${esc(t('decks.played'))}</dt><dd>${st.p}</dd></div><div><dt>${esc(t('decks.won'))}</dt><dd>${st.w}</dd></div>` +
       `<div><dt>${esc(t('decks.pct'))}</dt><dd>${pct}</dd></div></dl>` +
-      `<div class="dkBtns">${btns}` +
-      (dk.ultimate ? `<div class="ultIncl"><span>${esc(t('decks.includes'))}</span>${DECKS.filter(d => !d.ultimate && !d.locked).map(d => `<i title="${esc(t('decks.' + d.id + '.name'))}">${deckArt(d)}</i>`).join('')}</div>` : '') + `</div>` +
+      // (la última partida, en la fila de los botones: la tarjeta no crece)
+      `<div class="dkBtns">${btns}${last ? `<span class="mdStats dkLast">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</span>` : ''}</div>` +
       (dk.ultimate ? '<span class="ultSpark a" aria-hidden="true"></span><span class="ultSpark b" aria-hidden="true"></span><span class="ultSpark c" aria-hidden="true"></span><span class="ultSheen" aria-hidden="true"></span>' : '') +
       `</article>`;
   };
