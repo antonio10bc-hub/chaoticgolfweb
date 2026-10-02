@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/engine/game.js';
-import { windRoute, SEASONS, nextSeason, FIRE_MAX, START_LEAVES, MAX_PLACED } from '../src/engine/seasons.js';
+import { windRoute, SEASONS, nextSeason, FIRE_MAX, START_LEAVES } from '../src/engine/seasons.js';
 import { mulberry32 } from '../src/engine/rng.js';
 import { DECKS, deckById, deckSize } from '../src/content/decks.js';
 import { defaultCounts } from '../src/content/cards/index.js';
@@ -26,10 +26,11 @@ const at = (o, x, y) => o.x === x && o.y === y;
 test('la baraja: una tarjeta, sin búnkeres ni portales, con sus cartas y fuera de Ultimate', () => {
   const dk = deckById('seasons'), c = dk.counts(defaultCounts());
   assert.equal(c.bunker, 0); assert.equal(c.portal, 0);
-  assert.deepEqual([c.estacion, c.charco, c.incendio, c.oNieve], [4, 6, 1, 2]);
-  for (const k of ['estacion', 'charco', 'incendio', 'oNieve']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
+  assert.deepEqual([c.estacion, c.incendio, c.oNieve], [4, 1, 3]);
+  assert.equal(c.charco, undefined, 'sin carta de charco / hielo / planta: llegan solos');
+  for (const k of ['estacion', 'incendio', 'oNieve']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
   const ult = deckById('ultimate').counts(defaultCounts());
-  for (const k of ['estacion', 'charco', 'incendio', 'oNieve']) assert.ok(!ult[k], 'Ultimate no lleva ' + k);
+  for (const k of ['estacion', 'incendio', 'oNieve']) assert.ok(!ult[k], 'Ultimate no lleva ' + k);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate');
   assert.equal(DECKS[DECKS.length - 2].id, 'seasons', 'la baraja nueva, detrás de la anterior');
 });
@@ -45,7 +46,7 @@ test('partida rápida: estación al azar (con su RNG: el mazo sale igual) y lo q
     seen.add(now);
     if (now === 'autumn') assert.equal(S.tiles.filter(t => t.type === 'leaf').length, START_LEAVES, '6 hojas secas');
     if (now === 'winter') assert.ok(S.season.snow, 'bola de nieve');
-    if (now === 'spring') assert.ok(S.season.wind && !S.season.wind.on, 'primer turno: aviso de viento');
+    if (now === 'spring') assert.equal(S.season.wind, null, 'primer turno: en calma');
     for (const t of S.tiles) assert.ok(!a.isSpawnCell(t.x, t.y) && !a.isHoleHome(t.x, t.y), 'nada en salidas ni en la casilla del hoyo');
   }
   assert.equal(seen.size, 4, 'salen las cuatro');
@@ -64,8 +65,11 @@ test('ruta del viento: de borde a borde, casillas vecinas y sin repetir', () => 
   }
 });
 
-test('viento: aviso, sopla (echa del tablero lo que hay dentro y lo que cae en él) y se calma con otro aviso', () => {
+test('viento: ciclos de tres turnos (calma, aviso, sopla); echa del tablero lo que hay dentro y lo que cae en él', () => {
   const g = level('spring');
+  assert.equal(g.S.season.wind, null, 'empieza en calma');
+  g.endTurn();
+  assert.ok(g.S.season.wind && !g.S.season.wind.on, 'segundo turno: aviso');
   const path = [[0, 3], [1, 3], [2, 3], [3, 3], [3, 4], [4, 4], [5, 4], [6, 4]];
   g.S.season.wind = { path, on: false };
   const b = g.S.balls[0];
@@ -73,14 +77,16 @@ test('viento: aviso, sopla (echa del tablero lo que hay dentro y lo que cae en �
   assert.deepEqual(g.windFate(b), { x: 1, y: 5 }, 'acabará en su salida');
   assert.deepEqual(g.windExit(), { x: 7, y: 4, dir: 'right' }, 'sale por el borde donde acaba la ruta');
   g.endTurn();
-  assert.ok(g.S.season.wind.on, 'ya sopla');
+  assert.ok(g.S.season.wind.on, 'tercer turno: sopla');
   assert.ok(at(b, 1, 5), 'se la lleva por la ruta y fuera del tablero: a su salida');
   // lo que cae en la ruta mientras sopla también se va
   b.x = 1; b.y = 1;
   g.S.hands[0] = ['palo2']; g.clickCard(0, 0); g.clickCell(1, 3);
   assert.ok(at(b, 1, 5), 'otra vez fuera');
   g.endTurn();
-  assert.ok(g.S.season.wind && !g.S.season.wind.on, 'se calma y avisa otra ruta');
+  assert.equal(g.S.season.wind, null, 'se calma');
+  g.endTurn();
+  assert.ok(g.S.season.wind && !g.S.season.wind.on, 'y vuelve a avisar');
 });
 
 test('viento: también echa el hoyo, que vuelve a su casilla inicial (y se traga a quien esté en ella)', () => {
@@ -113,11 +119,10 @@ test('planta carnívora: se come a quien se queda a su lado (o encima), no a qui
   const ob = o.S.balls[0]; ob.spawnX = 1; ob.spawnY = 5; ob.x = 3; ob.y = 2;
   o.S.hands[0] = ['palo1']; o.clickCard(0, 0); o.clickCell(3, 3);
   assert.ok(Math.abs(ob.x - 1) + Math.abs(ob.y - 5) <= 2 && !(ob.x === 3 && ob.y === 3), 'comida una vez y a salvo junto a su salida');
-  // ponerla al lado de una pelota quieta no se la come
-  const q = level('spring', { ball: { x: 3, y: 3 } });
-  q.S.hands[0] = ['charco']; assert.ok(q.clickCard(0, 0)); assert.equal(q.pending.tileType, 'plant');
-  q.clickCell(3, 2);
-  assert.ok(at(q.S.balls[0], 3, 3), 'quieta: no');
+  // una planta que aparece al lado de una pelota quieta (el hielo que se vuelve planta) no se la come
+  const q = level('winter', { ball: { x: 3, y: 3 }, tiles: [{ type: 'ice', x: 3, y: 2 }], hand: [] });
+  q.S.hands[0] = ['estacion']; q.clickCard(0, 0);
+  assert.ok(q.S.tiles.some(t => t.type === 'plant' && at(t, 3, 2)) && at(q.S.balls[0], 3, 3), 'quieta: no');
 });
 
 test('fuego: cruzarlo suma 2; quedarse dentro es como caerse; crece una casilla por turno hasta 5', () => {
@@ -165,17 +170,22 @@ test('hielo: suma 1 al tiro (también si se para encima)', () => {
   assert.ok(at(g.S.balls[0], 3, 5), 'resbala una más');
 });
 
-test('carta de charco/hielo/planta: según la estación, como mucho 6 (la lluvia no cuenta) y en verano no', () => {
-  for (const [now, type] of [['autumn', 'puddle'], ['winter', 'ice'], ['spring', 'plant']]) {
-    const g = level(now, { hand: [] });
-    assert.equal(g.placeType(), type);
-    for (let i = 0; i < MAX_PLACED; i++) { g.S.hands[0] = ['charco']; g.S.blackPlayed = 0; assert.ok(g.clickCard(0, 0)); const [x, y] = g.seasonSpots()[0]; g.clickCell(x, y); }
-    g.S.hands[0] = ['charco'];
-    assert.ok(!g.canPlay(0, 'charco'), 'ya hay 6');
-    g.S.tiles.push({ type, x: 0, y: 0, rain: true });
-    assert.equal(g.placedWater(), MAX_PLACED, 'los de la lluvia no cuentan');
-  }
-  assert.ok(!level('summer').canPlay(0, 'charco'), 'en verano no se puede');
+test('hielo con el dedo: al pisarlo resbala sola una casilla más hacia donde iba (sin gastar paso)', () => {
+  // A (1,5) · B hielo (2,5) · C (3,5): con 1 paso del dedo de A a B, acaba en C
+  const g = level('winter', { tiles: [{ type: 'ice', x: 2, y: 5 }], hand: ['dedo'] });
+  const b = g.S.balls[0];
+  g.clickCard(0, 0); g.chooseAmount(1); g.serpentStep('right');
+  assert.ok(at(b, 3, 5) && !g.pending, 'en C, y el dedo se acaba');
+  // con más pasos, sigue eligiendo después de resbalar
+  const h = level('winter', { tiles: [{ type: 'ice', x: 2, y: 5 }], hand: ['dedo'] });
+  h.clickCard(0, 0); h.chooseAmount(2); h.serpentStep('right');
+  assert.ok(at(h.S.balls[0], 3, 5) && h.pending?.kind === 'serpent' && h.pending.stepsLeft === 1, 'le queda 1 paso');
+  h.serpentStep('up');
+  assert.ok(at(h.S.balls[0], 3, 4) && !h.pending);
+  // si resbala fuera del tablero, vuelve a su salida y el dedo termina
+  const o = level('winter', { tiles: [{ type: 'ice', x: 6, y: 2 }], ball: { x: 5, y: 2 }, hand: ['dedo'] });
+  o.clickCard(0, 0); o.chooseAmount(2); o.serpentStep('right');
+  assert.ok(at(o.S.balls[0], 5, 2) && !o.pending, 'fuera: a su salida');
 });
 
 test('bola de nieve: rueda 5 casillas (o hasta el borde), atrapa y se lleva lo que pilla; salir no cuesta nada', () => {
@@ -195,10 +205,10 @@ test('bola de nieve: rueda 5 casillas (o hasta el borde), atrapa y se lleva lo q
   // hasta el borde, si está más cerca
   g.S.season.snow = { x: 4, y: 3, dir: null };
   assert.deepEqual(g.snowEnd('right'), { x: 6, y: 3, dir: 'right' });
-  // entre turnos rueda sola (y cambia de dirección)
-  const dir0 = g.S.season.snow.dir;
-  g.endTurn();
-  assert.notEqual(g.S.season.snow.dir, dir0);
+  // entre turnos no se mueve: solo con su carta
+  const sn0 = { ...g.S.season.snow };
+  for (let i = 0; i < 4; i++) g.endTurn();
+  assert.ok(at(g.S.season.snow, sn0.x, sn0.y), 'quieta');
 });
 
 test('bola de nieve con el hoyo: la pelota que entra (o que pilla) se mete; en un JAQUE se lleva la ganadora', () => {
@@ -230,7 +240,7 @@ test('cambio de estación: charco → hielo → planta → se seca; hojas, fuego
   play();
   assert.equal(g.S.season.now, 'spring');
   assert.ok(g.S.tiles.some(t => t.type === 'plant' && at(t, 2, 2)), 'el hielo se vuelve planta');
-  assert.ok(!g.S.season.snow && g.S.season.wind, 'la bola se derrite y avisa el viento');
+  assert.ok(!g.S.season.snow && !g.S.season.wind, 'la bola se derrite; el viento, en calma el primer turno');
   play();
   assert.equal(g.S.season.now, 'summer');
   assert.ok(!g.S.tiles.some(t => t.type === 'plant') && !g.S.season.wind, 'la planta se seca y se calma el viento');

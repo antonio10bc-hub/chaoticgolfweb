@@ -201,7 +201,7 @@ export function deckIntro(deckId, { force = false, play = true } = {}) {
     const panels = keys.map(k => { const def = CARDS[k];
       return `<article class="dmCard"><div class="dmHead"><span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(def.name)}</b></div>` +
         demoSVG(def.demo) + `<p>${esc(t('tutorial.card.' + k))}</p></article>`; }).join('');
-    dlg.innerHTML = `<form method="dialog" class="dlgBox deckIntro dk-${dk.id}${keys.length >= 4 ? ' four' : ''}" style="--dk:${dk.color}">
+    dlg.innerHTML = `<form method="dialog" class="dlgBox deckIntro dk-${dk.id}${keys.length >= 3 ? ' wide' : ''}" style="--dk:${dk.color};--n:${keys.length}">
       <span class="dmTag">${esc(t('decks.' + dk.id + '.name'))}</span>
       <h3>${esc(t('deckIntro.title'))}</h3>
       <p class="dmLead">${esc(t(dk.introLead || 'deckIntro.lead'))}</p>

@@ -22,7 +22,7 @@ import { bunker, portal, river, lake, block, corner, tunnel, launcher } from './
 import oPalo1 from './palo-reactivo.js';
 import no from './no.js';
 import { trenVuelta, oTren1, vagon } from './tren.js';
-import { estacion, charco, incendio, oNieve } from './estaciones.js';
+import { estacion, incendio, oNieve } from './estaciones.js';
 
 const CARD_LIST = [
   palo1, palo2, palo3, dedo,
@@ -36,7 +36,7 @@ const CARD_LIST = [
   palo4, palo5, block, corner, tunnel, launcher,    // baraja de minigolf
   palo10, paloIri,                                  // Ultimate
   trenVuelta, oTren1, vagon,                        // baraja del tren
-  estacion, charco, incendio, oNieve,               // baraja de las estaciones
+  estacion, incendio, oNieve,                       // baraja de las estaciones
 ];
 
 for (const c of CARD_LIST) {

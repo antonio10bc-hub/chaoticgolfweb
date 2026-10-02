@@ -29,13 +29,19 @@ const PUDDLE_PIC = '<svg class="tilePic puddlePic" viewBox="0 0 100 140" aria-hi
   '<path d="M68 84C72 82 75 79 77 76" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>' +
   '</svg>';
 
+// hielo: una placa helada que cubre casi toda la casilla, de borde irregular con escarcha, facetas, grietas y brillos
+const ICE_EDGE = 'M10 16C24 7 38 11 52 8C66 5 80 9 90 15C95 34 91 52 94 70C97 88 92 108 89 126C74 133 60 129 47 132C33 135 19 131 10 125C5 106 9 88 6 70C3 52 8 34 10 16Z';
 const ICE_PIC = '<svg class="tilePic icePic" viewBox="0 0 100 140" aria-hidden="true">' +
-  '<path d="M14 58L30 38L66 34L88 52L86 92L62 106L28 102L12 82Z" fill="rgba(30,70,90,.16)" transform="translate(2 4)"/>' +
-  '<path d="M14 58L30 38L66 34L88 52L86 92L62 106L28 102L12 82Z" fill="#BFE6F2" stroke="#8CC6DA" stroke-width="2" stroke-linejoin="round"/>' +
-  '<path d="M30 38L44 66L14 58M44 66L66 34M44 66L88 52M44 66L62 106M44 66L12 82M62 106L86 92L60 74Z" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.4" stroke-linejoin="round"/>' +
-  '<path d="M44 66L66 34L88 52Z" fill="rgba(255,255,255,.35)"/><path d="M44 66L12 82L28 102Z" fill="rgba(120,180,205,.25)"/>' +
-  '<g class="iceShine"><path d="M26 54L40 44M32 60L48 48" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></g>' +
-  '<path d="M72 80l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff" class="iceSpark"/>' +
+  `<path d="${ICE_EDGE}" fill="rgba(30,70,90,.16)" transform="translate(2 3)"/>` +
+  `<path d="${ICE_EDGE}" fill="#BFE3F0"/>` +
+  '<path d="M10 16C24 7 38 11 52 8C66 5 80 9 90 15C88 30 72 44 50 52C34 58 18 66 7 80C5 60 8 34 10 16Z" fill="#D7EFF8"/>' +       // facetas claras
+  '<path d="M94 70C97 88 92 108 89 126C74 133 60 129 47 132C58 116 72 98 94 70Z" fill="#A9D5E6"/>' +                             // y en sombra
+  '<path d="M50 52L30 90L38 132M50 52L78 38M50 52L72 96L89 126M30 90L8 98M72 96L94 84" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.3" stroke-linejoin="round"/>' + // grietas
+  '<path d="M30 90L22 104M72 96L60 110" fill="none" stroke="rgba(120,180,205,.55)" stroke-width="1.1"/>' +
+  `<path d="${ICE_EDGE}" fill="none" stroke="#F4FBFE" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round" opacity=".9"/>` + // escarcha
+  `<path d="${ICE_EDGE}" fill="none" stroke="#8CC6DA" stroke-width="1.6"/>` +
+  '<g class="iceShine"><path d="M20 30L42 18M22 44L54 26M64 112L82 100" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>' +
+  '<path d="M76 60l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff" class="iceSpark"/><path d="M26 112l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#fff" class="iceSpark" style="animation-delay:-1.2s"/>' +
   '</svg>';
 
 // dionea: dos lóbulos rojos con dientes que se abren y se cierran despacio, sobre su roseta de hojas

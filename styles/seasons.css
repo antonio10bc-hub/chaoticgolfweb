@@ -147,7 +147,8 @@ html.phone #seasonChip b { font-size: 11px; }
 /* ---------- las piezas de cada estación ---------- */
 .tile-leaf, .tile-puddle, .tile-ice, .tile-plant, .tile-fire { background: transparent; width: 100%; height: 100%; }
 .tile-leaf .sub, .tile-puddle .sub, .tile-ice .sub, .tile-plant .sub, .tile-fire .sub { display: none; }
-.cardOnCell .tilePic.leafPic, .cardOnCell .tilePic.puddlePic, .cardOnCell .tilePic.icePic, .cardOnCell .tilePic.plantPic { transform: scale(1.12); }
+.cardOnCell .tilePic.leafPic, .cardOnCell .tilePic.puddlePic, .cardOnCell .tilePic.plantPic { transform: scale(1.12); }
+.cardOnCell .tilePic.icePic { transform: scale(1.06, 1.05); } /* (el hielo cubre casi toda la casilla) */
 .cell.icy { background-color: color-mix(in srgb, var(--grass-dark) 55%, #CFEAF4); }
 .cell.icy.mowB { background-color: color-mix(in srgb, var(--grass-mid) 55%, #CFEAF4); }
 .cell.puddly { background-color: color-mix(in srgb, var(--grass-dark) 85%, #4E7F8F); }
@@ -204,17 +205,7 @@ html.phone #seasonChip b { font-size: 11px; }
 @keyframes sbOut { to { transform: translate(-50%, -60%) scale(.9); opacity: 0; } }
 @keyframes sbSpin { from { transform: rotate(-120deg) scale(.4); } }
 
-/* ---------- las cartas: la de charco / hielo / planta enseña su forma en la estación de ahora ---------- */
-.cardSvg .sv { display: none; }
-.cardSvg .svAll { display: inline; }
-#gameScreen[data-season] .cardSvg .svAll { display: none; }
-#gameScreen[data-season="spring"] .cardSvg .sv-spring, #gameScreen[data-season="summer"] .cardSvg .sv-summer,
-#gameScreen[data-season="autumn"] .cardSvg .sv-autumn, #gameScreen[data-season="winter"] .cardSvg .sv-winter { display: inline; }
-.cardName .svName { display: none; }
-.cardName .svName.all { display: inline; }
-#gameScreen[data-season] .cardName .svName.all { display: none; }
-#gameScreen[data-season="spring"] .cardName .svName.s-spring, #gameScreen[data-season="summer"] .cardName .svName.s-summer,
-#gameScreen[data-season="autumn"] .cardName .svName.s-autumn, #gameScreen[data-season="winter"] .cardName .svName.s-winter { display: inline; }
+/* ---------- las cartas ---------- */
 .cardSvg .seWheel { transform-box: view-box; transform-origin: 50px 52px; }
 .card:hover .cardSvg .seWheel { animation: seWheel 1.6s var(--ease-out); }
 @keyframes seWheel { to { transform: rotate(90deg); } }
@@ -236,13 +227,13 @@ html.reduceMotion #windSvg .wPetal { display: none; }
 #previewSvg .pvSnow { fill: rgba(255,255,255,.4); stroke: #fff; stroke-width: 2.2; stroke-dasharray: 5 4; }
 
 /* ---------- presentación de las cartas nuevas: cuatro en fila (sin scroll), con tableros más bajos ---------- */
-#dialog:has(.deckIntro.four) { width: min(1040px, 96vw); }
-.deckIntro.four .dmGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.deckIntro.four .dmCard { padding: 12px; gap: 8px; }
-.deckIntro.four .dmBoard { max-width: 200px; }
-.deckIntro.four .dmCard p { font-size: 12.5px; }
-.deckIntro.four .dmLead { max-width: 80ch; }
-@media (max-width: 900px) { .deckIntro.four .dmGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#dialog:has(.deckIntro.wide) { width: min(calc(var(--n, 3) * 270px + 60px), 96vw); }
+.deckIntro.wide .dmGrid { grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 12px; }
+.deckIntro.wide .dmCard { padding: 12px; gap: 8px; }
+.deckIntro.wide .dmBoard { max-width: 210px; }
+.deckIntro.wide .dmCard p { font-size: 12.5px; }
+.deckIntro.wide .dmLead { max-width: 76ch; }
+@media (max-width: 760px) { .deckIntro.wide .dmGrid { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- creador de niveles: la bola de nieve en su casilla y la estación del nivel ---------- */
 #edBoard[data-season] .cell { transition: background-color .6s var(--ease-out); }

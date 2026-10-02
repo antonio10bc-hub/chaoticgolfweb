@@ -58,8 +58,9 @@ const SEASON_TILE = {
     c.strokeStyle = '#7E3A18'; c.lineWidth = cw * .03; c.beginPath(); c.moveTo(0, -cw * .26); c.lineTo(0, cw * .36); c.stroke(); c.restore(); },
   puddle: (c, cx, cy, cw) => { c.fillStyle = '#6FA8BC'; c.beginPath(); c.ellipse(cx, cy, cw * .36, cw * .24, -.15, 0, 7); c.fill();
     c.fillStyle = '#8CC2D3'; c.beginPath(); c.ellipse(cx, cy, cw * .28, cw * .17, -.15, 0, 7); c.fill(); },
-  ice: (c, cx, cy, cw) => { c.fillStyle = '#BFE6F2'; c.strokeStyle = '#8CC6DA'; c.lineWidth = cw * .03; c.beginPath();
-    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + .3; c[i ? 'lineTo' : 'moveTo'](cx + Math.cos(a) * cw * .36, cy + Math.sin(a) * cw * .36); } c.closePath(); c.fill(); c.stroke(); },
+  ice: (c, cx, cy, cw, x0, y0, h) => { const w = cw - (x0 - (cx - cw / 2)) * 2; c.fillStyle = '#BFE3F0'; c.strokeStyle = '#8CC6DA'; c.lineWidth = cw * .025;
+    c.beginPath(); c.roundRect(x0 + w * .04, y0 + h * .04, w * .92, h * .92, Math.min(10, cw * .14)); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx - w * .25, cy + h * .3); c.moveTo(cx, cy); c.lineTo(cx + w * .3, cy - h * .12); c.stroke(); },
   plant: (c, cx, cy, cw) => { c.fillStyle = '#4F8A3A'; c.beginPath(); c.ellipse(cx - cw * .16, cy + cw * .2, cw * .18, cw * .07, .4, 0, 7); c.ellipse(cx + cw * .16, cy + cw * .2, cw * .18, cw * .07, -.4, 0, 7); c.fill();
     c.fillStyle = '#C8463F'; c.beginPath(); c.arc(cx - cw * .1, cy - cw * .04, cw * .14, Math.PI * .6, Math.PI * 1.9); c.fill(); c.beginPath(); c.arc(cx + cw * .1, cy - cw * .04, cw * .14, Math.PI * 1.1, Math.PI * .4); c.fill(); },
   fire: (c, cx, cy, cw, x0, y0, h) => { c.fillStyle = '#5E3B22'; c.beginPath(); c.roundRect(x0, y0, cw - (x0 - (cx - cw / 2)) * 2, h, Math.min(10, cw * .14)); c.fill();

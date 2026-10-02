@@ -307,7 +307,7 @@ it('baraja de las estaciones: el campo de la estación, su indicador, el viento 
   assert.equal(st.chip, st.now, 'el indicador resalta la de ahora');
   // primavera: la ruta del viento se dibuja; con la carta, pasa al verano… cuando llega la carta, no antes
   await app(() => { const { app, ctl } = window.chaoticGolf, g = app.game, S = g.S;
-    S.tiles = []; S.season = { now: 'spring', wind: null, snow: null, fireId: 0 }; g.enterSeason('spring'); g.takeEvents();
+    S.tiles = []; S.season = { now: 'spring', wind: null, snow: null, fireId: 0 }; g.enterSeason('spring'); g.newWind(); g.takeEvents(); // (el aviso del viento)
     S.turn = S.human; S.blackPlayed = 0; S.hands[S.human] = ['estacion', 'palo1']; ctl.render(); });
   await sleep(300);
   assert.ok(await app(() => !!document.querySelector('#windSvg .wBand')), 'la ruta del viento');

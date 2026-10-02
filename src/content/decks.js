@@ -25,8 +25,8 @@ export const DECKS = [
   // Primavera: viento y plantas carnívoras · verano: incendios · otoño: hojas secas y lluvia · invierno: bola de nieve
   // y hielo. Sin búnkeres ni portales. noUltimate: sus cartas no van en Ultimate
   { id: 'seasons', color: '#C2618B', emblem: 'seasons', scene: 'seasons', grow: { cols: 2, rows: 0 }, seasons: true, noUltimate: true,
-    newCards: ['estacion', 'charco', 'incendio', 'oNieve'], introLead: 'deckIntro.leads.seasons', // (la presentación cuenta qué trae cada estación)
-    counts: base => ({ ...base, bunker: 0, portal: 0, estacion: 4, charco: 6, incendio: 1, oNieve: 2 }) },
+    newCards: ['estacion', 'incendio', 'oNieve'], introLead: 'deckIntro.leads.seasons', // (la presentación cuenta qué trae cada estación)
+    counts: base => ({ ...base, bunker: 0, portal: 0, estacion: 4, incendio: 1, oNieve: 3 }) },
   // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
   // Ultimate: las cartas de TODAS las demás barajas (las futuras también se suman solas), un campo
   // enorme, palos de 10 y el palo iridiscente

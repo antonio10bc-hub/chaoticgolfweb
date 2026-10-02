@@ -27,7 +27,7 @@
      { t:'season', from, to }               cambio de estación
      { t:'wind', phase:'warn'|'on' }        el viento avisa / empieza a soplar
      { t:'gust', p, x, y }                  el viento lleva la pieza a esa casilla
-     { t:'crunch'|'puddle'|'slide'|'flare', p, x, y }  hoja que se rompe · charco · hielo · cruza el fuego
+     { t:'crunch'|'puddle'|'slide'|'flare', p, x, y }  hoja que se rompe · pasa por un charco · resbala en el hielo · cruza el fuego
      { t:'burn'|'eaten', p, x, y, px?, py? } se queda en el fuego · se la come la planta (px, py)
      { t:'grow', x, y, tile }               el fuego crece, cae una hoja o llueve (un charco)
      { t:'snow', x, y, dir } / snowIn / snowOut   la bola de nieve rueda una casilla / aparece / se derrite
@@ -38,7 +38,7 @@ import { CARDS } from '../content/cards/index.js';
 import { TILES, isTrap, isHardTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 import { makeCircuit, stepDir, stepsToNext, MAX_CARS } from './train.js';
-import { seasonMethods, designedSeasonal } from './seasons.js';
+import { seasonMethods } from './seasons.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
@@ -186,8 +186,7 @@ export class Game {
 
   // piezas de agua del diseño (nivel, puzle, desafío, reto diario, contrarreloj): marcadas como fijas (canPlaceTile).
   // Solo el agua: el resto de piezas se queda tal cual (el oráculo de reglas se grabó sin agua)
-  // (y los charcos, el hielo y las plantas de la baraja de las estaciones: no gastan el máximo de su carta)
-  static designed(tiles = []) { return tiles.map(t => isWater(t) || designedSeasonal(t) ? { ...t, fixed: true } : t); }
+  static designed(tiles = []) { return tiles.map(t => isWater(t) ? { ...t, fixed: true } : t); }
 
   // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
   // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
@@ -1333,6 +1332,8 @@ export class Game {
       const r = this.seasonCell(pid, nx, ny, pd.stepsLeft);
       if (r.wind) { this.windCarryBall(ball); pd.safe = true; return this.endSerpent(); }
       if (r.burn) { this.ballOut(ball, 'burn'); pd.safe = true; return this.endSerpent(); }
+      // hielo: resbala sola una casilla más en la misma dirección (sin gastar paso del dedo), con todas sus reglas
+      if (r.ice) return this.serpentSlide(ball, dirKey);
       pd.stepsLeft = r.remaining;
     }
     if (this.trapAt(nx, ny) && pd.stepsLeft > 0) {
@@ -1344,10 +1345,22 @@ export class Game {
     return true;
   }
 
-  endSerpent() {
+  // (estaciones) el dedo entra en el hielo: la pelota resbala sola una casilla más hacia donde iba (si hay más hielo,
+  // sigue). Si al resbalar acaba fuera, en el agua, en una trampa, en el hoyo… el dedo termina ahí; si no, sigue con
+  // los pasos que le quedaban
+  serpentSlide(ball, dirKey) {
+    const pd = this.pending, n0 = this.events.length;
+    this.moveBallRaw(ball, dirKey, 1);
+    const stop = this.events.slice(n0).some(e => e.p === 'b' + ball.player && ['fall', 'splash', 'burn', 'eaten', 'gust', 'sink', 'drift', 'launch', 'settle'].includes(e.t));
+    if (stop || ball.holed) return this.endSerpent({ checked: true });
+    return pd.stepsLeft > 0 ? true : this.endSerpent({ checked: true });
+  }
+
+  // checked: las comprobaciones del final ya se han hecho (al resbalar en el hielo)
+  endSerpent({ checked = false } = {}) {
     const pd = this.pending;
     this.log('log.ballMoved', { b: playerTag(pd.ball.player), x0: pd.startX, y0: pd.startY, x1: pd.ball.x, y1: pd.ball.y });
-    this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
+    if (!checked) this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
     this.pending = null;
     this.afterPlay();
     return true;

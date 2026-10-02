@@ -6,10 +6,8 @@ export default {
   },
   cards: {
     estacion: { name: 'Change of season', short: 'Season', desc: 'Moves on to the next season (spring → summer → autumn → winter). What is on the course changes with it.' },
-    charco: { name: 'Puddle · ice · plant', short: 'Puddle', desc: 'Depends on the season: a puddle (autumn, −1), ice (winter, +1) or a carnivorous plant (spring). Not in summer. Max 6.',
-      forms: { spring: 'Plant', summer: 'Puddle', autumn: 'Puddle', winter: 'Ice' } },
     incendio: { name: 'Wildfire', desc: 'Summer: sets an empty square on fire; it grows one square per turn, up to 5. Crossing it adds 2; stopping inside is like falling off.' },
-    oNieve: { name: 'Snowball', short: 'Snow', desc: 'Winter, at any time: the snowball rolls wherever you choose until it hits something, and takes whatever it catches.' },
+    oNieve: { name: 'Snowball', short: 'Snow', desc: 'Winter, at any time: the snowball rolls 5 squares wherever you choose (it only moves like this) and takes whatever it catches.' },
     trenVuelta: { name: 'Train: full loop', short: 'Loop', desc: 'The engine runs a full loop of the circuit, pushing everything in its way.' },
     oTren1: { name: 'Train: 1 stop', short: 'Train 1', desc: 'Any time (even during a CHECK): the engine moves 1 stop.' },
     vagon: { name: 'Sand wagon', short: 'Wagon', desc: 'Hook a sand wagon behind the train (3 at most): it traps like a bunker and carries whatever lands in it.' },
@@ -46,7 +44,6 @@ export default {
   },
   reason: {
     noSeasons: 'There are no seasons in this game',
-    noPuddle: 'No puddles, ice or plants in summer (or there are 6 already)',
     notSummer: 'Wildfire can only be played in summer',
     noSnow: 'Only in winter, with the snowball on the course',
     noTrain: 'There is no train in this game',
@@ -81,7 +78,7 @@ export default {
   log: {
     leafBreaks: 'The dry leaf crunches: the shot loses 1', ballBurns: '{b} stops in the fire', ballEaten: 'The carnivorous plant eats {b}!',
     holeBurns: 'The hole stops in the fire: back to its square ({x},{y})', holeEaten: 'The carnivorous plant eats the hole! Back to its square ({x},{y})',
-    windWarn: 'Wind is picking up: at the end of the turn it will blow along the marked route', windBlows: 'The wind blows!', windCarries: 'The wind carries {b} away', windCarriesHole: 'The wind carries the hole away',
+    windWarn: 'Wind is picking up: at the end of the turn it will blow along the marked route', windCalm: 'The wind dies down', windBlows: 'The wind blows!', windCarries: 'The wind carries {b} away', windCarriesHole: 'The wind carries the hole away',
     fireSpreads: 'The fire spreads', leafFalls: 'A dry leaf falls', rain: 'It rains: a puddle forms',
     snowRolls: 'The snowball rolls {dir}', snowCatches: 'The snowball catches {b}', snowHole: 'The snowball takes the hole', snowSteals: 'The snowball takes the ball out of the hole!',
     seasonChange: 'Change of season: here comes {s}',
@@ -343,7 +340,7 @@ export default {
     hint: {
       leaf: 'Autumn: takes 1 off the shot of whoever crosses it, and breaks.', puddle: 'Autumn: takes 1 off the shot (it freezes in winter).', ice: 'Winter: adds 1 to the shot.',
       plant: 'Spring: eats whoever stops next to it.', fire: 'Summer: crossing it adds 2; stopping inside is like falling off. It grows every turn.',
-      snowball: 'Winter: rolls by itself between turns and traps whatever it catches. One per level.',
+      snowball: 'Winter: traps whatever it catches; it moves with its card (5 squares). One per level.',
       track: 'Tap or drag to lay track square by square (again, to remove it). Close the circuit: in red, what does not connect yet. Or «Random circuit».',
       station: 'Tap a square of the track to add (or remove) a stop: 4 are needed. The train goes from one to the next.',
       loco: 'Tap a square of the track to put the engine there; its wagons go behind.',
@@ -442,7 +439,7 @@ export default {
   },
   newDeck: { badge: 'New deck!', title: 'Four seasons deck', text: 'Spring, summer, autumn and winter on the same course: wind that sweeps, wildfires that grow, dry leaves and a snowball that rolls by itself. And one card changes the season.',
     play: 'Play now', later: 'Later', alt: 'A course split into four seasons, with wind, fire, leaves and snow' },
-  deckIntro: { leads: { seasons: 'Each season brings its own: in spring the wind blows and carnivorous plants grow; in summer, wildfires; in autumn dry leaves fall and it rains; in winter a snowball rolls around. These cards change everything:' }, also: 'Also:', title: 'New cards', lead: 'On top of the usual cards, this deck brings these special cards. This is how they work:', start: 'start', aria: 'Animated example of the card on a board', button: 'New cards' },
+  deckIntro: { leads: { seasons: 'Each season brings its own: in spring the wind blows and carnivorous plants grow; in summer, wildfires; in autumn dry leaves fall and it rains; in winter, a snowball you move with cards. These cards change everything:' }, also: 'Also:', title: 'New cards', lead: 'On top of the usual cards, this deck brings these special cards. This is how they work:', start: 'start', aria: 'Animated example of the card on a board', button: 'New cards' },
   save: { saved: 'Saved', restored: 'Game restored', title: 'Saved game', replaceOk: 'Start new',
     confirmReplace: 'You have a saved game. Starting a new one will discard it.' },
 
@@ -539,10 +536,9 @@ export default {
     end: 'You can play up to 2 black cards per turn. When you’re done, press End turn to draw.',
     next: 'Next', ok: 'Got it', skip: 'Skip tutorial', holeCards: 'Hole cards',
     card: {
-      estacion: 'You move on to the next season and the course changes with it: the puddle freezes in winter and turns into a carnivorous plant in spring; leaves go away with winter and the fire dies out in autumn.',
-      charco: 'Depends on the season: a puddle in autumn (−1 to the shot), ice in winter (+1) or a carnivorous plant in spring (eats whoever stops next to it). Not in summer.',
+      estacion: 'You move on to the next season and the course changes with it: the rain puddle freezes in winter and turns into a carnivorous plant in spring; leaves go away with winter and the fire dies out in autumn.',
       incendio: 'Orange, in summer: sets an empty square on fire and it grows by itself, up to 5. Crossing it adds 2 to the shot… but if you stop inside, back to your start.',
-      oNieve: 'Orange, in winter: the snowball rolls until it hits something and takes whatever it catches (also during a CHECK: it takes the ball out of the hole). Any club gets you out of it.',
+      oNieve: 'Orange, in winter: the snowball rolls 5 squares (or until it hits something) and takes whatever it catches (also during a CHECK: it takes the ball out of the hole). Any club gets you out of it.',
       trenVuelta: 'The engine runs a full loop of the circuit and pushes everything in its way: on a straight it keeps pushing and, if it sinks a ball, it counts for its owner!',
       oTren1: 'Orange: any time, even during a CHECK, the engine moves 1 stop. If it pushes the hole, the CHECK is cancelled.',
       vagon: 'You hook a sand wagon behind the train (3 at most). It traps like a bunker, and whatever stays in it rides along with the train.',
@@ -574,7 +570,7 @@ export default {
     toMenu: 'Save and go to the menu', btnTitle: 'Pause (P)',
   },
   rules: {
-    seasonsH: 'Seasons (four seasons deck)', seasons: 'The game starts in a random season and the season card moves on to the next. Spring: every two turns the wind blows (one turn of warning) and carries whatever it catches to the end of its route; carnivorous plants eat whoever stops next to them. Summer: wildfire grows one square per turn (up to 5); crossing it adds 2 and stopping inside is like falling off. Autumn: dry leaves (−1 and they break) and rain that leaves puddles (−1). Winter: the snowball rolls by itself and traps (free to leave); ice adds 1. The puddle freezes, the ice turns into a plant and the plant dries up in summer.',
+    seasonsH: 'Seasons (four seasons deck)', seasons: 'The game starts in a random season and the season card moves on to the next. Spring: the wind goes in three-turn cycles (calm, warning, blowing) and throws whatever it catches on its route off the course; carnivorous plants eat whoever stops next to them. Summer: wildfire grows one square per turn (up to 5); crossing it adds 2 and stopping inside is like falling off. Autumn: dry leaves (−1 and they break) and rain that leaves puddles (−1). Winter: the snowball traps whatever it catches (free to leave) and only moves with its card, 5 squares; ice adds 1. The puddle freezes, the ice turns into a plant and the plant dries up in summer.',
     trainH: 'The train (train deck)', train: 'A track circuit, different every game, with 4 stops. At the end of each turn the engine goes by itself to the next stop. Whatever it finds on the track it pushes one square (on a straight it keeps pushing; the hole too). Wood stops it. You bounce off the engine like off a block, and sand wagons trap like a bunker and carry what is in them. If the train sinks a ball by itself, the train wins and everybody loses; with a card, the ball counts for its owner.',
     title: 'Rules', short: 'Rules', btnTitle: 'Rules and cards (H)', anyDir: 'any direction',
     goalH: 'Goal', goal: 'Get your ball into the hole. Whoever does it and survives the CHECK wins.',
@@ -661,7 +657,7 @@ export default {
       ice: 'Ice is slippery: count one square more.',
       plant: 'Never stop next to a carnivorous plant.',
       fire: 'Cross the fire to gain 2 squares, but never stop inside.',
-      snow: 'The snowball rolls between turns: stay out of its way.',
+      snow: 'Keep a snowball card: it can take the ball that just went into the hole.',
       sink: 'When a rival is in range of the hole, keep an orange card for the CHECK: you can move the hole or knock their ball out.',
       saveJaque: 'Your CHECK was stopped: before sinking, see whether the rivals still have orange cards.',
       rewind: 'The NO card undoes the last play: if a rival has it, don’t spend your best card in plain sight.',

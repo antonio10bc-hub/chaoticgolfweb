@@ -9,10 +9,8 @@ export default {
   },
   cards: {
     estacion: { name: 'Cambio de estación', short: 'Estación', desc: 'Pasa a la siguiente estación (primavera → verano → otoño → invierno). Lo que hay en el campo cambia con ella.' },
-    charco: { name: 'Charco · hielo · planta', short: 'Charco', desc: 'Según la estación: un charco (otoño, resta 1), hielo (invierno, suma 1) o una planta carnívora (primavera). En verano no. Máx. 6.',
-      forms: { spring: 'Planta', summer: 'Charco', autumn: 'Charco', winter: 'Hielo' } },
     incendio: { name: 'Incendio', desc: 'Verano: prende fuego a una casilla vacía; crece una casilla por turno, hasta 5. Cruzarlo suma 2; quedarse dentro es como caerse.' },
-    oNieve: { name: 'Bola de nieve', short: 'Nieve', desc: 'Invierno, en cualquier momento: la bola de nieve rueda hacia donde elijas hasta toparse con algo y se lleva lo que pilla.' },
+    oNieve: { name: 'Bola de nieve', short: 'Nieve', desc: 'Invierno, en cualquier momento: la bola de nieve rueda 5 casillas hacia donde elijas (solo se mueve así) y se lleva lo que pilla.' },
     trenVuelta: { name: 'Tren: vuelta entera', short: 'Vuelta', desc: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra.' },
     oTren1: { name: 'Tren: 1 parada', short: 'Tren 1', desc: 'En cualquier momento (también en un JAQUE): la locomotora avanza 1 parada.' },
     vagon: { name: 'Vagón de arena', short: 'Vagón', desc: 'Engancha un vagón de arena detrás del tren (3 como mucho): atrapa como un búnker y se lleva lo que caiga en él.' },
@@ -49,7 +47,6 @@ export default {
   },
   reason: {
     noSeasons: 'En esta partida no hay estaciones',
-    noPuddle: 'En verano no hay charcos, hielo ni plantas (o ya hay 6 en el campo)',
     notSummer: 'El incendio solo se puede jugar en verano',
     noSnow: 'Solo en invierno, con la bola de nieve en el campo',
     noTrain: 'En esta partida no hay tren',
@@ -84,7 +81,7 @@ export default {
   log: {
     leafBreaks: 'La hoja seca cruje: el tiro pierde 1', ballBurns: '{b} se queda en el fuego', ballEaten: '¡La planta carnívora se come a {b}!',
     holeBurns: 'El hoyo se queda en el fuego: vuelve a su casilla ({x},{y})', holeEaten: '¡La planta carnívora se come el hoyo! Vuelve a su casilla ({x},{y})',
-    windWarn: 'Se levanta viento: al acabar el turno soplará por la ruta marcada', windBlows: '¡Sopla el viento!', windCarries: 'El viento se lleva a {b}', windCarriesHole: 'El viento se lleva el hoyo',
+    windWarn: 'Se levanta viento: al acabar el turno soplará por la ruta marcada', windCalm: 'El viento se calma', windBlows: '¡Sopla el viento!', windCarries: 'El viento se lleva a {b}', windCarriesHole: 'El viento se lleva el hoyo',
     fireSpreads: 'El fuego se extiende', leafFalls: 'Cae una hoja seca', rain: 'Llueve: se forma un charco',
     snowRolls: 'La bola de nieve rueda hacia {dir}', snowCatches: 'La bola de nieve atrapa a {b}', snowHole: 'La bola de nieve se lleva el hoyo', snowSteals: '¡La bola de nieve se lleva la pelota del hoyo!',
     seasonChange: 'Cambio de estación: llega {s}',
@@ -346,7 +343,7 @@ export default {
     hint: {
       leaf: 'Otoño: resta 1 al tiro de quien pasa y se rompe.', puddle: 'Otoño: resta 1 al tiro (en invierno se hiela).', ice: 'Invierno: suma 1 al tiro.',
       plant: 'Primavera: se come a quien se queda a su lado.', fire: 'Verano: cruzarlo suma 2; quedarse dentro es como caerse. Crece cada turno.',
-      snowball: 'Invierno: rueda sola entre turnos y atrapa lo que pilla. Una por nivel.',
+      snowball: 'Invierno: atrapa lo que pilla; se mueve con su carta (5 casillas). Una por nivel.',
       track: 'Toca o arrastra para poner vías casilla a casilla (otra vez, para quitarlas). Cierra el circuito: en rojo, lo que aún no enlaza. O «Circuito al azar».',
       station: 'Toca una casilla de la vía para poner (o quitar) una parada: hacen falta 4. El tren va de una a otra.',
       loco: 'Toca una casilla de la vía para poner ahí la locomotora; los vagones van detrás.',
@@ -445,7 +442,7 @@ export default {
   },
   newDeck: { badge: '¡Nueva baraja!', title: 'Baraja de las estaciones', text: 'Primavera, verano, otoño e invierno en el mismo campo: viento que arrastra, incendios que crecen, hojas secas y una bola de nieve que rueda sola. Y con una carta, cambias de estación.',
     play: 'Jugar ahora', later: 'Luego', alt: 'Un campo partido en cuatro estaciones, con viento, fuego, hojas y nieve' },
-  deckIntro: { leads: { seasons: 'Cada estación trae lo suyo: en primavera sopla el viento y crecen plantas carnívoras; en verano, incendios; en otoño caen hojas secas y llueve; en invierno rueda una bola de nieve. Estas cartas lo cambian todo:' }, also: 'También:', title: 'Cartas nuevas', lead: 'Además de las cartas de siempre, esta baraja trae estas cartas especiales. Así funcionan:', start: 'salida', aria: 'Ejemplo animado de la carta en un tablero', button: 'Cartas nuevas' },
+  deckIntro: { leads: { seasons: 'Cada estación trae lo suyo: en primavera sopla el viento y crecen plantas carnívoras; en verano, incendios; en otoño caen hojas secas y llueve; en invierno, una bola de nieve que mueves con cartas. Estas cartas lo cambian todo:' }, also: 'También:', title: 'Cartas nuevas', lead: 'Además de las cartas de siempre, esta baraja trae estas cartas especiales. Así funcionan:', start: 'salida', aria: 'Ejemplo animado de la carta en un tablero', button: 'Cartas nuevas' },
   save: { saved: 'Guardado', restored: 'Partida recuperada', title: 'Partida guardada', replaceOk: 'Empezar nueva',
     confirmReplace: 'Tienes una partida guardada. Si empiezas otra, la guardada se perderá.' },
 
@@ -542,10 +539,9 @@ export default {
     end: 'Puedes jugar hasta 2 cartas negras por turno. Cuando acabes, pulsa Terminar turno para robar.',
     next: 'Siguiente', ok: 'Entendido', skip: 'Saltar tutorial', holeCards: 'Cartas de hoyo',
     card: {
-      estacion: 'Pasas a la siguiente estación y el campo cambia con ella: el charco se hiela en invierno y se vuelve planta carnívora en primavera; las hojas se van con el invierno y el fuego se apaga en otoño.',
-      charco: 'Según la estación: un charco en otoño (resta 1 al tiro), hielo en invierno (suma 1) o una planta carnívora en primavera (se come a quien se queda a su lado). En verano no se puede.',
+      estacion: 'Pasas a la siguiente estación y el campo cambia con ella: el charco de la lluvia se hiela en invierno y se vuelve planta carnívora en primavera; las hojas se van con el invierno y el fuego se apaga en otoño.',
       incendio: 'Naranja, en verano: prende fuego a una casilla vacía y crece sola, hasta 5. Cruzarlo suma 2 al tiro… pero si te quedas dentro, vuelves a tu salida.',
-      oNieve: 'Naranja, en invierno: la bola de nieve rueda hasta toparse con algo y se lleva lo que pilla (también en un JAQUE: se lleva la pelota del hoyo). De ella se sale con cualquier palo.',
+      oNieve: 'Naranja, en invierno: la bola de nieve rueda 5 casillas (o hasta toparse con algo) y se lleva lo que pilla (también en un JAQUE: se lleva la pelota del hoyo). De ella se sale con cualquier palo.',
       trenVuelta: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra: en una recta sigue empujando y, si mete una pelota en el hoyo, ¡cuenta para su dueño!',
       oTren1: 'Naranja: en cualquier momento, también durante un JAQUE, la locomotora avanza 1 parada. Si empuja el hoyo, el JAQUE se anula.',
       vagon: 'Enganchas un vagón de arena detrás del tren (3 como mucho). Atrapa como un búnker y lo que se queda en él viaja con el tren.',
@@ -577,7 +573,7 @@ export default {
     toMenu: 'Guardar y salir al menú', btnTitle: 'Pausa (P)',
   },
   rules: {
-    seasonsH: 'Las estaciones (baraja de las estaciones)', seasons: 'La partida empieza en una estación al azar y la carta de estación pasa a la siguiente. Primavera: cada dos turnos sopla el viento (un turno de aviso) y se lleva hasta el final de su ruta lo que pilla; las plantas carnívoras se comen a quien se queda a su lado. Verano: el incendio crece una casilla por turno (hasta 5); cruzarlo suma 2 y quedarse dentro es como caerse. Otoño: hojas secas (−1 y se rompen) y lluvia que deja charcos (−1). Invierno: la bola de nieve rueda sola y atrapa (se sale gratis); el hielo suma 1. El charco se hiela, el hielo se vuelve planta y la planta se seca en verano.',
+    seasonsH: 'Las estaciones (baraja de las estaciones)', seasons: 'La partida empieza en una estación al azar y la carta de estación pasa a la siguiente. Primavera: el viento va en ciclos de tres turnos (calma, aviso y sopla) y echa del tablero lo que pilla en su ruta; las plantas carnívoras se comen a quien se queda a su lado. Verano: el incendio crece una casilla por turno (hasta 5); cruzarlo suma 2 y quedarse dentro es como caerse. Otoño: hojas secas (−1 y se rompen) y lluvia que deja charcos (−1). Invierno: la bola de nieve atrapa lo que pilla (se sale gratis) y solo se mueve con su carta, 5 casillas; el hielo suma 1. El charco se hiela, el hielo se vuelve planta y la planta se seca en verano.',
     trainH: 'El tren (baraja del tren)', train: 'Un circuito de vías, distinto en cada partida, con 4 paradas. Al acabar cada turno la locomotora va sola a la siguiente parada. Lo que encuentra en la vía lo empuja una casilla (en una recta lo sigue empujando; si es el hoyo, lo empuja igual). Contra la madera se para. Rebotas contra la locomotora como contra un bloque, y los vagones de arena atrapan como un búnker y se llevan lo que tengan. Si el tren solo mete una pelota en el hoyo, gana el tren y pierde todo el mundo; con una carta, la pelota cuenta para su dueño.',
     title: 'Reglas', short: 'Reglas', btnTitle: 'Reglas y cartas (H)', anyDir: 'cualquier dirección',
     goalH: 'Objetivo', goal: 'Mete tu pelota en el hoyo. Gana quien lo consiga y sobreviva al JAQUE.',
@@ -664,7 +660,7 @@ export default {
       ice: 'El hielo resbala: cuenta una casilla más.',
       plant: 'No te pares junto a una planta carnívora.',
       fire: 'Cruza el fuego para ganar 2 casillas, pero nunca te pares dentro.',
-      snow: 'La bola de nieve rueda entre turnos: no te quedes en su camino.',
+      snow: 'Guarda una carta de bola de nieve: puede llevarse la pelota que acaba de entrar en el hoyo.',
       sink: 'Cuando un rival queda a tiro del hoyo, guarda una naranja para el JAQUE: puedes mover el hoyo o sacar su pelota.',
       saveJaque: 'Tu JAQUE se evitó: antes de embocar, mira si a los rivales les quedan naranjas.',
       rewind: 'La carta NO deshace la última jugada: si un rival la tiene, no gastes tu mejor carta a la vista.',

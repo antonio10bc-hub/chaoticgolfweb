@@ -4,7 +4,6 @@
 // Si hay arte bitmap (assets/art, clave def.art) se usa en lugar del SVG.
 import { ART } from '../art.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
-import { t } from '../i18n/index.js';
 
 const INK = '#242424', CREAM = '#F1F1DC', ACC = '#E8873A', NAVY = '#2D4F7C', SAND = '#ECE6CC';
 const G_MID = '#5C9854', G_PUTT = '#8DB05F', G_LIGHT = '#A3C173', SH = 'rgba(20,40,20,.22)';
@@ -43,17 +42,8 @@ const locoFront = () =>
   `<circle cx="50.5" cy="31" r="4.2" fill="#FFE38A" stroke="${INK}" stroke-width="1.4"/>` +
   `<rect x="28" y="66" width="45" height="6" rx="2" fill="#8E3328" stroke="${INK}" stroke-width="1.4"/>` +
   `<path d="M35 72 L50.5 82 L66 72 Z" fill="${GOLD}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
-// estaciones: la rueda de las cuatro (flor, sol, hoja, copo) y lo que deja la carta en cada una
+// estaciones: la rueda de las cuatro (flor, sol, hoja, copo)
 const seIcon = (s, x, y, k = 1.25) => `<g transform="translate(${x - 12 * k} ${y - 12 * k}) scale(${k})">${SEASON_ICON[s]}</g>`;
-const PUDDLE = (x, y, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-26 2C-28 -10 -16 -15 -5 -13C3 -12 7 -17 15 -14C25 -11 27 -1 23 7C19 17 6 20 -5 19C-17 18 -24 12 -26 2Z" fill="#6FA8BC"/>` +
-  `<path d="M-21 2C-23 -7 -13 -11 -5 -9C2 -8 6 -12 13 -10C20 -7 21 0 18 6C14 13 4 15 -5 14C-14 13 -19 9 -21 2Z" fill="#8CC2D3"/><path d="M-15 -4C-11 -8 -6 -9 -2 -8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></g>`;
-const ICE = (x, y, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-26 -6L-15 -19L9 -21L24 -9L23 13L7 22L-15 19L-26 7Z" fill="#BFE6F2" stroke="#8CC6DA" stroke-width="1.8" stroke-linejoin="round"/>` +
-  `<path d="M-15 -19L-7 0L-26 -6M-7 0L9 -21M-7 0L24 -9M-7 0L7 22M-7 0L-26 7" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/><path d="M-19 -6L-10 -13M-15 -1L-5 -9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></g>`;
-const PLANT = (x, y, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})"><g fill="#4F8A3A"><path d="M0 18C-14 18 -24 12 -27 4C-15 4 -6 9 0 18Z"/><path d="M0 18C14 18 24 12 27 4C15 4 6 9 0 18Z"/></g>` +
-  `<path d="M0 18V-2" stroke="#3E7230" stroke-width="4.5" stroke-linecap="round"/>` +
-  `<path d="M0 -2C-5 -15 -22 -18 -25 -6C-27 1 -18 4 -9 2Z" fill="#C8463F"/><path d="M0 -2C5 -15 22 -18 25 -6C27 1 18 4 9 2Z" fill="#C8463F"/>` +
-  `<path d="M-25 -6l-4 -3M-22 -12l-3 -4M-15 -16l0 -5M25 -6l4 -3M22 -12l3 -4M15 -16l0 -5" stroke="#F1E6C0" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="0" cy="-3" rx="4.4" ry="3" fill="#8E2B28"/></g>`;
-const SHADOW = (x, y, rx, ry) => `<ellipse cx="${x + 3}" cy="${y + 4}" rx="${rx}" ry="${ry}" fill="${SH}"/>`;
 const ARTS = {
   // cambio de estación: la rueda de las cuatro, con una flecha que da la vuelta
   estacion: () => `<circle cx="50" cy="52" r="40" fill="#F6CADB" opacity=".3"/>` +
@@ -61,13 +51,6 @@ const ARTS = {
     `<path d="M50 22V82M20 52H80" stroke="${INK}" stroke-width="1.2" opacity=".25"/>` +
     seIcon('spring', 36, 38) + seIcon('summer', 64, 38) + seIcon('winter', 36, 66) + seIcon('autumn', 64, 66) + `</g>` +
     `<path d="M88 40A40 40 0 0 1 62 90" fill="none" stroke="${ACC}" stroke-width="3.6" stroke-linecap="round"/><path d="M58 83L61 92L70 89" fill="none" stroke="${ACC}" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
-  // charco / hielo / planta: fuera de la partida, las tres; en partida, la de la estación (seasons.css)
-  charco: () => `<circle cx="50" cy="54" r="40" fill="${G_LIGHT}" opacity=".35"/>` +
-    `<g class="svAll">${PUDDLE(30, 72, .7)}${ICE(70, 72, .7)}${PLANT(50, 34, .75)}</g>` +
-    `<g class="sv sv-autumn">${SHADOW(50, 58, 30, 18)}${PUDDLE(50, 58, 1.25)}</g>` +
-    `<g class="sv sv-winter">${SHADOW(50, 56, 30, 22)}${ICE(50, 56, 1.25)}</g>` +
-    `<g class="sv sv-spring">${SHADOW(50, 70, 28, 8)}${PLANT(50, 52, 1.3)}</g>` +
-    `<g class="sv sv-summer" opacity=".55">${PUDDLE(50, 58, 1.1)}<path d="M28 58h44M38 48l24 20M62 48L38 68" stroke="#A8743F" stroke-width="2.4" stroke-linecap="round" opacity=".8"/></g>`,
   incendio: () => `<circle cx="50" cy="54" r="40" fill="#FFD23F" opacity=".2"/>` +
     `<ellipse cx="53" cy="84" rx="30" ry="7" fill="${SH}"/>` +
     `<path d="M50 84C28 84 22 66 34 48C40 40 42 30 38 18C54 28 70 44 70 64C70 76 62 84 50 84Z" fill="#E8873A" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>` +
@@ -198,14 +181,11 @@ export function cardArtHTML(def) {
     : cardArtSVG(def);
 }
 
-// (charco / hielo / planta) su nombre en cada estación: en partida se ve el de la de ahora (seasons.css)
-const formsName = def => `<span class="svName all">${def.short || def.name}</span>` +
-  ['spring', 'summer', 'autumn', 'winter'].map(s => `<span class="svName s-${s}">${t(`cards.${def.id}.forms.${s}`)}</span>`).join('');
 // cara completa de la carta: esquina con valor, ilustración y nombre
 export function cardFaceHTML(def) {
   const v = def.face?.value;
   return `<span class="cardCorner">${v ?? ''}</span>` +
     (def.color === 'orange' ? `<svg class="cardBolt" aria-hidden="true"><use href="#i-bolt"/></svg>` : '') +
     `<span class="cardPic">${cardArtHTML(def)}</span>` +
-    `<span class="cardName">${def.face?.forms ? formsName(def) : def.short || def.name}</span>`;
+    `<span class="cardName">${def.short || def.name}</span>`;
 }

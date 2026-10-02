@@ -390,11 +390,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Ultimate: `noUltimate`). La partida empieza en una **estación al azar** (con un RNG aparte: el mazo sale igual) y la
   carta negra **Cambio de estación** ×4 pasa a la siguiente: primavera → verano → otoño → invierno → primavera. Las salidas
   y la casilla inicial del hoyo son seguras: ahí no se pone ni cae nada.
-  - **Primavera: viento.** Cada dos turnos, una ruta serpenteante de borde a borde (de un lado al de enfrente; nunca por
-    las salidas). Un turno de **aviso** (la ruta, tenue, con flechas) y el siguiente **sopla**: se lleva por la ruta, y
+  - **Primavera: viento**, en ciclos de **tres turnos**: uno en calma, uno de **aviso** (una ruta serpenteante de borde a
+    borde, de un lado al de enfrente y nunca por las salidas; se ve tenue, con flechas) y uno en el que **sopla**: se lleva por la ruta, y
     **fuera del tablero**, lo que hay dentro al empezar a soplar y lo que caiga en ella ese turno: la pelota vuelve a su
-    salida y el hoyo a su casilla inicial (`windExit`: el lado del borde donde acaba la ruta). Luego se calma y sale otro
-    aviso. **Plantas carnívoras**: se comen la pelota (o el hoyo) que se queda a su lado o encima (cuenta como caerse); no a
+    salida y el hoyo a su casilla inicial (`windExit`: el lado del borde donde acaba la ruta). Luego, otra vez en calma. **Plantas carnívoras**: se comen la pelota (o el hoyo) que se queda a su lado o encima (cuenta como caerse); no a
     quien pasa, ni a quien vuelve a su salida.
   - **Verano: incendios** (carta naranja **Incendio** ×1): fuego en una casilla vacía que crece solo una casilla vacía por
     turno, hasta 5, y dura hasta que cambia la estación. Cruzarlo **suma 2** al tiro; quedarse dentro es como caerse del
@@ -402,16 +401,16 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - **Otoño: hojas secas** (6 al llegar y van cayendo más entre turnos): restan 1 al tiro y se rompen. Entre turnos a veces
     **llueve**: una nubecilla deja caer unas gotas sobre la casilla y aparece un charco, que resta 1 al tiro de quien pasa
     (no atrapa).
-  - **Invierno: la bola de nieve** rueda sola entre turnos **5 casillas** (`SNOW_STEPS`; antes si se topa con una pieza
-    sólida o el borde) y en el siguiente cambia de dirección; la naranja también la mueve 5. Lo que lleva dentro se ve todo:
+  - **Invierno: la bola de nieve** no se mueve sola: solo con su carta naranja **Bola de nieve** (×3), **5 casillas**
+    (`SNOW_STEPS`; antes si se topa con una pieza sólida o el borde). Lo que lleva dentro se ve todo:
     una pelota en el centro; varias, repartidas y más pequeñas (evento `snowPack`). Atrapa lo que pilla (pelotas y hoyo) y se lo lleva; de ella se sale con cualquier palo, sin coste
-    (trampa `soft`). Una pelota y el hoyo dentro a la vez: la pelota entra. La naranja **Bola de nieve** ×2 la hace rodar
-    hacia donde elijas; en un JAQUE se lleva la pelota del hoyo (no el hoyo). **Hielo**: suma 1 al tiro.
-  - **Charco · hielo · planta** (negra ×6, como mucho 6 en el campo; los de la lluvia no cuentan): pone lo de la estación
-    (charco en otoño, hielo en invierno, planta en primavera; en verano no se juega); en la mano, su dibujo y su nombre
-    cambian con la estación. Al cambiar de estación el campo cambia con ella: el charco se hiela, el hielo se vuelve planta
-    y la planta se seca en verano; las hojas se van con el invierno, el fuego se apaga en otoño, la bola se derrite en
-    primavera y el viento se calma en verano. Las cartas de una estación solo se juegan en ella.
+    (trampa `soft`). Una pelota y el hoyo dentro a la vez: la pelota entra. En un JAQUE, la carta se lleva la pelota del
+    hoyo (no el hoyo). **Hielo** (cubre casi toda la casilla): suma 1 al tiro; con el dedo, al pisarlo la pelota resbala
+    sola una casilla más hacia donde iba, sin gastar paso (`serpentSlide`).
+  - Charcos, hielo y plantas no tienen carta: llegan solos (la lluvia deja charcos, que se hielan en invierno y se vuelven
+    plantas en primavera; en verano se secan). Al cambiar de estación el campo cambia con ella: las hojas se van con el
+    invierno, el fuego se apaga en otoño, la bola se derrite en primavera y el viento se calma en verano. Las cartas de una
+    estación solo se juegan en ella. Mazo: Cambio de estación ×4, Incendio ×1 y Bola de nieve ×3.
   - Los modificadores cuentan casilla a casilla (también con el dedo y para el hoyo). La IA los ve al simular cada jugada y,
     además, mira dónde dejará el viento cada cosa (`windFate`) y no le gusta estar dentro de la bola de nieve.
   - **En pantalla:** fondo y césped de cada estación (cuatro capas que se funden al cambiar; motivos sueltos: flores, paja,
@@ -423,15 +422,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     que atrapa (más pequeño y escarchado); llamas que tiemblan, la planta que abre y cierra la boca (y se lanza al comer),
     hielo con destellos y charcos con ondas. Sonidos propios. Vista previa del recorrido de la bola de nieve; la imagen de
     compartir dibuja sus piezas, la bola de nieve y el césped de la estación.
-  - **Presentación** de sus cuatro cartas en fila (sin desplazarse) con escenas que se juegan con el motor (piezas que
+  - **Presentación** de sus tres cartas en fila (sin desplazarse) con escenas que se juegan con el motor (piezas que
     aparecen y desaparecen, el campo que cambia de color, la bola que rueda). Pelota de logros **Estaciones** (10 · 50 · 100
     victorias): la bola en cuatro colores · pétalos, hojas y copos · las cuatro estaciones en órbita.
   - **En el creador** (grupo Estaciones): hoja seca, charco, hielo, planta, fuego y bola de nieve (una por nivel), y en sus
     opciones la estación del nivel. Poner una pieza en un nivel sin estación lo pasa a la suya; la bola de nieve, a
     invierno. La plantilla Estaciones pone primavera si no hay estación. Va en el código para compartir niveles.
-  - Equilibrio (`npm run simulate -- --deck seasons`): ~9 rondas de media (la clásica 5,9; antes de que el viento echara
-    del tablero, 6,5), 100 % terminadas; la bola de nieve decide algunas partidas entre turnos (lleva el hoyo y pilla una
-    pelota).
+  - Equilibrio (`npm run simulate -- --deck seasons`): ~8 rondas de media (la clásica 5,9), 100 % terminadas.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
   Al tocarlo, la caja se abre y cuenta que, por probar el juego tan pronto, puedes **congelar tu racha del reto diario**:
   no se pierde aunque pases días sin jugar (y jugando sigue sumando). Se descongela (o se vuelve a congelar) en Ajustes →

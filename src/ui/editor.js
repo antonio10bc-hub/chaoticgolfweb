@@ -370,7 +370,7 @@ function issues(L) {
   errors.push(...railProblems(L)); // (el tren: vuelta cerrada y 4 paradas)
   for (const p of PAIRS) if (L.tiles.filter(q => q.type === 'portal' && q.pair === p).length === 1) warns.push(t('ed.st.pair', { l: PAIR_LETTER(p) }));
   if (!L.parCells.length) warns.push(t('ed.st.noPar'));
-  if (!L.season && ['estacion', 'charco', 'incendio', 'oNieve'].some(k => L.deckCounts[k] > 0 || L.hand.includes(k))) warns.push(t('ed.st.noSeason'));
+  if (!L.season && ['estacion', 'incendio', 'oNieve'].some(k => L.deckCounts[k] > 0 || L.hand.includes(k))) warns.push(t('ed.st.noSeason'));
   return { errors, warns };
 }
 function paintStatus() {

@@ -1,35 +1,33 @@
 /* =========================================================
    Baraja de las estaciones: el campo cambia con la estación (S.season.now) y cada una tiene lo suyo.
-     primavera  viento: cada dos turnos, una ruta serpenteante de borde a borde. Un turno de aviso (se ve tenue) y el
-                siguiente sopla: arrastra hasta el final de la ruta, y fuera del tablero, lo que haya dentro al empezar a
-                soplar y lo que caiga en ella durante ese turno (la pelota vuelve a su salida; el hoyo, a su casilla).
+     primavera  viento, en ciclos de tres turnos: uno en calma, uno de aviso (una ruta serpenteante de borde a borde, tenue)
+                y uno en el que sopla: arrastra hasta el final de la ruta, y fuera del tablero, lo que haya dentro al empezar
+                a soplar y lo que caiga en ella durante ese turno (la pelota vuelve a su salida; el hoyo, a su casilla).
                 Plantas carnívoras: se comen la pelota (o el hoyo) que se queda a su lado.
      verano     incendios (carta naranja): crecen una casilla vacía por turno, hasta 5. Cruzar el fuego suma 2 al tiro;
                 quedarse dentro es como caerse del tablero.
      otoño      hojas secas (6 al llegar y van cayendo más entre turnos): restan 1 al tiro y se rompen. A veces llueve:
                 un charco nuevo, que resta 1 al tiro de quien pasa por encima (sin atraparlo).
-     invierno   la bola de nieve rueda sola entre turnos 5 casillas (o hasta toparse con una pieza sólida o el borde), y en
-                el siguiente cambia de dirección. Atrapa lo que pilla y se lo lleva (salir no cuesta nada). Hielo: suma 1 al tiro.
+     invierno   la bola de nieve: solo se mueve con su carta naranja, 5 casillas (o hasta toparse con una pieza sólida o el
+                borde). Atrapa lo que pilla y se lo lleva (salir no cuesta nada). Hielo: suma 1 al tiro (también con el dedo:
+                resbala una casilla más en la dirección en la que iba).
    La carta negra de estación pasa a la siguiente (primavera → verano → otoño → invierno → primavera) y lo que hay en el
-   campo cambia con ella: el charco se hiela en invierno, el hielo se vuelve planta carnívora en primavera y la planta se
-   seca en verano; las hojas se van con el invierno, el fuego se apaga en otoño, la bola se derrite en primavera.
+   campo cambia con ella: el charco de la lluvia se hiela en invierno, el hielo se vuelve planta carnívora en primavera y la
+   planta se seca en verano; las hojas se van con el invierno, el fuego se apaga en otoño, la bola se derrite en primavera.
    Las salidas y la casilla inicial del hoyo son seguras: ahí no se pone ni cae nada, y una planta no se come a quien
    vuelve a su salida.
    Este módulo añade sus métodos a Game (game.js los instala); `this` es la partida.
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
-import { TILES, isDevice, isSeasonal } from '../content/tiles/index.js';
+import { TILES, isDevice } from '../content/tiles/index.js';
 import { mulberry32 } from './rng.js';
 
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
 export const nextSeason = s => SEASONS[(SEASONS.indexOf(s) + 1) % SEASONS.length];
 export const FIRE_MAX = 5;        // casillas de un incendio
 export const START_LEAVES = 6;    // hojas secas al llegar el otoño
-export const MAX_PLACED = 6;      // charcos / hielo / plantas que ponen los jugadores
 const LEAF_CHANCE = .4, MAX_LEAVES = 14; // entre turnos (otoño): cae una hoja nueva…
 const RAIN_CHANCE = .3, MAX_RAIN = 8;    // …y llueve (un charco nuevo)
-const SEASON_WATER = ['puddle', 'ice', 'plant']; // la carta negra de charco / hielo / planta según la estación
-export const PLACE_OF = { spring: 'plant', autumn: 'puddle', winter: 'ice', summer: null };
 const D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 export const SNOW_STEPS = 5; // casillas que rueda la bola de nieve (sola o con la carta)
 export const SNOW_DIRS = Object.keys(D);
@@ -72,16 +70,14 @@ export function windExitOf(path, C, R) {
 
 export const seasonMethods = {
   /* ---------- montaje ---------- */
-  // partida de la baraja (fresh): estación al azar y lo que trae al llegar (hojas, bola de nieve, aviso de viento), con
-  // un RNG aparte (el mazo sale igual que sin estaciones). Un nivel trae su estación y su campo (fresh = false): solo se
-  // le añade el primer aviso de viento si es primavera
+  // partida de la baraja (fresh): estación al azar y lo que trae al llegar (hojas, bola de nieve), con un RNG aparte (el
+  // mazo sale igual que sin estaciones). Un nivel trae su estación y su campo (fresh = false)
   setupSeasons({ now = null, snow = null, fresh = true } = {}) {
     const rand = mulberry32(((this.seed ?? 1) ^ 0x5ea5025) >>> 0);
     const S = this.S;
     S.season = { now: now || SEASONS[Math.floor(rand() * 4)], wind: null, snow: snow ? { x: snow.x, y: snow.y, dir: null } : null, fireId: 0 };
     this.fireGroups(); // (los incendios del nivel: un grupo por mancha)
     if (fresh) this.enterSeason(S.season.now, rand);
-    else if (S.season.now === 'spring') this.newWind(rand);
   },
   // grupos de los incendios que no lo tienen (los del nivel o el creador): cada mancha de fuego, el suyo
   fireGroups() {
@@ -126,15 +122,10 @@ export const seasonMethods = {
   // hacia dónde sale del tablero lo que llega al final de la ruta (el lado del borde en el que acaba)
   windExit() { return windExitOf(this.S.season.wind.path, this.S.cols, this.S.rows); },
   plantNear(x, y) { return this.S.tiles.find(tl => tl.type === 'plant' && Math.abs(tl.x - x) + Math.abs(tl.y - y) <= 1) || null; },
-  // charcos / hielo / plantas que han puesto los jugadores (los de la lluvia y los del nivel no cuentan)
-  placedWater() { return this.S.tiles.filter(tl => SEASON_WATER.includes(tl.type) && !tl.rain && !tl.fixed).length; },
-  placeType() { return PLACE_OF[this.S.season?.now] || null; },
+  // con carta solo se pone el fuego (en verano); lo demás llega solo con la estación
   canPlaceSeasonal(type, x, y) {
     const S = this.S;
-    if (!S.season || !this.seasonSpot(x, y)) return false;
-    if (type === 'fire') return S.season.now === 'summer';
-    if (SEASON_WATER.includes(type)) return PLACE_OF[S.season.now] === type && this.placedWater() < MAX_PLACED;
-    return true;
+    return !!S.season && type === 'fire' && S.season.now === 'summer' && this.seasonSpot(x, y);
   },
 
   /* ---------- al pasar por una casilla ----------
@@ -152,7 +143,7 @@ export const seasonMethods = {
       return { remaining: Math.max(0, remaining - 1) };
     }
     if (type === 'puddle') { this.anim({ t: 'puddle', p: pid, x, y }); this.tip('puddle'); return { remaining: Math.max(0, remaining - 1) }; }
-    if (type === 'ice') { this.anim({ t: 'slide', p: pid, x, y }); this.tip('ice'); return { remaining: remaining + 1 }; }
+    if (type === 'ice') { this.anim({ t: 'slide', p: pid, x, y }); this.tip('ice'); return { remaining: remaining + 1, ice: true }; }
     if (type === 'fire') {
       if (remaining <= 0) return { remaining: 0, burn: true };
       this.anim({ t: 'flare', p: pid, x, y });
@@ -223,10 +214,11 @@ export const seasonMethods = {
     this.anim({ t: 'appear', p: 'hole', x: h.initX, y: h.initY });
     return [h.initX, h.initY];
   },
-  // entre turnos: aviso → sopla (y se lleva lo que haya en la ruta) → se calma y sale otro aviso
+  // entre turnos, en ciclos de tres: calma → aviso → sopla (y echa del tablero lo que haya en la ruta) → calma…
   windTurn() {
     const S = this.S, w = S.season.wind;
-    if (!w || w.on) { this.newWind(); return; }
+    if (w?.on) { S.season.wind = null; this.emit({ t: 'wind', phase: 'off' }); this.log('log.windCalm'); return; }
+    if (!w) { this.newWind(); return; }
     w.on = true;
     this.emit({ t: 'wind', phase: 'on' });
     this.log('log.windBlows');
@@ -333,14 +325,6 @@ export const seasonMethods = {
     if (!steps) this.anim({ t: 'bump', p: 'snow', x: sn.x + dx, y: sn.y + dy, dir });
     return steps;
   },
-  // entre turnos: rueda hacia un lado al azar (distinto del de antes, si se puede)
-  snowTurn() {
-    const sn = this.S.season.snow;
-    if (!sn) return;
-    const all = this.snowTargets(), fresh = all.filter(tg => tg.dir !== sn.dir), pick = fresh.length ? fresh : all;
-    if (!pick.length) return;
-    this.snowRoll(pick[Math.floor(this.rand() * pick.length)].dir);
-  },
   placeSnow(rand = this.rand) {
     const S = this.S, far = (x, y) => S.balls.every(b => b.holed || Math.abs(b.x - x) + Math.abs(b.y - y) >= 2) && Math.abs(S.hole.x - x) + Math.abs(S.hole.y - y) >= 2;
     const spots = this.seasonSpots(far), any = spots.length ? spots : this.seasonSpots();
@@ -368,7 +352,7 @@ export const seasonMethods = {
   // lo que llega con la estación (sin lo que se va: leaveSeason)
   enterSeason(now, rand = this.rand) {
     const S = this.S;
-    if (now === 'spring') { this.transform('ice', 'plant'); this.newWind(rand); }
+    if (now === 'spring') this.transform('ice', 'plant'); // (el viento empieza en calma: avisa al acabar el primer turno)
     if (now === 'summer') S.tiles = S.tiles.filter(tl => tl.type !== 'plant');
     if (now === 'autumn') this.dropLeaves(START_LEAVES, rand);
     if (now === 'winter') { this.transform('puddle', 'ice'); this.placeSnow(rand); }
@@ -399,12 +383,9 @@ export const seasonMethods = {
     if (now === 'spring') this.windTurn();
     else if (now === 'summer') this.fireTurn();
     else if (now === 'autumn') this.autumnTurn();
-    else if (now === 'winter') this.snowTurn();
     if (S.winner !== null || S.balls.some(b => !b.holed && this.isHole(b.x, b.y))) this.afterPlay();
   },
   ptag(ball) { return t('player.tag', { n: ball.player + 1 }); },
 };
 
-// las piezas de la estación que vienen en un nivel no gastan el máximo de la carta (como el agua del nivel)
-export const designedSeasonal = tl => isSeasonal(tl) && SEASON_WATER.includes(tl.type);
 export const seasonTileDef = type => TILES[type];

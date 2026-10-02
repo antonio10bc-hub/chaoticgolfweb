@@ -73,7 +73,7 @@ function hintFor(g, p) {
   const pd = g.pending, S = g.S;
   switch (pd.kind) {
     case 'move': return t('hands.hint.move', { card: CARDS[S.hands[p][pd.idx]].name });
-    case 'placeTile': { // (la carta que se está jugando: no siempre se llama como la pieza, p. ej. charco → hielo)
+    case 'placeTile': { // (la carta que se está jugando: no siempre se llama como la pieza, p. ej. incendio → fuego)
       const card = (CARDS[S.hands[pd.p]?.[pd.idx]] || CARDS[pd.tileType])?.name || '';
       return TILES[pd.tileType]?.rotates ? t(app.placeAt ? 'hands.hint.placeRotConfirm' : 'hands.hint.placeRot', { card }) : t('hands.hint.placeTile', { card });
     }
