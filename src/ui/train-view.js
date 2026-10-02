@@ -221,6 +221,7 @@ export async function playWagon(ev) {
 // la de la carta o la del final del turno). Los empujones y lo que va en los vagones se mueven a la vez que la locomotora
 export function markTrainRuns(q) {
   const run = q.filter(e => e.t === 'train');
+  if (!run.length) return; // (sin tren: lo que viaja en la bola de nieve lleva su propio paso, seasons-view.js)
   run.forEach((e, k) => { e._run = run.length; e._first = k === 0; e._last = k === run.length - 1; });
   const ms = run.length ? trainMs(run[0]) : 210;
   for (const e of q) if (e.t === 'move' && (e.shove || e.ride)) e._ms = ms;

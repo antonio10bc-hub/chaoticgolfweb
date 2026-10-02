@@ -17,7 +17,7 @@ import { drawSkinBall } from './skin-canvas.js';
 import { skinSeat, equippedSkin } from './skins.js';
 
 /* ---------- registro de la última jugada (desde el controlador) ---------- */
-const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash', 'launch', 'bump']);
+const MOVES = new Set(['move', 'teleport', 'fall', 'appear', 'impact', 'sink', 'drift', 'splash', 'launch', 'bump', 'gust', 'burn', 'eaten', 'snow']);
 // posiciones antes de la jugada (barato: solo pelotas y hoyo)
 export const piecesBefore = g => ({
   balls: g.S.balls.map(b => ({ player: b.player, x: b.x, y: b.y, holed: b.holed })),
@@ -51,6 +51,21 @@ function cardImage(def) {
   });
 }
 
+// (estaciones) sus piezas, en plano: hoja seca, charco, hielo, planta carnívora e incendio
+// (cx, cy: centro · cw: ancho de casilla · x0, y0, h: la casilla, para el suelo quemado del fuego)
+const SEASON_TILE = {
+  leaf: (c, cx, cy, cw) => { c.save(); c.translate(cx, cy); c.rotate(-.4); c.fillStyle = '#C9692E'; c.beginPath(); c.ellipse(0, 0, cw * .16, cw * .3, 0, 0, 7); c.fill();
+    c.strokeStyle = '#7E3A18'; c.lineWidth = cw * .03; c.beginPath(); c.moveTo(0, -cw * .26); c.lineTo(0, cw * .36); c.stroke(); c.restore(); },
+  puddle: (c, cx, cy, cw) => { c.fillStyle = '#6FA8BC'; c.beginPath(); c.ellipse(cx, cy, cw * .36, cw * .24, -.15, 0, 7); c.fill();
+    c.fillStyle = '#8CC2D3'; c.beginPath(); c.ellipse(cx, cy, cw * .28, cw * .17, -.15, 0, 7); c.fill(); },
+  ice: (c, cx, cy, cw) => { c.fillStyle = '#BFE6F2'; c.strokeStyle = '#8CC6DA'; c.lineWidth = cw * .03; c.beginPath();
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + .3; c[i ? 'lineTo' : 'moveTo'](cx + Math.cos(a) * cw * .36, cy + Math.sin(a) * cw * .36); } c.closePath(); c.fill(); c.stroke(); },
+  plant: (c, cx, cy, cw) => { c.fillStyle = '#4F8A3A'; c.beginPath(); c.ellipse(cx - cw * .16, cy + cw * .2, cw * .18, cw * .07, .4, 0, 7); c.ellipse(cx + cw * .16, cy + cw * .2, cw * .18, cw * .07, -.4, 0, 7); c.fill();
+    c.fillStyle = '#C8463F'; c.beginPath(); c.arc(cx - cw * .1, cy - cw * .04, cw * .14, Math.PI * .6, Math.PI * 1.9); c.fill(); c.beginPath(); c.arc(cx + cw * .1, cy - cw * .04, cw * .14, Math.PI * 1.1, Math.PI * .4); c.fill(); },
+  fire: (c, cx, cy, cw, x0, y0, h) => { c.fillStyle = '#5E3B22'; c.beginPath(); c.roundRect(x0, y0, cw - (x0 - (cx - cw / 2)) * 2, h, Math.min(10, cw * .14)); c.fill();
+    c.fillStyle = '#E8873A'; c.beginPath(); c.moveTo(cx, cy + cw * .3); c.bezierCurveTo(cx - cw * .36, cy + cw * .3, cx - cw * .24, cy - cw * .1, cx - cw * .02, cy - cw * .36); c.bezierCurveTo(cx + cw * .1, cy - cw * .1, cx + cw * .34, cy + cw * .02, cx, cy + cw * .3); c.fill();
+    c.fillStyle = '#FFD23F'; c.beginPath(); c.ellipse(cx, cy + cw * .14, cw * .1, cw * .15, 0, 0, 7); c.fill(); },
+};
 function drawBoard(c, S, fp, box, col) {
   const cw = Math.min(box.w / S.cols, box.h / (S.rows * 1.28)), ch = cw * 1.28, gap = Math.max(3, cw * .06);
   const bw = cw * S.cols, bh = ch * S.rows, ox = box.x + (box.w - bw) / 2, oy = box.y + (box.h - bh) / 2;
@@ -100,11 +115,18 @@ function drawBoard(c, S, fp, box, col) {
       c.fillStyle = d; c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .36, 0, 7); c.fill();
       c.strokeStyle = l; c.lineWidth = cw * .05; c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .24, 0, 7); c.stroke();
       c.fillStyle = '#fff'; c.beginPath(); c.arc(cx(tl.x), cy(tl.y), cw * .07, 0, 7); c.fill();
+    } else if (SEASON_TILE[tl.type]) { SEASON_TILE[tl.type](c, cx(tl.x), cy(tl.y), cw, ox + tl.x * cw + gap / 2, oy + tl.y * ch + gap / 2, ch - gap);
     } else {
       c.fillStyle = '#ECE6CC'; c.beginPath(); c.ellipse(cx(tl.x), cy(tl.y), cw * .4, cw * .3, -.25, 0, 7); c.fill();
       c.fillStyle = '#F6F2E0'; c.beginPath(); c.ellipse(cx(tl.x) - cw * .05, cy(tl.y) - cw * .06, cw * .22, cw * .13, -.25, 0, 7); c.fill();
     }
   }
+  // (estaciones) la bola de nieve
+  if (S.season?.snow) { const x = cx(S.season.snow.x), y = cy(S.season.snow.y), R = cw * .44;
+    c.fillStyle = 'rgba(25,50,70,.28)'; c.beginPath(); c.ellipse(x + R * .12, y + R * .2, R, R * .88, 0, 0, 7); c.fill();
+    c.fillStyle = '#FBFDFE'; c.beginPath(); c.arc(x, y, R, 0, 7); c.fill();
+    c.fillStyle = '#BCD3E1'; c.beginPath(); c.arc(x, y, R, -.2, 2.4); c.arc(x - R * .1, y - R * .12, R * .92, 2.4, -.2, true); c.fill();
+    c.strokeStyle = '#9DB9CA'; c.lineWidth = cw * .03; c.beginPath(); c.arc(x, y, R, 0, 7); c.stroke(); }
   // hoyo con bandera
   const hx = cx(S.hole.x), hy = cy(S.hole.y);
   c.fillStyle = 'rgba(241,241,220,.28)'; c.beginPath(); c.arc(hx, hy, cw * .42, 0, 7); c.fill();
@@ -120,11 +142,12 @@ function drawBoard(c, S, fp, box, col) {
   for (const e of fp.events) {
     const p = pos[e.p]; if (!p) continue;
     const from = { x: p.x, y: p.y };
-    if (e.t === 'move' || e.t === 'drift') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; p.moved = true; }
+    if (e.t === 'move' || e.t === 'drift' || e.t === 'gust') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'launch') { const to = { x: Math.max(-.45, Math.min(S.cols - .55, e.x)), y: Math.max(-.45, Math.min(S.rows - .55, e.y)) }; segs.push({ id: e.p, from, to, jump: true }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'bump') marks.push({ k: 'hit', x: p.x, y: p.y });
     else if (e.t === 'teleport') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y }, jump: true }); p.x = e.x; p.y = e.y; p.moved = true; }
     else if (e.t === 'fall') { const to = { x: Math.max(-.45, Math.min(S.cols - .55, e.x)), y: Math.max(-.45, Math.min(S.rows - .55, e.y)) }; segs.push({ id: e.p, from, to }); marks.push({ k: 'fall', ...to }); p.moved = true; }
+    else if (e.t === 'burn' || e.t === 'eaten') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; marks.push({ k: 'fall', x: e.x, y: e.y }); p.moved = true; } // (estaciones: fuego, planta)
     else if (e.t === 'splash') { segs.push({ id: e.p, from, to: { x: e.x, y: e.y } }); p.x = e.x; p.y = e.y; marks.push({ k: 'fall', x: e.x, y: e.y }); p.moved = true; }
     else if (e.t === 'appear') { p.x = e.x; p.y = e.y; marks.push({ k: 'back', id: e.p, x: e.x, y: e.y }); }
     else if (e.t === 'impact') marks.push({ k: 'hit', x: p.x, y: p.y });

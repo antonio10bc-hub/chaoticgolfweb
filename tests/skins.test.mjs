@@ -7,8 +7,8 @@ import { CHALLENGES } from '../src/content/challenges.js';
 const rec = (over = {}) => ({ won: { rush: 0 }, daily: { bestStreak: 0 }, decks: {}, rush: { best: 0, runs: 0 }, challenges: {}, puzzles: {}, ...over });
 const PUZ = [...Array(24).keys()].map(i => ({ group: ['warmup', 'mid', 'expert'][Math.floor(i / 8)] }));
 
-test('9 pelotas con 3 niveles: racha, las cinco barajas, contrarreloj, desafíos y puzles', () => {
-  assert.deepEqual(SKINS.map(s => s.id), ['fire', 'classic', 'water', 'wood', 'steam', 'prism', 'bolt', 'crown', 'puzzle']);
+test('10 pelotas con 3 niveles: racha, las seis barajas, contrarreloj, desafíos y puzles', () => {
+  assert.deepEqual(SKINS.map(s => s.id), ['fire', 'classic', 'water', 'wood', 'steam', 'seasons', 'prism', 'bolt', 'crown', 'puzzle']);
   for (const s of SKINS) if (s.at) assert.equal(s.at.length, 3, s.id);
   assert.deepEqual(skinById('fire').at, [7, 30, 365]);
 });
@@ -27,6 +27,7 @@ test('barajas: victorias con cada una (minigolf y Ultimate por su id) y series d
   assert.equal(skinProgress(skinById('water'), R, PUZ).lvl, 0);
   assert.equal(skinProgress(skinById('wood'), R, PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('steam'), R, PUZ).lvl, 2);
+  assert.equal(skinProgress(skinById('seasons'), rec({ decks: { seasons: { w: 12 } } }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('prism'), R, PUZ).lvl, 3);
   assert.equal(skinProgress(skinById('bolt'), R, PUZ).lvl, 2);
   // antes del contador de series: ~6 victorias por serie

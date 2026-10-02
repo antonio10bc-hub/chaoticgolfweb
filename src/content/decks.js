@@ -21,6 +21,12 @@ export const DECKS = [
   { id: 'train', color: '#B5483B', emblem: 'train', scene: 'rail', grow: { cols: 4, rows: 2 }, train: true,
     newCards: ['trenVuelta', 'oTren1', 'vagon'], trainLayout: true, // (salidas abajo, vías en medio y el hoyo arriba: hay que cruzarlas)
     counts: base => ({ ...base, bunker: 0, portal: 0, palo2: base.palo2 + 1, trenVuelta: 3, oTren1: 3, vagon: 3 }) },
+  // las estaciones: el campo cambia con la estación (una al azar al empezar) y la carta negra pasa a la siguiente.
+  // Primavera: viento y plantas carnívoras · verano: incendios · otoño: hojas secas y lluvia · invierno: bola de nieve
+  // y hielo. Sin búnkeres ni portales. noUltimate: sus cartas no van en Ultimate
+  { id: 'seasons', color: '#C2618B', emblem: 'seasons', scene: 'seasons', grow: { cols: 2, rows: 0 }, seasons: true, noUltimate: true,
+    newCards: ['estacion', 'charco', 'incendio', 'oNieve'], introLead: 'deckIntro.leads.seasons', // (la presentación cuenta qué trae cada estación)
+    counts: base => ({ ...base, bunker: 0, portal: 0, estacion: 4, charco: 6, incendio: 1, oNieve: 2 }) },
   // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
   // Ultimate: las cartas de TODAS las demás barajas (las futuras también se suman solas), un campo
   // enorme, palos de 10 y el palo iridiscente
@@ -28,7 +34,7 @@ export const DECKS = [
     newCards: ['paloIri', 'palo10'],
     counts: base => {
       const all = { ...base };
-      for (const dk of DECKS) if (!dk.ultimate && dk.counts) for (const [k, n] of Object.entries(dk.counts(base))) all[k] = Math.max(all[k] || 0, n);
+      for (const dk of DECKS) if (!dk.ultimate && !dk.noUltimate && dk.counts) for (const [k, n] of Object.entries(dk.counts(base))) all[k] = Math.max(all[k] || 0, n);
       return { ...all, palo10: 3, paloIri: 2 };
     } },
 ];

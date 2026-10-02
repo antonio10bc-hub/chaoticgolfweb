@@ -31,6 +31,7 @@ import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
+import { SEASON_ICON } from './season-art.js';
 import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
@@ -108,6 +109,7 @@ export function renderDailyCard() {
   // línea de estado solo cuando hay algo que decir: partida a medias o la racha (en peligro, perdida o por empezar).
   // Con el reto de hoy jugado no hace falta (la llama encendida lo dice; tu mejor resultado queda en el tic)
   const status = saved ? t('save.title')
+    : sk.frozen && sk.n && !sk.today ? t('modes.daily.frozen')
     : sk.atRisk ? t('modes.daily.risk')
     : sk.lost ? t('modes.daily.lost', { n: sk.lost })
     : sk.today ? ''
@@ -116,8 +118,8 @@ export function renderDailyCard() {
   const vs = t('modes.daily.vs', { a: rv[0].name, b: rv[1].name });
   const play = saved ? t('menu.continue') : today?.best ? t('modes.again') : t('modes.play');
   // la racha, junto al título (lejos de las caras de los rivales): encendida si hoy ya has jugado, apagada (y latiendo) si está en peligro
-  const flameCls = (sk.today ? ' lit' : '') + (sk.atRisk ? ' risk' : '') + (sk.today && firstLitToday(date) ? ' ignite' : '');
-  const flame = sk.n || sk.lost ? `<span class="dFlame${flameCls}" title="${esc(streakLabel(sk.n))}"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg><b>${sk.n}</b></span>` : '';
+  const flameCls = (sk.today ? ' lit' : '') + (sk.atRisk ? ' risk' : '') + (sk.frozen ? ' frozen' : '') + (sk.today && firstLitToday(date) ? ' ignite' : '');
+  const flame = sk.n || sk.lost ? `<span class="dFlame${flameCls}" title="${esc(streakLabel(sk.n) + (sk.frozen ? ' · ' + t('modes.daily.frozen') : ''))}"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg><b>${sk.n}</b></span>` : '';
   // el tic de completado va sobre la miniatura: el texto no cambia de forma según el estado.
   // Cada línea es una sola fila; la mecánica pasa a su propia línea si no cabe junto al título
   $('dailyCard').innerHTML =
@@ -368,6 +370,15 @@ const DECK_ART = {
     `<g class="dkWheels"><circle cx="21" cy="43" r="3.4" fill="#242424"/><circle cx="29.5" cy="43" r="3.4" fill="#242424"/><circle cx="40" cy="42.6" r="3.8" fill="#242424"/>` +
     `<circle cx="21" cy="43" r="1.2" fill="#B5483B"/><circle cx="29.5" cy="43" r="1.2" fill="#B5483B"/><circle cx="40" cy="42.6" r="1.4" fill="#B5483B"/></g>` +
     `<path d="M21 43 H40" stroke="#8E8E96" stroke-width="1.1"/>` + frame,
+  // las estaciones: la carta partida en cuatro (primavera, verano, otoño, invierno, en el sentido del reloj) con el
+  // hoyo en el centro; al pasar por la tarjeta, la rueda gira a la siguiente
+  seasons: () => cardBase('seasons', '#E7A0BC', '#9C4A70') +
+    `<g clip-path="url(#dk-seasons-c)"><g class="dkSeasons">` +
+    `<path d="M30 30 L30 -10 L-10 -10 L-10 30Z" fill="#6DB45E"/><path d="M30 30 L70 30 L70 -10 L30 -10Z" fill="#D9C062"/>` +
+    `<path d="M30 30 L30 70 L70 70 L70 30Z" fill="#C97A3E"/><path d="M30 30 L-10 30 L-10 70 L30 70Z" fill="#D7E6EE"/>` +
+    `<g transform="translate(13 9) scale(.62)">${SEASON_ICON.spring}</g><g transform="translate(32.5 9) scale(.62)">${SEASON_ICON.summer}</g>` +
+    `<g transform="translate(32.5 36) scale(.62)">${SEASON_ICON.autumn}</g><g transform="translate(13 36) scale(.62)">${SEASON_ICON.winter}</g></g></g>` +
+    `<circle cx="30" cy="30" r="6.4" fill="#F1F1DC"/>` + FLAGP(30, 31.4) + frame,
   prism: () => cardBase('prism', '#4A3A86', '#241A4A') +
     `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
     `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +
@@ -406,7 +417,7 @@ export function openModes(tab) {
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       // (Ultimate: las barajas que reúne, a la derecha de su nombre)
       `<div class="dkMain">${dk.ultimate ? `<div class="ultHead"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +
-        `<div class="ultIncl"><span>${esc(t('decks.includes'))}</span>${DECKS.filter(d => !d.ultimate && !d.locked).map(d => `<i title="${esc(t('decks.' + d.id + '.name'))}">${deckArt(d)}</i>`).join('')}</div></div>`
+        `<div class="ultIncl"><span>${esc(t('decks.includes'))}</span>${DECKS.filter(d => !d.ultimate && !d.locked && !d.noUltimate).map(d => `<i title="${esc(t('decks.' + d.id + '.name'))}">${deckArt(d)}</i>`).join('')}</div></div>`
         : `<h3>${esc(t('decks.' + dk.id + '.name'))}</h3>`}` +
       `<p>${esc(t('decks.' + dk.id + '.desc'))}</p>` +
       // Ultimate: las barajas que reúne (también las que se añadan)

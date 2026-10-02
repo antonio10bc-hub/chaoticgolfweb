@@ -107,6 +107,17 @@
 .sk-steam .orb { animation-duration: 6s; }
 .sk-steam .orb .lc { width: calc(var(--bs) * .42); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.21); }
 
+/* ---------- ESTACIONES · baraja de las estaciones: la bola en cuatro colores · pétalos, hojas y copos · las cuatro en órbita ---------- */
+.sk-seasons .qd { inset: 0; border-radius: 50%; opacity: .62;
+  background: conic-gradient(from -45deg, #F4A9C4 0 25%, #FFD23F 0 50%, #D9703A 0 75%, #BFE0F0 0); }
+.sk-seasons .fl { left: var(--x); top: -8%; width: calc(var(--bs) * .14); height: calc(var(--bs) * .1); border-radius: 60% 0 60% 0; background: var(--c);
+  box-shadow: 0 0 calc(var(--bs) * .02) rgba(0,0,0,.15); animation: skFlake 3.2s linear infinite; animation-delay: var(--d); will-change: transform, opacity; }
+@keyframes skFlake { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(calc(var(--bs) * .18), calc(var(--bs) * 1.2)) rotate(300deg); opacity: 0; } }
+.sk-seasons .aura { background: radial-gradient(closest-side, rgba(255,214,228,.55), rgba(255,214,228,0)); }
+.sk-seasons .orb { animation-duration: 9s; }
+.sk-seasons .orb .se { width: calc(var(--bs) * .3); height: calc(var(--bs) * .3); margin: calc(var(--bs) * -.15) 0 0 calc(var(--bs) * -.15); }
+.sk-seasons .orb .se svg { background: #F1F1DC; border-radius: 50%; box-shadow: 0 calc(var(--bs) * .02) calc(var(--bs) * .05) rgba(20,40,20,.25); }
+
 /* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · destellos ---------- */
 .sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }

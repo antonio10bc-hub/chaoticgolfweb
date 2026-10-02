@@ -50,7 +50,7 @@ test('partida rápida del tren: circuito en Game.pve con su RNG aparte (el mazo 
   const ult = deckById('ultimate').counts(defaultCounts());
   for (const k of ['trenVuelta', 'oTren1', 'vagon']) assert.ok(ult[k] > 0, 'Ultimate suma ' + k);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate', 'Ultimate, siempre la última');
-  assert.equal(DECKS[DECKS.length - 2].id, 'train', 'la baraja nueva, detrás de la anterior');
+  assert.ok(DECKS.findIndex(d => d.id === 'train') < DECKS.findIndex(d => d.id === 'ultimate'), 'el tren, antes de Ultimate');
   for (const k of ['trenVuelta', 'oTren1', 'vagon']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
 });
 

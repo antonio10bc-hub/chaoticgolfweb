@@ -1,5 +1,5 @@
 // "¡Nueva baraja!": cuando el juego estrena una baraja, quien ya jugaba lo ve una vez al llegar al menú principal.
-// Una ventana pequeña: la ilustración con lo nuevo (aquí, el circuito con la locomotora y su vagón dando vueltas),
+// Una ventana pequeña: la ilustración con lo nuevo (aquí, el campo partido en sus cuatro estaciones),
 // el anuncio, una frase y "Jugar ahora" (Partida rápida con esa baraja) o "Luego".
 // Para la próxima baraja: ANNOUNCE = su id y su ilustración en ART. A quien llega por primera vez no se le
 // anuncia nada (para esa persona todo es nuevo): se apunta como vista.
@@ -11,8 +11,10 @@ import { trackSVG, railPath, LOCO, WAGON } from './train-view.js';
 import { newQuick } from './screen-modes.js';
 import { track } from './analytics.js';
 import { REDUCED } from '../fx/juice.js';
+import { tilePic } from '../content/tiles/index.js';
+import { SEASON_ICON, SNOWBALL } from './season-art.js';
 
-const ANNOUNCE = 'train';
+const ANNOUNCE = 'seasons';
 const KEY = 'chaoticgolf_newDeckSeen';
 // ¿ya jugaba? (algo de antes guardado en este dispositivo; se mira al cargar, antes de que el arranque escriba nada)
 const returning = (() => { try { return ['chaoticgolf_stats', 'chaoticgolf_tutorial', 'chaoticgolf_deckIntros', 'chaoticgolf_achievements', 'chaoticgolf_lastpve', 'chaoticgolf_intros']
@@ -42,7 +44,27 @@ function trainArt() {
     `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#D8CDB4"/><rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#3F7440"/>` +
     cells + trackSVG(tr, center, W, H, Math.min(CW, CH), { w: CW - 4, h: CH - 4 }) + hole + ball + sprite(WAGON, -(dur - lag)) + sprite(LOCO, 0) + '</svg>'; // (el vagón, una casilla por detrás)
 }
-const ART = { train: trainArt };
+// las estaciones: el campo partido en cuatro franjas (primavera, verano, otoño, invierno), cada una con lo suyo (la planta
+// carnívora y el viento, el fuego, las hojas y el charco, la bola de nieve), y una pelota que las cruza
+function seasonsArt() {
+  const C = 8, R = 4, CW = 34, CH = 44, W = C * CW, H = R * CH;
+  const GRASS = [['#59A757', '#4C9A4C'], ['#98A84D', '#8C9D45'], ['#7C8B41', '#6F7F3B'], ['#B7CBD5', '#A9C0CB']];
+  let cells = '';
+  for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) cells += `<rect x="${x * CW + 2}" y="${y * CH + 2}" width="${CW - 4}" height="${CH - 4}" rx="5" fill="${GRASS[x >> 1][((x + y) >> 1) & 1]}"/>`;
+  const put = (type, x, y) => tilePic({ type }).replace('<svg ', `<svg x="${x * CW + 1}" y="${y * CH + 1}" width="${CW - 2}" height="${CH - 2}" `);
+  const icon = (s, i) => `<g transform="translate(${i * 2 * CW + CW - 12} ${H - 6})"><circle cx="12" cy="12" r="13" fill="#F1F1DC"/>${SEASON_ICON[s]}</g>`;
+  const snow = SNOWBALL.replace('<svg class="snowSvg" viewBox="0 0 100 100" aria-hidden="true">', `<svg x="${7 * CW + 2}" y="${2 * CH + 6}" width="${CW - 4}" height="${CW - 4}" viewBox="0 0 100 100">`);
+  const wind = `<path d="M${CW * .5} ${CH * 1.5}C${CW * 1.2} ${CH * .9} ${CW * 1.6} ${CH * 2.1} ${CW * 2.2} ${CH * 1.4}" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 7"/>`;
+  const ballPath = `M${CW * .5} ${CH * 3.5}H${CW * 7.5}`;
+  const ball = `<circle r="8" fill="#f26d6d" stroke="#F1F1DC" stroke-width="2">${REDUCED ? '' : `<animateMotion dur="7s" repeatCount="indefinite" path="${ballPath}"/>`}</circle>`;
+  const hole = `<g transform="translate(${6.5 * CW} ${.5 * CH})"><circle r="7" fill="#242424"/><path d="M1 0v-17l9 3.5-9 3.5" fill="#E8873A" stroke="#F1F1DC" stroke-width="1.2"/></g>`;
+  return `<svg class="ndArt" viewBox="-8 -8 ${W + 16} ${H + 34}" role="img" aria-label="${esc(t('newDeck.alt'))}">` +
+    `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#F6CADB"/><rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#3F7440"/>` +
+    cells + wind + put('plant', 1, 0) + put('fire', 2, 1) + put('fire', 3, 1) + put('leaf', 4, 2) + put('puddle', 5, 0) + put('leaf', 5, 3) + put('ice', 6, 3) + snow + hole +
+    (REDUCED ? `<circle cx="${CW * .5}" cy="${CH * 3.5}" r="8" fill="#f26d6d" stroke="#F1F1DC" stroke-width="2"/>` : `<g transform="translate(0 0)">${ball}</g>`) +
+    ['spring', 'summer', 'autumn', 'winter'].map(icon).join('') + '</svg>';
+}
+const ART = { train: trainArt, seasons: seasonsArt };
 
 // al llegar al menú principal (una vez): true si se ha enseñado
 export function maybeAnnounceDeck() {

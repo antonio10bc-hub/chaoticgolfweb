@@ -18,6 +18,7 @@ import { botReact } from './bot-react.js';
 import { unlock } from './achievements.js';
 import { isBot } from './players.js';
 import { playTrain, playWagon, playTrainBump, markTrainRuns } from './train-view.js';
+import { SEASON_PLAY, markSnowRuns, seasonDone } from './seasons-view.js';
 
 let combo = 0;
 
@@ -31,6 +32,7 @@ export async function playQueue(onDone) {
   if (app.game !== game) return;
   const q = app.animQueue; app.animQueue = [];
   markTrainRuns(q);
+  markSnowRuns(q);
   const warped = new Set(); // pelotas que han cruzado un portal en esta jugada (logro "de portal a hoyo")
   for (const ev of q) {
     if (ev.t === 'teleport') warped.add(ev.p);
@@ -41,6 +43,7 @@ export async function playQueue(onDone) {
     if (app.game !== game) return; // partida descartada: no tocar la nueva
   }
   app.animating = false;
+  seasonDone(); // (estaciones: el campo, ya como ha quedado)
   if (combo >= 3 && app.mode !== 'free' && app.lastActor != null && !isBot(app.lastActor)) unlock('combo3');
   syncPieces();
   fxTrailShow(); // estela fantasma del camino recorrido
@@ -53,6 +56,7 @@ async function playEvent(ev) {
   if (ev.t === 'train') return playTrain(ev);
   if (ev.t === 'wagon') return playWagon(ev);
   if (ev.t === 'bump' && ev.p === 'loco') return playTrainBump(ev);
+  if (SEASON_PLAY[ev.t]) return SEASON_PLAY[ev.t](ev); // (baraja de las estaciones)
   const el = pieceEl(ev.p);
   if (!el) return;
   botReact(ev); // caras y bocadillos de los bots (decorativo)

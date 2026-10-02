@@ -5,6 +5,7 @@
 //   agua     victorias con la baraja de agua: agua dentro · ondas · gotas en órbita
 //   madera   victorias con la de minigolf: vetas · marco de madera · molino que gira detrás
 //   vapor    victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren
+//   estaciones victorias con la de las estaciones: la bola en cuatro colores · pétalos, hojas y copos · las cuatro en órbita
 //   prisma   victorias con Ultimate: brillo iridiscente · halo arcoíris · destellos
 //   rayo     series de contrarreloj completas: estela · esfera de reloj · rayos
 //   corona   desafíos superados por grupo (calentamiento · intermedio · experto)
@@ -15,6 +16,8 @@ import { app } from './app.js';
 import { loadRecords } from './records.js';
 import { CHALLENGES, CH_GROUPS } from '../content/challenges.js';
 import { loadProfile, saveProfile } from './profile.js';
+import { SEASON_ICON } from './season-art.js';
+const SEASON_SVG = s => `<svg viewBox="0 0 24 24" aria-hidden="true">${SEASON_ICON[s]}</svg>`;
 
 export const GROUPS = CH_GROUPS; // (calentamiento, intermedio, experto: los tres niveles de corona y puzle)
 export const SKINS = [
@@ -23,6 +26,7 @@ export const SKINS = [
   { id: 'water', kind: 'deck', deck: 'water', at: [10, 50, 100], accent: '#2F9CC4' },
   { id: 'wood', kind: 'deck', deck: 'minigolf', at: [10, 50, 100], accent: '#A8743F' },
   { id: 'steam', kind: 'deck', deck: 'train', at: [10, 50, 100], accent: '#B5483B' },
+  { id: 'seasons', kind: 'deck', deck: 'seasons', at: [10, 50, 100], accent: '#C2618B' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
@@ -166,6 +170,11 @@ function parts(id, lvl) {
       if (lvl >= 2) back += is('puff', 3, i => `--x:${22 + i * 16}%;--d:${(-i * .8).toFixed(1)}s;--s:${[.9, 1.15, 1][i]}`);
       if (lvl >= 3) { back += '<i class="rails"></i><i class="rails in"></i>'; front += `<i class="orb"><i class="lc">${LOCO_MINI}</i></i>`; }
       break;
+    case 'seasons':
+      surf += '<i class="qd"></i>';
+      if (lvl >= 2) back += is('fl', 3, i => `--x:${18 + i * 26}%;--d:${(-i * 1.1).toFixed(1)}s;--c:${['#F8C3D6', '#D9703A', '#FFFFFF'][i]}`);
+      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${['spring', 'summer', 'autumn', 'winter'].map((s, i) => `<i class="se" style="--a:${i * 90}deg">${SEASON_SVG(s)}</i>`).join('')}</i>`; }
+      break;
     case 'prism':
       surf += '<i class="ir"></i>';
       if (lvl >= 2) back += '<i class="halo"></i>';
@@ -194,6 +203,6 @@ export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
 // (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
-export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, LOCO_MINI, laurel };
+export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;

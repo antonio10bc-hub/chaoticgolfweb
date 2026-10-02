@@ -18,6 +18,8 @@ import { fitCellsTo } from './geometry.js';
 import { isPhone } from './device.js';
 import { makeCircuit, validPath, MAX_CARS } from '../engine/train.js';
 import { trackSVG, draftTrackSVG, LOCO, WAGON } from './train-view.js';
+import { SEASONS } from '../engine/seasons.js';
+import { seasonIcon, SNOWBALL } from './season-art.js';
 import { cellCenterPx } from './geometry.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { waterJoins, waterDelay } from './board.js';
@@ -47,7 +49,11 @@ const GROUPS = [
   ['water', ['river', 'lake']],
   ['mini', ['block', 'corner', 'tunnel', 'launcher']],
   ['train', ['track', 'station', 'loco']],
+  ['seasons', ['leaf', 'puddle', 'ice', 'plant', 'fire', 'snowball']],
 ];
+// (estaciones) la estación de cada pieza: al ponerla en un nivel sin estación, el nivel pasa a esa
+const SEASON_OF = { leaf: 'autumn', puddle: 'autumn', ice: 'winter', plant: 'spring', fire: 'summer', snowball: 'winter' };
+const isSeasonTool = tool => !!SEASON_OF[tool];
 const SHORTCUT = { b: 'ball', h: 'hole', p: 'par', o: 'decoy', x: 'erase' };
 const isTileTool = tool => !!TILES[tool];
 const PAIRS = [1, 2, 3], PAIR_LETTER = p => 'ABC'[p - 1];
@@ -79,6 +85,9 @@ function normalize(L) {
     out.rails = { cells, stations: (out.rails.stations || []).filter(on).slice(0, 4), loco: out.rails.loco && on(out.rails.loco) ? out.rails.loco : null, cars: Math.max(0, Math.min(MAX_CARS, out.rails.cars || 0)) };
     if (!cells.length) delete out.rails;
   }
+  // (estaciones) la del nivel y, en invierno, la bola de nieve en una casilla de dentro
+  if (out.season && !SEASONS.includes(out.season.now)) delete out.season;
+  if (out.season?.snow && (out.season.now !== 'winter' || out.season.snow.x >= out.cols || out.season.snow.y >= out.rows)) delete out.season.snow;
   delete out.at;
   return out;
 }
@@ -130,6 +139,7 @@ const same = (a, x, y) => a && a.x === x && a.y === y;
 const tileAt = (x, y) => ED.level.tiles.find(tl => tl.x === x && tl.y === y);
 const parAt = (x, y) => ED.level.parCells.find(p => p.x === x && p.y === y);
 const decoyAt = (x, y) => ED.level.extraBalls.findIndex(e => e.x === x && e.y === y);
+const snowAt = (x, y) => same(ED.level.season?.snow, x, y);
 // ¿puede estar una pelota o el hoyo en esa loseta? (solo en el búnker; en el resto no se para nadie)
 const standable = tl => !tl || tl.type === 'bunker';
 /* ---- el tren: vías, paradas y locomotora, casilla a casilla ----
@@ -220,6 +230,7 @@ function modeAt(x, y, erase) {
   if (tool === 'ball' || tool === 'hole') return 'move';
   if (tool === 'par') return parAt(x, y)?.n === ED.parN ? 'remove' : 'paint';
   if (tool === 'decoy') return decoyAt(x, y) >= 0 ? 'remove' : 'paint';
+  if (tool === 'snowball') return snowAt(x, y) ? 'remove' : 'paint';
   if (tl?.type === tool) return TILES[tool].rotates ? 'rotate' : tool === 'portal' && tl.pair !== ED.pair ? 'paint' : 'remove';
   return 'paint';
 }
@@ -253,7 +264,8 @@ function applyAt(x, y, mode) {
       return true;
     }
     case 'erase': {
-      const had = !!tl || !!parAt(x, y) || di >= 0 || railAt(x, y);
+      const had = !!tl || !!parAt(x, y) || di >= 0 || railAt(x, y) || snowAt(x, y);
+      if (snowAt(x, y)) delete L.season.snow;
       if (tl) dropTile();
       if (railAt(x, y)) dropRail(x, y);
       L.parCells = L.parCells.filter(p => !same(p, x, y));
@@ -273,6 +285,7 @@ function applyAt(x, y, mode) {
     case 'remove': {
       if (tool === 'par') { L.parCells = L.parCells.filter(p => !same(p, x, y)); return true; }
       if (tool === 'decoy') { if (di >= 0) L.extraBalls.splice(di, 1); return di >= 0; }
+      if (tool === 'snowball') { if (!snowAt(x, y)) return false; delete L.season.snow; return true; }
       if (tl?.type === tool) { dropTile(); return true; }
       return false;
     }
@@ -297,8 +310,15 @@ function applyAt(x, y, mode) {
         L.extraBalls.push({ x, y });
         return true;
       }
+      if (tool === 'snowball') { // (estaciones) la bola de nieve: una sola, en una casilla sin piezas; el nivel pasa a invierno
+        if (snowAt(x, y)) return false;
+        if (tl || railAt(x, y)) { bad(x, y, 'ed.bad.onPiece'); return false; }
+        L.season = { now: 'winter', snow: { x, y } };
+        return true;
+      }
       if (!isTileTool(tool)) return false;
       if (tl?.type === tool && (tool !== 'portal' || tl.pair === ED.pair)) return false;
+      if (snowAt(x, y)) { bad(x, y, 'ed.bad.onPiece'); return false; }
       if (railAt(x, y)) { bad(x, y, 'ed.bad.onTrack'); return false; } // (nada encima de las vías)
       if ((isBall || isHole || di >= 0) && tool !== 'bunker') { bad(x, y, 'ed.bad.taken'); return false; }
       if (tool === 'portal' && L.tiles.filter(q => q.type === 'portal' && q.pair === ED.pair && q !== tl).length >= 2) {
@@ -310,6 +330,7 @@ function applyAt(x, y, mode) {
       if (TILES[tool].rotates && curRot()) nt.rot = curRot();
       if (tool === 'portal') nt.pair = ED.pair;
       L.tiles.push(nt);
+      if (isSeasonTool(tool) && !L.season) L.season = { now: SEASON_OF[tool] }; // (sin estación, sus piezas no harían nada)
       return true;
     }
   }
@@ -334,6 +355,7 @@ function resize(dc, dr) {
     L.extraBalls = L.extraBalls.filter(e => !same(e, L[k].x, L[k].y));
   }
   if (same(L.ball, L.hole.x, L.hole.y)) L.ball = { x: L.ball.x, y: L.ball.y > 0 ? L.ball.y - 1 : L.ball.y + 1 };
+  if (L.season?.snow && !inB(L.season.snow)) delete L.season.snow;
   sfx('woodTick');
   refresh();
 }
@@ -348,6 +370,7 @@ function issues(L) {
   errors.push(...railProblems(L)); // (el tren: vuelta cerrada y 4 paradas)
   for (const p of PAIRS) if (L.tiles.filter(q => q.type === 'portal' && q.pair === p).length === 1) warns.push(t('ed.st.pair', { l: PAIR_LETTER(p) }));
   if (!L.parCells.length) warns.push(t('ed.st.noPar'));
+  if (!L.season && ['estacion', 'charco', 'incendio', 'oNieve'].some(k => L.deckCounts[k] > 0 || L.hand.includes(k))) warns.push(t('ed.st.noSeason'));
   return { errors, warns };
 }
 function paintStatus() {
@@ -383,6 +406,7 @@ function toolPic(tool) {
     case 'station': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="4" y="8" width="32" height="32" rx="5" fill="#CCC6B8" stroke="#ADA696" stroke-width="1.4"/>` +
       `<path d="M20 4V44" stroke="#8A5A33" stroke-width="13" stroke-dasharray="2.6 4"/><path d="M15 4V44M25 4V44" stroke="#4B5057" stroke-width="2.2"/><path d="M8 12V36M32 12V36" stroke="#E8B23A" stroke-width="2.2" stroke-linecap="round"/></svg>`;
     case 'loco': return `<svg viewBox="0 0 40 48" aria-hidden="true">${LOCO.replace(/<svg class="trainSvg" viewBox="0 0 70 100" preserveAspectRatio="none"/, '<svg x="6" y="2" width="28" height="44" viewBox="0 0 70 100"')}</svg>`;
+    case 'snowball': return SNOWBALL.replace('<svg class="snowSvg" viewBox="0 0 100 100" aria-hidden="true">', '<svg viewBox="-8 -8 116 116" aria-hidden="true">');
     default: return tilePic({ type: tool, rot: ED.rots[tool] || 0 });
   }
 }
@@ -419,6 +443,12 @@ function renderToolOpts() {
     html += `<div class="edChips" role="group" aria-label="${esc(t('ed.opt.cars'))}"><span class="edOptLbl">${esc(t('ed.opt.cars'))}</span>` +
       Array.from({ length: MAX_CARS + 1 }, (_, n) => `<button class="chip${(L.rails?.cars || 0) === n ? ' on' : ''}" data-cars="${n}" aria-pressed="${(L.rails?.cars || 0) === n}"${L.rails ? '' : ' disabled'}>${n}</button>`).join('') + `</div>`;
   }
+  if (isSeasonTool(tool)) { // la estación del nivel (sin estación, las piezas de estación no hacen nada)
+    const now = L.season?.now || '';
+    html += `<div class="edChips seChips" role="group" aria-label="${esc(t('ed.opt.season'))}"><span class="edOptLbl">${esc(t('ed.opt.season'))}</span>` +
+      ['', ...SEASONS].map(s => `<button class="chip${now === s ? ' on' : ''}" data-season="${s}" aria-pressed="${now === s}" title="${esc(s ? t('seasons.' + s + '.title') : t('ed.opt.noSeason'))}">` +
+        `${s ? seasonIcon(s) : '–'}</button>`).join('') + `</div>`;
+  }
   html += `<p class="edHint">${esc(t('ed.hint.' + (TILES[tool]?.rotates ? 'rotates' : tool), { l: PAIR_LETTER(ED.pair) }))}</p>`;
   html += `<p class="edHint soft">${esc(t('ed.hint.always'))}</p>`;
   $('edToolOpts').innerHTML = html;
@@ -445,10 +475,12 @@ export function edRender() {
     if (same(L.hole, x, y)) { inner += ASSETS.holeHTML(); aria.push(t('a11y.hole')); }
     if (same(L.ball, x, y)) { inner += ASSETS.ballHTML(0); aria.push(toolName('ball')); }
     if (dset.has(x + ',' + y)) { inner += decoyHTML(); aria.push(toolName('decoy')); }
+    if (snowAt(x, y)) { inner += `<div class="edSnow">${SNOWBALL}</div>`; aria.push(toolName('snowball')); }
     const bg = ASSETS.cellArt(tile, par);
     html += `<div class="${cls}" role="gridcell" data-x="${x}" data-y="${y}" aria-label="${esc(aria.join(', '))}" style="--row:${y};--col:${x}${tile && (tile.type === 'river' || tile.type === 'lake') ? ';--wd:' + waterDelay(tile.type) : ''}${bg ? `;background-image:url(${bg});background-size:cover` : ''}">${inner}</div>`;
   }
   board.innerHTML = html;
+  if (L.season) board.dataset.season = L.season.now; else delete board.dataset.season; // (el césped de la estación)
   if (L.rails) board.insertAdjacentHTML('beforeend', editorTrainSVG(L));
   $('edRulerX').style.gridTemplateColumns = `repeat(${L.cols}, var(--cell-w))`;
   $('edRulerY').style.gridTemplateRows = `repeat(${L.rows}, var(--cell-h))`;
@@ -652,8 +684,16 @@ export function bindEditor() {
     ED.tool = b.dataset.tool; sfx('select'); renderTools();
   });
   $('edToolOpts').addEventListener('click', e => {
-    const b = e.target.closest('[data-parn], [data-pair], [data-rot], [data-train], [data-cars]');
+    const b = e.target.closest('[data-parn], [data-pair], [data-rot], [data-train], [data-cars], [data-season]');
     if (!b) return;
+    if (b.dataset.season !== undefined) { // (estaciones) la del nivel; fuera del invierno no hay bola de nieve
+      const L = ED.level, s = b.dataset.season;
+      if ((L.season?.now || '') === s) return;
+      pushUndo();
+      if (!s) delete L.season; else L.season = { now: s, ...(s === 'winter' && L.season?.snow ? { snow: L.season.snow } : {}) };
+      sfx('select'); renderTools(); changed();
+      return;
+    }
     if (b.dataset.train || b.dataset.cars) { // (el tren cambia el nivel: con su deshacer)
       const L = ED.level; pushUndo();
       if (b.dataset.train === 'new' && !newCircuit()) { ED.undo.pop(); return; }
@@ -709,7 +749,8 @@ export function bindEditor() {
     if (!b || b.disabled) return;
     const L = ED.level, d = b.dataset;
     if (d.preset) { pushUndo(); L.deckCounts = presetCounts(d.preset);
-      if (!L.rails && (d.preset === 'train' || d.preset === 'ultimate') && newCircuit()) renderTools(); } // (sus cartas necesitan vías)
+      if (!L.rails && (d.preset === 'train' || d.preset === 'ultimate') && newCircuit()) renderTools(); // (sus cartas necesitan vías)
+      if (!L.season && d.preset === 'seasons') { L.season = { now: 'spring' }; renderTools(); } } // (y las de las estaciones, una estación)
     else if (d.add) { pushUndo(); L.deckCounts[d.add] = Math.min(30, (L.deckCounts[d.add] || 0) + (e.shiftKey ? -1 : 1)); L.deckCounts[d.add] = Math.max(0, L.deckCounts[d.add]); }
     else if (d.sub) { pushUndo(); L.deckCounts[d.sub] = Math.max(0, (L.deckCounts[d.sub] || 0) - 1); }
     else if (d.hand) { if (L.hand.length >= HAND_MAX) return; pushUndo(); L.hand.push(d.hand); }

@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="styles/themes.css">
 <link rel="stylesheet" href="styles/features.css">
 <link rel="stylesheet" href="styles/train.css">
+<link rel="stylesheet" href="styles/seasons.css">
 <link rel="stylesheet" href="styles/skins.css">
 <link rel="stylesheet" href="styles/phone.css">
 <script src="src/boot-watch.js" defer></script>
@@ -43,6 +44,7 @@
 <link rel="modulepreload" href="src/ui/controller.js">
 <link rel="modulepreload" href="src/ui/dom.js">
 <link rel="modulepreload" href="src/ui/editor.js">
+<link rel="modulepreload" href="src/ui/gift.js">
 <link rel="modulepreload" href="src/ui/hands.js">
 <link rel="modulepreload" href="src/ui/hotseat.js">
 <link rel="modulepreload" href="src/ui/hud.js">
@@ -73,6 +75,7 @@
 <link rel="modulepreload" href="src/content/tiles/index.js">
 <link rel="modulepreload" href="src/engine/game.js">
 <link rel="modulepreload" href="src/engine/rng.js">
+<link rel="modulepreload" href="src/engine/seasons.js">
 <link rel="modulepreload" href="src/engine/train.js">
 <link rel="modulepreload" href="src/fx/juice.js">
 <link rel="modulepreload" href="src/fx/particles.js">
@@ -97,6 +100,8 @@
 <link rel="modulepreload" href="src/ui/profile.js">
 <link rel="modulepreload" href="src/ui/reasons.js">
 <link rel="modulepreload" href="src/ui/resume.js">
+<link rel="modulepreload" href="src/ui/season-art.js">
+<link rel="modulepreload" href="src/ui/seasons-view.js">
 <link rel="modulepreload" href="src/ui/share-play.js">
 <link rel="modulepreload" href="src/ui/skins.js">
 <link rel="modulepreload" href="src/ui/stats-charts.js">
@@ -105,6 +110,7 @@
 <link rel="modulepreload" href="src/ui/why-lost.js">
 <link rel="modulepreload" href="src/ai/autoplay.js">
 <link rel="modulepreload" href="src/content/cards/dedo.js">
+<link rel="modulepreload" href="src/content/cards/estaciones.js">
 <link rel="modulepreload" href="src/content/cards/hoyo.js">
 <link rel="modulepreload" href="src/content/cards/no.js">
 <link rel="modulepreload" href="src/content/cards/palo-reactivo.js">
@@ -118,6 +124,7 @@
 <link rel="modulepreload" href="src/content/tiles/launcher.js">
 <link rel="modulepreload" href="src/content/tiles/portal.js">
 <link rel="modulepreload" href="src/content/tiles/river.js">
+<link rel="modulepreload" href="src/content/tiles/seasons.js">
 <link rel="modulepreload" href="src/content/tiles/train.js">
 <link rel="modulepreload" href="src/content/tiles/tunnel.js">
 <link rel="modulepreload" href="src/ui/skin-canvas.js">
@@ -241,6 +248,7 @@
   <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5a4 4 0 0 0-2-2zM16 4l-2 2 4 4 2-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM17 14v6M14 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-train" viewBox="0 0 24 24"><path d="M4 16V9.5A2.5 2.5 0 0 1 6.5 7H13v9M13 5h5v11M2.5 16h19M7 7V4.5M6 20a1.6 1.6 0 1 0 0-.01M11 20a1.6 1.6 0 1 0 0-.01M17 20a1.8 1.8 0 1 0 0-.01M3 21.5h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-season" viewBox="0 0 24 24"><path d="M12 3.4a8.6 8.6 0 1 1-7.4 4.2M4.4 3.6l.2 4.1 4.1-.4M12 7.6v8.8M7.6 12h8.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12.4 2.2c.5 3.6 5.6 6 5.6 11.9a6 6 0 0 1-12 0c0-2.7 1.4-4.6 3-5.9-.1 2 .6 3.4 1.9 4.1-.4-3.8.2-7.1 1.5-10.1z" fill="currentColor"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 21V3.5M6 4h11l-2.5 4L17 12H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>

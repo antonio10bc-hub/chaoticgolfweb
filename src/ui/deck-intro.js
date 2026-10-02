@@ -13,6 +13,7 @@ import { REDUCED } from '../fx/juice.js';
 import { tilePic } from '../content/tiles/index.js';
 import { trackSVG, LOCO, WAGON } from './train-view.js';
 import { stepDir } from '../engine/train.js';
+import { SNOWBALL } from './season-art.js';
 
 const KEY = 'chaoticgolf_deckIntros';
 const seen = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -21,24 +22,39 @@ export const resetDeckIntros = () => { try { localStorage.removeItem(KEY); } cat
 export const hasDeckIntro = id => !!deckById(id).newCards?.some(k => CARDS[k]?.demo);
 
 /* ---------- la escena: se juega con el motor ---------- */
-const PIECE_EVENTS = ['move', 'drift', 'teleport', 'fall', 'splash', 'appear', 'sink', 'launch', 'tunnel', 'bump'];
+const PIECE_EVENTS = ['move', 'drift', 'teleport', 'fall', 'splash', 'appear', 'sink', 'launch', 'tunnel', 'bump', 'gust', 'burn', 'eaten'];
+// (estaciones) lo que cambia en el campo y la bola de nieve
+const FIELD_EVENTS = ['tilePlaced', 'crunch', 'season', 'grow', 'snow', 'snowIn', 'snowOut'];
 function runDemo(demo) {
   const g = Game.fromLevel({ cols: demo.cols, rows: demo.rows, hole: demo.hole, ball: demo.ball, parCells: [], tiles: demo.tiles || [],
-    deckCounts: { palo1: 1 }, extraBalls: demo.extraBalls || [], train: demo.train }, { seed: demo.seed ?? 3 });
+    deckCounts: { palo1: 1 }, extraBalls: demo.extraBalls || [], train: demo.train, season: demo.season }, { seed: demo.seed ?? 3 });
   const b = g.S.balls[0];
   if (demo.spawn) { b.spawnX = demo.spawn.x; b.spawnY = demo.spawn.y; }
   const before = { tiles: g.S.tiles.map(x => ({ ...x })), hole: { ...g.S.hole }, balls: g.S.balls.map(x => ({ id: 'b' + x.player, x: x.x, y: x.y, decoy: !!x.decoy })),
-    spawn: { x: b.spawnX, y: b.spawnY }, train: g.S.train ? { ...g.S.train } : null };
+    spawn: { x: b.spawnX, y: b.spawnY }, train: g.S.train ? { ...g.S.train } : null,
+    season: g.S.season?.now || null, snow: g.S.season?.snow ? { ...g.S.season.snow } : null };
   g.takeEvents();
-  g.S.hands[0] = [demo.card];
-  g.clickCard(0, 0);
-  const tg = g.pending?.targets?.find(x => x.dir === demo.dir);
-  if (tg) g.clickCell(tg.x, tg.y);
-  // (las pelotas; con tren, también la locomotora, los vagones y el hoyo, que el tren empuja)
-  const events = g.takeEvents().filter(e => typeof e.p === 'string' && (e.p.startsWith('b') && PIECE_EVENTS.includes(e.t) ||
-    (before.train && (e.t === 'train' || e.t === 'wagon' || (e.p === 'hole' && e.t === 'move')))));
+  // la carta (y, si la escena lo pide, otra después: p. ej. pon un charco y luego tira por encima)
+  const events = [];
+  const play = ({ card, dir, cell }) => {
+    g.S.hands[0] = [card];
+    g.clickCard(0, 0);
+    const tg = cell || g.pending?.targets?.find(x => x.dir === dir);
+    if (tg) g.clickCell(tg.x, tg.y);
+    // (las pelotas; con tren, también la locomotora, los vagones y el hoyo, que el tren empuja; con estaciones, el campo)
+    for (const e of g.takeEvents()) {
+      if (e.t === 'tilePlaced') { const tl = g.realTileAt(e.x, e.y); if (tl) events.push({ ...e, tile: { ...tl } }); continue; }
+      if (FIELD_EVENTS.includes(e.t)) { events.push(e); continue; }
+      if (typeof e.p === 'string' && (e.p.startsWith('b') && PIECE_EVENTS.includes(e.t) ||
+        (before.train && (e.t === 'train' || e.t === 'wagon' || (e.p === 'hole' && e.t === 'move'))))) events.push(e);
+    }
+  };
+  play(demo);
+  if (demo.then) play(demo.then);
   return { ...before, events };
 }
+// (estaciones) colores del césped de la escena según la estación
+const SEASON_GRASS = { spring: ['#59A757', '#4C9A4C'], summer: ['#98A84D', '#8C9D45'], autumn: ['#7C8B41', '#6F7F3B'], winter: ['#B7CBD5', '#A9C0CB'] };
 
 /* ---------- el dibujo (SVG) con las pelotas animadas ---------- */
 const CW = 40, CH = 52, G = 4;
@@ -47,9 +63,10 @@ const embed = (tl, x0, y0) => tilePic(tl).replace('<svg ', `<svg x="${x0 + 1}" y
 function demoSVG(demo) {
   const d = runDemo(demo), W = demo.cols * CW, H = demo.rows * CH;
   const cx = x => x * CW + CW / 2, cy = y => y * CH + CH / 2;
-  let cells = '';
-  for (let y = 0; y < demo.rows; y++) for (let x = 0; x < demo.cols; x++)
-    cells += `<rect x="${x * CW + G / 2}" y="${y * CH + G / 2}" width="${CW - G}" height="${CH - G}" rx="5" fill="${((x + y) >> 1) & 1 ? '#5C9854' : '#4F8A4B'}"/>`;
+  const grass = s => (x, y) => s ? SEASON_GRASS[s][((x + y) >> 1) & 1 ? 0 : 1] : ((x + y) >> 1) & 1 ? '#5C9854' : '#4F8A4B';
+  const cellsOf = col => { let out = ''; for (let y = 0; y < demo.rows; y++) for (let x = 0; x < demo.cols; x++)
+    out += `<rect x="${x * CW + G / 2}" y="${y * CH + G / 2}" width="${CW - G}" height="${CH - G}" rx="5" fill="${col(x, y)}"/>`; return out; };
+  let cells = cellsOf(grass(d.season));
   const has = (type, x, y) => d.tiles.some(tl => tl.type === type && tl.x === x && tl.y === y);
   const tiles = d.tiles.map(tl => {
     const x0 = tl.x * CW, y0 = tl.y * CH;
@@ -87,7 +104,29 @@ function demoSVG(demo) {
     tm += dt; f.push([tm, x, y, o, sc]); pos[id] = [x, y];
   };
   let pendingSplash = null; const splashes = [], tunnels = [];
+  // (estaciones) las piezas del campo con su momento de aparecer y desaparecer, la bola de nieve y el cambio de estación
+  const field = d.season ? d.tiles.map(tl => ({ tl, t0: 0, t1: Infinity })) : null, live = () => field.filter(f => f.t1 === Infinity);
+  const sf = d.snow ? [[0, cx(d.snow.x), cy(d.snow.y), 1]] : [[0, 0, 0, 0]], skey = (t1, x, y, o) => { const l = sf[sf.length - 1]; if (l[0] < tm) sf.push([tm, l[1], l[2], l[3]]); sf.push([t1, x, y, o]); };
+  let seasonAt = null, seasonTo = null;
   for (const e of d.events) {
+    if (field && e.t === 'tilePlaced') { field.push({ tl: e.tile, t0: tm, t1: Infinity }); tm += 360; continue; }
+    if (field && e.t === 'grow') { field.push({ tl: { type: e.tile, x: e.x, y: e.y }, t0: tm, t1: Infinity }); continue; }
+    if (field && e.t === 'crunch') { const f = live().find(q => q.tl.x === e.x && q.tl.y === e.y); if (f) f.t1 = tm; continue; }
+    if (field && e.t === 'season') { // el campo cambia: lo que se va se quita, lo que se transforma, se cambia
+      seasonAt = tm; seasonTo = e.to;
+      for (const f of live()) {
+        const gone = (e.from === 'summer' && f.tl.type === 'fire') || (e.from === 'autumn' && f.tl.type === 'leaf') || (e.to === 'summer' && f.tl.type === 'plant');
+        const to = e.to === 'winter' && f.tl.type === 'puddle' ? 'ice' : e.to === 'spring' && f.tl.type === 'ice' ? 'plant' : null;
+        if (gone || to) f.t1 = tm;
+        if (to) field.push({ tl: { ...f.tl, type: to }, t0: tm, t1: Infinity });
+      }
+      tm += 700; continue;
+    }
+    if (e.t === 'snowIn') { skey(tm, cx(e.x), cy(e.y), 0); skey(tm + 360, cx(e.x), cy(e.y), 1); tm += 360; continue; }
+    if (e.t === 'snow') { skey(tm + TSTEP, cx(e.x), cy(e.y), 1); tm += TSTEP; continue; }
+    if (e.t === 'snowOut') { const l = sf[sf.length - 1]; skey(tm + 300, l[1], l[2], 0); tm += 300; continue; }
+    if (e.t === 'gust') { key(e.p, 140, cx(e.x), cy(e.y)); trail[e.p]?.push([cx(e.x), cy(e.y)]); continue; }
+    if (e.t === 'burn' || e.t === 'eaten') { const x = cx(e.x), y = cy(e.y); key(e.p, 160, x, y); splashes.push({ x, y, t0: tm, burn: true }); key(e.p, 320, x, y, 0, .4); continue; }
     const id = e.p, clampX = v => Math.max(0, Math.min(demo.cols - 1, v)), clampY = v => Math.max(0, Math.min(demo.rows - 1, v));
     if (e.t === 'train') { for (let k = 0; k <= 3; k++) tkey(k, tm, tm + TSTEP, e.i, k <= e.cars ? 1 : 0); tm += TSTEP; continue; }
     if (e.t === 'wagon') { tkey(e.cars, tm, tm + 1, tr.pos, 0); tkey(e.cars, tm + 1, tm + 320, tr.pos, 1); tm += 340; continue; }
@@ -106,11 +145,28 @@ function demoSVG(demo) {
     if (e.t === 'sink') { const [px, py] = pos[id]; key(id, 300, px, py, 0, .5); }
   }
   const total = tm + 1500;
+  // (estaciones) el campo de la estación siguiente aparece encima, a su tiempo; y las piezas, cada una en su momento
+  if (seasonAt !== null) cells += `<g opacity="0">${cellsOf(grass(seasonTo))}<animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" keyTimes="0;${(seasonAt / total).toFixed(4)};${((seasonAt + 500) / total).toFixed(4)};1" values="0;0;1;1"/></g>`;
+  const fieldSVG = field ? field.map(f => {
+    const pic = embed(f.tl, f.tl.x * CW, f.tl.y * CH);
+    if (REDUCED) return f.t1 === Infinity ? pic : '';
+    if (f.t0 === 0 && f.t1 === Infinity) return pic;
+    const k = [0], v = [f.t0 === 0 ? 1 : 0];
+    if (f.t0 > 0) { k.push(f.t0 / total); v.push(1); }
+    if (f.t1 !== Infinity) { k.push(f.t1 / total); v.push(0); }
+    return `<g opacity="${v[0]}"><animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" calcMode="discrete" keyTimes="${k.map(q => q.toFixed(4)).join(';')}" values="${v.join(';')}"/>${pic}</g>`;
+  }).join('') : '';
+  const snowSprite = SNOWBALL.replace('<svg class="snowSvg" viewBox="0 0 100 100" aria-hidden="true">', `<svg x="${-CW * .46}" y="${-CW * .46}" width="${CW * .92}" height="${CW * .92}" viewBox="0 0 100 100">`);
+  const snowG = sf.some(q => q[3] > 0) ? (() => { sf.push([total, ...sf[sf.length - 1].slice(1)]);
+    const kt = sf.map(q => (q[0] / total).toFixed(4)).join(';'), l = sf[sf.length - 1];
+    if (REDUCED) return l[3] ? `<g transform="translate(${l[1]} ${l[2]})">${snowSprite}</g>` : '';
+    return `<g><animateTransform attributeName="transform" type="translate" dur="${total}ms" repeatCount="indefinite" calcMode="linear" keyTimes="${kt}" values="${sf.map(q => q[1] + ' ' + q[2]).join(';')}"/>` +
+      `<g><animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" calcMode="linear" keyTimes="${kt}" values="${sf.map(q => q[3]).join(';')}"/>${snowSprite}</g></g>`; })() : '';
   const anim = (f, attr, i, fmt = v => v) => { const kt = f.map(k => (k[0] / total).toFixed(4)).join(';');
     return `<animate attributeName="${attr}" dur="${total}ms" repeatCount="indefinite" calcMode="linear" keyTimes="${kt}" values="${f.map(k => fmt(k[i])).join(';')}"/>`; };
   const pulse = (x, y, t0, dt, shape) => { const a = (t0 / total).toFixed(4), b = ((t0 + dt) / total).toFixed(4);
     return `<g opacity="0">${shape}<animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" keyTimes="0;${a};${b};1" values="0;1;0;0"/></g>`; };
-  const extras = splashes.map(s => pulse(s.x, s.y, s.t0, 400, `<ellipse cx="${s.x}" cy="${s.y}" rx="14" ry="7" fill="none" stroke="#fff" stroke-width="1.6"/>`)).join('') +
+  const extras = splashes.map(s => pulse(s.x, s.y, s.t0, 400, s.burn ? `<circle cx="${s.x}" cy="${s.y}" r="13" fill="none" stroke="#FFD23F" stroke-width="2.4"/>` : `<ellipse cx="${s.x}" cy="${s.y}" rx="14" ry="7" fill="none" stroke="#fff" stroke-width="1.6"/>`)).join('') +
     tunnels.map(s => pulse(s.x, s.y, s.t0, 960, `<text x="${s.x}" y="${s.y - 18}" text-anchor="middle" class="dmQ">? ? ?</text>`)).join('');
   const COLORS = ['#f26d6d', '#F1F1DC', '#5b8def'];
   // el hoyo (se anima si lo empuja el tren) y la locomotora con sus vagones
@@ -130,7 +186,7 @@ function demoSVG(demo) {
   const paths = Object.values(trail).filter(p => p.length > 1).map(p => `<polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="rgba(241,241,220,.55)" stroke-width="2.4" stroke-dasharray="4 5" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
   return `<svg class="dmBoard" viewBox="-6 -6 ${W + 12} ${H + 12}" role="img" aria-label="${esc(t('deckIntro.aria'))}">` +
     `<rect x="-6" y="-6" width="${W + 12}" height="${H + 12}" rx="12" fill="#F1F1DC"/><rect x="0" y="0" width="${W}" height="${H}" rx="6" fill="#3F7440"/>` +
-    cells + tiles + track + hole + sp + paths + extras + trainG + balls + `</svg>`;
+    cells + (field ? fieldSVG : tiles) + track + snowG + hole + sp + paths + extras + trainG + balls + `</svg>`;
 }
 
 /* ---------- el diálogo ---------- */
@@ -145,10 +201,10 @@ export function deckIntro(deckId, { force = false, play = true } = {}) {
     const panels = keys.map(k => { const def = CARDS[k];
       return `<article class="dmCard"><div class="dmHead"><span class="hintCard ${def.color}">${cardArtHTML(def)}</span><b>${esc(def.name)}</b></div>` +
         demoSVG(def.demo) + `<p>${esc(t('tutorial.card.' + k))}</p></article>`; }).join('');
-    dlg.innerHTML = `<form method="dialog" class="dlgBox deckIntro" style="--dk:${dk.color}">
+    dlg.innerHTML = `<form method="dialog" class="dlgBox deckIntro dk-${dk.id}${keys.length >= 4 ? ' four' : ''}" style="--dk:${dk.color}">
       <span class="dmTag">${esc(t('decks.' + dk.id + '.name'))}</span>
       <h3>${esc(t('deckIntro.title'))}</h3>
-      <p class="dmLead">${esc(t('deckIntro.lead'))}</p>
+      <p class="dmLead">${esc(t(dk.introLead || 'deckIntro.lead'))}</p>
       <div class="dmGrid">${panels}</div>
       ${plain.length ? `<p class="dmAlso"><b>${esc(t('deckIntro.also'))}</b> ${plain.map(k => `<span class="dmChip"><span class="hintCard ${CARDS[k].color}">${cardArtHTML(CARDS[k])}</span>${esc(CARDS[k].name)}</span>`).join('')}</p>` : ''}
       <div class="dlgBtns"><button value="ok" class="btn-primary">${esc(t(play ? 'intro.go' : 'common.close'))}</button></div>

@@ -22,6 +22,7 @@ function simulate(g, act) {
   const paths = {}, marks = [], unknown = new Set();
   // (baraja del tren) las casillas que recorre la locomotora y dónde se engancha un vagón nuevo
   const train = g.S.train ? [g.S.train.pos] : null; let wagon = null; // (tras un túnel, el camino es incierto: se corta con un "?")
+  const sn = g.S.season?.snow, snow = sn ? [[sn.x, sn.y]] : null; // (estaciones) por dónde rodará la bola de nieve
   const push = (id, pt) => {
     if (!pos[id] || unknown.has(id)) return;
     (paths[id] ||= [{ ...pos[id], kind: 'start' }]).push(pt);
@@ -29,7 +30,9 @@ function simulate(g, act) {
   };
   for (const ev of evs) {
     switch (ev.t) {
-      case 'move': case 'drift': push(ev.p, { x: ev.x, y: ev.y, kind: 'move' }); break;
+      case 'move': case 'drift': case 'gust': push(ev.p, { x: ev.x, y: ev.y, kind: 'move' }); break;
+      case 'burn': case 'eaten': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
+      case 'snow': snow?.push([ev.x, ev.y]); break;
       case 'splash': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
       case 'launch': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
       case 'bump': if (pos[ev.p] && !unknown.has(ev.p)) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break;
@@ -44,7 +47,7 @@ function simulate(g, act) {
       case 'wagon': wagon = { x: ev.x, y: ev.y }; break;
     }
   }
-  return { paths, marks, jaque: sim.S.winner !== null, train: train && train.length > 1 ? train : null, wagon };
+  return { paths, marks, jaque: sim.S.winner !== null, train: train && train.length > 1 ? train : null, wagon, snow: snow && snow.length > 1 ? snow : null };
 }
 
 function layer() {
@@ -72,6 +75,11 @@ function draw(res, { armedAt = null, label = 'tapAgain' } = {}) {
     out += `<polyline points="${res.train.map(i => { const q = c(i); return q.px + ',' + q.py; }).join(' ')}" class="pvTrainLine"/>`;
     const e = c(res.train[res.train.length - 1]);
     out += `<rect x="${e.px - s.w * .34}" y="${e.py - s.h * .4}" width="${s.w * .68}" height="${s.h * .8}" rx="${s.w * .14}" class="pvTrain"/>`;
+  }
+  if (res.snow) { // la bola de nieve: su recorrido y dónde se parará
+    out += `<polyline points="${res.snow.map(([x, y]) => { const q = cellCenterPx(x, y); return q.px + ',' + q.py; }).join(' ')}" class="pvSnowLine"/>`;
+    const e = cellCenterPx(...res.snow[res.snow.length - 1]);
+    out += `<circle cx="${e.px}" cy="${e.py}" r="${Math.min(s.w, s.h) * .42}" class="pvSnow"/>`;
   }
   if (res.wagon) { const e = cellCenterPx(res.wagon.x, res.wagon.y); out += `<rect x="${e.px - s.w * .34}" y="${e.py - s.h * .4}" width="${s.w * .68}" height="${s.h * .8}" rx="${s.w * .14}" class="pvTrain wagon"/>`; }
   const ids = Object.keys(res.paths).sort((a, b) => (b === 'hole') - (a === 'hole')); // el hoyo debajo

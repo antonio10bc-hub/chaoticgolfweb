@@ -1,0 +1,252 @@
+/* =========================================================
+   Baraja de las estaciones: el campo y su fondo según la estación, el indicador, el viento, la bola de nieve, las
+   piezas de cada estación y sus animaciones (src/ui/seasons-view.js; las piezas se dibujan en tiles/seasons.js)
+   ========================================================= */
+
+/* ---------- el césped según la estación (también al probar un nivel con estación) ---------- */
+#gameScreen[data-season] .cell { transition: background-color .9s var(--ease-out), box-shadow .2s; }
+#gameScreen[data-season="spring"], #edBoard[data-season="spring"] {
+  --grass-dark: #4C9A4C; --grass-mid: #59A757; --green-putt: #8FC46A; --green-light: #A9D47E;
+  --grout: #3B7A3C; --par-cell: #67AE5E; --sel-cell: #9BCB72; --collar: #5DA458;
+}
+#gameScreen[data-season="summer"], #edBoard[data-season="summer"] {
+  --grass-dark: #8C9D45; --grass-mid: #98A84D; --green-putt: #C2BE62; --green-light: #D3CB78;
+  --grout: #6E7B33; --par-cell: #A6AE58; --sel-cell: #C8C06C; --collar: #A3A24E;
+}
+#gameScreen[data-season="autumn"], #edBoard[data-season="autumn"] {
+  --grass-dark: #6F7F3B; --grass-mid: #7C8B41; --green-putt: #B3A553; --green-light: #C9B96A;
+  --grout: #58632C; --par-cell: #8E8F45; --sel-cell: #B7A95C; --collar: #8E8A3F;
+}
+#gameScreen[data-season="winter"], #edBoard[data-season="winter"] {
+  --grass-dark: #A9C0CB; --grass-mid: #B7CBD5; --green-putt: #9DBDCB; --green-light: #B4D2DF;
+  --grout: #869FAC; --par-cell: #A2B9C4; --sel-cell: #8FB9CC; --collar: #A0B7C2; --on-grass: rgba(50,76,88,.75);
+}
+#gameScreen[data-season="winter"] .cell .spawnMark { background: #fff; }
+
+/* ---------- el fondo de la escena: cuatro capas que se funden al cambiar de estación ---------- */
+#gameScreen[data-scene="seasons"] #game { background-color: #9CC38A; }
+#gameDecor .dSeason, #gameDecor .dFly { display: none; }
+#gameScreen[data-scene="seasons"] #gameDecor { overflow: hidden; }
+#gameScreen[data-scene="seasons"] #gameDecor > :not(.dSeason):not(.dFly) { display: none; }
+#gameScreen[data-scene="seasons"] #gameDecor .dSeason { display: block; position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s var(--ease-out); }
+#gameScreen[data-scene="seasons"][data-season="spring"] #gameDecor .dSeason.spring,
+#gameScreen[data-scene="seasons"][data-season="summer"] #gameDecor .dSeason.summer,
+#gameScreen[data-scene="seasons"][data-season="autumn"] #gameDecor .dSeason.autumn,
+#gameScreen[data-scene="seasons"][data-season="winter"] #gameDecor .dSeason.winter { opacity: 1; }
+/* (motivos sueltos y desordenados en una loseta de 260px: flores, paja seca, hojas, copos) */
+.dSeason.spring { background-color: #A6D08E;
+  background-image: var(--grain), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><g transform='translate(116 35) scale(0.74)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='2.47' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FBD3E0'/><circle r='1.3' fill='%23F2C94C'/></g><path d='M155 37q-1 -5 -3 -7M155 37q1 -5 4 -7M155 37v-8' stroke='%235E9A50' stroke-width='1.3' fill='none' opacity='.5' stroke-linecap='round'/><g transform='translate(146 139) scale(1.08)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='2.47' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FBD3E0'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(240 158) scale(0.92)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='2.47' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FBD3E0'/><circle r='1.3' fill='%23F2C94C'/></g><path d='M25 63q-1 -5 -3 -7M25 63q1 -5 4 -7M25 63v-8' stroke='%235E9A50' stroke-width='1.3' fill='none' opacity='.5' stroke-linecap='round'/><g transform='translate(100 163) scale(0.90)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='2.47' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='1.53' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='-2.47' r='2' fill='%23F7B8CE'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(127 247) scale(0.79)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='2.47' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FFFFFF'/><circle r='1.3' fill='%23F2C94C'/></g><path d='M125 88q-1 -5 -3 -7M125 88q1 -5 4 -7M125 88v-8' stroke='%235E9A50' stroke-width='1.3' fill='none' opacity='.5' stroke-linecap='round'/><g transform='translate(43 191) scale(1.10)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='2.47' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='1.53' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='-2.47' r='2' fill='%23F7B8CE'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(189 125) scale(1.00)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='2.47' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FFFFFF'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(58 240) scale(0.88)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='2.47' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FBD3E0'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FBD3E0'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FBD3E0'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(231 193) scale(0.71)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='2.47' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='1.53' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='-2.47' r='2' fill='%23F7B8CE'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(95 62) scale(0.96)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='2.47' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='1.53' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='-2.47' r='2' fill='%23F7B8CE'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(106 204) scale(1.14)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='2.47' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FFFFFF'/><circle r='1.3' fill='%23F2C94C'/></g><path d='M57 132q-1 -5 -3 -7M57 132q1 -5 4 -7M57 132v-8' stroke='%235E9A50' stroke-width='1.3' fill='none' opacity='.5' stroke-linecap='round'/><path d='M186 253q-1 -5 -3 -7M186 253q1 -5 4 -7M186 253v-8' stroke='%235E9A50' stroke-width='1.3' fill='none' opacity='.5' stroke-linecap='round'/><g transform='translate(246 28) scale(0.86)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='2.47' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='1.53' r='2' fill='%23FFFFFF'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23FFFFFF'/><circle cx='0.80' cy='-2.47' r='2' fill='%23FFFFFF'/><circle r='1.3' fill='%23F2C94C'/></g><g transform='translate(8 230) scale(0.77)' opacity='.85'><circle cx='2.60' cy='0.00' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='2.47' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='1.53' r='2' fill='%23F7B8CE'/><circle cx='-2.10' cy='-1.53' r='2' fill='%23F7B8CE'/><circle cx='0.80' cy='-2.47' r='2' fill='%23F7B8CE'/><circle r='1.3' fill='%23F2C94C'/></g></svg>"),
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(255,255,255,.22), transparent 75%), linear-gradient(160deg, #B4DA98, #8FC27A); }
+.dSeason.summer { background-color: #DCC77A;
+  background-image: var(--grain), radial-gradient(circle at 92% 2%, rgba(255,246,190,.8), rgba(255,236,150,.3) 14%, transparent 34%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><path d='M0 0q2 -3.4 1 -6.8M3 0q-1 -3.4 2 -5.4' transform='translate(93 12) rotate(18)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.2 1 -10.4M3 0q-1 -5.2 2 -8.3' transform='translate(187 142) rotate(20)' stroke='%23A8873A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -3.8 1 -7.6M3 0q-1 -3.8 2 -6.1' transform='translate(54 124) rotate(18)' stroke='%23A8873A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -3.7 1 -7.4M3 0q-1 -3.7 2 -5.9' transform='translate(236 34) rotate(-21)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -3.4 1 -6.7M3 0q-1 -3.4 2 -5.4' transform='translate(208 113) rotate(11)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.3 1 -8.6M3 0q-1 -4.3 2 -6.9' transform='translate(129 212) rotate(27)' stroke='%23A8873A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.8 1 -9.5M3 0q-1 -4.8 2 -7.6' transform='translate(104 132) rotate(16)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.3 1 -10.5M3 0q-1 -5.3 2 -8.4' transform='translate(176 248) rotate(-22)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.1 1 -10.2M3 0q-1 -5.1 2 -8.1' transform='translate(92 211) rotate(6)' stroke='%23B89A45' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.7 1 -9.4M3 0q-1 -4.7 2 -7.5' transform='translate(107 93) rotate(22)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.4 1 -10.8M3 0q-1 -5.4 2 -8.6' transform='translate(21 40) rotate(13)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -3.2 1 -6.4M3 0q-1 -3.2 2 -5.1' transform='translate(25 189) rotate(-16)' stroke='%23B89A45' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.6 1 -9.2M3 0q-1 -4.6 2 -7.3' transform='translate(70 48) rotate(-22)' stroke='%23B89A45' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.1 1 -10.2M3 0q-1 -5.1 2 -8.1' transform='translate(220 172) rotate(-6)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.6 1 -9.1M3 0q-1 -4.6 2 -7.3' transform='translate(72 243) rotate(-27)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -4.7 1 -9.4M3 0q-1 -4.7 2 -7.5' transform='translate(245 141) rotate(4)' stroke='%23A8873A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -3.0 1 -6.0M3 0q-1 -3.0 2 -4.8' transform='translate(8 101) rotate(-14)' stroke='%23B89A45' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/><path d='M0 0q2 -5.3 1 -10.7M3 0q-1 -5.3 2 -8.5' transform='translate(151 137) rotate(17)' stroke='%23E6D18A' stroke-width='1.3' fill='none' opacity='.55' stroke-linecap='round'/></svg>"), linear-gradient(170deg, #E6D38A, #CDB466); }
+.dSeason.autumn { background-color: #C98D52;
+  background-image: var(--grain), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.52' transform='translate(87 45) rotate(33) scale(0.94)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23D9A441' opacity='0.51' transform='translate(167 26) rotate(348) scale(1.48)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23D9A441' opacity='0.53' transform='translate(139 97) rotate(342) scale(1.14)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.44' transform='translate(22 132) rotate(312) scale(0.98)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23A4482A' opacity='0.40' transform='translate(25 30) rotate(147) scale(0.99)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23C27234' opacity='0.45' transform='translate(112 210) rotate(254) scale(0.96)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.45' transform='translate(38 62) rotate(142) scale(1.52)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.57' transform='translate(161 239) rotate(142) scale(1.39)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23D9A441' opacity='0.52' transform='translate(246 19) rotate(194) scale(1.57)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23C27234' opacity='0.37' transform='translate(217 79) rotate(77) scale(1.06)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23C27234' opacity='0.35' transform='translate(52 150) rotate(301) scale(1.03)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23D9A441' opacity='0.35' transform='translate(174 112) rotate(214) scale(1.27)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23D9A441' opacity='0.59' transform='translate(202 179) rotate(353) scale(1.50)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%23A4482A' opacity='0.46' transform='translate(18 171) rotate(348) scale(1.46)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.45' transform='translate(178 153) rotate(201) scale(0.97)'/><path d='M0 -7C2 -6 1.5 -4 3 -3.6C5 -3 4 -1 5 0C6 1 4 2 4.4 3C5 5 2 4.6 1 6L0 7.4L-1 6C-2 4.6 -5 5 -4.4 3C-4 2 -6 1 -5 0C-4 -1 -5 -3 -3 -3.6C-1.5 -4 -2 -6 0 -7Z' fill='%238E5A2A' opacity='0.37' transform='translate(213 239) rotate(34) scale(1.59)'/></svg>"),
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(255,230,190,.18), transparent 75%), linear-gradient(165deg, #D69B5E, #B97942); }
+.dSeason.winter { background-color: #E5EEF2;
+  background-image: var(--grain), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><circle cx='230' cy='94' r='2.2' fill='%23FFFFFF' opacity='0.61'/><circle cx='120' cy='150' r='1.8' fill='%23FFFFFF' opacity='0.61'/><circle cx='232' cy='130' r='2.1' fill='%23FFFFFF' opacity='0.78'/><circle cx='13' cy='115' r='2.6' fill='%23FFFFFF' opacity='0.88'/><g transform='translate(53 9) rotate(16)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -3.2V3.2M-2.8 -1.6L2.8 1.6M-2.8 1.6L2.8 -1.6'/></g><circle cx='203' cy='50' r='2.5' fill='%23FFFFFF' opacity='0.66'/><g transform='translate(124 185) rotate(54)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -4.6V4.6M-4.0 -2.3L4.0 2.3M-4.0 2.3L4.0 -2.3'/></g><g transform='translate(144 88) rotate(16)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -4.6V4.6M-4.0 -2.3L4.0 2.3M-4.0 2.3L4.0 -2.3'/></g><circle cx='76' cy='196' r='2.0' fill='%23FFFFFF' opacity='0.78'/><circle cx='193' cy='231' r='1.7' fill='%23FFFFFF' opacity='0.70'/><g transform='translate(177 118) rotate(57)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -3.4V3.4M-2.9 -1.7L2.9 1.7M-2.9 1.7L2.9 -1.7'/></g><circle cx='238' cy='179' r='2.5' fill='%23FFFFFF' opacity='0.82'/><g transform='translate(71 145) rotate(54)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -3.2V3.2M-2.8 -1.6L2.8 1.6M-2.8 1.6L2.8 -1.6'/></g><circle cx='238' cy='213' r='1.6' fill='%23FFFFFF' opacity='0.64'/><circle cx='116' cy='26' r='2.6' fill='%23FFFFFF' opacity='0.75'/><g transform='translate(171 199) rotate(2)' stroke='%23FFFFFF' stroke-width='1.1' opacity='.8' stroke-linecap='round'><path d='M0 -4.2V4.2M-3.7 -2.1L3.7 2.1M-3.7 2.1L3.7 -2.1'/></g><circle cx='43' cy='223' r='1.5' fill='%23FFFFFF' opacity='0.64'/><circle cx='244' cy='62' r='1.3' fill='%23FFFFFF' opacity='0.67'/><circle cx='127' cy='250' r='1.6' fill='%23FFFFFF' opacity='0.87'/><circle cx='91' cy='56' r='1.9' fill='%23FFFFFF' opacity='0.66'/></svg>"),
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(255,255,255,.5), transparent 75%), linear-gradient(170deg, #EEF4F7, #D3E2EA); }
+/* el marco del campo, con el color de la estación */
+#gameScreen[data-scene="seasons"] #boardWrap { transition: box-shadow 1s var(--ease-out); }
+#gameScreen[data-scene="seasons"][data-season="spring"] #boardWrap { box-shadow: 0 0 0 5px #F6CADB, 0 8.4px 25.2px rgba(40,70,30,.22); }
+#gameScreen[data-scene="seasons"][data-season="summer"] #boardWrap { box-shadow: 0 0 0 5px #F2D27A, 0 8.4px 25.2px rgba(90,70,20,.22); }
+#gameScreen[data-scene="seasons"][data-season="autumn"] #boardWrap { box-shadow: 0 0 0 5px #D98C4A, 0 8.4px 25.2px rgba(80,40,10,.24); }
+#gameScreen[data-scene="seasons"][data-season="winter"] #boardWrap { box-shadow: 0 0 0 5px #FFFFFF, 0 8.4px 25.2px rgba(40,70,90,.22); }
+/* en invierno, los textos sobre el fondo claro, en pizarra */
+#gameScreen[data-scene="seasons"][data-season="winter"] #piles .pile, #gameScreen[data-scene="seasons"][data-season="winter"] #lastPlay { color: #3C5662; }
+#gameScreen[data-scene="seasons"][data-season="winter"] .pileLbl b, #gameScreen[data-scene="seasons"][data-season="winter"] #discardTop.empty { border-color: rgba(60,86,98,.4); }
+/* (verano e invierno: fondo claro) los botones de la barra y del sonido, en tinta */
+#gameScreen[data-scene="seasons"]:is([data-season="summer"], [data-season="winter"]) #gameBar .btn-ghost,
+body[data-screen="game"]:has(#gameScreen[data-scene="seasons"]:is([data-season="summer"], [data-season="winter"])) :is(#sfxBtn, #sndCfgBtn) { --b-fg: #2F3A2A; --b-line: rgba(47,58,42,.42); --b-bg: rgba(255,255,255,.42); }
+#gameScreen[data-scene="seasons"][data-season="winter"] #gameBar .btn-ghost,
+body[data-screen="game"]:has(#gameScreen[data-scene="seasons"][data-season="winter"]) :is(#sfxBtn, #sndCfgBtn) { --b-fg: #2F4752; --b-line: rgba(47,71,82,.45); }
+#gameScreen[data-scene="seasons"][data-season="summer"] #piles .pile, #gameScreen[data-scene="seasons"][data-season="summer"] #lastPlay { color: #4A3F1E; }
+
+/* lo que flota en el aire: pétalos, motas de luz, hojas o copos (seis, solo transform y opacidad) */
+#gameScreen[data-scene="seasons"] #gameDecor .dFly { display: block; position: absolute; top: -30px; width: 14px; height: 10px; border-radius: 60% 0 60% 0; opacity: 0;
+  animation: seFall var(--fdur, 14s) linear var(--fd, 0s) infinite; will-change: transform, opacity; }
+.dFly.f1 { left: 6%; --fd: -1s; } .dFly.f2 { left: 18%; --fd: -6s; --fdur: 17s; } .dFly.f3 { left: 31%; --fd: -11s; }
+.dFly.f4 { left: 72%; --fd: -3s; --fdur: 16s; } .dFly.f5 { left: 84%; --fd: -8s; } .dFly.f6 { left: 93%; --fd: -13s; --fdur: 18s; }
+@keyframes seFall { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 8% { opacity: .9; } 50% { transform: translate(40px, 52vh) rotate(200deg); } 92% { opacity: .9; } 100% { transform: translate(-10px, 105vh) rotate(420deg); opacity: 0; } }
+#gameScreen[data-season="spring"] #gameDecor .dFly { background: #F8C3D6; }
+#gameScreen[data-season="summer"] #gameDecor .dFly { background: rgba(255,246,190,.85); width: 8px; height: 8px; border-radius: 50%; animation-name: seGlow; --fdur: 9s; }
+@keyframes seGlow { 0%, 100% { transform: translate(0, 30vh) scale(.6); opacity: 0; } 50% { transform: translate(20px, 20vh) scale(1.2); opacity: .8; } }
+#gameScreen[data-season="autumn"] #gameDecor .dFly { background: #C9692E; width: 16px; height: 11px; }
+#gameScreen[data-season="autumn"] #gameDecor .dFly.f2, #gameScreen[data-season="autumn"] #gameDecor .dFly.f5 { background: #D9A441; }
+#gameScreen[data-season="winter"] #gameDecor .dFly { background: #fff; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px rgba(255,255,255,.8); }
+@media (max-width: 760px) { #gameScreen[data-scene="seasons"] #gameDecor { display: block; } #gameScreen[data-scene="seasons"] #gameDecor .dFly { display: none; } }
+
+/* ---------- indicador: las cuatro estaciones en orden, la de ahora resaltada ---------- */
+#seasonChip { grid-row: 2; grid-column: 1 / -1; justify-self: center; margin-top: 4px; z-index: 31; display: flex; align-items: center; gap: 2px;
+  padding: 2px 4px; border-radius: 999px; background: rgba(36,36,36,.72); color: var(--cream); box-shadow: 0 1.2px 3.6px var(--shadow); }
+#seasonChip .seStep { display: inline-flex; align-items: center; gap: 4px; padding: 2px 5px; border-radius: 999px; opacity: .45; transition: opacity .4s, background-color .4s; }
+#seasonChip .seStep.on { opacity: 1; padding-right: 10px; background: rgba(241,241,220,.14); }
+#seasonChip .seIco { width: 17px; height: 17px; display: block; }
+#seasonChip b { font-size: 12px; font-weight: 600; letter-spacing: .01em; }
+#seasonChip .seStep.on .seIco { animation: sePop .5s var(--ease-out); }
+@keyframes sePop { from { transform: scale(.4) rotate(-40deg); } }
+html.phone #gameBar > #seasonChip { margin: 0; padding: 1px 3px; }
+html.phone #seasonChip .seIco { width: 15px; height: 15px; }
+html.phone #seasonChip b { font-size: 11px; }
+#gameBar:has(#modeChip:not([hidden])) > #seasonChip { grid-row: 3; }
+
+/* ---------- el viento: su ruta (tenue mientras avisa) y, cuando sopla, ráfagas, remolinos y pétalos que la recorren
+   hasta salir del tablero ---------- */
+#windSvg { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; overflow: visible; }
+#windSvg path, #windSvg circle { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#windSvg .wBand { stroke: rgba(235,248,255,.13); }
+#windSvg .wCore { stroke: rgba(255,255,255,.08); }
+#windSvg .wDots { stroke: rgba(255,255,255,.6); stroke-width: 2.4px; stroke-dasharray: .1 9; animation: wWarn 1.6s ease-in-out infinite; }
+@keyframes wWarn { 50% { opacity: .3; } }
+#windSvg .wArrow { stroke: rgba(255,255,255,.7); stroke-width: 2.4; animation: wWarn 1.6s ease-in-out infinite; animation-delay: calc(var(--i) * -.12s); }
+#windSvg .wCurl { stroke: rgba(255,255,255,.5); stroke-width: 2; transform-box: fill-box; transform-origin: 50% 50%; animation: wCurl 4s linear infinite; animation-delay: calc(var(--i) * -.6s); }
+@keyframes wCurl { to { transform: rotate(-360deg); } }
+#windSvg .wStart { stroke: rgba(255,255,255,.55); stroke-width: 2; stroke-dasharray: 3 4; }
+#windSvg .wExit path { stroke: rgba(255,255,255,.75); stroke-width: 3; animation: wExit 1s ease-in-out infinite; animation-delay: calc(var(--k) * .18s); }
+@keyframes wExit { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+#windSvg .wPetal { display: none; }
+/* soplando: la ruta se aviva, las ráfagas avanzan (a saltos, como el río: repinta poco) y viajan pétalos */
+#windSvg.on .wBand { stroke: rgba(225,244,255,.3); }
+#windSvg.on .wCore { stroke: rgba(255,255,255,.18); }
+#windSvg.on .wDots { opacity: 0; animation: none; }
+#windSvg.on .wArrow { stroke: #fff; stroke-width: 3; animation: wArrow .9s steps(9) infinite; animation-delay: calc(var(--i) * -.09s); }
+@keyframes wArrow { 0% { opacity: .3; } 40% { opacity: 1; } 100% { opacity: .3; } }
+#windSvg.on .wCurl { stroke: rgba(255,255,255,.85); animation-duration: 1.4s; }
+#windSvg.on .wExit path { stroke: #fff; animation-duration: .6s; }
+#windSvg.on .wPetal { display: inline; filter: drop-shadow(0 1px 1px rgba(40,60,40,.25)); }
+#windSvg .wStreak { stroke: rgba(255,255,255,.9); stroke-dasharray: calc(var(--u) * .55) calc(var(--u) * 1.25); animation: wFlow 1.1s steps(14) infinite; }
+#windSvg .wStreak.s1 { stroke: rgba(255,255,255,.6); stroke-dasharray: calc(var(--u) * .25) calc(var(--u) * 1.6); animation-duration: .8s; }
+#windSvg .wStreak.s2 { stroke: rgba(215,238,250,.35); stroke-dasharray: calc(var(--u) * .9) calc(var(--u) * 2.1); animation-duration: 1.5s; }
+#windSvg .wStreak.s3 { stroke: rgba(255,255,255,.75); stroke-dasharray: calc(var(--u) * .12) calc(var(--u) * .9); animation-duration: .6s; }
+@keyframes wFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: calc(var(--u) * -1.8); } }
+#gameScreen[data-season="winter"] #windSvg .wBand { stroke: rgba(60,100,130,.12); }
+
+/* ---------- la lluvia: una nubecilla sobre la casilla que deja caer unas gotas ---------- */
+.rainCloud { position: absolute; z-index: 8; width: calc(var(--w) * .82); margin-left: calc(var(--w) * -.41); pointer-events: none;
+  animation: rainIn .3s var(--ease-out) both; }
+.rainCloud svg { display: block; width: 100%; filter: drop-shadow(0 3px 4px rgba(30,50,60,.2)); }
+.rainCloud i { position: absolute; left: var(--x); top: 70%; width: 2.4px; height: calc(var(--w) * .2); border-radius: 2px;
+  background: linear-gradient(rgba(170,215,235,0), #8CC2D3); animation: rainDrop .42s linear infinite; animation-delay: var(--d); opacity: 0; }
+@keyframes rainDrop { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(calc(var(--w) * .55)); opacity: 0; } }
+@keyframes rainIn { from { transform: translateY(-30%) scale(.6); opacity: 0; } }
+.rainCloud.out { animation: rainOut .35s ease-in forwards; }
+@keyframes rainOut { to { transform: translateY(-25%) scale(.8); opacity: 0; } }
+
+/* ---------- la bola de nieve (pieza móvil, debajo de pelotas y hoyo) ---------- */
+.piece.psnow { z-index: 0; }
+.psnow .snowBody { width: calc(min(var(--cell-w), var(--cell-h)) * 1.02); aspect-ratio: 1; display: flex; }
+.psnow .snowSvg { width: 100%; height: 100%; display: block; overflow: visible; }
+.psnow .snowTex { transform-box: view-box; transform-origin: 50px 50px; }
+.snowSpark { transform-box: fill-box; transform-origin: center; animation: iceSpark 3.2s ease-in-out infinite; }
+.piece.psnow .snowBody { filter: drop-shadow(0 2px 3px rgba(30,60,80,.18)); }
+/* lo que está dentro: más pequeño, escarchado y medio hundido en la nieve */
+.piece.snowed .cardOnCell { transform: scale(.66); filter: saturate(.85) brightness(1.05); }
+.piece.pball.snowed .circ { box-shadow: 0 0 0 2.5px rgba(255,255,255,.9), inset 0 -3px 0 rgba(200,225,240,.7); }
+.piece.phole.snowed .cardOnCell { transform: scale(.8); }
+
+/* ---------- las piezas de cada estación ---------- */
+.tile-leaf, .tile-puddle, .tile-ice, .tile-plant, .tile-fire { background: transparent; width: 100%; height: 100%; }
+.tile-leaf .sub, .tile-puddle .sub, .tile-ice .sub, .tile-plant .sub, .tile-fire .sub { display: none; }
+.cardOnCell .tilePic.leafPic, .cardOnCell .tilePic.puddlePic, .cardOnCell .tilePic.icePic, .cardOnCell .tilePic.plantPic { transform: scale(1.12); }
+.cell.icy { background-color: color-mix(in srgb, var(--grass-dark) 55%, #CFEAF4); }
+.cell.icy.mowB { background-color: color-mix(in srgb, var(--grass-mid) 55%, #CFEAF4); }
+.cell.puddly { background-color: color-mix(in srgb, var(--grass-dark) 85%, #4E7F8F); }
+.cell.burning { background-color: #5E3B22; box-shadow: inset 0 0 12px 2px rgba(255,140,40,.45); overflow: visible; }
+.cell.burning.mowB { background-color: #654026; }
+/* animaciones suaves y lentas (pocas cosas se mueven a la vez) */
+.leafSway { transform-box: fill-box; transform-origin: 50% 90%; }
+.puddleRing { transform-box: fill-box; transform-origin: center; animation: puddleRing 3.4s ease-out infinite; }
+@keyframes puddleRing { 0% { transform: scale(.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+.iceShine { animation: iceShine 3.2s ease-in-out infinite; }
+@keyframes iceShine { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.iceSpark { transform-box: fill-box; transform-origin: center; animation: iceSpark 2.4s ease-in-out infinite; }
+@keyframes iceSpark { 0%, 70%, 100% { transform: scale(.3); opacity: 0; } 85% { transform: scale(1); opacity: 1; } }
+.plantJaw { transform-box: view-box; transform-origin: 50px 62px; animation: plantJawL 3.6s ease-in-out infinite; }
+.plantJaw.r { animation-name: plantJawR; }
+@keyframes plantJawL { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-9deg); } }
+@keyframes plantJawR { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(9deg); } }
+.plantHead { transform-box: view-box; transform-origin: 50px 92px; animation: plantSway 4.4s ease-in-out infinite; }
+@keyframes plantSway { 50% { transform: rotate(4deg); } }
+/* ¡ñam!: la planta se lanza y cierra la boca */
+.tile-plant.chomp .plantHead { animation: plantLunge .6s ease-out; }
+.tile-plant.chomp .plantJaw.l { animation: plantShutL .6s ease-out; } .tile-plant.chomp .plantJaw.r { animation: plantShutR .6s ease-out; }
+@keyframes plantLunge { 30% { transform: scale(1.25) translateY(-6px); } }
+@keyframes plantShutL { 0% { transform: rotate(-26deg); } 35%, 70% { transform: rotate(14deg); } }
+@keyframes plantShutR { 0% { transform: rotate(26deg); } 35%, 70% { transform: rotate(-14deg); } }
+.flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flame .9s ease-in-out infinite alternate; animation-delay: var(--fd, 0s); }
+@keyframes flame { 0% { transform: scale(1, 1); } 50% { transform: scale(.92, 1.1) skewX(3deg); } 100% { transform: scale(1.06, .9) skewX(-3deg); } }
+.sparks { animation: sparks 1.4s linear infinite; }
+@keyframes sparks { 0% { transform: translateY(6px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-14px); opacity: 0; } }
+.cell.splashed .puddlePic { animation: puddleHit .4s ease-out; }
+@keyframes puddleHit { 40% { transform: scale(1.2, .9); } }
+
+/* ---------- piezas en acción ---------- */
+.piece.gusting .cardOnCell { animation: gustSpin .36s linear infinite; }
+@keyframes gustSpin { to { transform: rotate(360deg) scale(.9); } }
+.piece.scorched .cardOnCell { animation: scorch .7s ease-out; }
+@keyframes scorch { 20% { filter: brightness(1.5) sepia(.6) saturate(2); transform: scale(1.1); } }
+.piece.burnt .cardOnCell { transition: transform .45s ease-in, filter .45s; transform: scale(.4) translateY(-20%); filter: brightness(.2) sepia(1); }
+.piece.gulp .cardOnCell { transition: transform .26s ease-in; transform: scale(.3); }
+
+/* ---------- el rótulo del cambio de estación ---------- */
+.seasonBanner { position: absolute; left: 50%; top: 42%; z-index: 40; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 14px 28px 12px; border-radius: 22px; background: rgba(255,255,255,.88); color: var(--ink); box-shadow: 0 12px 30px rgba(20,40,20,.25);
+  transform: translate(-50%, -50%); animation: sbIn .5s cubic-bezier(.3,1.5,.5,1) both; }
+.seasonBanner .sbIco { width: 52px; height: 52px; animation: sbSpin 1.1s var(--ease-out) both; }
+.seasonBanner b { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.seasonBanner small { font-size: 13px; color: var(--ink-soft); }
+.seasonBanner[data-s="spring"] { box-shadow: 0 0 0 4px #F6CADB, 0 12px 30px rgba(20,40,20,.25); }
+.seasonBanner[data-s="summer"] { box-shadow: 0 0 0 4px #F2D27A, 0 12px 30px rgba(20,40,20,.25); }
+.seasonBanner[data-s="autumn"] { box-shadow: 0 0 0 4px #D98C4A, 0 12px 30px rgba(20,40,20,.25); }
+.seasonBanner[data-s="winter"] { box-shadow: 0 0 0 4px #BFD8E6, 0 12px 30px rgba(20,40,20,.25); }
+.seasonBanner.out { animation: sbOut .35s ease-in forwards; }
+@keyframes sbIn { from { transform: translate(-50%, -50%) scale(.5); opacity: 0; } }
+@keyframes sbOut { to { transform: translate(-50%, -60%) scale(.9); opacity: 0; } }
+@keyframes sbSpin { from { transform: rotate(-120deg) scale(.4); } }
+
+/* ---------- las cartas: la de charco / hielo / planta enseña su forma en la estación de ahora ---------- */
+.cardSvg .sv { display: none; }
+.cardSvg .svAll { display: inline; }
+#gameScreen[data-season] .cardSvg .svAll { display: none; }
+#gameScreen[data-season="spring"] .cardSvg .sv-spring, #gameScreen[data-season="summer"] .cardSvg .sv-summer,
+#gameScreen[data-season="autumn"] .cardSvg .sv-autumn, #gameScreen[data-season="winter"] .cardSvg .sv-winter { display: inline; }
+.cardName .svName { display: none; }
+.cardName .svName.all { display: inline; }
+#gameScreen[data-season] .cardName .svName.all { display: none; }
+#gameScreen[data-season="spring"] .cardName .svName.s-spring, #gameScreen[data-season="summer"] .cardName .svName.s-summer,
+#gameScreen[data-season="autumn"] .cardName .svName.s-autumn, #gameScreen[data-season="winter"] .cardName .svName.s-winter { display: inline; }
+.cardSvg .seWheel { transform-box: view-box; transform-origin: 50px 52px; }
+.card:hover .cardSvg .seWheel { animation: seWheel 1.6s var(--ease-out); }
+@keyframes seWheel { to { transform: rotate(90deg); } }
+
+html.reduceMotion .dFly, html.reduceMotion .flame, html.reduceMotion .sparks, html.reduceMotion .plantJaw, html.reduceMotion .plantHead,
+html.reduceMotion .puddleRing, html.reduceMotion .iceShine, html.reduceMotion .iceSpark, html.reduceMotion .snowSpark, html.reduceMotion #windSvg * { animation: none !important; }
+html.reduceMotion #windSvg .wPetal { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dFly, .flame, .sparks, .plantJaw, .plantHead, .puddleRing, .iceShine, .iceSpark, #windSvg * { animation: none !important; }
+}
+
+/* ---------- icono de la baraja (Modos de juego): al pasar por la tarjeta, la rueda gira a la siguiente estación ---------- */
+.dkArt .dkSeasons { transform-box: view-box; transform-origin: 30px 30px; }
+.deckCard:hover .dkArt .dkSeasons, .deckCard:focus-within .dkArt .dkSeasons { animation: dkSeasons 2.8s cubic-bezier(.6,0,.3,1) infinite; }
+@keyframes dkSeasons { 0%, 20% { transform: rotate(0deg); } 45%, 70% { transform: rotate(90deg); } 95%, 100% { transform: rotate(180deg); } }
+
+/* ---------- vista previa: por dónde rodará la bola de nieve ---------- */
+#previewSvg .pvSnowLine { fill: none; stroke: #fff; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 8; opacity: .95; }
+#previewSvg .pvSnow { fill: rgba(255,255,255,.4); stroke: #fff; stroke-width: 2.2; stroke-dasharray: 5 4; }
+
+/* ---------- presentación de las cartas nuevas: cuatro en fila (sin scroll), con tableros más bajos ---------- */
+#dialog:has(.deckIntro.four) { width: min(1040px, 96vw); }
+.deckIntro.four .dmGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.deckIntro.four .dmCard { padding: 12px; gap: 8px; }
+.deckIntro.four .dmBoard { max-width: 200px; }
+.deckIntro.four .dmCard p { font-size: 12.5px; }
+.deckIntro.four .dmLead { max-width: 80ch; }
+@media (max-width: 900px) { .deckIntro.four .dmGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- creador de niveles: la bola de nieve en su casilla y la estación del nivel ---------- */
+#edBoard[data-season] .cell { transition: background-color .6s var(--ease-out); }
+.edSnow { position: absolute; inset: 4%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.edSnow .snowSvg { width: 100%; height: 100%; }
+.seChips .chip { min-width: 34px; padding: 3px 7px; }
+.seChips .seIco { width: 18px; height: 18px; display: block; }

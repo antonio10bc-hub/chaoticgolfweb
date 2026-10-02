@@ -105,6 +105,13 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
         front.push(() => { const [ox, oy] = orbit(x, y, D, 60); return put(c, A.LOCO_MINI, ox, oy, D * .4, D * .3); });
       }
       break;
+    case 'seasons': {
+      surf.push(() => { c.globalAlpha = .62; c.fillStyle = conic(c, x, y, ['#BFE0F0', '#BFE0F0', '#F4A9C4', '#F4A9C4', '#FFD23F', '#FFD23F', '#D9703A', '#D9703A', '#BFE0F0'], rad(-135)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
+      if (lvl >= 2) ['#F8C3D6', '#D9703A', '#FFFFFF'].forEach((col, i) => back.push(() => { c.fillStyle = col; c.beginPath(); c.ellipse(x - R * .6 + i * R * .6, y - R * 1.15 + i * R * .2, D * .07, D * .05, .6, 0, 7); c.fill(); }));
+      if (lvl >= 3) ['spring', 'summer', 'autumn', 'winter'].forEach((s, i) => front.push(() => { const [ox, oy] = orbit(x, y, D, i * 90);
+        c.fillStyle = '#F1F1DC'; c.beginPath(); c.arc(ox, oy, D * .15, 0, 7); c.fill(); return put(c, A.SEASON_SVG(s), ox, oy, D * .3, D * .3); }));
+      break;
+    }
     case 'prism': {
       const IRI = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF', '#FF8FC4'];
       surf.push(() => { c.globalAlpha = lvl >= 3 ? .62 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });

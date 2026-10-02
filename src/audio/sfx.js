@@ -91,6 +91,19 @@ export function sfx(name) {
     case 'whistle': // silbato de vapor: dos notas con su soplido
       tone(784, 800, .42, 'sine', .14); tone(988, 1004, .42, 'triangle', .1, .02); noiseHit(.46, 2600, .07, 'highpass', 0, 1); break;
     case 'pop':    tone(340, 640, .09, 'triangle', .55, 0, r); chain++; break;    // reaparecer / colocar
+    // (baraja de las estaciones)
+    case 'leaf':   noiseHit(.09, 3200, .3, 'highpass', 0, 1); noiseHit(.07, 1800, .22, 'bandpass', .04, 2); noiseHit(.05, 4200, .14, 'highpass', .08); break; // hoja seca que cruje
+    case 'drip':   tone(880, 1320, .06, 'sine', .22); tone(660, 990, .05, 'sine', .14, .07); noiseHit(.08, 1200, .1, 'bandpass', .02, 2); break; // gota / charco
+    case 'ice':    tone(2093, 2093, .12, 'sine', .14); tone(2637, 2637, .1, 'sine', .1, .04); noiseHit(.12, 5200, .08, 'highpass', 0, 1); break; // tintineo de hielo
+    case 'plant':  tone(180, 260, .12, 'triangle', .3); noiseHit(.1, 700, .18, 'lowpass', .05); break;                   // brota la planta
+    case 'chomp':  tone(160, 90, .08, 'square', .4); tone(140, 70, .1, 'square', .35, .12); noiseHit(.08, 900, .3, 'lowpass', .12); break; // ¡ñam!
+    case 'fire':   noiseHit(.42, 900, .32, 'bandpass', 0, .6); noiseHit(.3, 2400, .12, 'highpass', .05); tone(120, 90, .3, 'sine', .14); break; // fogonazo
+    case 'flare':  noiseHit(.2, 1300, .26, 'bandpass', 0, .8); tone(300, 700, .16, 'sine', .14); break;                   // cruza el fuego
+    case 'burn':   noiseHit(.5, 700, .4, 'lowpass', 0, .7); tone(500, 120, .3, 'sawtooth', .12, .05); break;             // se quema
+    case 'wind':   noiseHit(.9, 700, .2, 'bandpass', 0, .5); noiseHit(.7, 1500, .08, 'bandpass', .15, .8); break;        // ráfaga
+    case 'gust':   noiseHit(.12, 1200, .1, 'bandpass', 0, .6); break;                                                     // la lleva el viento
+    case 'snow':   noiseHit(.1, 500, .26, 'lowpass', 0, .8); noiseHit(.05, 2600, .05, 'highpass', .03); break;           // la bola rueda (crujido de nieve)
+    case 'season': [523, 659, 784, 988, 1175].forEach((f, i) => tone(f, f, .3, 'sine', .16, i * .07)); noiseHit(.5, 3000, .05, 'highpass', .1); break; // cambio de estación
     case 'sink':   // traqueteo en el borde de la taza, caída y "clonc" al fondo
       tone(2400, 2100, .025, 'square', .12); tone(2200, 1900, .025, 'square', .1, .07); tone(2000, 1700, .025, 'square', .08, .13);
       tone(760, 160, .24, 'sine', .5, .16); tone(120, 70, .12, 'sine', .7, .34); tone(1200, 1900, .1, 'triangle', .28, .42); break;

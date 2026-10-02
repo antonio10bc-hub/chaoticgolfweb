@@ -187,6 +187,7 @@ export function startPveMatch() {
   const extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
   if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)
   if (deckHasTrain(dk)) extra.train = true; // (circuito de vías: la baraja del tren y Ultimate)
+  if (dk.seasons) extra.seasons = true; // (baraja de las estaciones)
   if (dk.trainLayout) extra.trainLayout = true; // (la del tren: salidas abajo, vías en medio, hoyo arriba)
   const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra });
   startGame(made.game, 'pve');

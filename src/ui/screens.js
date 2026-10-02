@@ -36,6 +36,7 @@ const sceneOfGame = () => app.mode === 'test' ? 'mat' : app.run?.scene ||
   (app.variant === 'daily' ? dailyScene(app.run?.feature) : app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
 import { renderDailyCard, paintRushTimer, dailyScene } from './screen-modes.js';
 import { paintStoryBtn } from './screen-story.js';
+import { maybeShowGift, hideGift } from './gift.js';
 
 // qué hacen "← Volver" y "Reiniciar" en cada modo (lo rellena cada módulo de pantalla)
 //   MODE_NAV[ranura] = { back(), restart() }
@@ -82,7 +83,8 @@ export function showScreen(s) {
   if (s === 'game' && app.game) { resetZoom(); fitBoard(); render(); } // recalcular tamaños al hacerse visible
   paintRushTimer();   // la cuenta atrás del contrarreloj (y el tinte rojo) solo en su partida
   if (s === 'editor' && ED.level) { fitEditorBoard(); edRender(); }
-  if (s === 'menu') { renderDailyCard(); paintStoryBtn(); }
+  if (s === 'menu') { renderDailyCard(); paintStoryBtn(); setTimeout(maybeShowGift, 900); } // (el regalo de early tester, si aún no se ha abierto)
+  else hideGift();
   if (s === 'menu' || s === 'modes') paintProfileDot(); // (el botón de tu pelota, en el menú y en Modos de juego)
   syncWakeLock();     // en partida, la pantalla no se apaga (móvil)
   historyScreen(s);   // botón / gesto de atrás del sistema

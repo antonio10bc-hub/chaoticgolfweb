@@ -23,7 +23,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'train', ...seed });
+      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'seasons', chaoticgolf_gift: 'open', ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
@@ -296,29 +296,81 @@ it('creador: vías casilla a casilla; no se prueba hasta cerrar el circuito y po
   assert.deepEqual(await app(() => { const S = window.chaoticGolf.app.game.S; return [window.chaoticGolf.app.mode, S.train?.path.length, S.train?.stations.length, S.train.path[S.train.pos]]; }), ['test', 16, 4, [4, 0]]);
 });
 
+it('baraja de las estaciones: el campo de la estación, su indicador, el viento y el cambio de estación a su tiempo', async () => {
+  await fresh({ chaoticgolf_deckIntros: { seasons: true }, chaoticgolf_prefs: { speed: 'fast', botFast: true } });
+  await app(async () => { const { app } = window.chaoticGolf; const m = await import('/src/ui/screen-pve.js'); app.pveCfg = { ...app.pveCfg, size: 'm', opps: 1, deck: 'seasons', humans: 1 }; m.openPveSetup('seasons'); m.startPveMatch(); });
+  await sleep(900);
+  const st = await app(() => { const { app } = window.chaoticGolf, S = app.game.S, scr = document.getElementById('gameScreen');
+    return { now: S.season.now, shown: scr.dataset.season, scene: scr.dataset.scene, chip: document.querySelector('#seasonChip .seStep.on')?.dataset.s }; });
+  assert.equal(st.scene, 'seasons');
+  assert.equal(st.shown, st.now, 'el campo, en la estación de la partida');
+  assert.equal(st.chip, st.now, 'el indicador resalta la de ahora');
+  // primavera: la ruta del viento se dibuja; con la carta, pasa al verano… cuando llega la carta, no antes
+  await app(() => { const { app, ctl } = window.chaoticGolf, g = app.game, S = g.S;
+    S.tiles = []; S.season = { now: 'spring', wind: null, snow: null, fireId: 0 }; g.enterSeason('spring'); g.takeEvents();
+    S.turn = S.human; S.blackPlayed = 0; S.hands[S.human] = ['estacion', 'palo1']; ctl.render(); });
+  await sleep(300);
+  assert.ok(await app(() => !!document.querySelector('#windSvg .wBand')), 'la ruta del viento');
+  await app(() => { const { app, ctl } = window.chaoticGolf; ctl.clickCard(app.game.S.human, 0); });
+  assert.equal(await app(() => [window.chaoticGolf.app.game.S.season.now, document.getElementById('gameScreen').dataset.season].join()), 'summer,spring', 'aún se ve la primavera');
+  await page.waitForFunction(() => document.getElementById('gameScreen').dataset.season === 'summer', { timeout: 6000 });
+  assert.ok(await app(() => !!document.querySelector('.seasonBanner')), 'el rótulo de la estación nueva');
+  await page.waitForFunction(() => !window.chaoticGolf.app.animating, { timeout: 6000 });
+  assert.ok(await app(() => !document.getElementById('windSvg')), 'el viento se calma en verano');
+  assert.equal(await app(() => document.querySelector('#seasonChip .seStep.on').dataset.s), 'summer');
+  // invierno: la bola de nieve es una pieza más
+  await app(() => { const { app, ctl } = window.chaoticGolf, g = app.game, S = g.S;
+    S.tiles = []; S.season = { now: 'winter', wind: null, snow: null, fireId: 0 }; g.enterSeason('winter'); g.takeEvents(); ctl.render(); });
+  await sleep(300);
+  assert.ok(await app(() => !!document.querySelector('#pieces .psnow')), 'la bola de nieve');
+});
+
+it('regalo de early tester: el aviso abre la ventana, congela la racha (no se pierde) y en Ajustes se descongela', async () => {
+  await fresh({ chaoticgolf_gift: null, chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {},
+    daily: { days: {}, streak: 6, bestStreak: 6, last: '2020-01-01' }, rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: {}, chStats: {} } });
+  await sleep(900);
+  assert.ok(await page.$('#giftPop'), 'el aviso del regalo');
+  await click('#giftPop'); await sleep(500);
+  assert.ok(await page.$('#dialog[open] .giftBox'));
+  await click('#dialog[open] button[value="freeze"]'); await sleep(400);
+  const st = await app(async () => { const r = await import('/src/ui/records.js'), g = await import('/src/content/levels/generate.js'); return r.dailyStreakInfo(g.dateKey()); });
+  assert.equal(st.n, 6, 'congelada: sigue viva aunque hace mucho que no se juega');
+  assert.ok(st.frozen && !st.atRisk);
+  assert.ok(await app(() => !!document.querySelector('#dailyCard .dFlame.frozen')), 'la llama, congelada');
+  await page.reload({ waitUntil: 'networkidle0' }); await sleep(1500);
+  assert.ok(!await page.$('#giftPop'), 'abierto: ya no sale');
+  await app(async () => (await import('/src/ui/settings.js')).openSettings('settings')); await sleep(300);
+  await click('[data-set-act="unfreeze"]'); await sleep(200);
+  const after = await app(async () => { const r = await import('/src/ui/records.js'), g = await import('/src/content/levels/generate.js'); return r.dailyStreakInfo(g.dateKey()); });
+  assert.ok(!after.frozen && after.n === 6 && after.atRisk, 'descongelada: viva hoy, pero hay que jugar');
+  assert.ok(await page.$('[data-set-act="freeze"]'), 'y se puede volver a congelar');
+});
+
 it('baraja nueva: se anuncia una vez a quien ya jugaba ("Jugar ahora" lleva a su partida rápida); a quien llega nuevo, no', async () => {
   await fresh({ chaoticgolf_newDeckSeen: null });
   await sleep(900);
   assert.ok(await app(() => !!document.querySelector('#dialog[open] .newDeck .ndArt')), 'el anuncio, con su ilustración');
   await click('#dialog[open] button[value="play"]'); await sleep(500);
-  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.pveCfg.deck]), ['pve', 'train']);
+  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.pveCfg.deck]), ['pve', 'seasons']);
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')), 'solo una vez');
   // primera visita: nada (todo es nuevo), y queda apuntada
   await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')));
-  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'train');
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'seasons');
 });
 
-it('modos de juego: dos pestañas (una a la vez) y 5 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
+it('modos de juego: dos pestañas (una a la vez) y 6 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
-  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 5); // (el contrarreloj usa el mismo estilo de tarjeta)
+  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 6); // (el contrarreloj usa el mismo estilo de tarjeta)
   // las barajas nuevas van detrás de la última y Ultimate siempre al final, con las barajas que reúne
   assert.deepEqual(await app(() => [...document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard [data-mode^="quick:"]')].map(b => b.dataset.mode.slice(6))),
-    ['classic', 'water', 'minigolf', 'train', 'ultimate']);
+    ['classic', 'water', 'minigolf', 'train', 'seasons', 'ultimate']);
+  // (las 6 caben sin desplazarse en una pantalla de 860px de alto)
+  assert.ok(await app(() => document.querySelector('.deckCard.ultimate').getBoundingClientRect().bottom <= innerHeight), 'Ultimate se ve entera');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultIncl i').length), 4);
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
@@ -576,7 +628,7 @@ async function phonePage(vp = PHONE) {
   await p.evaluate(() => { localStorage.clear();
     localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
     localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 }));
-    localStorage.setItem('chaoticgolf_newDeckSeen', '"train"');
+    localStorage.setItem('chaoticgolf_newDeckSeen', '"seasons"');
     localStorage.setItem('chaoticgolf_prefs', JSON.stringify({ speed: 'fast', botFast: true })); }); // (los bots, rápidos: en Ultimate las jugadas son largas)
   await p.reload({ waitUntil: 'networkidle0' });
   await p.waitForFunction(() => window.chaoticGolf?.app.game); await sleep(500);
@@ -721,7 +773,7 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
   await click('#profileBtn'); await sleep(400);
   assert.ok(await app(() => document.getElementById('profileOverlay').classList.contains('visible')));
-  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 9); // (8 + la de vapor, del tren)
+  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 10); // (8 + la de vapor, del tren, y la de las estaciones)
   assert.equal(await app(() => document.querySelectorAll('.pfCard .pfNew').length), 2, 'fuego y clásica, nuevas');
   // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
   await click('[data-pfv="fire:2"]'); await sleep(200);

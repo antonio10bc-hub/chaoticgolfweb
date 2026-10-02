@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 const store = new Map();
 globalThis.localStorage = { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k) };
-const { nextStreakGoal, isStreakGoal, dailyStreakInfo, claimStreakGoal, recordDailyPlayed } = await import('../src/ui/records.js');
+const { nextStreakGoal, isStreakGoal, dailyStreakInfo, claimStreakGoal, recordDailyPlayed, setStreakFrozen } = await import('../src/ui/records.js');
 
 const R = daily => ({ daily: { days: {}, streak: 0, bestStreak: 0, last: null, ...daily } });
 
@@ -29,4 +29,17 @@ test('la meta se celebra una sola vez al día, aunque se repita el reto', () => 
   recordDailyPlayed('2026-03-03');
   assert.equal(claimStreakGoal('2026-03-03'), true);  // racha 3
   assert.equal(claimStreakGoal('2026-03-03'), false); // otra partida el mismo día
+});
+
+test('racha congelada (regalo de early tester): no se pierde sin jugar, sigue sumando y, al descongelarla, hay que jugar hoy', () => {
+  store.clear();
+  for (const d of ['2026-03-01', '2026-03-02', '2026-03-03']) recordDailyPlayed(d);
+  setStreakFrozen(true, '2026-03-03');
+  assert.deepEqual(dailyStreakInfo('2026-03-20'), { n: 3, today: false, atRisk: false, lost: 0, frozen: true }, 'días después, viva');
+  recordDailyPlayed('2026-03-20');
+  assert.equal(dailyStreakInfo('2026-03-20').n, 4, 'jugando, sigue sumando');
+  setStreakFrozen(false, '2026-03-25');
+  assert.deepEqual(dailyStreakInfo('2026-03-25'), { n: 4, today: false, atRisk: true, lost: 0 }, 'descongelada: viva hoy, en peligro');
+  recordDailyPlayed('2026-03-25');
+  assert.equal(dailyStreakInfo('2026-03-25').n, 5);
 });

@@ -23,12 +23,22 @@
      { t:'chainStop', p }        la cadena de choques se ha cortado (tope anti-bucle)
      { t:'train', p:'loco', i, cars, dir }  (baraja del tren) la locomotora avanza a la casilla i de la vía
      { t:'wagon', p:'loco', cars }          se engancha un vagón de arena
+     (baraja de las estaciones, src/engine/seasons.js)
+     { t:'season', from, to }               cambio de estación
+     { t:'wind', phase:'warn'|'on' }        el viento avisa / empieza a soplar
+     { t:'gust', p, x, y }                  el viento lleva la pieza a esa casilla
+     { t:'crunch'|'puddle'|'slide'|'flare', p, x, y }  hoja que se rompe · charco · hielo · cruza el fuego
+     { t:'burn'|'eaten', p, x, y, px?, py? } se queda en el fuego · se la come la planta (px, py)
+     { t:'grow', x, y, tile }               el fuego crece, cae una hoja o llueve (un charco)
+     { t:'snow', x, y, dir } / snowIn / snowOut   la bola de nieve rueda una casilla / aparece / se derrite
+     { t:'snowPack', x, y, ids }            lo que lleva dentro la bola de nieve (cambia al atrapar algo)
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
-import { TILES, isTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
+import { TILES, isTrap, isHardTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 import { makeCircuit, stepDir, stepsToNext, MAX_CARS } from './train.js';
+import { seasonMethods, designedSeasonal } from './seasons.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
@@ -169,13 +179,15 @@ export class Game {
     for (let i = 0; i < cfg.players; i++) g.drawTo2(i);
     if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
     if (cfg.train) g.setupTrain({ layout: !!cfg.trainLayout });
+    if (cfg.seasons) g.setupSeasons(); // (baraja de las estaciones: una al azar, con lo que trae)
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
   }
 
   // piezas de agua del diseño (nivel, puzle, desafío, reto diario, contrarreloj): marcadas como fijas (canPlaceTile).
   // Solo el agua: el resto de piezas se queda tal cual (el oráculo de reglas se grabó sin agua)
-  static designed(tiles = []) { return tiles.map(t => isWater(t) ? { ...t, fixed: true } : t); }
+  // (y los charcos, el hielo y las plantas de la baraja de las estaciones: no gastan el máximo de su carta)
+  static designed(tiles = []) { return tiles.map(t => isWater(t) || designedSeasonal(t) ? { ...t, fixed: true } : t); }
 
   // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
   // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
@@ -237,6 +249,7 @@ export class Game {
     }
     g.initMarks = g.marksFromBalls();
     if (L.train?.path?.length) S.train = { path: L.train.path, stations: L.train.stations, pos: L.train.pos ?? L.train.stations[0], cars: L.train.cars || 0 };
+    if (L.season?.now) g.setupSeasons({ now: L.season.now, snow: L.season.snow, fresh: false }); // (estaciones: la del nivel y su campo)
     g.fillDeck(L.deckCounts);
     if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
     else g.drawTo2(0);
@@ -320,13 +333,15 @@ export class Game {
   ballAt(x, y) { return this.S.balls.find(b => !b.holed && b.x === x && b.y === y); }
   // (baraja del tren) la locomotora y los vagones son piezas "virtuales" en su casilla de la vía: la locomotora,
   // como un bloque de madera (se rebota contra ella); el vagón, como un búnker (la arena atrapa)
-  tileAt(x, y) { return (this.S.train && this.trainTileAt(x, y)) || this.S.tiles.find(t => t.x === x && t.y === y); }
+  // (estaciones) la bola de nieve, igual: una pieza virtual que atrapa (sin coste al salir)
+  tileAt(x, y) { return (this.S.train && this.trainTileAt(x, y)) || (this.S.season?.snow && this.snowTileAt(x, y)) || this.S.tiles.find(t => t.x === x && t.y === y); }
   realTileAt(x, y) { return this.S.tiles.find(t => t.x === x && t.y === y); }
   parAt(x, y) { return this.S.parCells.find(p => p.x === x && p.y === y); }
   isHole(x, y) { const h = this.S.hole; return h.x === x && h.y === y; }
   // las casillas PAR son solo una referencia impresa: no bloquean colocación
   cellFree(x, y) { return this.inBoard(x, y) && !this.ballAt(x, y) && !this.tileAt(x, y) && !this.isHole(x, y); }
-  trapAt(x, y) { return isTrap(this.tileAt(x, y)); }
+  trapAt(x, y) { return isTrap(this.tileAt(x, y)); }       // atrapa (búnker, vagón, bola de nieve)
+  hardTrapAt(x, y) { return isHardTrap(this.tileAt(x, y)); } // …y salir cuesta 1 (búnker, vagón)
   waterAt(x, y) { return isWater(this.tileAt(x, y)); }
 
   /* ---- agua (baraja de agua): dónde se puede colocar ---- */
@@ -338,6 +353,7 @@ export class Game {
     if (!this.cellFree(x, y)) return false;
     if (this.S.train && this.trackIndex(x, y) >= 0) return false; // (nada encima de las vías)
     const def = TILES[type];
+    if (def?.seasonal) return this.canPlaceSeasonal(type, x, y); // (estaciones: según la estación, nunca en salidas ni en la casilla del hoyo)
     if (def?.river) {
       const r = this.S.tiles.filter(t => isRiver(t) && !t.fixed);
       if (r.length >= def.maxOnBoard) return false;
@@ -663,8 +679,9 @@ export class Game {
     this.anim({ t: 'appear', p: 'hole', x: spot.x, y: spot.y });
     return [spot.x, spot.y];
   }
-  inTrap(ball) { return this.trapAt(ball.x, ball.y); }
-  holeInTrap() { return this.trapAt(this.S.hole.x, this.S.hole.y); }
+  // en una trampa de la que salir cuesta 1 (la bola de nieve atrapa, pero sale gratis)
+  inTrap(ball) { return this.hardTrapAt(ball.x, ball.y); }
+  holeInTrap() { return this.hardTrapAt(this.S.hole.x, this.S.hole.y); }
   // distancia efectiva de una carta de hoyo (la trampa resta 1)
   holeMoveDist(def) { return def.dist - (this.holeInTrap() ? 1 : 0); }
   holeDist(x, y) { return manhattan(x, y, this.S.hole.x, this.S.hole.y); }
@@ -792,7 +809,7 @@ export class Game {
         this.log('log.ballFell', { b, x: ball.x, y: ball.y });
         this.emergeFromPortal(ball, dx, dy);
         this.spawnWater(ball);
-        this.finishMoveChecks(ball); // si el hoyo ocupa su posición inicial, la pelota entra (JAQUE)
+        this.finishMoveChecks(ball, { safe: true }); // si el hoyo ocupa su posición inicial, la pelota entra (JAQUE)
         return;
       }
       const hit = this.ballAt(nx, ny);
@@ -827,6 +844,17 @@ export class Game {
         this.finishMoveChecks(ball);
         return;
       }
+      if (this.S.season) { // (estaciones) el viento se la lleva, hojas y charcos frenan, el hielo resbala, el fuego empuja… o quema
+        const r = this.seasonCell(pid, cx, cy, remaining);
+        if (r.wind || r.burn) {
+          ball.x = cx; ball.y = cy;
+          this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
+          if (r.wind) this.windCarryBall(ball); else this.ballOut(ball, 'burn');
+          this.finishMoveChecks(ball, { safe: true }); // (el viento la echa del tablero; el fuego, igual: a su salida)
+          return;
+        }
+        remaining = r.remaining;
+      }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.ballTrapped', { b, n: remaining });
         this.tip('bunker');
@@ -860,14 +888,15 @@ export class Game {
   }
 
   // comprobaciones al terminar un movimiento (trampa informativa + hoyo exacto)
-  finishMoveChecks(ball) {
+  // safe: acaba de volver a su salida (o a su lado, si estaba ocupada): ahí no se la come ninguna planta
+  finishMoveChecks(ball, { safe = false } = {}) {
     const pid = 'b' + ball.player;
     // (minigolf) acaba sobre una lanzadera que ya ha lanzado en este turno: no vuelve a lanzar, se
     // recoloca en la casilla libre de al lado
     if (!ball.holed && isLauncher(this.tileAt(ball.x, ball.y))) this.offLauncher(ball);
-    if (this.inTrap(ball)) {
+    if (this.trapAt(ball.x, ball.y)) {
       this.log('log.ballStaysTrap', { b: playerTag(ball.player) });
-      this.tip('bunker');
+      this.tip(this.inTrap(ball) ? 'bunker' : 'snow');
       this.anim({ t: 'settle', p: pid });
     }
     if (this.isHole(ball.x, ball.y)) {
@@ -875,7 +904,7 @@ export class Game {
       this.log('log.ballHoled', { b: playerTag(ball.player) });
       this.anim({ t: 'sink', p: pid });
       this.registerWin(ball.player);
-    }
+    } else if (!safe && this.plantBites(ball)) this.finishMoveChecks(ball, { safe: true }); // (estaciones) se la come la planta: a su salida
   }
 
   // movimiento transferido por colisión: también sufre la penalización de trampa
@@ -984,6 +1013,12 @@ export class Game {
       this.anim({ t: 'move', p: 'hole', x: cx, y: cy });
       if (this.waterAt(cx, cy)) { const [wx, wy] = this.holeInWater(cx, cy); this.holeLandAt(wx, wy); return; }
       if (this.launcherOn(cx, cy)) { const [lx, ly] = this.launchHole(cx, cy); this.holeLandAt(lx, ly); return; }
+      if (this.S.season) { // (estaciones) igual que una pelota
+        const r = this.seasonCell('hole', cx, cy, remaining);
+        if (r.wind) { const [wx, wy] = this.windCarryHole(cx, cy); this.holeLandAt(wx, wy); return; }
+        if (r.burn) { const [bx, by] = this.holeOut(cx, cy, 'burn'); this.holeLandAt(bx, by); return; }
+        remaining = r.remaining;
+      }
       if (this.trapAt(cx, cy) && remaining > 0) {
         this.log('log.holeTrapped', { n: remaining });
         remaining = 0;
@@ -1000,6 +1035,8 @@ export class Game {
       const spot = this.nearestFree(x, y);
       if (spot) { this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y }); this.log('log.holeOffLauncher'); x = spot.x; y = spot.y; }
     }
+    // (estaciones) a su lado hay una planta carnívora: se lo come y vuelve a su casilla inicial
+    if (this.S.season && !this.isHoleHome(x, y)) { const pl = this.plantNear(x, y); if (pl) [x, y] = this.holeOut(x, y, 'eaten', pl); }
     S.hole.x = x; S.hole.y = y;
     if (this.trapAt(x, y)) this.anim({ t: 'settle', p: 'hole' });
     const b = this.ballAt(x, y);
@@ -1152,7 +1189,7 @@ export class Game {
 
     if (pd.kind === 'pickBall') { // solo el palo 1 reactivo elige pelota (propia o rival)
       // durante el JAQUE se puede clicar el hoyo para sacar la pelota que hay dentro
-      if (S.jaque && this.isHole(x, y) && !this.trapAt(x, y)) {
+      if (S.jaque && this.isHole(x, y) && !this.hardTrapAt(x, y)) {
         const holed = S.balls.filter(b => b.holed);
         if (!holed.length) return false;
         if (holed.length === 1) {
@@ -1205,9 +1242,18 @@ export class Game {
       const type = pd.tileType;
       this.pending = null;
       this.consumeCard(pd.p, pd.idx);
-      S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : { type, x, y });
+      S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : type === 'fire' ? { type, x, y, g: this.newFireId() } : { type, x, y });
       this.emit({ t: 'tilePlaced', x, y });
       this.log('log.tilePlaced', { tile: t(`tiles.${type}.name`), x, y });
+      this.afterPlay();
+      return true;
+    }
+    if (pd.kind === 'snowRoll') { // (estaciones) la bola de nieve rueda hacia donde se elija
+      const tg = pd.targets.find(q => q.x === x && q.y === y);
+      if (!tg) return false;
+      this.pending = null;
+      this.consumeCard(pd.p, pd.idx);
+      this.snowRoll(tg.dir);
       this.afterPlay();
       return true;
     }
@@ -1262,6 +1308,7 @@ export class Game {
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });
       this.emergeFromPortal(ball, dx, dy);
       this.spawnWater(ball);
+      pd.safe = true; // (ha vuelto a su salida)
       return this.endSerpent();
     }
     const hit = this.ballAt(nx, ny);
@@ -1282,6 +1329,12 @@ export class Game {
     pd.stepsLeft--;
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
     if (this.launcherOn(nx, ny)) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
+    if (this.S.season) { // (estaciones) cada paso también cuenta: viento, hojas, charcos, hielo y fuego
+      const r = this.seasonCell(pid, nx, ny, pd.stepsLeft);
+      if (r.wind) { this.windCarryBall(ball); pd.safe = true; return this.endSerpent(); }
+      if (r.burn) { this.ballOut(ball, 'burn'); pd.safe = true; return this.endSerpent(); }
+      pd.stepsLeft = r.remaining;
+    }
     if (this.trapAt(nx, ny) && pd.stepsLeft > 0) {
       this.log('log.ballTrapped', { b, n: pd.stepsLeft });
       return this.endSerpent();
@@ -1294,7 +1347,7 @@ export class Game {
   endSerpent() {
     const pd = this.pending;
     this.log('log.ballMoved', { b: playerTag(pd.ball.player), x0: pd.startX, y0: pd.startY, x1: pd.ball.x, y1: pd.ball.y });
-    this.finishMoveChecks(pd.ball);
+    this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
     this.pending = null;
     this.afterPlay();
     return true;
@@ -1326,7 +1379,7 @@ export class Game {
 
   boardSnap() {
     const S = this.S;
-    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train }); // (sin tren, la clave no se guarda)
+    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train, season: S.season }); // (sin tren ni estaciones, la clave no se guarda)
   }
   restoreBoardSnap(snap) {
     const S = this.S;
@@ -1334,6 +1387,7 @@ export class Game {
     S.tiles = clone(snap.tiles); S.winner = snap.winner;
     S.winners = clone(snap.winners || []);
     if (snap.train) S.train = clone(snap.train);
+    if (snap.season) S.season = clone(snap.season);
   }
 
   /* ---------- el tren ----------
@@ -1543,6 +1597,7 @@ export class Game {
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();
     if (S.train) this.trainTurn();
+    if (S.season) this.seasonTurn(); // (estaciones: el viento, el fuego, las hojas y la lluvia, la bola de nieve)
   }
 
   // regla especial (desafío): al empezar cada turno el hoyo se desplaza 1 casilla al azar
@@ -1566,7 +1621,7 @@ export class Game {
     const pd = this.pending;
     if (!pd) return null;
     if (pd.kind === 'pickBall') {
-      if (this.S.jaque && this.isHole(x, y) && !this.trapAt(x, y) && this.S.balls.some(b => b.holed)) return 'sel';
+      if (this.S.jaque && this.isHole(x, y) && !this.hardTrapAt(x, y) && this.S.balls.some(b => b.holed)) return 'sel';
       const b = this.ballAt(x, y);
       if (!b) return null;
       if (pd.card === 'oPalo1' && this.inTrap(b)) return null;
@@ -1578,6 +1633,7 @@ export class Game {
     }
     if (pd.kind === 'serpent') return this.serpentTargets().some(t => t.x === x && t.y === y) ? 'sel' : null;
     if (pd.kind === 'placeTile') return this.canPlaceTile(pd.tileType, x, y) ? 'sel' : null;
+    if (pd.kind === 'snowRoll') return pd.targets.some(q => q.x === x && q.y === y) ? 'sel' : null;
     return null;
   }
 
@@ -1632,3 +1688,6 @@ export class Game {
     return true;
   }
 }
+
+// (baraja de las estaciones) sus reglas viven en seasons.js
+Object.assign(Game.prototype, seasonMethods);

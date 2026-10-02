@@ -18,6 +18,9 @@ import * as ctl from './controller.js';
 import { pauseGame, resumePlay } from './pause.js';
 import { ensureGuard } from './back.js';
 import { achievementsHTML } from './achievements.js';
+import { giftOpened } from './gift.js';
+import { streakFrozen, setStreakFrozen } from './records.js';
+import { dateKey } from '../content/levels/generate.js';
 
 let tab = 'settings', lastFocus = null;
 
@@ -52,6 +55,9 @@ function settingsHTML() {
     ${toggle('setContrast', prefs.contrast, t('settings.contrast'), t('settings.contrastSub'))}
     ${toggle('setLeftHand', prefs.leftHand, t('settings.leftHand'), t('settings.leftHandSub'))}
   </section>
+  ${giftOpened() ? `<section><h4>${esc(t('settings.streakH'))}</h4>
+    <div class="setRow"><span class="muted">${esc(t(streakFrozen() ? 'settings.frozenOn' : 'settings.frozenOff'))}</span><button class="btn-light btn-sm" data-set-act="${streakFrozen() ? 'unfreeze' : 'freeze'}">${esc(t(streakFrozen() ? 'settings.unfreeze' : 'settings.freeze'))}</button></div>
+  </section>` : ''}
   <section><h4>${esc(t('settings.tutorialH'))}</h4>
     <div class="setRow"><span class="muted">${esc(t('settings.tutorialSub'))}</span><button class="btn-light btn-sm" data-set-act="tutorial">${esc(t('settings.tutorialReset'))}</button></div>
   </section>
@@ -141,6 +147,9 @@ export function bindSettings() {
     const a = e.target.closest('[data-set-act]');
     if (!a) return;
     if (a.dataset.setAct === 'close') closeSettings();
+    if (a.dataset.setAct === 'freeze' || a.dataset.setAct === 'unfreeze') { // (regalo de early tester: la racha del reto diario)
+      setStreakFrozen(a.dataset.setAct === 'freeze', dateKey()); sfx('select'); paint(); app.onStreakChange?.(); return;
+    }
     if (a.dataset.setAct === 'tutorial') { resetTutorial(); resetModeIntros(); resetDeckIntros(); a.disabled = true; a.textContent = t('settings.tutorialDone'); }
     if (a.dataset.setAct === 'resetStats' && await confirmDialog(t('stats.resetConfirm'), t('stats.reset'), true)) { resetRecords(); paint(); }
     if (a.dataset.setAct === 'resetPrefs' && await confirmDialog(t('settings.resetConfirm'), t('settings.reset'), true)) {

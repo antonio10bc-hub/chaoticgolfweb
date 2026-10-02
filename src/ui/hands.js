@@ -25,7 +25,7 @@ let prevOwner = -1;
 export const resetDealAnim = () => { prevHands = []; prevOwner = -1; };
 
 const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard'];
-const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent'];
+const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'snowRoll'];
 
 // ¿de quién es la mano grande del dock?
 export function dockOwner(g = app.game) {
@@ -73,9 +73,11 @@ function hintFor(g, p) {
   const pd = g.pending, S = g.S;
   switch (pd.kind) {
     case 'move': return t('hands.hint.move', { card: CARDS[S.hands[p][pd.idx]].name });
-    case 'placeTile': return TILES[pd.tileType]?.rotates
-      ? t(app.placeAt ? 'hands.hint.placeRotConfirm' : 'hands.hint.placeRot', { card: CARDS[pd.tileType].name })
-      : t('hands.hint.placeTile', { card: CARDS[pd.tileType].name });
+    case 'placeTile': { // (la carta que se está jugando: no siempre se llama como la pieza, p. ej. charco → hielo)
+      const card = (CARDS[S.hands[pd.p]?.[pd.idx]] || CARDS[pd.tileType])?.name || '';
+      return TILES[pd.tileType]?.rotates ? t(app.placeAt ? 'hands.hint.placeRotConfirm' : 'hands.hint.placeRot', { card }) : t('hands.hint.placeTile', { card });
+    }
+    case 'snowRoll': return t('hands.hint.snowRoll', { card: CARDS.oNieve.name });
     case 'pickBall': return t('hands.hint.pickBall', { card: CARDS.oPalo1.name,
       extra: S.jaque && S.balls.some(b => b.holed) ? t('hands.hint.pickBallJaque') : '' });
     case 'serpent': return t('hands.hint.serpent', { card: CARDS.dedo.name, n: pd.stepsLeft });
@@ -111,7 +113,7 @@ function barButtons(g) {
 function pendingCard(g) {
   const pd = g.pending, S = g.S;
   if (pd.kind === 'serpent' || pd.kind === 'dedoAmount') return CARDS.dedo;
-  if (pd.kind === 'placeTile') return CARDS[pd.tileType];
+  if (pd.kind === 'placeTile' || pd.kind === 'snowRoll') return CARDS[S.hands[pd.p]?.[pd.idx]] || CARDS[pd.tileType] || null;
   if (pd.kind === 'pickBall' || pd.kind === 'pickHoled' || (pd.kind === 'move' && pd.extract)) return CARDS.oPalo1;
   if (pd.kind === 'move') return CARDS[S.hands[pd.p][pd.idx]];
   return null;

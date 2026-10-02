@@ -41,12 +41,14 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 ```
 index.html                 esqueleto de la página (sin lógica ni onclick)
 styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
-                           themes (temas del campo), features (componentes nuevos), skins (pelotas y "Tu pelota") y phone (interfaz táctil)
+                           themes (temas del campo), features (componentes nuevos), train y seasons (sus barajas),
+                           skins (pelotas y "Tu pelota") y phone (interfaz táctil)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
   boot-watch.js            script clásico: "Reintentar" si el juego no arranca en 10 s
   engine/                  REGLAS PURAS — sin DOM, sin sonido, sin timers
     game.js                clase Game: estado S + acción pendiente + eventos
+    seasons.js             (baraja de las estaciones) viento, fuego, hojas y lluvia, bola de nieve y cambio de estación
     rng.js                 RNG con semilla (partidas reproducibles)
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
@@ -67,6 +69,8 @@ src/
     device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
     bake.js                texturas precocinadas: grano y fondo desenfocado de los menús como imagen
     train-view.js          (baraja del tren) vías, andenes, locomotora y vagones; su animación
+    seasons-view.js        (baraja de las estaciones) la estación en pantalla, su indicador, el viento, la bola de nieve
+                           y sus animaciones · season-art.js  iconos de las estaciones y la bola de nieve
     new-deck.js            "¡Nueva baraja!": el anuncio, una vez, de la baraja que se estrena
     skins.js / my-ball.js  pelotas que se ganan (3 niveles cada una) y la ventana "Tu pelota"
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
@@ -225,11 +229,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
-  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, **tren** y
+  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, **estaciones** y
   **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
-  desplazarse. Cada una con su color, su última partida, "Repetir" y sus
+  desplazarse (las seis caben en 860 px de alto). Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -289,14 +293,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   sitio del resumen ("Ver el resumen" vuelve), no debajo. `npm run test:ui` lo comprueba.
 - **Tu pelota** (botón de la camiseta a la derecha de Ajustes, en el menú y en Modos de juego; `src/ui/skins.js`, `src/ui/my-ball.js`,
   `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
-  las 8 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
+  las 10 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días; más llamas, más altas, brasas), **Clásica**, **Agua**, **Madera** y
   **Prisma** (victorias con cada baraja: 10 · 50 · 100; aro de oro · laurel · destellos, agua dentro · ondas · gotas,
   vetas · marco · molino que gira, brillo iridiscente · halo · destellos), **Rayo** (series de contrarreloj completas:
   1 · 5 · 15; cronómetro con estela · esfera de reloj · rayos), **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
   completo (calentamiento · intermedio · experto). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
   un nivel lo enseña en grande (también los que aún no tienes) y los ganados se ponen con un toque. Decoran la pelota sin
-  cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 8 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
+  cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 10 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
   rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un
   nivel, el final de partida lo anuncia una vez ("Pelota nueva: Fuego II", abre la ventana) y un punto rojo guía hasta
   ella: en el botón de la camiseta, dentro en el nivel recién ganado de su tarjeta y, al tocarlo, en "Ponérmela" (se da
@@ -381,8 +385,62 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     numeran por dificultad): **Último tren** (llévala a la vía y que el tren la empuje al hoyo), **Vagón exprés** (súbete
     al vagón, viaja y sal de la arena) y **Hoyo en marcha** (pon el hoyo en la vía y que el tren se lo lleve hasta la
     pelota; con una pista falsa).
+- **Baraja de las estaciones** (reglas en `src/engine/seasons.js`, cartas en `cards/estaciones.js`, piezas en
+  `tiles/seasons.js`, vista en `src/ui/seasons-view.js` y `styles/seasons.css`; +2 columnas; sin búnkeres ni portales; fuera de
+  Ultimate: `noUltimate`). La partida empieza en una **estación al azar** (con un RNG aparte: el mazo sale igual) y la
+  carta negra **Cambio de estación** ×4 pasa a la siguiente: primavera → verano → otoño → invierno → primavera. Las salidas
+  y la casilla inicial del hoyo son seguras: ahí no se pone ni cae nada.
+  - **Primavera: viento.** Cada dos turnos, una ruta serpenteante de borde a borde (de un lado al de enfrente; nunca por
+    las salidas). Un turno de **aviso** (la ruta, tenue, con flechas) y el siguiente **sopla**: se lleva por la ruta, y
+    **fuera del tablero**, lo que hay dentro al empezar a soplar y lo que caiga en ella ese turno: la pelota vuelve a su
+    salida y el hoyo a su casilla inicial (`windExit`: el lado del borde donde acaba la ruta). Luego se calma y sale otro
+    aviso. **Plantas carnívoras**: se comen la pelota (o el hoyo) que se queda a su lado o encima (cuenta como caerse); no a
+    quien pasa, ni a quien vuelve a su salida.
+  - **Verano: incendios** (carta naranja **Incendio** ×1): fuego en una casilla vacía que crece solo una casilla vacía por
+    turno, hasta 5, y dura hasta que cambia la estación. Cruzarlo **suma 2** al tiro; quedarse dentro es como caerse del
+    tablero (también el hoyo).
+  - **Otoño: hojas secas** (6 al llegar y van cayendo más entre turnos): restan 1 al tiro y se rompen. Entre turnos a veces
+    **llueve**: una nubecilla deja caer unas gotas sobre la casilla y aparece un charco, que resta 1 al tiro de quien pasa
+    (no atrapa).
+  - **Invierno: la bola de nieve** rueda sola entre turnos **5 casillas** (`SNOW_STEPS`; antes si se topa con una pieza
+    sólida o el borde) y en el siguiente cambia de dirección; la naranja también la mueve 5. Lo que lleva dentro se ve todo:
+    una pelota en el centro; varias, repartidas y más pequeñas (evento `snowPack`). Atrapa lo que pilla (pelotas y hoyo) y se lo lleva; de ella se sale con cualquier palo, sin coste
+    (trampa `soft`). Una pelota y el hoyo dentro a la vez: la pelota entra. La naranja **Bola de nieve** ×2 la hace rodar
+    hacia donde elijas; en un JAQUE se lleva la pelota del hoyo (no el hoyo). **Hielo**: suma 1 al tiro.
+  - **Charco · hielo · planta** (negra ×6, como mucho 6 en el campo; los de la lluvia no cuentan): pone lo de la estación
+    (charco en otoño, hielo en invierno, planta en primavera; en verano no se juega); en la mano, su dibujo y su nombre
+    cambian con la estación. Al cambiar de estación el campo cambia con ella: el charco se hiela, el hielo se vuelve planta
+    y la planta se seca en verano; las hojas se van con el invierno, el fuego se apaga en otoño, la bola se derrite en
+    primavera y el viento se calma en verano. Las cartas de una estación solo se juegan en ella.
+  - Los modificadores cuentan casilla a casilla (también con el dedo y para el hoyo). La IA los ve al simular cada jugada y,
+    además, mira dónde dejará el viento cada cosa (`windFate`) y no le gusta estar dentro de la bola de nieve.
+  - **En pantalla:** fondo y césped de cada estación (cuatro capas que se funden al cambiar; motivos sueltos: flores, paja,
+    hojas, copos; pétalos, motas, hojas o copos que caen), marco del campo de su color, indicador con las cuatro en orden y
+    la de ahora resaltada, y un rótulo grande al cambiar. Lo que cambia durante una jugada (la hoja que cruje, el fuego que
+    crece, el cambio de estación) se ve a su tiempo: `app.sv` guarda lo que se ve y cada evento lo pone al día. Viento en
+    una capa SVG (banda, ráfagas a saltos, remolinos, pétalos que viajan por la ruta con `animateMotion` y flechas donde
+    echa del tablero); al arrastrar una pieza, rachas blancas y algún pétalo; bola de nieve de nieve apretada como pieza móvil que gira al rodar y lleva dentro lo
+    que atrapa (más pequeño y escarchado); llamas que tiemblan, la planta que abre y cierra la boca (y se lanza al comer),
+    hielo con destellos y charcos con ondas. Sonidos propios. Vista previa del recorrido de la bola de nieve; la imagen de
+    compartir dibuja sus piezas, la bola de nieve y el césped de la estación.
+  - **Presentación** de sus cuatro cartas en fila (sin desplazarse) con escenas que se juegan con el motor (piezas que
+    aparecen y desaparecen, el campo que cambia de color, la bola que rueda). Pelota de logros **Estaciones** (10 · 50 · 100
+    victorias): la bola en cuatro colores · pétalos, hojas y copos · las cuatro estaciones en órbita.
+  - **En el creador** (grupo Estaciones): hoja seca, charco, hielo, planta, fuego y bola de nieve (una por nivel), y en sus
+    opciones la estación del nivel. Poner una pieza en un nivel sin estación lo pasa a la suya; la bola de nieve, a
+    invierno. La plantilla Estaciones pone primavera si no hay estación. Va en el código para compartir niveles.
+  - Equilibrio (`npm run simulate -- --deck seasons`): ~9 rondas de media (la clásica 5,9; antes de que el viento echara
+    del tablero, 6,5), 100 % terminadas; la bola de nieve decide algunas partidas entre turnos (lleva el hoyo y pilla una
+    pelota).
+- **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
+  Al tocarlo, la caja se abre y cuenta que, por probar el juego tan pronto, puedes **congelar tu racha del reto diario**:
+  no se pierde aunque pases días sin jugar (y jugando sigue sumando). Se descongela (o se vuelve a congelar) en Ajustes →
+  Racha del reto diario, que aparece una vez abierto el regalo; al descongelarla sigue viva hoy, pero toca jugar el reto.
+  Congelada, la llama del reto diario del menú se ve en azul hielo. `records.daily.frozen` (`setStreakFrozen`); evento
+  **regalo** (`congelar`).
 - **"¡Nueva baraja!"** (`src/ui/new-deck.js`): cuando el juego estrena una baraja, quien ya jugaba la ve anunciada una
-  vez al llegar al menú principal: una ventana pequeña con la ilustración (el circuito con el tren dando vueltas), el
+  vez al llegar al menú principal: una ventana pequeña con la ilustración (ahora, el campo partido en sus cuatro
+  estaciones, cada una con lo suyo, y una pelota que las cruza), el
   anuncio, una frase y "Jugar ahora" (su partida rápida) o "Luego". A quien llega por primera vez no se le anuncia
   (todo es nuevo). Para la próxima baraja: `ANNOUNCE` y su ilustración.
 - **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
@@ -484,6 +542,7 @@ npm test                          # oráculo de reglas + reglas concretas + IA +
 npm run test:ui                   # interfaz en Chrome real: guardado, pausa, multijugador, logros, deshacer, reto, puzles
 npm run simulate                  # telemetría: 500 partidas bot-contra-bot, victorias y uso de cartas
 npm run simulate -- --random 0 --players 4 --size l --games 2000
+npm run simulate -- --deck seasons            # con una baraja: su mazo, su tamaño y lo suyo (y cuánto actúa cada mecánica)
 npm run smoke                     # prueba de humo en Chrome real (capturas en smoke-out/)
 npm run golden                    # regenera el oráculo desde tests/oracle/original.html
 npm run preload                   # regenera la precarga de index.html (tras añadir un módulo o un nivel)

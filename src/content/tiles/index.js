@@ -15,6 +15,8 @@
 //   rotates — se elige la orientación (`rot`) al colocarla; picFor(tile) la dibuja.
 //   virtual — (baraja del tren) la locomotora y los vagones: el motor los ve en su casilla de la vía (tileAt), pero
 //            no están en S.tiles ni se dibujan en la casilla (son piezas móviles: src/ui/train-view.js).
+//   seasonal — (baraja de las estaciones) hoja seca, charco, hielo, planta carnívora e incendio (tiles/seasons.js);
+//            soft — la bola de nieve atrapa como un búnker, pero salir de ella no cuesta nada.
 // Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
 import portal from './portal.js';
@@ -25,11 +27,15 @@ import corner from './corner.js';
 import tunnel from './tunnel.js';
 import launcher from './launcher.js';
 import { loco, wagon } from './train.js';
+import { leaf, puddle, ice, plant, fire, snowball } from './seasons.js';
 
-export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon };
+export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon, leaf, puddle, ice, plant, fire, snowball };
 
 export const tileDef = type => TILES[type];
 export const isTrap = tile => !!(tile && TILES[tile.type]?.trap);
+// trampa que cuesta 1 salir (búnker, vagón); la bola de nieve atrapa igual pero no cuesta nada
+export const isHardTrap = tile => isTrap(tile) && !TILES[tile.type].soft;
+export const isSeasonal = tile => !!(tile && TILES[tile.type]?.seasonal);
 export const isPortal = tile => !!(tile && TILES[tile.type]?.portal);
 export const isRiver = tile => !!(tile && TILES[tile.type]?.river);
 export const isLake = tile => !!(tile && TILES[tile.type]?.lake);

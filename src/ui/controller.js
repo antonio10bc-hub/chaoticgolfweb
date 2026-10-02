@@ -38,6 +38,7 @@ import { piecesBefore, notePlay } from './share-play.js';
 import { paintLab, labGodClick } from './lab.js';
 import { previewCard, cardTargets } from './preview.js';
 import { autoZoom } from './board-zoom.js';
+import { seasonBefore, seasonPrep } from './seasons-view.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -65,8 +66,9 @@ function noteRoute(g, me, ev) {
 // jugador "tú" para el resumen: la persona en partida rápida con una sola persona, o el nivel
 const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
-const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon']);
-const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', teleport: 'portales', sink: 'hundidas' };
+const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon',
+  'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack']); // (las últimas: baraja de las estaciones)
+const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', burn: 'caidas', eaten: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
 export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {
@@ -121,8 +123,10 @@ function dispatch(fn) {
   const turnBefore = g.S.turn;
   const before = app.mode === 'pve' ? g.clone({ lite: true }) : null; // para explicar la jugada y el momento clave
   const pre = piecesBefore(g); // (para compartir la jugada final)
+  const seasonWas = seasonBefore(g); // (estaciones: lo que se ve ahora, para enseñar los cambios a su tiempo)
   const ok = fn(g);
   const events = g.takeEvents();
+  seasonPrep(g, events, seasonWas);
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
   let actor = null, moves = 0, cardKey = null;
   const me = meSeat(g);

@@ -7,6 +7,7 @@
 import { CARDS } from '../cards/index.js';
 import { TILES } from '../tiles/index.js';
 import { validPath, MAX_CARS } from '../../engine/train.js';
+import { SEASONS } from '../../engine/seasons.js';
 
 export const LEVEL_SIZE = { minCols: 3, maxCols: 25, minRows: 5, maxRows: 25 };
 export const LINK_KEY = 'nivel';
@@ -34,6 +35,7 @@ export function packLevel(L) {
   if (d.length) o.d = Object.fromEntries(d);
   if (L.hand?.length) o.k = L.hand.filter(k => CARDS[k]);
   if (L.train?.path?.length) o.tr = { p: L.train.path.flat(), s: L.train.stations, i: L.train.pos, c: L.train.cars || 0 }; // (el circuito, casilla a casilla)
+  if (L.season?.now) o.s = L.season.snow ? [L.season.now, L.season.snow.x, L.season.snow.y] : [L.season.now]; // (la estación y la bola de nieve)
   return o;
 }
 
@@ -77,6 +79,12 @@ export function unpackLevel(o) {
       L.train = { path, stations: st, pos: tr.i, cars };
       L.tiles = L.tiles.filter(tl => !path.some(([x, y]) => x === tl.x && y === tl.y));
     }
+  }
+  // la estación (y, en invierno, la bola de nieve en una casilla sin nada)
+  if (Array.isArray(o.s) && SEASONS.includes(o.s[0])) {
+    L.season = { now: o.s[0] };
+    const sn = o.s[0] === 'winter' && pt([o.s[1], o.s[2]]);
+    if (sn && !used.has(sn.x + ',' + sn.y) && !(sn.x === hole.x && sn.y === hole.y) && !(sn.x === ball.x && sn.y === ball.y)) L.season.snow = sn;
   }
   return L;
 }

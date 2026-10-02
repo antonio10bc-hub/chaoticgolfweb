@@ -9,14 +9,17 @@ import { setPos } from './geometry.js';
 import { fxRewindApply } from '../fx/effects.js';
 import { previewCell, hidePreview } from './preview.js';
 import { fxBurstCell } from '../fx/particles.js';
-import { JUICE, SAND_C, CEMENT_C } from '../fx/juice.js';
+import { JUICE, SAND_C, CEMENT_C, WATER_C } from '../fx/juice.js';
 import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
 import { dockOwner } from './hands.js';
 import { isBot } from './players.js';
 import { renderTrack, ensureTrain, syncTrain } from './train-view.js';
+import { renderSeason, ensureSnow, syncSnow, shownTile } from './seasons-view.js';
 
 let cells = [], dims = '';
+// polvo al colocar cada loseta (según su `dust`)
+const DUST = { sand: SAND_C, water: WATER_C, leaf: ['#C9692E', '#D9A441', '#7FA552'], snow: ['#FFFFFF', '#E3EEF4', '#CFE4EE'], ash: ['#FFD23F', '#E8873A', '#5A5048'] };
 let justPlaced = null; // última loseta colocada, para su animación de aparición
 export const markPlaced = (x, y) => { justPlaced = { x, y }; };
 let focusIdx = 0;      // casilla con el foco de teclado (tabindex roving)
@@ -75,7 +78,9 @@ export function renderBoard() {
     const cell = cells[y * S.cols + x];
     let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), html = '', title = ''; // mowB: banda de segado (decorativo)
     const aria = [t('a11y.cell', { x, y })];
-    const par = g.parAt(x, y), tile = g.realTileAt(x, y), ball = g.ballAt(x, y); // (la locomotora y los vagones van en la capa de piezas)
+    // (la locomotora, los vagones y la bola de nieve van en la capa de piezas; en las estaciones, la casilla tal como se ve
+    // ahora: lo que cambia durante la jugada aparece a su tiempo)
+    const par = g.parAt(x, y), tile = S.season ? shownTile(g, x, y) : g.realTileAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);
@@ -86,12 +91,13 @@ export function renderBoard() {
       if (tileDef(tile.type).trap && (ball || g.isHole(x, y))) html += ASSETS.trapBadgeHTML();
       aria.push(t(`tiles.${tile.type}.name`));
       if (pop) { // nubecilla de polvo al colocar la loseta (decorativo)
-        const dustC = tileDef(tile.type).dust === 'sand' ? SAND_C : CEMENT_C;
+        const dustC = DUST[tileDef(tile.type).dust] || CEMENT_C;
         fxBurstCell(x, y, { n: JUICE.place.dust, colors: dustC, size: 7, dist: 30, dur: 460, gravity: 10 });
         sfx(tileDef(tile.type).placeSound || 'pop');
       }
     }
     if (S.train && g.trackIndex(x, y) >= 0) { cls += ' track'; const v = g.trainTileAt(x, y); aria.push(t(v ? `tiles.${v.type}.name` : 'a11y.track')); }
+    if (S.season) { if (g.windIndex(x, y) >= 0) aria.push(t(S.season.wind.on ? 'a11y.wind' : 'a11y.windWarn')); if (g.snowTileAt(x, y)) aria.push(t('a11y.snowball')); }
     if (g.isHole(x, y)) aria.push(t('a11y.hole'));
     if (ball) aria.push(t('player.name', { n: ball.player + 1 }));
     // marca sutil de las casillas iniciales reales (fijadas al empezar la partida)
@@ -126,6 +132,7 @@ export function renderBoard() {
   }
   justPlaced = null;
   renderTrack(g); // (baraja del tren) las vías, sobre las casillas
+  renderSeason(g); // (baraja de las estaciones) la estación, su indicador y el viento
 }
 
 /* ---- interacción: click, teclado y previsualización de trayectoria ---- */
@@ -177,7 +184,7 @@ function focusCell(i) {
 // ¿la casilla es un destino de una jugada con recorrido (palo, dedo, palo reactivo)?
 function previewable(cell) {
   const pd = app.game?.pending;
-  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent')
+  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent' || pd.kind === 'snowRoll')
     && (cell.classList.contains('selectable') || cell.classList.contains('selectable-out'));
 }
 function showTrajFor(cell) {
@@ -205,6 +212,7 @@ export function clearPieces() { $('pieces').innerHTML = ''; }
 export function ensurePieces() {
   const g = app.game, S = g.S, pd = g.pending;
   ensureTrain(g); // (baraja del tren: locomotora y vagones, debajo de pelotas y hoyo)
+  ensureSnow(g);  // (estaciones: la bola de nieve, también debajo)
   ensurePiece('hole', ASSETS.holeHTML());
   const seat = skinSeat(g);
   for (const b of S.balls) {
@@ -237,7 +245,8 @@ export function syncPieces() {
   const h = pieceEl('hole');
   setPos(h, S.hole.x, S.hole.y, 0);
   h.style.opacity = 1; h.firstChild.style.transform = '';
-  h.classList.toggle('sunk', g.trapAt(S.hole.x, S.hole.y));
+  h.classList.toggle('sunk', g.hardTrapAt(S.hole.x, S.hole.y));
+  h.classList.toggle('snowed', g.trapAt(S.hole.x, S.hole.y) && !g.hardTrapAt(S.hole.x, S.hole.y)); // (dentro de la bola de nieve)
   for (const b of S.balls) {
     const el = pieceEl('b' + b.player);
     if (!el) continue;
@@ -253,12 +262,14 @@ export function syncPieces() {
       el.classList.remove('sunk');
     } else if (!b.holed) {
       setPos(el, b.x, b.y, 0); el.style.opacity = 1; el.firstChild.style.transform = '';
-      el.classList.toggle('sunk', g.trapAt(b.x, b.y));
+      el.classList.toggle('sunk', g.hardTrapAt(b.x, b.y));
+      el.classList.toggle('snowed', g.trapAt(b.x, b.y) && !g.hardTrapAt(b.x, b.y));
     }
   }
   // limpia clases transitorias de la reproducción para no dejar estados colgados
   $$('#pieces .piece').forEach(el =>
     el.classList.remove('glide', 'falling', 'dropping', 'sinking', 'warp', 'warpOut', 'warpIn', 'air', 'acting'));
   syncTrain(g);
+  syncSnow(g);
   fxRewindApply(); // si venimos de una carta NO, retrocede visualmente desde la posición previa
 }

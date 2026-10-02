@@ -12,6 +12,8 @@
      i18n/     textos
    ========================================================= */
 import { maybeAnnounceDeck } from './ui/new-deck.js';
+import { maybeShowGift } from './ui/gift.js';
+import { renderDailyCard } from './ui/screen-modes.js';
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
 import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
@@ -216,7 +218,13 @@ fxAmbientStart();
   };
   dailyFromLink();
   // baraja nueva: se anuncia una vez a quien ya jugaba (al llegar al menú, sin nada más abierto)
-  if (!linked) setTimeout(() => { if (app.screen === 'menu') maybeAnnounceDeck(); }, 1100);
+  // y el regalo de early tester (después del anuncio, si lo hay)
+  app.onStreakChange = () => { if (app.screen === 'menu') renderDailyCard(); };
+  if (!linked) setTimeout(() => {
+    if (app.screen !== 'menu') return;
+    if (maybeAnnounceDeck()) $('dialog').addEventListener('close', () => setTimeout(maybeShowGift, 500), { once: true });
+    else maybeShowGift();
+  }, 1100);
   window.addEventListener('hashchange', () => { dailyFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
 })();
 

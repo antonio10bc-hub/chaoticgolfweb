@@ -89,15 +89,22 @@ export function evaluate(g, p, style = 'trick') {
   // (baraja del tren) si al acabar el turno el tren va a meter una pelota, pierde todo el mundo: casi tan malo como perder
   if (S.train && S.turn === p && g.trainThreat()) return -WIN * .8;
   let score = 0;
+  // (estaciones) lo que está en la ruta del viento saldrá del tablero: se mira dónde quedará (la pelota en su salida y el
+  // hoyo en su casilla inicial)
+  const fate = S.season?.wind ? what => g.windFate(what) : () => null;
+  const hf = fate('hole'), hx = hf ? hf.x : S.hole.x, hy = hf ? hf.y : S.hole.y;
+  const dist = b => { const f = fate(b); return f ? Math.abs(f.x - hx) + Math.abs(f.y - hy) : Math.abs(b.x - hx) + Math.abs(b.y - hy); };
+  const snowed = b => !!S.season?.snow && g.trapAt(b.x, b.y) && !g.inTrap(b); // (en la bola de nieve: rodará quién sabe adónde)
   const me = g.ownBall(p);
   if (me && !me.holed) {
-    score -= g.holeDist(me.x, me.y) * W.self;
+    score -= dist(me) * W.self;
     if (g.inTrap(me)) score -= W.trap;
+    if (snowed(me)) score -= W.trap * .5;
     score += sinkThreat(g, me) * W.ready;
   }
   for (const b of S.balls) {
     if (b.player === p || b.holed || b.decoy) continue;
-    score += Math.min(g.holeDist(b.x, b.y), 8) * W.opp;
+    score += Math.min(dist(b), 8) * W.opp;
     score -= sinkThreat(g, b) * W.threat;
     if (g.inTrap(b)) score += W.oppTrap;
   }
@@ -110,7 +117,7 @@ export function evaluate(g, p, style = 'trick') {
 function pendingChoices(g) {
   const pd = g.pending, S = g.S, out = [];
   switch (pd.kind) {
-    case 'move': for (const t of pd.targets) out.push(['cell', t.x, t.y]); break;
+    case 'move': case 'snowRoll': for (const t of pd.targets) out.push(['cell', t.x, t.y]); break;
     case 'serpent': for (const t of g.serpentTargets()) out.push(['cell', t.x, t.y]); break;
     case 'dedoAmount': for (const n of [1, 2, 3]) out.push(['amount', n]); break;
     case 'pickHoled': for (const b of S.balls) if (b.holed) out.push(['pickHoled', b.player]); break;
@@ -311,13 +318,15 @@ export function explainPlay(before, after, p, cardKey) {
   }
   if (cardKey === 'vagon') return { key: 'wagon' };
   if (['trenVuelta', 'oTren1'].includes(cardKey)) return { key: 'train' };
+  if (cardKey === 'estacion') return { key: 'season' };
+  if (cardKey === 'oNieve') return { key: 'snow' };
   const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
   if (placed) {
     // ¿en el camino de quién? (la pelota rival más cercana a la loseta)
     let near = null;
     for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
     if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
-    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher'].includes(placed.type)) return { key: placed.type };
+    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'puddle', 'ice', 'plant', 'fire'].includes(placed.type)) return { key: placed.type };
     return { key: 'portal' };
   }
   const me0 = ballOf(B, p), me1 = ballOf(A, p);
