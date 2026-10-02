@@ -52,6 +52,7 @@ test('desafíos y semanal: entre bots, cada uno se juega hasta que alguien gana'
 
 test('reto diario: tablero pequeño (5×5, como mucho +2), una sola mecánica cada día y nunca la misma dos días seguidos', async () => {
   const { dailyChallenge, DAILY_FEATURES } = await import('../src/content/challenges.js');
+  const SEASON_TILES = { spring: ['plant'], summer: ['fire'], autumn: ['leaf', 'puddle'], winter: ['ice'] };
   const TYPE = { portal: 'portal', launcher: 'launcher', bunker: 'bunker', river: 'river', tunnel: 'tunnel', block: 'block', lake: 'lake', corner: 'corner', iri: null };
   const dates = Array.from({ length: 60 }, (_, i) => { const d = new Date(2026, 8, 1 + i); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
   let prev = null; const seen = new Set();
@@ -62,7 +63,8 @@ test('reto diario: tablero pequeño (5×5, como mucho +2), una sola mecánica ca
     assert.ok(ch.board.cols >= 5 && ch.board.rows >= 5 && ch.board.cols + ch.board.rows <= 12, `${date}: ${ch.board.cols}×${ch.board.rows}`);
     const g = make({ ...ch, diff: 'normal' }, seed), S = g.S;
     const types = new Set(S.tiles.map(t => t.type));
-    if (TYPE[ch.feature]) assert.deepEqual([...types], [TYPE[ch.feature]], `${date}: solo ${ch.feature}`); else assert.equal(S.tiles.length, 0);
+    if (ch.feature === 'season') assert.ok([...types].every(t => SEASON_TILES[ch.season.now].includes(t)) && S.season?.now === ch.season.now, `${date}: solo lo de ${ch.season.now}`);
+    else if (TYPE[ch.feature]) assert.deepEqual([...types], [TYPE[ch.feature]], `${date}: solo ${ch.feature}`); else assert.equal(S.tiles.length, 0);
     for (const t of S.tiles) assert.ok(!S.balls.some(b => b.x === t.x && b.y === t.y) && !(S.hole.x === t.x && S.hole.y === t.y), `${date}: tapa`);
     assert.equal(S.deck.filter(k => k === 'bunker' || k === 'portal').length, 0, `${date}: sin cartas de colocar`);
   }
@@ -121,5 +123,33 @@ test('reto diario del tren: entra en la rueda el 2 de octubre sin cambiar los d�
     assert.ok(g.canAddWagon()); g.addWagon();
     assert.equal(g.canAddWagon(), false, 'como mucho 1 vagón');
     assert.ok(S.balls.every(b => b.y > Math.min(...tr.path.map(p => p[1]))) && S.hole.y < Math.min(...tr.path.map(p => p[1])), 'la vía, entre las salidas y el hoyo');
+  }
+});
+
+test('estaciones: un desafío por dificultad con su estación (y su bola de nieve en invierno), sin pisar salidas ni hoyo', () => {
+  const seasons = CHALLENGES.filter(c => c.season);
+  assert.deepEqual(CH_GROUPS.map(g => seasons.filter(c => c.group === g).length), [1, 1, 1]);
+  for (const ch of seasons) for (const seed of [1, 2, 3, 7, 99]) {
+    const g = make(ch, seed), S = g.S, where = `${ch.id} (semilla ${seed})`;
+    assert.equal(S.season.now, ch.season.now, where);
+    const sn = S.season.snow;
+    if (ch.season.snow) assert.ok(sn && !g.isSpawnCell(sn.x, sn.y) && !g.isHole(sn.x, sn.y) && !S.tiles.some(t => t.x === sn.x && t.y === sn.y), 'bola de nieve libre: ' + where);
+    for (const t of S.tiles) assert.ok(!g.isSpawnCell(t.x, t.y) && !g.isHole(t.x, t.y), 'nada en salidas ni en el hoyo: ' + where);
+  }
+});
+
+test('reto diario de las estaciones: entra en la rueda el 3 de octubre sin cambiar los días de antes y se turnan las cuatro', async () => {
+  const { dailyChallenge } = await import('../src/content/challenges.js');
+  const day = i => new Date(Date.UTC(2026, 9, 3 + i)).toISOString().slice(0, 10);
+  // hasta el 7 de octubre, lo mismo que antes de existir (la rueda del tren sigue donde iba)
+  const BEFORE = { '2026-10-02': 'tunnel', '2026-10-03': 'block', '2026-10-04': 'lake', '2026-10-05': 'corner', '2026-10-06': 'iri', '2026-10-07': 'train' };
+  for (const [d, f] of Object.entries(BEFORE)) assert.equal(dailyChallenge(d, 1).feature, f, d);
+  const seasons = Array.from({ length: 50 }, (_, i) => dailyChallenge(day(i), 3)).filter(c => c.feature === 'season').map(c => c.season.now);
+  assert.deepEqual(seasons.slice(0, 4), ['spring', 'summer', 'autumn', 'winter'], 'cada vez, la siguiente');
+  for (let i = 0; i < 50; i++) { const ch = dailyChallenge(day(i), 5); if (ch.feature !== 'season') continue;
+    const g = make({ ...ch, diff: 'normal' }, 5);
+    assert.equal(g.S.season.now, ch.season.now);
+    assert.equal(!!g.S.season.snow, ch.season.now === 'winter', 'la bola de nieve, en invierno');
+    assert.equal(g.S.deck.filter(k => k === 'estacion').length, 0, 'sin cambio de estación');
   }
 });

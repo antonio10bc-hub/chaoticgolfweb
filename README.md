@@ -430,6 +430,21 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     opciones la estación del nivel. Poner una pieza en un nivel sin estación lo pasa a la suya; la bola de nieve, a
     invierno. La plantilla Estaciones pone primavera si no hay estación. Va en el código para compartir niveles.
   - Equilibrio (`npm run simulate -- --deck seasons`): ~8 rondas de media (la clásica 5,9), 100 % terminadas.
+  - **Desafíos de las estaciones** (uno por dificultad; `season` en `challenges.js`: la estación y, en invierno, dónde
+    está la bola de nieve, con el mismo reflejo que sus piezas; `challengeSeason`): **Hojarasca** (calentamiento, otoño fijo:
+    una alfombra de hojas secas con un pasillo que cambia de sitio y charcos junto al hoyo), **Pista de hielo** (intermedio,
+    invierno fijo: dos carriles de hielo hacia el hoyo y la bola de nieve al acecho, con sus tres cartas) y **Jardín
+    carnívoro** (experto, PAR 3: empieza en primavera con plantas carnívoras guardando el hoyo y toda la baraja: cambiar al
+    verano las seca, pero trae los incendios). Simulados: 5,7 · 7,3 · 9,3 rondas, sin ventaja por salida. El césped de la
+    estación gana al tema de color de los desafíos y del reto diario.
+  - **Reto diario de las estaciones** (en la rueda desde el 3 de octubre de 2026, sin cambiar los días anteriores; sale por
+    primera vez el 8): cada vez que le toca, la siguiente estación, con lo suyo en pequeño (5×5, sin cambio de estación):
+    primavera, dos plantas y el viento · verano, un fuego en un lado que crece solo · otoño, hojas y un charco (y la lluvia) ·
+    invierno, la bola de nieve con dos cartas y una casilla de hielo. La tarjeta dice cuál («Estaciones: Invierno»). Las ruedas
+    de la mecánica del día están en `DAILY_WHEELS` (cada una sigue donde iba la anterior).
+  - **Puzles de las estaciones** (p28-p29, al final del índice): **Cortafuegos** (calentamiento: cruza el fuego para llegar)
+    y **Viaje en la nieve** (experto: ponte en el camino de la bola, que te recoja, y sube el hoyo hasta ella). Buscados con
+    `npm run puzzles:search -- fire|fireBall|ice|iceFinger|snow|snowHole` (temas de estación: `season`, `snow`).
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.

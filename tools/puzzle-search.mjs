@@ -3,7 +3,8 @@
 // piezas que nadie toca. Guarda los candidatos en puzzle-candidates/<tema>.json (verlos con puzzle-show).
 //   node tools/puzzle-search.mjs <tema> [intentos=3000] [semilla=1]
 // Temas: bunker river block corner launcher lake iri launchBlock lakeCorner portalLaunch iriLaunch
-//        riverLaunch chaos dance iriPortal placeLaunch (añadir más en la tabla T)
+//        riverLaunch chaos dance iriPortal placeLaunch fire ice iceFinger snow snowHole (añadir más en la tabla T)
+// (estaciones: season fija la estación del nivel y snow pone la bola de nieve en una casilla libre)
 import fs from 'node:fs';
 import { CARD_KEYS } from '../src/content/cards/index.js';
 import { sequences, replay, winsOf, quality } from './lib/puzzle-quality.mjs';
@@ -30,6 +31,14 @@ const T = {
   chaos:    { band: 'exp', tiles: { river: 1, corner: 1, launcher: 1, block: 1, portal: 1 }, pool: [...CLUBS, 'palo4', ...HOLE, 'paloIri', 'oPalo1'], need: ['launch', 'deflect'], ess: ['launcher', 'corner'] },
   dance:    { band: 'exp', tiles: { bunker: 2 }, pool: [...CLUBS, ...HOLE, ...OHOLE, 'oPalo1', 'dedo'], need: [], ess: [] },
   iriPortal: { band: 'exp', tiles: { portal: 1, bunker: 1 }, decoys: 1, pool: ['paloIri', 'palo1', 'palo2', ...HOLE, 'oPalo1'], need: ['iri', 'teleport'], card: /paloIri/, ess: ['portal'], iriSink: true },
+  // estaciones
+  fire:     { band: 'warm', season: 'summer', tiles: { fire: 2 }, pool: [...CLUBS, ...HOLE], need: ['flare'], ess: ['fire'] },
+  ice:      { band: 'mid', season: 'winter', tiles: { ice: 3 }, pool: [...CLUBS, ...HOLE, 'oPalo1'], need: ['slide'], ess: ['ice'] },
+  iceFinger: { band: 'mid', season: 'winter', tiles: { ice: 2 }, pool: ['dedo', ...CLUBS, ...HOLE], need: ['slide'], ess: ['ice'], card: /dedo/ },
+  fireBall: { band: 'warm', season: 'summer', tiles: { fire: 3 }, pool: [...CLUBS, 'dedo', ...HOLE], need: ['flareBall'], ess: ['fire'] },
+  fireMid:  { band: 'mid', season: 'summer', tiles: { fire: 3 }, pool: [...CLUBS, 'dedo', ...HOLE, 'oPalo1'], need: ['flareBall'], ess: ['fire'] },
+  snow:     { band: 'mid', season: 'winter', snow: true, tiles: { ice: 1 }, pool: ['oNieve', ...CLUBS, ...HOLE], need: ['snow'], card: /oNieve/, snowEss: true },
+  snowHole: { band: 'exp', season: 'winter', snow: true, tiles: {}, pool: ['oNieve', ...CLUBS, ...HOLE, ...OHOLE], need: ['snow'], card: /oNieve/, snowEss: true },
   placeLaunch: { band: 'exp', tiles: { block: 1 }, pool: ['launcher', 'palo1', 'palo2', 'palo3'], hand: 2, need: ['tilePlaced', 'launch'], card: /launcher/, big: true },
 }[theme];
 if (!T) throw new Error('tema ' + theme);
@@ -63,17 +72,19 @@ function build() {
       tiles.push(tl);
     }
   }
+  let season = null;
+  if (T.season) { season = { now: T.season }; if (T.snow) { const c = cell(); if (!c) return null; season.snow = c; } }
   const extraBalls = [];
   for (let i = 0; i < (T.decoys || 0); i++) { const c = cell(); if (!c) return null; extraBalls.push(c); }
   const hn = T.hand || (Array.isArray(band.hand) ? pick(band.hand) : band.hand), hand = [];
   while (hand.length < hn) { const c = pick(T.pool); if (!hand.includes(c)) hand.push(c); }
   if (T.card && !hand.some(c => T.card.test(c))) hand[0] = T.pool.find(c => T.card.test(c));
   const deckCounts = Object.fromEntries(CARD_KEYS.map(c => [c, CLUBS.includes(c) ? 3 : 0]));
-  const L = { version: 1, puzzle: true, cols, rows, hole, ball, tiles, hand, parCells: [], deckCounts };
+  const L = { version: 1, puzzle: true, cols, rows, hole, ball, tiles, hand, parCells: [], deckCounts, ...(season ? { season } : {}) };
   if (extraBalls.length) L.extraBalls = extraBalls;
   return L;
 }
-const has = (evs, need) => need.every(n => n === 'iri' ? evs.some(e => e.t === 'move' && e.iri) : evs.some(e => e.t === n));
+const has = (evs, need) => need.every(n => n === 'iri' ? evs.some(e => e.t === 'move' && e.iri) : n === 'flareBall' ? evs.some(e => e.t === 'flare' && e.p === 'b0') : evs.some(e => e.t === n));
 const iriSink = evs => { const i = evs.findIndex(e => e.t === 'sink' && e.p === 'b0'); if (i < 0) return false; for (let j = i - 1; j >= 0; j--) if (evs[j].t === 'move' && evs[j].p === 'b0') return !!evs[j].iri; return false; };
 
 let best = [];
@@ -87,6 +98,7 @@ for (let i = 0; i < TRIES; i++) {
   if (!good) continue;
   if (T.trap && !all.some(s => { const r = replay(L, s.seq, 1); return r && r.evs.some(e => e.t === T.trap); })) continue;
   if (T.ess && T.ess.some(tp => winsOf({ ...L, tiles: L.tiles.filter(q => q.type !== tp) }) > 0)) continue;
+  if (T.snowEss && winsOf({ ...L, season: { now: L.season.now } }) > 0) continue; // (sin la bola de nieve no hay solución)
   if (T.obst && T.obst.some(tp => winsOf({ ...L, tiles: L.tiles.filter(q => q.type !== tp) }) <= wins.length)) continue;
   const q = quality(L);
   if (!q.robust || q.spareCards.length > band.spare) continue;

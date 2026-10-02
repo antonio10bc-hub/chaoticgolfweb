@@ -3,21 +3,22 @@
    piezas de cada estación y sus animaciones (src/ui/seasons-view.js; las piezas se dibujan en tiles/seasons.js)
    ========================================================= */
 
-/* ---------- el césped según la estación (también al probar un nivel con estación) ---------- */
+/* ---------- el césped según la estación (también al probar un nivel con estación). Con :root gana a los temas del campo
+   (los desafíos y el reto diario llevan el suyo: brasas, atardecer…) ---------- */
 #gameScreen[data-season] .cell { transition: background-color .9s var(--ease-out), box-shadow .2s; }
-#gameScreen[data-season="spring"], #edBoard[data-season="spring"] {
+:root #gameScreen[data-season="spring"], :root #edBoard[data-season="spring"] {
   --grass-dark: #4C9A4C; --grass-mid: #59A757; --green-putt: #8FC46A; --green-light: #A9D47E;
   --grout: #3B7A3C; --par-cell: #67AE5E; --sel-cell: #9BCB72; --collar: #5DA458;
 }
-#gameScreen[data-season="summer"], #edBoard[data-season="summer"] {
+:root #gameScreen[data-season="summer"], :root #edBoard[data-season="summer"] {
   --grass-dark: #8C9D45; --grass-mid: #98A84D; --green-putt: #C2BE62; --green-light: #D3CB78;
   --grout: #6E7B33; --par-cell: #A6AE58; --sel-cell: #C8C06C; --collar: #A3A24E;
 }
-#gameScreen[data-season="autumn"], #edBoard[data-season="autumn"] {
+:root #gameScreen[data-season="autumn"], :root #edBoard[data-season="autumn"] {
   --grass-dark: #6F7F3B; --grass-mid: #7C8B41; --green-putt: #B3A553; --green-light: #C9B96A;
   --grout: #58632C; --par-cell: #8E8F45; --sel-cell: #B7A95C; --collar: #8E8A3F;
 }
-#gameScreen[data-season="winter"], #edBoard[data-season="winter"] {
+:root #gameScreen[data-season="winter"], :root #edBoard[data-season="winter"] {
   --grass-dark: #A9C0CB; --grass-mid: #B7CBD5; --green-putt: #9DBDCB; --green-light: #B4D2DF;
   --grout: #869FAC; --par-cell: #A2B9C4; --sel-cell: #8FB9CC; --collar: #A0B7C2; --on-grass: rgba(50,76,88,.75);
 }

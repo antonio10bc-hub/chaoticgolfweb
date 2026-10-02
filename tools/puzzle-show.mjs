@@ -1,6 +1,7 @@
 // Muestra un candidato del buscador: tablero en ASCII y su solución paso a paso.
 //   node tools/puzzle-show.mjs <tema> [n=0]
 // Leyenda: H hoyo · O tu pelota · o obstáculo · ~ río · L lago · b búnker · P portal · # bloque · T túnel · ◤◥◢◣ esquinas · ↑→↓← lanzaderas
+//          (estaciones) h hoja · c charco · = hielo · Y planta · F fuego · * bola de nieve
 import fs from 'node:fs';
 import { Game } from '../src/engine/game.js';
 import { applyAction } from '../src/ai/bot.js';
@@ -8,7 +9,7 @@ const [theme, n = 0] = process.argv.slice(2);
 const c = JSON.parse(fs.readFileSync(`puzzle-candidates/${theme}.json`))[+n];
 if (!c) { console.log('sin candidato'); process.exit(); }
 const L = c.L;
-const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T' };
+const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F' }; // (estaciones: * bola de nieve)
 const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 const draw = (hole, balls, tiles) => {
   let s = '';
@@ -17,6 +18,7 @@ const draw = (hole, balls, tiles) => {
       const tl = tiles.find(t => t.x === x && t.y === y), b = balls.find(q => q.x === x && q.y === y && !q.holed);
       let ch = '.';
       if (tl) ch = tl.type === 'corner' ? CR[tl.rot || 0] : tl.type === 'launcher' ? LA[tl.rot || 0] : SYM[tl.type];
+      if (L.season?.snow && L.season.snow.x === x && L.season.snow.y === y) ch = '*';
       if (hole.x === x && hole.y === y) ch = 'H';
       if (b) ch = b.player === 0 ? 'O' : 'o';
       s += ch + ' ';
@@ -25,6 +27,7 @@ const draw = (hole, balls, tiles) => {
   }
   return s;
 };
+console.log(L.season ? 'estación: ' + L.season.now : '');
 console.log(theme, n, `ratio ${c.ratio} (${c.wins}/${c.total})`, L.cols + 'x' + L.rows, 'mano:', L.hand.join(', '));
 console.log(draw(L.hole, [{ player: 0, ...L.ball }, ...(L.extraBalls || []).map(e => ({ player: 1, ...e }))], L.tiles));
 const g = Game.fromLevel(L, { seed: 3 }); g.takeEvents();

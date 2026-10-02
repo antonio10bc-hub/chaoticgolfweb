@@ -601,7 +601,7 @@ export default {
     loop: { name: 'Bucle infinito', desc: 'Provoca un bucle de choques entre portales.' },
   },
 
-  dailyFeat: { train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
+  dailyFeat: { season: 'Estaciones', train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },
@@ -619,6 +619,9 @@ export default {
     challenge: { title: 'Desafío' },
   },
   challenges: {
+    leafLitter: { name: 'Hojarasca', desc: 'Otoño: una alfombra de hojas secas frena cada tiro; busca el pasillo.' },
+    iceRink: { name: 'Pista de hielo', desc: 'Invierno: el hielo te lanza hacia el hoyo… y más allá. Y la bola de nieve, al acecho.' },
+    carnivore: { name: 'Jardín carnívoro', desc: 'Plantas carnívoras guardan el hoyo y sopla el viento. ¿Cambias de estación?' },
     crossing: { name: 'Paso a nivel', desc: 'Una vía entre la salida y el hoyo: crúzala sin que te pille el tren.' },
     station: { name: 'Estación central', desc: 'El hoyo, dentro de un circuito: el tren le da vueltas con su vagón.' },
     express: { name: 'Expreso', desc: 'Vía larga entre charcas: en cada curva, el tren te tira al agua.' },

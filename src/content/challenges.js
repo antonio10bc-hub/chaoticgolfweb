@@ -8,6 +8,7 @@ import { mulberry32 } from '../engine/rng.js';
 import { CARDS, defaultCounts } from './cards/index.js';
 import { deckById } from './decks.js';
 import { outline, clockStations } from '../engine/train.js';
+import { SEASONS } from '../engine/seasons.js';
 
 export const CH_GROUPS = ['warmup', 'mid', 'expert'];
 
@@ -22,6 +23,10 @@ export const DECKS = {
   minigolf: () => deckOf('minigolf'),
   ultimate: () => deckOf('ultimate'),
   train: () => deckOf('train'),
+  seasons: () => deckOf('seasons'),
+  // una estación fija (sin cartas de cambio de estación): la de siempre, sin búnkeres ni portales, y lo de esa estación
+  autumnOnly: () => ({ ...defaultCounts(), bunker: 0, portal: 0 }),
+  winterOnly: () => ({ ...defaultCounts(), bunker: 0, portal: 0, oNieve: 3 }),
   // paso corto: sin palo 3, más palos cortos y más dedo (precisión)
   short: () => ({ ...zero(), ...BASE, dedo: 4 }),
   // solo reacciones
@@ -124,6 +129,15 @@ export const CHALLENGES = [
     track: (C, v) => { const x0 = v.pick([0, 1]), x1 = C.cols - 1 - v.pick([0, 1]), n = x1 - x0 + 1;
       return { path: outline(x0, Array(n).fill(C.hy + 1), Array(n).fill(C.by - 1)) }; } },
 
+  // hojarasca (otoño, sin cambio de estación): una alfombra de hojas secas entre la salida y el hoyo (cada una resta 1)
+  // con un pasillo que cambia de sitio, y charcos a los lados del hoyo; entre turnos siguen cayendo hojas y lloviendo
+  { id: 'leafLitter', group: 'warmup', icon: 'i-leaf', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'autumnOnly', scene: 'seasons', mirror: true,
+    season: { now: 'autumn' },
+    layout: (C, v) => { const gap = v.pick([-2, 2, 3]);
+      return [...[-4, -3, -2, -1, 1, 2, 3, 4].filter(dx => dx !== gap).map(dx => ({ type: 'leaf', x: C.cx + dx, y: C.hy + 2 })),
+        ...[-2, 2].map(dx => ({ type: 'leaf', x: C.cx + dx + v.pick([0, 1]), y: C.hy + 4 })),
+        { type: 'puddle', x: C.cx - 2, y: C.hy }, { type: 'puddle', x: C.cx + 2, y: C.hy + v.pick([0, 1]) }]; } },
+
   /* --- intermedio: la mecánica pide pensar la jugada --- */
   { id: 'portals', group: 'mid', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', mirror: true,
     layout: (C, v) => [
@@ -165,6 +179,11 @@ export const CHALLENGES = [
     layout: C => [{ type: 'bunker', x: C.cx - 3, y: C.by - 2 }, { type: 'bunker', x: C.cx + 2, y: C.by - 1 }],
     track: (C, v) => { const x0 = C.cx - v.pick([2, 3]), x1 = C.cx + 2, n = x1 - x0 + 1, bot = C.hy + v.pick([2, 3]);
       return { path: outline(x0, Array(n).fill(C.hy - 1), Array(n).fill(bot)), cars: 1 }; } },
+  // pista de hielo (invierno, sin cambio de estación): dos carriles de hielo suben hacia el hoyo (cada casilla suma 1: hay
+  // que medir el tiro para no pasarse) y la bola de nieve espera junto al hoyo; sus tres cartas la mueven
+  { id: 'iceRink', group: 'mid', icon: 'i-snow', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'winterOnly', scene: 'seasons', mirror: true,
+    season: { now: 'winter', snow: (C, v) => ({ x: C.cx + v.pick([2, 3]), y: C.hy }) },
+    layout: (C, v) => [...col('ice', C.cx - 2, C.hy + 1, C.by - 1), ...col('ice', C.cx + 2, C.hy + 2, C.by), ...cells('ice', [[C.cx - 1, C.hy - 1], [C.cx - 3, C.by + v.pick([1, 2])]])] },
   { id: 'onlyOrange', group: 'mid', icon: 'i-bolt', board: { cols: 5, rows: 5, par: 1 }, opps: 1, diff: 'normal', deck: 'orange', rules: { onlyOrange: true } },
   /* --- experto: combinaciones y mucho que leer --- */
   { id: 'sawmill', group: 'expert', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'mill', scene: 'lake', mirror: true,
@@ -199,6 +218,11 @@ export const CHALLENGES = [
     layout: (C, v) => [...cells('lake', [[6, C.hy + 1], [7, C.hy + 1]]), ...cells('lake', [[C.cols - 1, C.by]]), { type: 'bunker', x: v.pick([2, 3]), y: C.hy + 3 }], // (charcas: a la salida de las curvas)
     track: C => { const n = C.cols, top = Array.from({ length: n }, (_, i) => i < 5 ? C.hy + 1 : C.hy + 2);
       return { path: outline(0, top, Array(n).fill(C.by - 1)), cars: 2 }; } },
+  // jardín carnívoro (empieza en primavera, con toda la baraja): plantas carnívoras guardan el hoyo (quien se para a su lado,
+  // a su salida) y el viento sopla cada tres turnos. Cambiar al verano las seca… pero trae los incendios
+  { id: 'carnivore', group: 'expert', icon: 'i-season', board: { cols: 9, rows: 9, par: 3 }, opps: 2, diff: 'normal', deck: 'seasons', scene: 'seasons', mirror: true,
+    season: { now: 'spring' },
+    layout: (C, v) => [...cells('plant', [[C.cx - 2, C.hy], [C.cx + 1, C.hy + 2], [C.cx - 1, C.hy + 3]]), { type: 'plant', x: C.cx + v.pick([2, 3]), y: C.hy - 1 + v.pick([0, 1]) }] },
   { id: 'crowd', group: 'expert', icon: 'i-users', board: { cols: 9, rows: 9, par: 4 }, opps: 6, diff: 'hard',
     layout: C => [{ type: 'bunker', x: C.cx - 2, y: C.hy }, { type: 'bunker', x: C.cx + 2, y: C.hy }] },
   { id: 'fullChaos', group: 'expert', icon: 'i-chaos', board: { cols: 11, rows: 10, par: 5 }, opps: 3, diff: 'normal', deck: 'chaos', scene: 'prism', mirror: true,
@@ -269,11 +293,23 @@ export function challengeTrain(ch, S, seed) {
 }
 // el campo entero de un desafío sobre su partida: piezas (designed: Game.designed, para que su agua sea fija), tren y,
 // si lo pide (el tren cruza la columna), sin PAR
+// (estaciones) la estación del desafío y, si la hay, la bola de nieve (con el mismo reflejo que sus piezas)
+export function challengeSeason(ch, S, seed) {
+  if (!ch.season) return null;
+  const C = courseOf({ cols: S.cols, rows: S.rows, par: S.par }, S.nPlayers), v = variation(seed ?? 1);
+  if (ch.layout) ch.layout(C, v); // (el mismo sorteo que challengeTiles)
+  const mirrored = ch.mirror && v.chance(.5);
+  let snow = ch.season.snow ? ch.season.snow(C, v) : null;
+  if (snow && mirrored) snow = { x: C.cols - 1 - snow.x, y: snow.y };
+  return { now: ch.season.now, wind: null, snow: snow ? { ...snow, dir: null } : null, fireId: 0 };
+}
 export function setupChallenge(S, ch, seed, designed = t => t) {
   S.tiles.push(...designed(challengeTiles(ch, S, seed)));
   const tr = challengeTrain(ch, S, seed);
   if (tr) S.train = tr;
   if (ch.noPar) S.parCells = [];
+  const se = challengeSeason(ch, S, seed);
+  if (se) { if (se.snow) S.tiles = S.tiles.filter(t => t.x !== se.snow.x || t.y !== se.snow.y); S.season = se; }
 }
 export const challengeById = id => CHALLENGES.find(c => c.id === id);
 export const weeklyById = id => WEEKLY.find(c => c.id === id);
@@ -320,28 +356,51 @@ export const DAILY_FEATURES = [
     track: (C, v) => { const n = C.cols, top = C.hy + 1, bot = C.rows - 1;
       const stops = v.chance(.5) ? [[0, top + 1], [n - 1, bot - 1]] : [[C.cx, top], [C.cx, bot]];
       return { path: outline(0, Array(n).fill(top), Array(n).fill(bot)), stops, maxCars: 1 }; } },
+  // estaciones: cada vez que le toca, la siguiente (primavera, verano, otoño, invierno), con lo suyo en pequeño. Primavera:
+  // dos plantas carnívoras junto al camino y el viento (calma, aviso, sopla) · verano: un fuego en un lado que crece
+  // solo (hasta 5 casillas) · otoño: hojas secas, un charco y la lluvia · invierno: la bola de nieve (y sus cartas) y hielo
+  { id: 'season', scene: 'seasons', icon: 'i-season', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    seasons: {
+      spring: { layout: C => cells('plant', [[0, C.hy + 1], [C.cols - 1, C.hy + 2]]) },
+      summer: { layout: C => cells('fire', [[0, C.hy + 2]]) }, // (sin la carta de incendio: en 5×5, un fuego basta)
+      autumn: { layout: C => [...cells('leaf', [[C.cx - 1, C.hy + 1], [C.cx + 1, C.hy + 2], [C.cx - 2, C.hy + 2]]), { type: 'puddle', x: C.cx + 2, y: C.hy }] },
+      winter: { deck: 'dailyWinter', snow: C => ({ x: 0, y: C.hy + 1 }), layout: C => cells('ice', [[C.cx + 1, C.hy + 1]]) },
+    } },
 ];
 DECKS.daily = () => ({ ...defaultCounts(), bunker: 0, portal: 0 }); // (solo la pieza del día en el campo)
+DECKS.dailyWinter = () => ({ ...DECKS.daily(), oNieve: 2 });
 DECKS.dailyIri = () => ({ ...DECKS.daily(), paloIri: 3 });
 DECKS.dailyTrain = () => ({ ...DECKS.daily(), trenVuelta: 1, oTren1: 2, vagon: 1 });
-// el orden de las mecánicas; el tren entra el 2 de octubre de 2026 y la rueda sigue donde iba (ese día y los de antes,
-// lo mismo para todo el mundo)
-const DAILY_ORDER_V1 = ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'];
-const DAILY_ORDER = [...DAILY_ORDER_V1, 'train'];
-const TRAIN_FROM = '2026-10-02';
+// el orden de las mecánicas: cada vez que entra una nueva, la rueda sigue donde iba (ese día y los de antes, lo mismo para
+// todo el mundo): el tren, el 2 de octubre de 2026; las estaciones, el 3
+const DAILY_WHEELS = [
+  { from: null, order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'] },
+  { from: '2026-10-02', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train'] },
+  { from: '2026-10-03', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season'] },
+];
 // número de día desde el 1 de enero de 2026 (fechas "AAAA-MM-DD" en hora local)
 const dayNumber = date => { const [y, m, d] = date.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 0, 1)) / 864e5); };
+const mod = (a, m) => ((a % m) + m) % m;
+// la mecánica del día (y, en la de las estaciones, cuántas veces ha salido ya: para turnarse las cuatro)
+function dailyFeature(date) {
+  const w = DAILY_WHEELS.findLastIndex(x => !x.from || date >= x.from), { from, order } = DAILY_WHEELS[w], n = dayNumber(date);
+  if (!from) return { id: order[mod(n, order.length)], turn: Math.floor(n / order.length) };
+  // (la rueda nueva arranca con la mecánica que sigue a la del día anterior)
+  const n0 = dayNumber(from), prev = DAILY_WHEELS[w - 1].from ? dailyFeature(dateBefore(from)).id : DAILY_WHEELS[w - 1].order[mod(n0 - 1, DAILY_WHEELS[w - 1].order.length)];
+  const k = n - n0 + order.indexOf(prev) + 1;
+  return { id: order[mod(k, order.length)], turn: Math.floor(k / order.length) };
+}
+const dateBefore = date => { const [y, m, d] = date.split('-').map(Number), x = new Date(Date.UTC(y, m - 1, d - 1)); return x.toISOString().slice(0, 10); };
 // el reto del día como un desafío más (tamaño, mazo, reglas y campo)
 export function dailyChallenge(date, seed) {
-  const n = dayNumber(date), mod = (a, m) => ((a % m) + m) % m;
-  let id;
-  if (date < TRAIN_FROM) id = DAILY_ORDER_V1[mod(n, DAILY_ORDER_V1.length)];
-  else { // (la rueda nueva arranca con la mecánica que sigue a la del día anterior)
-    const n0 = dayNumber(TRAIN_FROM), j = DAILY_ORDER.indexOf(DAILY_ORDER_V1[mod(n0 - 1, DAILY_ORDER_V1.length)]);
-    id = DAILY_ORDER[mod(n - n0 + j + 1, DAILY_ORDER.length)];
-  }
+  const { id, turn } = dailyFeature(date);
   const f = DAILY_FEATURES.find(x => x.id === id), r = mulberry32((seed ^ 0x6a09e667) >>> 0);
   // uno de cada cuatro días (si la mecánica lo admite), el tablero crece un poco
   const board = f.sizes.length > 1 && r() < .25 ? f.sizes[1 + Math.floor(r() * (f.sizes.length - 1))] : f.sizes[0];
-  return { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror, track: f.track, noPar: f.noPar };
+  const ch = { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror, track: f.track, noPar: f.noPar };
+  if (f.seasons) { // (estaciones: le toca la siguiente cada vez que sale)
+    const now = SEASONS[mod(turn, 4)], sv = f.seasons[now];
+    Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, season: { now, snow: sv.snow } });
+  }
+  return ch;
 }
