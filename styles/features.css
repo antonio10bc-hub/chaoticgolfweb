@@ -1384,20 +1384,24 @@ html.reduceMotion #gameScreen[data-scene="prism"] #game { animation: none; }
   .dkStats dt { margin-top: 2px; }
   #modesScreen:has(.deckList) { padding-top: 3vh; }
 }
-/* 6 barajas: un poco más compactas aún (y el título de la pantalla más pequeño) para que quepan en ~860px de alto */
+/* 6 barajas en ~860px de alto: el título de la pantalla más pequeño y las tarjetas con algo de aire (Ultimate, más) */
 @media (min-width: 641px) and (max-height: 920px) {
-  .deckList { gap: 9px; }
-  .deckCard { padding: 7px 18px 7px 12px; row-gap: 4px; }
-  .dkPic { width: 54px; height: 54px; }
-  .dkArt { width: 44px; height: 44px; }
-  .dkMain h3 { font-size: 17px; }
-  .deckCard.ultimate .dkMain h3 { font-size: 20px; }
-  .dkMain p { font-size: 12px; }
+  .deckList { gap: 10px; }
+  .deckCard { padding: 10px 18px 10px 12px; row-gap: 5px; }
+  .deckCard.ultimate { padding-block: 16px; }
+  .dkPic { width: 58px; height: 58px; }
+  .dkPic .dkArt { width: 46px; height: 46px; }
+  .deckCard.ultimate .dkPic { width: 64px; height: 64px; }
+  .deckCard.ultimate .dkPic .dkArt { width: 52px; height: 52px; }
+  .dkMain h3 { font-size: 17.5px; }
+  .deckCard.ultimate .dkMain h3 { font-size: 21px; }
+  .dkMain p { font-size: 12.5px; }
   .dkStats dd { font-size: 18px; }
-  .dkStats { padding: 4px 4px; }
-  #modesScreen:has(.deckList) { padding-top: 1.5vh; }
-  #modesScreen:has(.deckList) .sTitle { font-size: clamp(40px, 7.5vh, 76px); margin-bottom: 0; }
+  .dkStats { padding: 6px 4px; }
+  #modesScreen:has(.deckList) { padding-top: 1vh; }
+  #modesScreen:has(.deckList) .sTitle { font-size: clamp(38px, 7vh, 72px); margin-bottom: 0; }
   #modesScreen:has(.deckList) .mdPanel { gap: 10px; }
+}
 }
 /* Ultimate: sobre el fondo claro, la barra de la partida y las etiquetas en tinta oscura */
 #gameScreen[data-scene="prism"] #gameBar .btn-ghost,

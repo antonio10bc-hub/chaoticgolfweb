@@ -76,7 +76,7 @@ export default {
     portal: { name: 'Portal', label: 'PORTAL' },
   },
   log: {
-    leafBreaks: 'The dry leaf crunches: the shot loses 1', ballBurns: '{b} stops in the fire', ballEaten: 'The carnivorous plant eats {b}!',
+    burnEndsTurn: '{b} got burnt with the finger: the turn ends', leafBreaks: 'The dry leaf crunches: the shot loses 1', ballBurns: '{b} stops in the fire', ballEaten: 'The carnivorous plant eats {b}!',
     holeBurns: 'The hole stops in the fire: back to its square ({x},{y})', holeEaten: 'The carnivorous plant eats the hole! Back to its square ({x},{y})',
     windWarn: 'Wind is picking up: at the end of the turn it will blow along the marked route', windCalm: 'The wind dies down', windBlows: 'The wind blows!', windCarries: 'The wind carries {b} away', windCarriesHole: 'The wind carries the hole away',
     fireSpreads: 'The fire spreads', leafFalls: 'A dry leaf falls', rain: 'It rains: a puddle forms',
@@ -537,7 +537,7 @@ export default {
     next: 'Next', ok: 'Got it', skip: 'Skip tutorial', holeCards: 'Hole cards',
     card: {
       estacion: 'You move on to the next season and the course changes with it: the rain puddle freezes in winter and turns into a carnivorous plant in spring; leaves go away with winter and the fire dies out in autumn.',
-      incendio: 'Orange, in summer: sets an empty square on fire and it grows by itself, up to 5. Crossing it adds 2 to the shot… but if you stop inside, back to your start.',
+      incendio: 'Orange, in summer: sets an empty square on fire and it grows by itself, up to 5. Crossing it adds 2 to the shot… but if you stop inside, back to your start. With the finger, stepping on it burns you and ends your turn.',
       oNieve: 'Orange, in winter: the snowball rolls 5 squares (or until it hits something) and takes whatever it catches (also during a CHECK: it takes the ball out of the hole). Any club gets you out of it.',
       trenVuelta: 'The engine runs a full loop of the circuit and pushes everything in its way: on a straight it keeps pushing and, if it sinks a ball, it counts for its owner!',
       oTren1: 'Orange: any time, even during a CHECK, the engine moves 1 stop. If it pushes the hole, the CHECK is cancelled.',
@@ -570,7 +570,7 @@ export default {
     toMenu: 'Save and go to the menu', btnTitle: 'Pause (P)',
   },
   rules: {
-    seasonsH: 'Seasons (four seasons deck)', seasons: 'The game starts in a random season and the season card moves on to the next. Spring: the wind goes in three-turn cycles (calm, warning, blowing) and throws whatever it catches on its route off the course; carnivorous plants eat whoever stops next to them. Summer: wildfire grows one square per turn (up to 5); crossing it adds 2 and stopping inside is like falling off. Autumn: dry leaves (−1 and they break) and rain that leaves puddles (−1). Winter: the snowball traps whatever it catches (free to leave) and only moves with its card, 5 squares; ice adds 1. The puddle freezes, the ice turns into a plant and the plant dries up in summer.',
+    seasonsH: 'Seasons (four seasons deck)', seasons: 'The game starts in a random season and the season card moves on to the next. Spring: the wind goes in three-turn cycles (calm, warning, blowing) and throws whatever it catches on its route off the course; carnivorous plants eat whoever stops next to them. Summer: wildfire grows one square per turn (up to 5); crossing it adds 2 and stopping inside is like falling off (with the finger, stepping on it burns you and ends your turn). Autumn: dry leaves (−1 and they break) and rain that leaves puddles (−1). Winter: the snowball traps whatever it catches (free to leave) and only moves with its card, 5 squares; ice adds 1. The puddle freezes, the ice turns into a plant and the plant dries up in summer.',
     trainH: 'The train (train deck)', train: 'A track circuit, different every game, with 4 stops. At the end of each turn the engine goes by itself to the next stop. Whatever it finds on the track it pushes one square (on a straight it keeps pushing; the hole too). Wood stops it. You bounce off the engine like off a block, and sand wagons trap like a bunker and carry what is in them. If the train sinks a ball by itself, the train wins and everybody loses; with a card, the ball counts for its owner.',
     title: 'Rules', short: 'Rules', btnTitle: 'Rules and cards (H)', anyDir: 'any direction',
     goalH: 'Goal', goal: 'Get your ball into the hole. Whoever does it and survives the CHECK wins.',

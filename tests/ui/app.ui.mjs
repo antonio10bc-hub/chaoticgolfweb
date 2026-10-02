@@ -323,6 +323,18 @@ it('baraja de las estaciones: el campo de la estación, su indicador, el viento 
     S.tiles = []; S.season = { now: 'winter', wind: null, snow: null, fireId: 0 }; g.enterSeason('winter'); g.takeEvents(); ctl.render(); });
   await sleep(300);
   assert.ok(await app(() => !!document.querySelector('#pieces .psnow')), 'la bola de nieve');
+  // elegir la carta de la bola de nieve y cambiar de idea: Cancelar en la barra (o tocarla otra vez)
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.turn = S.human; S.hands[S.human] = ['oNieve', 'palo1']; ctl.render(); ctl.clickCard(S.human, 0); });
+  await sleep(200);
+  assert.equal(await app(() => window.chaoticGolf.app.game.pending?.kind), 'snowRoll');
+  await click('#actionBar [data-act="cancel"]'); await sleep(200);
+  assert.equal(await app(() => window.chaoticGolf.app.game.pending), null, 'cancelada con el botón');
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; ctl.clickCard(S.human, 0); });
+  await sleep(150);
+  await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; ctl.clickCard(S.human, 0); });
+  await sleep(150);
+  assert.equal(await app(() => window.chaoticGolf.app.game.pending), null, 'y tocándola otra vez');
+  assert.deepEqual(await app(() => window.chaoticGolf.app.game.S.hands[window.chaoticGolf.app.game.S.human]), ['oNieve', 'palo1'], 'la carta sigue en la mano');
 });
 
 it('regalo de early tester: el aviso abre la ventana, congela la racha (no se pierde) y en Ajustes se descongela', async () => {

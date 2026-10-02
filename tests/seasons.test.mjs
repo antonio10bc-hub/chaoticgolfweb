@@ -144,6 +144,14 @@ test('fuego: cruzarlo suma 2; quedarse dentro es como caerse; crece una casilla 
   const h = level('summer', { tiles: [{ type: 'fire', x: 5, y: 3 }], hand: [] });
   h.S.hands[0] = ['hoyoDown']; h.clickCard(0, 0);
   assert.ok(at(h.S.hole, 5, 1), 'el hoyo vuelve a su casilla');
+  // con el dedo, entrar en el fuego (aunque queden pasos) es quemarse: a su salida, sin más pasos, y se acaba el turno
+  const d = Game.fromLevel({ cols: 7, rows: 7, hole: { x: 5, y: 1 }, ball: { x: 1, y: 5 }, parCells: [], tiles: [{ type: 'fire', x: 2, y: 4 }], deckCounts: { palo1: 6 },
+    season: { now: 'summer' } }, { seed: 1 });
+  d.S.nPlayers = 2; d.S.hands.push([]); d.S.balls.push({ player: 1, x: 6, y: 6, spawnX: 6, spawnY: 6, holed: false });
+  const db = d.S.balls[0]; db.x = 2; db.y = 5;
+  d.S.hands[0] = ['dedo']; d.clickCard(0, 0); d.chooseAmount(3); d.serpentStep('up');
+  assert.ok(at(db, 1, 5) && !d.pending, 'quemada: a su salida, sin los pasos que le quedaban');
+  assert.equal(d.S.turn, 1, 'y se acaba su turno');
   // fuera del verano no se puede jugar
   const w = level('winter', { hand: ['incendio'] });
   assert.ok(!w.canPlay(0, 'incendio'));

@@ -24,7 +24,7 @@ let prevHands = []; // tamaños de mano en el último render (para el robo anima
 let prevOwner = -1;
 export const resetDealAnim = () => { prevHands = []; prevOwner = -1; };
 
-const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard'];
+const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard', 'snowRoll'];
 const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'snowRoll'];
 
 // ¿de quién es la mano grande del dock?

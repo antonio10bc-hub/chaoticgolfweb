@@ -1329,6 +1329,8 @@ export class Game {
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
     if (this.launcherOn(nx, ny)) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
     if (this.S.season) { // (estaciones) cada paso también cuenta: viento, hojas, charcos, hielo y fuego
+      // fuego con el dedo: se quema (a su salida), pierde los pasos que le quedaban y se acaba el turno
+      if (this.realTileAt(nx, ny)?.type === 'fire') { this.ballOut(ball, 'burn'); pd.safe = true; pd.endsTurn = true; return this.endSerpent(); }
       const r = this.seasonCell(pid, nx, ny, pd.stepsLeft);
       if (r.wind) { this.windCarryBall(ball); pd.safe = true; return this.endSerpent(); }
       if (r.burn) { this.ballOut(ball, 'burn'); pd.safe = true; return this.endSerpent(); }
@@ -1363,6 +1365,7 @@ export class Game {
     if (!checked) this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
     this.pending = null;
     this.afterPlay();
+    if (pd.endsTurn && this.S.winner === null) { this.log('log.burnEndsTurn', { b: playerTag(pd.ball.player) }); this.endTurn(); } // (se quemó con el dedo)
     return true;
   }
 

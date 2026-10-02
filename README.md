@@ -233,7 +233,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
-  desplazarse (las seis caben en 860 px de alto). Cada una con su color, su última partida, "Repetir" y sus
+  desplazarse (las seis caben en 860 px de alto, con algo de aire; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -397,7 +397,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     quien pasa, ni a quien vuelve a su salida.
   - **Verano: incendios** (carta naranja **Incendio** ×1): fuego en una casilla vacía que crece solo una casilla vacía por
     turno, hasta 5, y dura hasta que cambia la estación. Cruzarlo **suma 2** al tiro; quedarse dentro es como caerse del
-    tablero (también el hoyo).
+    tablero (también el hoyo). Con el **dedo**, pisarlo (aunque queden pasos) te quema: vuelves a tu salida, pierdes los
+    pasos que te quedaban y se acaba tu turno.
   - **Otoño: hojas secas** (6 al llegar y van cayendo más entre turnos): restan 1 al tiro y se rompen. Entre turnos a veces
     **llueve**: una nubecilla deja caer unas gotas sobre la casilla y aparece un charco, que resta 1 al tiro de quien pasa
     (no atrapa).
@@ -429,6 +430,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     opciones la estación del nivel. Poner una pieza en un nivel sin estación lo pasa a la suya; la bola de nieve, a
     invierno. La plantilla Estaciones pone primavera si no hay estación. Va en el código para compartir niveles.
   - Equilibrio (`npm run simulate -- --deck seasons`): ~8 rondas de media (la clásica 5,9), 100 % terminadas.
+- **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
+  cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
   Al tocarlo, la caja se abre y cuenta que, por probar el juego tan pronto, puedes **congelar tu racha del reto diario**:
   no se pierde aunque pases días sin jugar (y jugando sigue sumando). Se descongela (o se vuelve a congelar) en Ajustes →

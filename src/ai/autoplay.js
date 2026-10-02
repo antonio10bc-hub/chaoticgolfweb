@@ -73,6 +73,7 @@ export function simulateGame(game, { rand = Math.random, maxTurns = 400, onPlay,
       if (react) { stats.reactions++; played(react.key); runPlan(game, react); if (settleJaque()) break; }
     }
     if (S().winner !== null) { if (!S().jaque) break; continue; }
+    if (S().turn !== p) { stats.turns++; continue; } // (una jugada ya ha terminado su turno: p. ej. el dedo que se quema)
     if (S().playedThisTurn === 0 && discardPlan(game, p).length) {
       game.startDiscard();
       for (const i of discardPlan(game, p)) game.clickCard(p, i);

@@ -79,7 +79,7 @@ export default {
     portal: { name: 'Portal', label: 'PORTAL' },
   },
   log: {
-    leafBreaks: 'La hoja seca cruje: el tiro pierde 1', ballBurns: '{b} se queda en el fuego', ballEaten: '¡La planta carnívora se come a {b}!',
+    burnEndsTurn: '{b} se ha quemado con el dedo: se acaba su turno', leafBreaks: 'La hoja seca cruje: el tiro pierde 1', ballBurns: '{b} se queda en el fuego', ballEaten: '¡La planta carnívora se come a {b}!',
     holeBurns: 'El hoyo se queda en el fuego: vuelve a su casilla ({x},{y})', holeEaten: '¡La planta carnívora se come el hoyo! Vuelve a su casilla ({x},{y})',
     windWarn: 'Se levanta viento: al acabar el turno soplará por la ruta marcada', windCalm: 'El viento se calma', windBlows: '¡Sopla el viento!', windCarries: 'El viento se lleva a {b}', windCarriesHole: 'El viento se lleva el hoyo',
     fireSpreads: 'El fuego se extiende', leafFalls: 'Cae una hoja seca', rain: 'Llueve: se forma un charco',
@@ -540,7 +540,7 @@ export default {
     next: 'Siguiente', ok: 'Entendido', skip: 'Saltar tutorial', holeCards: 'Cartas de hoyo',
     card: {
       estacion: 'Pasas a la siguiente estación y el campo cambia con ella: el charco de la lluvia se hiela en invierno y se vuelve planta carnívora en primavera; las hojas se van con el invierno y el fuego se apaga en otoño.',
-      incendio: 'Naranja, en verano: prende fuego a una casilla vacía y crece sola, hasta 5. Cruzarlo suma 2 al tiro… pero si te quedas dentro, vuelves a tu salida.',
+      incendio: 'Naranja, en verano: prende fuego a una casilla vacía y crece sola, hasta 5. Cruzarlo suma 2 al tiro… pero si te quedas dentro, vuelves a tu salida. Con el dedo, pisarlo te quema y acaba tu turno.',
       oNieve: 'Naranja, en invierno: la bola de nieve rueda 5 casillas (o hasta toparse con algo) y se lleva lo que pilla (también en un JAQUE: se lleva la pelota del hoyo). De ella se sale con cualquier palo.',
       trenVuelta: 'La locomotora da una vuelta entera al circuito y empuja todo lo que encuentra: en una recta sigue empujando y, si mete una pelota en el hoyo, ¡cuenta para su dueño!',
       oTren1: 'Naranja: en cualquier momento, también durante un JAQUE, la locomotora avanza 1 parada. Si empuja el hoyo, el JAQUE se anula.',
@@ -573,7 +573,7 @@ export default {
     toMenu: 'Guardar y salir al menú', btnTitle: 'Pausa (P)',
   },
   rules: {
-    seasonsH: 'Las estaciones (baraja de las estaciones)', seasons: 'La partida empieza en una estación al azar y la carta de estación pasa a la siguiente. Primavera: el viento va en ciclos de tres turnos (calma, aviso y sopla) y echa del tablero lo que pilla en su ruta; las plantas carnívoras se comen a quien se queda a su lado. Verano: el incendio crece una casilla por turno (hasta 5); cruzarlo suma 2 y quedarse dentro es como caerse. Otoño: hojas secas (−1 y se rompen) y lluvia que deja charcos (−1). Invierno: la bola de nieve atrapa lo que pilla (se sale gratis) y solo se mueve con su carta, 5 casillas; el hielo suma 1. El charco se hiela, el hielo se vuelve planta y la planta se seca en verano.',
+    seasonsH: 'Las estaciones (baraja de las estaciones)', seasons: 'La partida empieza en una estación al azar y la carta de estación pasa a la siguiente. Primavera: el viento va en ciclos de tres turnos (calma, aviso y sopla) y echa del tablero lo que pilla en su ruta; las plantas carnívoras se comen a quien se queda a su lado. Verano: el incendio crece una casilla por turno (hasta 5); cruzarlo suma 2 y quedarse dentro es como caerse (con el dedo, pisarlo te quema y acaba tu turno). Otoño: hojas secas (−1 y se rompen) y lluvia que deja charcos (−1). Invierno: la bola de nieve atrapa lo que pilla (se sale gratis) y solo se mueve con su carta, 5 casillas; el hielo suma 1. El charco se hiela, el hielo se vuelve planta y la planta se seca en verano.',
     trainH: 'El tren (baraja del tren)', train: 'Un circuito de vías, distinto en cada partida, con 4 paradas. Al acabar cada turno la locomotora va sola a la siguiente parada. Lo que encuentra en la vía lo empuja una casilla (en una recta lo sigue empujando; si es el hoyo, lo empuja igual). Contra la madera se para. Rebotas contra la locomotora como contra un bloque, y los vagones de arena atrapan como un búnker y se llevan lo que tengan. Si el tren solo mete una pelota en el hoyo, gana el tren y pierde todo el mundo; con una carta, la pelota cuenta para su dueño.',
     title: 'Reglas', short: 'Reglas', btnTitle: 'Reglas y cartas (H)', anyDir: 'cualquier dirección',
     goalH: 'Objetivo', goal: 'Mete tu pelota en el hoyo. Gana quien lo consiga y sobreviva al JAQUE.',

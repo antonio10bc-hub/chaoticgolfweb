@@ -215,7 +215,7 @@ function dispatch(fn) {
 }
 
 /* ---------- acciones (interfaz e IA) ---------- */
-const CANCELLABLE = ['move', 'placeTile', 'pickBall', 'dedoAmount', 'pickHoled']; // (el dedo en marcha ya no)
+const CANCELLABLE = ['move', 'placeTile', 'pickBall', 'dedoAmount', 'pickHoled', 'snowRoll']; // (el dedo en marcha ya no)
 // interfaz táctil: una carta de efecto inmediato (hoyo, NO…) no se juega al primer toque. El primer toque
 // la elige y enseña en el tablero lo que hará; el segundo (o "Jugar") la juega. Así nadie juega una carta
 // sin querer (sin ratón no hay vista previa al pasar por encima). La IA nunca pasa por aquí.
