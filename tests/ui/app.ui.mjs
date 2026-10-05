@@ -16,6 +16,9 @@ const CHROME = process.env.CHROME_PATH || [
 const PORT = 8098, URL = `http://localhost:${PORT}/`;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let server, browser, page, errors = [];
+// la presentación de la mesa (quién eres, rivales y orden) sale al empezar cada partida contra la máquina: en los tests
+// se pulsa "Empezar" sola en cuanto aparece, salvo en el suyo (window.keepLineup)
+const autoLineup = () => setInterval(() => { if (!window.keepLineup) document.querySelector('#lineup.visible [data-lineup="go"]')?.click(); }, 60);
 
 // página limpia (sin nada guardado); `seed` rellena localStorage antes de arrancar
 async function fresh(seed = {}) {
@@ -42,6 +45,7 @@ before(async () => {
   browser = await puppeteer.launch({ executablePath: CHROME, headless: true,
     args: ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
   page = await browser.newPage();
+  await page.evaluateOnNewDocument(autoLineup);
   await page.setViewport({ width: 1280, height: 860 });
   await page.emulateTimezone('Europe/Madrid');
   page.on('pageerror', e => errors.push(e.message));
@@ -93,6 +97,54 @@ it('multijugador local: no se ven cartas ajenas y se pasa el dispositivo', async
   assert.ok(await app(() => document.querySelectorAll('#seats .card.back').length) > 0, 'la otra persona debe tener la mano tapada');
   await click('#endTurnBtn'); await sleep(500);
   assert.ok(await page.$('#passScreen.visible'), 'al acabar el turno se pasa el dispositivo');
+});
+
+it('presentación de la mesa: antes de empezar dice quién eres, quién empieza y el orden; hasta "Empezar" no juega nadie', async () => {
+  await fresh({ chaoticgolf_profile: { name: 'Ana', color: 0 } });
+  await app(() => { window.keepLineup = true; window.chaoticGolf.app.pveCfg = { color: 0, size: 'm', opps: 3, humans: 1, diff: 'normal' }; });
+  await openQuick();
+  await click('#pvePlay'); await sleep(300);
+  // que empiece un bot (así se ve que la máquina espera)
+  await app(() => { const { app, ctl } = window.chaoticGolf; const S = app.game.S; S.turn = (S.human + 1) % S.nPlayers; ctl.render(); });
+  await app(async () => (await import('/src/ui/screen-pve.js')).startAfterLineup('x')); // (se vuelve a presentar con ese turno)
+  await sleep(400);
+  assert.ok(await page.$('#lineup.visible'));
+  const info = await app(() => { const { app } = window.chaoticGolf, S = app.game.S;
+    return { order: [...document.querySelectorAll('#lineup .luSeat b')].map(b => b.textContent), first: document.querySelector('#lineup .luSeat.first b').textContent,
+      me: document.querySelector('#lineup .luSeat.me b').textContent, title: document.querySelector('#lineup h2').textContent,
+      sub: document.querySelector('#lineup .luSub').textContent, turn: S.turn, n: S.nPlayers, human: S.human,
+      names: Array.from({ length: S.nPlayers }, (_, i) => S.playerNames[i]) }; });
+  assert.equal(info.order.length, 4);
+  assert.deepEqual(info.order, Array.from({ length: info.n }, (_, i) => info.names[(info.turn + i) % info.n] || 'Ana'), 'en orden de turnos desde quien empieza');
+  assert.equal(info.first, info.names[info.turn]);
+  assert.equal(info.me, 'Ana');
+  assert.equal(info.title, 'Eres Ana');
+  assert.match(info.sub, new RegExp(info.names[info.turn]));
+  // no se quita con Escape ni con un clic fuera, y la máquina no juega mientras tanto
+  const n0 = await app(() => window.chaoticGolf.app.game.S.log.length);
+  await page.keyboard.press('Escape'); await page.mouse.click(10, 10); await page.keyboard.press('p');
+  await sleep(3500);
+  assert.ok(await page.$('#lineup.visible'), 'sigue abierta');
+  assert.equal(await app(() => window.chaoticGolf.app.game.S.log.length), n0, 'algo se ha jugado antes de Empezar');
+  await click('#lineup [data-lineup="go"]');
+  assert.ok(!await page.$('#lineup.visible'));
+  await page.waitForFunction(n => window.chaoticGolf.app.game.S.log.length > n, { timeout: 15000 }, n0);
+  await app(() => { window.keepLineup = false; });
+});
+
+it('presentación de la mesa: en multijugador local se pasa el dispositivo después de "Empezar"', async () => {
+  await fresh();
+  await app(() => { window.keepLineup = true; window.chaoticGolf.app.pveCfg = { color: 1, size: 's', opps: 1, humans: 2, diff: 'normal' }; });
+  await openQuick();
+  await click('#pvePlay'); await sleep(500);
+  assert.ok(await page.$('#lineup.visible'));
+  assert.ok(!await page.$('#passScreen.visible'), 'sin pasar el dispositivo hasta Empezar');
+  assert.equal(await app(() => document.querySelectorAll('#lineup .luSeat').length), 3);
+  assert.equal(await app(() => document.querySelectorAll('#lineup .luSeat.me').length), 0, 'con varias personas no hay un "tú"');
+  await click('#lineup [data-lineup="go"]'); await sleep(300);
+  const human = await app(() => { const S = window.chaoticGolf.app.game.S; return S.humans.includes(S.turn); });
+  if (human) assert.ok(await page.$('#passScreen.visible'), 'tras Empezar se pasa el dispositivo a quien empieza');
+  await app(() => { window.keepLineup = false; });
 });
 
 it('logros: ganar un nivel a la primera desbloquea "Primera victoria" y "Hoyo en uno"', async () => {
@@ -572,6 +624,7 @@ it('enlace con el juego ya abierto: el nivel sale en esa pestaña y la nueva se 
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
   // sin otra pestaña del juego abierta, el enlace se abre donde se pulsa
   const p2 = await browser.newPage();
+  await p2.evaluateOnNewDocument(autoLineup);
   await page.close(); page = p2;
   page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept());
   await page.setViewport({ width: 1280, height: 860 }); await page.emulateTimezone('Europe/Madrid');
@@ -633,6 +686,7 @@ const PHONE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, h
 // una página aparte emulando un móvil (la principal sigue siendo la del ordenador)
 async function phonePage(vp = PHONE) {
   const p = await browser.newPage();
+  await p.evaluateOnNewDocument(autoLineup);
   p.on('pageerror', e => errors.push(e.message));
   p.on('dialog', d => d.accept());
   await p.setUserAgent(IPHONE_UA); await p.setViewport(vp);

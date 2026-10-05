@@ -155,7 +155,7 @@ export function orangeCheck() {
     orangeTimer = null;
     const g = app.game, d = load();
     if (d.orangeTip || !g || app.screen !== 'game' || step || app.animating || app.animQueue.length || el.classList.contains('visible')) return;
-    if (document.querySelector('dialog[open], #pauseOverlay.visible, #winOverlay.visible, #passScreen.visible')) return;
+    if (document.querySelector('dialog[open], #pauseOverlay.visible, #winOverlay.visible, #passScreen.visible, #lineup.visible')) return;
     const me = viewer();
     if (isBot(me) || !handRevealed(me)) return;
     const idx = g.S.hands[me]?.findIndex(k => CARDS[k]?.color === 'orange');

@@ -447,6 +447,11 @@ export default {
     confirmReplace: 'Tienes una partida guardada. Si empiezas otra, la guardada se perderá.' },
 
   /* ---------- multijugador local, bots, ajustes, estadísticas y tutorial ---------- */
+  lineup: {
+    youAre: 'Eres {name}', youAreAnon: 'Esta es tu pelota', you: 'Tú', person: 'persona',
+    titleLocal: 'Jugáis {n} en este dispositivo', youStart: '¡Empiezas tú!', theyStart: 'Empieza {name}',
+    order: 'Orden de juego', starts: 'Empieza', go: 'Empezar',
+  },
   hotseat: {
     turnTitle: 'Turno de {name}', reactTitle: '{name} quiere reaccionar',
     passTo: 'Pasa el dispositivo a {name}. Los demás, ¡no miréis!', show: 'Soy {name} · ver mis cartas',

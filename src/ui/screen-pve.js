@@ -5,7 +5,7 @@ import { app } from './app.js';
 import { $, $$, esc } from './dom.js';
 import { Game, PLAYER_COLORS } from '../engine/game.js';
 import { mulberry32 } from '../engine/rng.js';
-import { startGame } from './controller.js';
+import { startGame, render } from './controller.js';
 import { aiStart } from './ai-driver.js';
 import { updateMenuBtn } from './hud.js';
 import { t } from '../i18n/index.js';
@@ -21,6 +21,7 @@ import { openModes } from './screen-modes.js';
 import { deckById, deckSize, deckHasTrain } from '../content/decks.js';
 import { deckIntro } from './deck-intro.js';
 import { defaultCounts } from '../content/cards/index.js';
+import { showLineup } from './lineup.js';
 
 export const PVE_SIZES = {
   s: { cols: 5, rows: 5, par: 2 },
@@ -198,7 +199,11 @@ export function startPveMatch() {
   showScreen('game');
   saveGame();
   recordStart(cfg.humans > 1 ? 'local' : 'pve', { deck: cfg.deck || 'classic' });
-  aiStart(900); // si abre la máquina, que juegue (cancelable si se sale antes)
+  // antes de que juegue nadie: quién eres, contra quién y en qué orden; al pulsar Empezar, si abre la máquina, juega
+  startAfterLineup(t(cfg.humans > 1 ? 'stats.mode_local' : 'stats.mode_pve'));
+}
+export function startAfterLineup(tag, variant = null) {
+  showLineup({ tag, variant, start: () => { render(); aiStart(500); } });
 }
 
 export function bindPve() {

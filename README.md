@@ -76,6 +76,7 @@ src/
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
     link-tabs.js           enlace de un nivel con el juego ya abierto: lo recoge esa pestaña (o la app instalada)
     players.js / hotseat.js  personas y bots de la mesa; multijugador local ("pasa el móvil")
+    lineup.js              presentación de la mesa al empezar: quién eres, rivales, quién empieza y el orden
     persona.js / bot-react.js  nombres, caras y bocadillos de los bots
     preview.js             vista previa de la jugada (se simula sobre una copia del motor)
     tutorial.js            presentación del nivel 1, explicación de cada carta la primera vez y el aviso naranja de
@@ -190,6 +191,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cadena, portales, búnker, caídas y hoyo. En pantallas táctiles, primer toque = vista previa, segundo = jugar.
 - **Bots con personalidad:** nombre, cara que cambia de humor y bocadillos al jugar, recibir un golpe,
   caerse o embocar. Dificultad fácil / normal / difícil (`LEVELS` en `src/ai/bot.js`).
+- **Presentación de la mesa** (`src/ui/lineup.js`): al empezar una partida contra la máquina (partida rápida,
+  multijugador local, reto diario, desafíos y semanal), con el tablero ya cargado y antes de que juegue nadie,
+  una ventana dice quién eres (tu pelota, con la que llevas puesta, y tu nombre), quién empieza y el orden de
+  los turnos: una fila con cada jugador (cara, nombre, personalidad o "Tú"), el turno la recorre una vez y
+  vuelve a quien empieza, que se queda con la etiqueta "Empieza". Con el color del modo. Hasta pulsar
+  **Empezar** no se quita (ni con Esc ni tocando fuera) y la partida espera: la máquina no juega, la pausa y
+  los atajos no hacen nada y, en multijugador local, el dispositivo se pasa después. Funciona como una pausa
+  más (`app.paused = 'lineup'`); salir al menú la cierra. Continuar una partida guardada no la vuelve a enseñar.
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
@@ -555,6 +564,7 @@ la partida quieta. Reglas que hay que mantener:
 ```bash
 npm test                          # oráculo de reglas + reglas concretas + IA + niveles y puzles (~3 s)
 npm run test:ui                   # interfaz en Chrome real: guardado, pausa, multijugador, logros, deshacer, reto, puzles
+                                  # (la presentación de la mesa se pulsa sola salvo en sus tests: window.keepLineup)
 npm run simulate                  # telemetría: 500 partidas bot-contra-bot, victorias y uso de cartas
 npm run simulate -- --random 0 --players 4 --size l --games 2000
 npm run simulate -- --deck seasons            # con una baraja: su mazo, su tamaño y lo suyo (y cuánto actúa cada mecánica)

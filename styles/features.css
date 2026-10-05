@@ -1714,3 +1714,83 @@ html.phone #giftPop { bottom: calc(14px + env(safe-area-inset-bottom)); }
 .dFlame.frozen { background: #3E6E8E; }
 .dFlame.frozen .i { color: #CFE8F5; }
 html.reduceMotion #giftPop, html.reduceMotion #giftPop .giftSvg, html.reduceMotion .giftBox .giftLid, html.reduceMotion .giftBox .giftOut { animation: none; }
+
+/* ---------- presentación de la mesa (antes de empezar: quién eres, rivales y orden de juego) ---------- */
+#lineup {
+  --lu: var(--grass-dark); --lu-fg: var(--cream);
+  position: fixed; inset: 0; z-index: 47; display: none; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(20,40,20,.42); backdrop-filter: blur(2px);
+}
+#lineup.v-daily { --lu: var(--mode-daily); --lu-fg: var(--ink); }
+#lineup.v-challenge, #lineup.v-weekly { --lu: var(--mode-challenge); }
+#lineup.visible { display: flex; animation: fadeIn .25s var(--ease-out); }
+.luBox {
+  width: min(540px, 100%); max-height: 100%; text-align: center; padding: 24px 22px 20px; border-radius: 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background-image: var(--grain); background-color: var(--cream); box-shadow: 0 30px 70px rgba(10,25,10,.35);
+  animation: winPop .35s var(--ease-out);
+}
+.luTag { padding: 4px 12px; border-radius: 999px; background: var(--lu); color: var(--lu-fg);
+  font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.luBox > * { flex-shrink: 0; }
+.luHero { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.luMe { position: relative; display: grid; place-items: center; margin: 8px 0 2px; }
+.luMe .skBall { --bs: 64px !important; animation: luBob 2.6s ease-in-out infinite; }
+.luMe::before { content: ''; position: absolute; width: 64px; height: 64px; border-radius: 50%; border: 2.5px solid var(--lu);
+  animation: luRing 2.2s var(--ease-out) .5s infinite; opacity: 0; }
+.luBox h2 { font-size: 28px; font-weight: 500; letter-spacing: -.035em; line-height: 1.05; }
+.luSub { font-size: 15px; color: var(--ink-soft); margin-top: 6px; }
+.luSub.mine { color: var(--accent-deep); font-weight: 600; }
+.luOrder { width: 100%; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--cream-line); }
+.luH { display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.luTrack { list-style: none; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; padding: 26px 0 0; margin: 0; }
+.luSeat { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 3px 9px; border-radius: 16px;
+  transition: background-color .2s, transform .25s var(--ease-out); animation: luIn .45s var(--ease-out) calc(var(--i) * 70ms + 150ms) both; }
+/* (el camino de los turnos: de cada uno al siguiente) */
+.luSeat:not(:last-child)::after { content: ''; position: absolute; top: 49px; left: calc(50% + 28px); right: calc(-50% + 26px);
+  border-top: 2px dotted color-mix(in srgb, var(--ink-soft) 55%, transparent); }
+.luN { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 600;
+  background: var(--cream-deep); color: var(--ink-soft); }
+.luSeat .avatar { width: 46px; height: 46px; font-size: 15px; transition: transform .25s var(--ease-out), box-shadow .25s; }
+.luSeat b { max-width: 100%; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+.luSeat small { max-width: 100%; font-size: 11.5px; color: var(--ink-soft); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.luSeat.me small { padding: 1px 8px; border-radius: 999px; background: var(--ink); color: var(--cream); font-weight: 600; }
+.luSeat.on { background-color: color-mix(in srgb, var(--pc) 16%, transparent); transform: translateY(-3px); }
+.luSeat.on .avatar { transform: scale(1.1); box-shadow: 0 0 0 3px var(--cream), 0 0 0 5.5px var(--pc), 0 6px 14px var(--shadow); }
+.luSeat.on .luN { background: var(--ink); color: var(--cream); }
+.luFirst { position: absolute; left: 50%; top: -22px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px 3px 7px; border-radius: 999px;
+  background: var(--accent); color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+  transform: translateX(-50%) translateY(6px) scale(.6); opacity: 0; transition: transform .35s cubic-bezier(.3,1.6,.5,1), opacity .2s; }
+.luFirst .i { width: 12px; height: 12px; }
+#lineup.lit .luFirst { transform: translateX(-50%); opacity: 1; }
+.luBox .btn-primary { margin-top: 12px; min-width: min(240px, 100%); }
+@keyframes luIn { from { opacity: 0; transform: translateY(14px) scale(.8); } to { opacity: 1; transform: none; } }
+@keyframes luBob { 50% { transform: translateY(-5px); } }
+@keyframes luRing { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(1.7); } }
+#lineup.still .luBox, #lineup.still .luSeat, #lineup.still .luMe .skBall, #lineup.still .luMe::before { animation: none; }
+#lineup.still .luFirst { transition: none; }
+@media (max-width: 480px) {
+  .luBox { padding: 20px 14px 16px; }
+  .luBox h2 { font-size: 24px; }
+  .luTrack { gap: 2px; }
+  .luSeat { padding: 7px 1px 8px; }
+  .luSeat .avatar { width: 38px; height: 38px; font-size: 13px; }
+  .luSeat:not(:last-child)::after { top: 45px; left: calc(50% + 23px); right: calc(-50% + 21px); }
+  .luSeat b { font-size: 12px; }
+  .luSeat small { font-size: 10.5px; }
+  .luSeat.me small { padding: 1px 6px; }
+  .luFirst { left: 2px; transform: translateY(6px) scale(.6); transform-origin: left center; font-size: 9.5px; padding: 3px 8px 3px 6px; }
+  #lineup.lit .luFirst { transform: none; }
+}
+@media (max-height: 540px) {
+  .luBox { padding: 14px 18px 14px; gap: 4px; }
+  .luHero { flex-direction: row; gap: 14px; text-align: left; }
+  .luMe { margin: 0; }
+  .luMe .skBall { --bs: 44px !important; }
+  .luMe::before { width: 44px; height: 44px; }
+  .luBox h2 { font-size: 22px; }
+  .luSub { font-size: 13.5px; margin-top: 2px; }
+  .luOrder { margin-top: 4px; padding-top: 6px; }
+  .luH { display: none; }
+  .luBox .btn-primary { margin-top: 6px; padding-top: 9px; padding-bottom: 9px; }
+}

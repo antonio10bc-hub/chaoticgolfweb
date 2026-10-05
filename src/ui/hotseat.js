@@ -16,7 +16,7 @@ const over = () => { const S = app.game?.S; return !S || (S.winner !== null && !
 // se llama al principio de cada render: decide si hay que pasar el dispositivo
 export function passCheck() {
   if (!app.game || !multiHuman() || over()) { if (app.passFor != null) hidePass(); return; }
-  if (app.passFor != null || app.reacting != null) return;
+  if (app.passFor != null || app.reacting != null || app.paused === 'lineup') return; // (se pasa al pulsar Empezar)
   const S = app.game.S;
   if (humansOf().includes(S.turn) && app.viewer !== S.turn) showPass(S.turn, 'turn');
 }
@@ -39,7 +39,7 @@ function getPc(p) {
   const S = app.game.S;
   return S.colorMap ? S.colorMap[p] : '';
 }
-function hidePass() { app.passFor = null; $('passScreen').classList.remove('visible'); }
+export function hidePass() { app.passFor = null; $('passScreen').classList.remove('visible'); }
 
 // otra persona pide el dispositivo para reaccionar
 export function startReaction(p) {

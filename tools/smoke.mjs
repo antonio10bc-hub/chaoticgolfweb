@@ -86,7 +86,11 @@ try {
   await page.evaluate(() => document.getElementById('storyBack').click());
   await click('#modesBtn'); await sleep(300); await shot('05a-modos');
   await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300); await shot('05-pve-setup');
-  await click('#pvePlay'); await confirmIfAsked(); await sleep(800); // sustituye la partida guardada (si la hay)
+  await click('#pvePlay'); await confirmIfAsked(); await sleep(1800); // sustituye la partida guardada (si la hay)
+  // antes de empezar: quién eres, rivales y orden de juego (hasta "Empezar" no juega nadie)
+  if (!await page.$('#lineup.visible')) problems.push('partida rápida: no sale la presentación de la mesa');
+  await shot('05b-pve-mesa');
+  await click('#lineup [data-lineup="go"]'); await sleep(300);
   const t0 = Date.now(); let aiTurns = 0, lastTurn = -1, shots = 0, humanActs = 0;
   while (Date.now() - t0 < PVE_SECONDS * 1000) {
     const s = await state();
@@ -121,6 +125,8 @@ try {
   await page.evaluate(() => { window.chaoticGolf.app.pveCfg = { color: 1, size: 's', opps: 0, humans: 2, diff: 'normal' }; });
   await click('#modesBtn'); await sleep(300); await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300);
   await click('#pvePlay'); await confirmIfAsked(); await sleep(700);
+  if (await page.$('#passScreen.visible')) problems.push('multijugador local: se pasa el dispositivo antes de "Empezar"');
+  await click('#lineup [data-lineup="go"]'); await sleep(300);
   if (!await page.$('#passScreen.visible')) problems.push('multijugador local: no aparece "pasa el dispositivo"');
   if (await page.evaluate(() => document.querySelectorAll('#hands .card:not(.back)').length)) problems.push('multijugador local: se ven cartas antes de pasar el dispositivo');
   await shot('07e-pasa-el-movil');

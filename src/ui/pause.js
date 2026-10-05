@@ -8,11 +8,14 @@ import { ensureGuard } from './back.js';
 import * as ctl from './controller.js';
 import { sfx } from '../audio/sfx.js';
 import { isPhone } from './device.js';
+import { hideLineup } from './lineup.js';
 
-// motivo de la pausa: 'user' (botón / tecla P) o el panel que la abrió ('settings', 'rules')
+// motivo de la pausa: 'user' (botón / tecla P), el panel que la abrió ('settings', 'rules') o 'lineup' (la
+// presentación de la mesa antes de empezar: lineup.js)
 export function pauseGame(reason = 'user') {
   if (app.screen !== 'game' || !app.game) return;
   const S = app.game.S;
+  if (app.paused === 'lineup') return; // (aún no ha empezado: la presentación de la mesa ya la tiene parada)
   if (S.winner !== null && !S.jaque) { // partida terminada: nada que parar (en táctil el botón es el menú: se abre igual)
     if (reason === 'user' && isPhone()) show();
     return;
@@ -31,7 +34,7 @@ function show() {
 
 // reanuda; si se pasa un motivo, solo si la pausa era por ese motivo (cerrar Ajustes no quita una pausa del jugador)
 export function resumePlay(reason, { kick = true } = {}) {
-  if (!app.paused || (reason && app.paused !== reason)) return;
+  if (!app.paused || app.paused === 'lineup' || (reason && app.paused !== reason)) return;
   clearPause();
   app.jaqueTimer = null; // la ventana de reacción del JAQUE vuelve a contar entera
   if (kick && app.game) { ctl.renderJaque(); aiKick(); }
@@ -39,6 +42,7 @@ export function resumePlay(reason, { kick = true } = {}) {
 // quita la pausa sin reanudar nada (al salir de la partida o empezar otra)
 export function clearPause() {
   app.paused = false;
+  hideLineup();
   document.documentElement.classList.remove('paused');
   $('pauseOverlay')?.classList.remove('visible');
 }

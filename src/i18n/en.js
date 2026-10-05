@@ -444,6 +444,11 @@ export default {
     confirmReplace: 'You have a saved game. Starting a new one will discard it.' },
 
   /* ---------- local multiplayer, bots, settings, stats and tutorial ---------- */
+  lineup: {
+    youAre: 'You are {name}', youAreAnon: 'This is your ball', you: 'You', person: 'player',
+    titleLocal: '{n} of you on this device', youStart: 'You go first!', theyStart: '{name} goes first',
+    order: 'Turn order', starts: 'First', go: 'Start',
+  },
   hotseat: {
     turnTitle: '{name}’s turn', reactTitle: '{name} wants to react',
     passTo: 'Pass the device to {name}. Everyone else, no peeking!', show: 'I’m {name} · show my cards',

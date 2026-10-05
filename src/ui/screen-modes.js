@@ -16,7 +16,7 @@ import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { Game } from '../engine/game.js';
 import { modeArt, sectionHead, groupHead } from './mode-art.js';
-import { aiStart, aiStop } from './ai-driver.js';
+import { aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
@@ -28,7 +28,7 @@ import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
 import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
-import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR } from './screen-pve.js';
+import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
 import { SEASON_ICON } from './season-art.js';
@@ -73,7 +73,7 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
   musicScene('game', { newGame: true });
   showScreen('game');
   saveGame();
-  aiStart(900);
+  startAfterLineup(modeChipText(), variant); // (quién eres, rivales y orden; al pulsar Empezar, juega la máquina)
 }
 // fondo del reto diario: el de la mecánica del día (también para partidas guardadas antes de existir)
 // el nombre de la mecánica del día (la de las estaciones, con la que toca: «Estaciones: Invierno»)
