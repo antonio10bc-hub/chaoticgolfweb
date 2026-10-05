@@ -6,6 +6,7 @@
 //   madera   victorias con la de minigolf: vetas · marco de madera · molino que gira detrás
 //   vapor    victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren
 //   estaciones victorias con la de las estaciones: la bola en cuatro colores · pétalos, hojas y copos · las cuatro en órbita
+//   cosmos   victorias con la del multiverso: la bola por dentro como el espacio · el disco de Gargantua alrededor · copias en órbita
 //   prisma   victorias con Ultimate: brillo iridiscente · halo arcoíris · destellos
 //   rayo     series de contrarreloj completas: estela · esfera de reloj · rayos
 //   corona   desafíos superados por grupo (calentamiento · intermedio · experto)
@@ -27,6 +28,7 @@ export const SKINS = [
   { id: 'wood', kind: 'deck', deck: 'minigolf', at: [10, 50, 100], accent: '#A8743F' },
   { id: 'steam', kind: 'deck', deck: 'train', at: [10, 50, 100], accent: '#B5483B' },
   { id: 'seasons', kind: 'deck', deck: 'seasons', at: [10, 50, 100], accent: '#C2618B' },
+  { id: 'cosmos', kind: 'deck', deck: 'multiverse', at: [10, 50, 100], accent: '#5B3FB8' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
@@ -174,6 +176,11 @@ function parts(id, lvl) {
       surf += '<i class="qd"></i>';
       if (lvl >= 2) back += is('fl', 3, i => `--x:${18 + i * 26}%;--d:${(-i * 1.1).toFixed(1)}s;--c:${['#F8C3D6', '#D9703A', '#FFFFFF'][i]}`);
       if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${['spring', 'summer', 'autumn', 'winter'].map((s, i) => `<i class="se" style="--a:${i * 90}deg">${SEASON_SVG(s)}</i>`).join('')}</i>`; }
+      break;
+    case 'cosmos': // (el disco: la mitad de arriba pasa por detrás de la bola y la de abajo, por delante)
+      surf += '<i class="nb"></i>';
+      if (lvl >= 2) { back += '<i class="dk"></i>'; front += '<i class="dk fr"></i>'; }
+      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${[0, 120, 240].map(a => `<i class="cp" style="--a:${a}deg"></i>`).join('')}</i>`; }
       break;
     case 'prism':
       surf += '<i class="ir"></i>';

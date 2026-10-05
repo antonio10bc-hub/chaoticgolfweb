@@ -499,6 +499,7 @@ export default {
     wood: { name: 'Madera', goal: 'Victorias con la baraja de minigolf' },
     steam: { name: 'Vapor', goal: 'Victorias con la baraja del tren' },
     seasons: { name: 'Estaciones', goal: 'Victorias con la baraja de las estaciones' },
+    cosmos: { name: 'Cosmos', goal: 'Victorias con la baraja del multiverso' },
     prism: { name: 'Prisma', goal: 'Victorias con Ultimate' },
     bolt: { name: 'Rayo', goal: 'Series de contrarreloj completas' },
     crown: { name: 'Corona', goal: 'Desafíos superados' },

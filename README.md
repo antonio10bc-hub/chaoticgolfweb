@@ -515,7 +515,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     pelota), **Atracción fatal** (intermedio: la gravedad junta pelota y hoyo) y **Hoyos gemelos** (experto: parte el hoyo,
     lleva una copia junto a la pelota y júntalas con la gravedad naranja). Buscados con
     `npm run puzzles:search -- bhCopy|rocks|gravity|holeSplit`.
-  - Pendiente: pelota de logros.
+  - Pelota de logros **Cosmos** (10 · 50 · 100 victorias con la baraja): la bola por dentro como un trozo de espacio (nebulosa y
+    estrellas, translúcida: se sigue viendo el color de quien juega) · el disco de Gargantua alrededor (por detrás arriba, por
+    delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.

@@ -496,6 +496,7 @@ export default {
     wood: { name: 'Wood', goal: 'Wins with the minigolf deck' },
     steam: { name: 'Steam', goal: 'Wins with the train deck' },
     seasons: { name: 'Seasons', goal: 'Wins with the four seasons deck' },
+    cosmos: { name: 'Cosmos', goal: 'Wins with the multiverse deck' },
     prism: { name: 'Prism', goal: 'Wins with Ultimate' },
     bolt: { name: 'Bolt', goal: 'Complete time-attack runs' },
     crown: { name: 'Crown', goal: 'Challenges beaten' },

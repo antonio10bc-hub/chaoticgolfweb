@@ -112,6 +112,22 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
         c.fillStyle = '#F1F1DC'; c.beginPath(); c.arc(ox, oy, D * .15, 0, 7); c.fill(); return put(c, A.SEASON_SVG(s), ox, oy, D * .3, D * .3); }));
       break;
     }
+    case 'cosmos': { // (como en skins.css: la bola por dentro como el espacio, el disco de Gargantua y las copias en órbita)
+      surf.push(() => { c.globalAlpha = .55; c.globalCompositeOperation = 'multiply'; glow(c, x, y, R * 1.2, [[0, '#6A58B8'], [.7, '#2A1F5E'], [1, '#2A1F5E']]);
+        glow(c, x - R * .16, y - R * .08, R * .7, [[0, 'rgba(214,120,200,.75)'], [1, 'rgba(214,120,200,0)']]);
+        glow(c, x + R * .24, y + R * .16, R * .6, [[0, 'rgba(110,150,255,.6)'], [1, 'rgba(110,150,255,0)']]);
+        c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.fillStyle = '#fff';
+        for (const [dx, dy, r] of [[-.4, -.32, .04], [.28, -.44, .03], [.12, .4, .035], [-.24, .24, .025]]) { c.beginPath(); c.arc(x + dx * R, y + dy * R, r * R, 0, 7); c.fill(); } });
+      const disk = half => () => { c.save(); c.translate(x, y); c.rotate(rad(-14)); c.beginPath(); c.rect(-D, half ? 0 : -D, D * 2, D); c.clip();
+        c.shadowColor = 'rgba(255,180,90,.8)'; c.shadowBlur = D * .08; c.strokeStyle = '#F4A954'; c.lineWidth = D * .055;
+        c.beginPath(); c.ellipse(0, 0, D * .84, D * .12, 0, 0, 7); c.stroke(); c.restore(); };
+      if (lvl >= 3) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(155,120,255,.55)'], [.45, 'rgba(91,63,184,.2)'], [.68, 'rgba(91,63,184,0)']]));
+      if (lvl >= 2) { back.push(disk(false)); front.push(disk(true)); }
+      if (lvl >= 3) [0, 120, 240].forEach(a => front.push(() => { const [ox, oy] = orbit(x, y, D, a);
+        c.globalAlpha = .7; c.fillStyle = color; c.beginPath(); c.arc(ox, oy, D * .12, 0, 7); c.fill(); c.globalAlpha = 1;
+        c.save(); c.setLineDash([D * .04, D * .03]); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = D * .02; c.beginPath(); c.arc(ox, oy, D * .14, 0, 7); c.stroke(); c.restore(); }));
+      break;
+    }
     case 'prism': {
       const IRI = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF', '#FF8FC4'];
       surf.push(() => { c.globalAlpha = lvl >= 3 ? .62 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });

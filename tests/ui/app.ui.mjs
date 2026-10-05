@@ -882,7 +882,7 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
   await click('#profileBtn'); await sleep(400);
   assert.ok(await app(() => document.getElementById('profileOverlay').classList.contains('visible')));
-  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 10); // (8 + la de vapor, del tren, y la de las estaciones)
+  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 11); // (8 + la de vapor, del tren, la de las estaciones y la del multiverso)
   assert.equal(await app(() => document.querySelectorAll('.pfCard .pfNew').length), 2, 'fuego y clásica, nuevas');
   // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
   await click('[data-pfv="fire:2"]'); await sleep(200);

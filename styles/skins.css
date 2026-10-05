@@ -118,6 +118,31 @@
 .sk-seasons .orb .se { width: calc(var(--bs) * .3); height: calc(var(--bs) * .3); margin: calc(var(--bs) * -.15) 0 0 calc(var(--bs) * -.15); }
 .sk-seasons .orb .se svg { background: #F1F1DC; border-radius: 50%; box-shadow: 0 calc(var(--bs) * .02) calc(var(--bs) * .05) rgba(20,40,20,.25); }
 
+/* ---------- COSMOS · baraja del multiverso: la bola por dentro como el espacio · el disco de Gargantua · copias en órbita ---------- */
+.sk-cosmos .nb { inset: -20%; opacity: .55; mix-blend-mode: multiply; animation: skSpin 16s linear infinite;
+  background:
+    radial-gradient(calc(var(--bs) * .02) calc(var(--bs) * .02) at 30% 34%, #fff 50%, transparent 51%),
+    radial-gradient(calc(var(--bs) * .015) calc(var(--bs) * .015) at 64% 28%, #fff 50%, transparent 51%),
+    radial-gradient(calc(var(--bs) * .018) calc(var(--bs) * .018) at 56% 70%, #fff 50%, transparent 51%),
+    radial-gradient(calc(var(--bs) * .012) calc(var(--bs) * .012) at 38% 62%, #fff 50%, transparent 51%),
+    radial-gradient(ellipse 40% 26% at 42% 46%, rgba(214,120,200,.75), transparent 70%),
+    radial-gradient(ellipse 36% 30% at 62% 58%, rgba(110,150,255,.6), transparent 70%),
+    radial-gradient(circle at 50% 50%, #6A58B8, #2A1F5E 70%); }
+.sk-cosmos .nb::after { content: ''; position: absolute; inset: 0; mix-blend-mode: screen; /* (las estrellas, sin oscurecer) */
+  background: radial-gradient(calc(var(--bs) * .02) calc(var(--bs) * .02) at 30% 34%, #fff 50%, transparent 51%),
+    radial-gradient(calc(var(--bs) * .015) calc(var(--bs) * .015) at 64% 28%, #fff 50%, transparent 51%),
+    radial-gradient(calc(var(--bs) * .018) calc(var(--bs) * .018) at 56% 70%, #fff 50%, transparent 51%); }
+.sk-cosmos .dk { left: -34%; right: -34%; top: 38%; height: 24%; border-radius: 50%; transform: rotate(-14deg);
+  border: calc(var(--bs) * .055) solid #F4A954; box-shadow: 0 0 calc(var(--bs) * .08) rgba(255,180,90,.8), inset 0 0 calc(var(--bs) * .04) rgba(255,240,210,.9);
+  clip-path: inset(0 0 50% 0); animation: skDisk 2.6s ease-in-out infinite; }
+.sk-cosmos .dk.fr { clip-path: inset(50% 0 0 0); }
+@keyframes skDisk { 50% { opacity: .78; } }
+.sk-cosmos .aura { background: radial-gradient(circle, rgba(155,120,255,.55), rgba(91,63,184,.2) 45%, transparent 68%); }
+.sk-cosmos .orb { animation-duration: 8s; }
+.sk-cosmos .orb .cp { width: calc(var(--bs) * .24); height: calc(var(--bs) * .24); margin: calc(var(--bs) * -.12) 0 0 calc(var(--bs) * -.12); border-radius: 50%;
+  background: var(--pc); opacity: .7; outline: calc(var(--bs) * .02) dashed rgba(255,255,255,.95); outline-offset: calc(var(--bs) * .015); }
+html.reduceMotion .sk-cosmos .nb, html.reduceMotion .sk-cosmos .dk { animation: none; }
+
 /* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · destellos ---------- */
 .sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }
