@@ -1,0 +1,165 @@
+/* =========================================================
+   Baraja del multiverso: el agujero negro, las copias de las pelotas, la gravedad, los meteoritos
+   y la escena (el campo flotando en el espacio).
+   ========================================================= */
+
+/* ---------- el agujero negro ---------- */
+.tile-blackhole { background: transparent; width: 100%; height: 100%; }
+.tile-blackhole .sub { display: none; }
+.cardOnCell .tilePic.bhPic { transform: scale(1.18); }
+.cell.space { background-color: #0C0814; overflow: visible;
+  background-image: radial-gradient(1px 1px at 20% 25%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 78% 30%, rgba(255,255,255,.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 82%, rgba(255,255,255,.7) 50%, transparent 51%), radial-gradient(ellipse at 50% 50%, rgba(255,170,80,.22), transparent 70%);
+  box-shadow: inset 0 0 14px 3px rgba(242,176,94,.3); }
+.cell.space.mowB { background-color: #0E0A18; }
+/* el disco (Gargantua, de Interstellar): la luz fluye por el disco y el anillo de luz curvada respira */
+.bhFlow { stroke-dasharray: 2 7; animation: bhFlow 2.2s linear infinite; }
+@keyframes bhFlow { to { stroke-dashoffset: -36; } }
+.bhRing { animation: bhRing 4s ease-in-out infinite; }
+@keyframes bhRing { 50% { opacity: .82; } }
+/* la roca de los meteoritos: casi cubo, llena la casilla; la casilla, chamuscada */
+.tile-meteorite { background: transparent; width: 100%; height: 100%; }
+.tile-meteorite .sub { display: none; }
+.cardOnCell .tilePic.rockPic { transform: scale(1.06); }
+.cell.crater { background-color: #3E3A2C; box-shadow: inset 0 0 10px 2px rgba(20,10,0,.45); }
+.cell.crater.mowB { background-color: #433F30; }
+.rockGlow { animation: rockGlow 2.6s ease-in-out infinite; }
+@keyframes rockGlow { 50% { stroke: #FFC46B; opacity: .6; } }
+/* casillas pegadas en cruz: un halo suave (ahí se traga las pelotas) */
+.cell.bhNear::after { content: ''; position: absolute; inset: 3px; border-radius: 5px; pointer-events: none;
+  box-shadow: inset 0 0 0 1.5px rgba(199,139,242,.55), inset 0 0 10px rgba(123,92,224,.35); }
+
+/* ---------- las copias: la misma pelota, translúcida, con borde discontinuo y un brillo que la recorre ---------- */
+.piece.copyBall .tile-ball .circ { opacity: .82; outline: 2px dashed rgba(241,241,220,.95); outline-offset: 2px;
+  background-image:
+    linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 45%, transparent 60%),
+    radial-gradient(circle at 31% 27%, rgba(255,255,255,.5) 0 12%, transparent 12.5%),
+    radial-gradient(circle, rgba(0,0,0,.12) 0 .7px, transparent .8px);
+  background-size: 300% 100%, 100% 100%, 3.6px 3.6px; animation: copyShine 3.2s linear infinite; }
+@keyframes copyShine { from { background-position: 150% 0, 0 0, 0 0; } to { background-position: -150% 0, 0 0, 0 0; } }
+.piece.copyBall .ballStamp { opacity: .9; }
+
+/* las copias del hoyo: el mismo green, translúcido y con un aro discontinuo */
+.piece.copyHole .cardOnCell { opacity: .85; }
+.piece.copyHole .cardOnCell::before { content: ''; position: absolute; left: 50%; top: 51%; width: 86%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 2px dashed rgba(241,241,220,.95); pointer-events: none; animation: copyHoleSpin 9s linear infinite; }
+@keyframes copyHoleSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+html.reduceMotion .piece.copyHole .cardOnCell::before { animation: none; }
+
+/* ---------- efectos ---------- */
+.bhSuck { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(199,139,242,.8), 0 0 18px 6px rgba(123,92,224,.6); animation: bhSuck .8s ease-in both; }
+@keyframes bhSuck { from { transform: scale(3.4); opacity: 0; } 40% { opacity: 1; } to { transform: scale(.2); opacity: 0; } }
+.splashRing.warp { border-color: #C78BF2; height: 20px; margin-top: -10px; }
+/* la gravedad: la cruz se tiñe de morado (de fuera adentro), con flechas hacia el centro y un remolino en él */
+.cell.gravCell { animation: gravCell 1.45s ease-out var(--gd, 0ms) both; }
+@keyframes gravCell {
+  0% { box-shadow: inset 0 0 0 0 rgba(155,92,240,0), 0 0 0 0 rgba(155,92,240,0); }
+  22% { box-shadow: inset 0 0 0 999px rgba(155,92,240,.34), inset 0 0 0 3px rgba(214,170,255,.95), 0 0 16px 3px rgba(155,92,240,.65); }
+  70% { box-shadow: inset 0 0 0 999px rgba(155,92,240,.2), inset 0 0 0 2px rgba(214,170,255,.6), 0 0 10px 1px rgba(155,92,240,.35); }
+  100% { box-shadow: inset 0 0 0 0 rgba(155,92,240,0), 0 0 0 0 rgba(155,92,240,0); } }
+.cell.gravCenter { animation: gravCenter 1.5s ease-out both; }
+@keyframes gravCenter {
+  0% { box-shadow: inset 0 0 0 0 rgba(90,40,170,0); }
+  25% { box-shadow: inset 0 0 0 999px rgba(90,40,170,.42), inset 0 0 0 3px #E2C4FF, 0 0 22px 6px rgba(155,92,240,.75); }
+  100% { box-shadow: inset 0 0 0 0 rgba(90,40,170,0), 0 0 0 0 rgba(155,92,240,0); } }
+.gravArrow { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; pointer-events: none; color: #F1E2FF;
+  filter: drop-shadow(0 0 4px rgba(155,92,240,.95)); animation: gravArrow .9s ease-in both; }
+.gravArrow svg { width: 100%; height: 100%; display: block; }
+@keyframes gravArrow { 0% { transform: rotate(var(--rot)) translateX(-14px) scale(.7); opacity: 0; } 25% { opacity: 1; } 100% { transform: rotate(var(--rot)) translateX(16px) scale(.9); opacity: 0; } }
+.gravVortex { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; pointer-events: none;
+  border: 1.5px dashed rgba(226,196,255,.45); animation: gravVortex 1.25s cubic-bezier(.4,0,.7,1) both; }
+@keyframes gravVortex { from { transform: rotate(0) scale(1.3); opacity: 0; } 30% { opacity: .7; } to { transform: rotate(-360deg) scale(.3); opacity: 0; } }
+/* lo atraído: un velo morado translúcido encima mientras va hacia el centro */
+.piece.pball.gravTint .tile-ball .circ::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; pointer-events: none;
+  background: rgba(155,92,240,.45); box-shadow: 0 0 12px 4px rgba(155,92,240,.6); animation: gravTint 1.6s ease-out both; }
+.piece.phole.gravTint .cardOnCell::after { content: ''; position: absolute; inset: 16% 10%; border-radius: 50%; pointer-events: none;
+  background: rgba(155,92,240,.4); box-shadow: 0 0 14px 5px rgba(155,92,240,.55); animation: gravTint 1.6s ease-out both; }
+@keyframes gravTint { 0% { opacity: 0; } 15% { opacity: 1; } 70% { opacity: .85; } 100% { opacity: 0; } }
+/* no puede moverse: un tope morado en el borde con lo que le cierra el paso */
+.gravBlock { position: absolute; width: 30px; height: 6px; margin: -3px 0 0 -15px; border-radius: 3px; pointer-events: none;
+  background: #E2C4FF; box-shadow: 0 0 10px 3px rgba(155,92,240,.85); transform: rotate(var(--rot)); animation: gravBlock .65s ease-out both; }
+@keyframes gravBlock { 0% { opacity: 0; scale: .4 1; } 25% { opacity: 1; scale: 1.1 1; } 55% { opacity: .5; } 70% { opacity: 1; } 100% { opacity: 0; scale: 1 1; } }
+.gravRing { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; pointer-events: none;
+  border: 1.2px solid rgba(214,170,255,.38); animation: gravRing .9s ease-in both; }
+@keyframes gravRing { from { transform: scale(2.6); opacity: 0; } 35% { opacity: .55; } to { transform: scale(.4); opacity: 0; } }
+/* el meteorito: cabeza incandescente que baja en diagonal y su estela detrás, inclinada en la dirección de la caída */
+.meteorFall { position: absolute; width: 0; height: 0; pointer-events: none; animation: meteorFall var(--ms, 260ms) cubic-bezier(.45,0,.9,.6) both; }
+@keyframes meteorFall { from { transform: translate(var(--fx), var(--fy)); opacity: 0; } 15% { opacity: 1; } to { transform: none; opacity: 1; } }
+.meteorFall .mHead { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #FFFFFF 0 25%, #FFE7A8 45%, #F2913A 75%, #C2452A);
+  box-shadow: 0 0 10px 4px rgba(255,170,80,.85), 0 0 22px 8px rgba(232,110,50,.35); }
+.meteorFall .mTail { position: absolute; left: -3.5px; bottom: 0; width: 7px; height: 64px; border-radius: 4px 4px 50% 50%;
+  transform-origin: 50% 100%; transform: rotate(var(--ang));
+  background: linear-gradient(to top, rgba(255,247,220,.95), rgba(255,190,100,.8) 30%, rgba(232,110,50,.35) 65%, rgba(232,110,50,0));
+  filter: blur(.6px); clip-path: polygon(0 100%, 100% 100%, 70% 0, 30% 0); }
+.meteorFall.big .mHead { left: -8px; top: -8px; width: 16px; height: 16px; }
+.meteorFall.big .mTail { width: 10px; left: -5px; height: 84px; }
+.meteorCrater { position: absolute; width: 26px; height: 16px; margin: -8px 0 0 -13px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(ellipse, rgba(60,30,20,.55), rgba(60,30,20,0) 70%); box-shadow: 0 0 0 2px rgba(255,213,138,.7);
+  animation: meteorCrater 1.25s ease-out both; }
+@keyframes meteorCrater { from { transform: scale(.3); opacity: 1; } 25% { transform: scale(1.1); } to { transform: scale(1.3); opacity: 0; } }
+html.reduceMotion .bhFlow, html.reduceMotion .bhRing, html.reduceMotion .rockGlow, html.reduceMotion .piece.copyBall .tile-ball .circ { animation: none; }
+
+/* ---------- escena: el campo flotando en el espacio ---------- */
+#gameScreen[data-scene="space"] #game {
+  background-color: #0D0A26;
+  background-image: var(--grain),
+    radial-gradient(ellipse 120% 80% at 50% 115%, rgba(60,30,110,.85), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% -20%, rgba(28,22,80,.9), transparent 70%),
+    linear-gradient(170deg, #120E33, #0B0820 55%, #150B2E);
+}
+#gameScreen[data-scene="space"] #gameDecor > :not(.dSpace) { display: none; }
+#gameDecor .dSpace { display: none; }
+#gameScreen[data-scene="space"] #gameDecor { overflow: hidden; }
+#gameScreen[data-scene="space"] #gameDecor .dSpace { display: block; position: absolute; pointer-events: none; }
+/* nebulosa: nubes de color, difuminadas, que derivan muy despacio */
+#gameDecor .dSpace.nebula { inset: -20%; filter: blur(46px); opacity: .9; will-change: transform;
+  background:
+    radial-gradient(ellipse 34% 26% at 22% 30%, rgba(123,92,224,.55), transparent 70%),
+    radial-gradient(ellipse 28% 22% at 30% 42%, rgba(70,150,230,.28), transparent 70%),
+    radial-gradient(ellipse 30% 24% at 80% 72%, rgba(214,90,170,.42), transparent 70%),
+    radial-gradient(ellipse 22% 18% at 72% 64%, rgba(242,150,80,.22), transparent 70%),
+    radial-gradient(ellipse 26% 20% at 62% 20%, rgba(90,60,200,.3), transparent 70%);
+  animation: nebula 60s ease-in-out infinite alternate; }
+@keyframes nebula { to { transform: translate(3%, -2%) rotate(4deg) scale(1.06); } }
+#gameDecor .dSpace.stars { inset: 0; width: 100%; height: 100%; }
+#gameDecor .dSpace.stars.a { opacity: .7; animation: twinkleA 7s ease-in-out infinite alternate; }
+#gameDecor .dSpace.stars.b { animation: twinkleB 4.4s ease-in-out infinite alternate; }
+#gameDecor .dSpace.stars.b circle { filter: drop-shadow(0 0 1.5px rgba(255,255,255,.9)); }
+@keyframes twinkleA { from { opacity: .45; } to { opacity: .85; } }
+@keyframes twinkleB { 0% { opacity: 1; } 40% { opacity: .55; } 100% { opacity: .95; } }
+#gameDecor .dSpace.galaxy { width: 26vmin; left: 2vw; top: 9vh; opacity: .85; transform: rotate(8deg); }
+html.phone #gameDecor .dSpace.galaxy { width: 22vmin; left: 3vw; top: 6vh; } /* (en el móvil, arriba: la mano es translúcida) */
+#gameDecor .dSpace.planet { width: 26vmin; right: 3vw; top: 10vh; opacity: .95; filter: drop-shadow(0 0 24px rgba(123,92,224,.45)); }
+#gameDecor .dSpace.planet .moon { transform-box: view-box; transform-origin: 60px 60px; animation: moon 40s linear infinite; }
+@keyframes moon { to { transform: rotate(360deg); } }
+/* estrellas fugaces: de vez en cuando, una línea de luz que cruza */
+#gameDecor .dSpace.shoot { width: 140px; height: 2px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(to left, rgba(255,255,255,.95), rgba(200,180,255,.5) 40%, transparent); }
+#gameDecor .dSpace.shoot.a { top: 14%; left: 62%; transform: rotate(-24deg); animation: shoot 11s 3s linear infinite; }
+#gameDecor .dSpace.shoot.b { top: 68%; left: 12%; transform: rotate(-18deg); animation: shoot 17s 9s linear infinite; }
+@keyframes shoot { 0%, 93% { opacity: 0; translate: 0 0; } 94% { opacity: 1; } 100% { opacity: 0; translate: -260px 110px; } }
+#gameScreen[data-scene="space"] #boardWrap { box-shadow: 0 0 0 4px #C78BF2, 0 0 0 9px rgba(199,139,242,.18), 0 0 60px 14px rgba(123,92,224,.5), 0 14px 36px rgba(0,0,0,.5); }
+html.reduceMotion #gameDecor .dSpace, html.reduceMotion #gameDecor .dSpace * { animation: none !important; }
+html.reduceMotion #gameDecor .dSpace.shoot { display: none; }
+html.phone #gameDecor .dSpace.nebula { animation: none; filter: blur(30px); } /* (en el móvil, sin que derive: ahorra batería) */
+
+/* la carta de la baraja (Modos de juego): al pasar por encima, la luz fluye más deprisa por el disco */
+.deckCard:hover .dkArt .bhFlow, .deckCard:focus-within .dkArt .bhFlow { animation-duration: .9s; }
+
+/* ---------- Modos de juego con 7 barajas: más compactas, para que quepan sin desplazarse ---------- */
+@media (min-width: 641px) and (max-height: 980px) {
+  .deckList:has(.deckCard:nth-child(7)) { gap: 8px; }
+  .deckList:has(.deckCard:nth-child(7)) .deckCard { padding: 7px 16px 7px 12px; row-gap: 3px; }
+  .deckList:has(.deckCard:nth-child(7)) .deckCard.ultimate { padding-block: 11px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkPic { width: 50px; height: 50px; border-radius: 13px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkPic .dkArt { width: 40px; height: 40px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkMain h3 { font-size: 16.5px; margin-bottom: 0; }
+  .deckList:has(.deckCard:nth-child(7)) .dkMain p { font-size: 12px; line-height: 1.25; }
+  .deckList:has(.deckCard:nth-child(7)) .dkMain .mdStats { margin-top: 2px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkBtns .btn-sm { padding-block: 4px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkStats { padding: 4px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkStats dd { font-size: 16.5px; }
+  #modesScreen:has(.deckCard:nth-child(7)) .sTitle { font-size: clamp(34px, 6vh, 64px); }
+}

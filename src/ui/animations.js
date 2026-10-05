@@ -19,6 +19,7 @@ import { unlock } from './achievements.js';
 import { isBot } from './players.js';
 import { playTrain, playWagon, playTrainBump, markTrainRuns } from './train-view.js';
 import { SEASON_PLAY, markSnowRuns, seasonDone } from './seasons-view.js';
+import { MULTIVERSE_PLAY } from './multiverse-view.js';
 
 let combo = 0;
 
@@ -33,6 +34,7 @@ export async function playQueue(onDone) {
   const q = app.animQueue; app.animQueue = [];
   markTrainRuns(q);
   markSnowRuns(q);
+  app.rocksHidden = new Set(q.filter(e => e.t === 'meteorRock').map(e => e.x + ',' + e.y)); // (multiverso: las rocas, a su tiempo)
   const warped = new Set(); // pelotas que han cruzado un portal en esta jugada (logro "de portal a hoyo")
   for (const ev of q) {
     if (ev.t === 'teleport') warped.add(ev.p);
@@ -43,6 +45,7 @@ export async function playQueue(onDone) {
     if (app.game !== game) return; // partida descartada: no tocar la nueva
   }
   app.animating = false;
+  app.rocksHidden = null;
   seasonDone(); // (estaciones: el campo, ya como ha quedado)
   if (combo >= 3 && app.mode !== 'free' && app.lastActor != null && !isBot(app.lastActor)) unlock('combo3');
   syncPieces();
@@ -57,11 +60,12 @@ async function playEvent(ev) {
   if (ev.t === 'wagon') return playWagon(ev);
   if (ev.t === 'bump' && ev.p === 'loco') return playTrainBump(ev);
   if (SEASON_PLAY[ev.t]) return SEASON_PLAY[ev.t](ev); // (baraja de las estaciones)
+  if (MULTIVERSE_PLAY[ev.t]) return MULTIVERSE_PLAY[ev.t](ev); // (baraja del multiverso)
   const el = pieceEl(ev.p);
   if (!el) return;
   botReact(ev); // caras y bocadillos de los bots (decorativo)
   const inner = el.firstChild;
-  const isHole = ev.p === 'hole';
+  const isHole = ev.p.startsWith('hole'); // (también las copias del hoyo: hole1…)
   const pid = isHole ? -1 : +ev.p.slice(1);
   const trailCol = pid < 0 ? '#2c5c46' : pColor(pid);
   // flotando en el río: cualquier otro movimiento (salir por una pieza o un portal, rebotar e ir a una

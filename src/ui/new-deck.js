@@ -1,5 +1,5 @@
 // "¡Nueva baraja!": cuando el juego estrena una baraja, quien ya jugaba lo ve una vez al llegar al menú principal.
-// Una ventana pequeña: la ilustración con lo nuevo (aquí, el campo partido en sus cuatro estaciones),
+// Una ventana pequeña: la ilustración con lo nuevo (aquí, una pelota que entra en un agujero negro y sale partida en cuatro),
 // el anuncio, una frase y "Jugar ahora" (Partida rápida con esa baraja) o "Luego".
 // Para la próxima baraja: ANNOUNCE = su id y su ilustración en ART. A quien llega por primera vez no se le
 // anuncia nada (para esa persona todo es nuevo): se apunta como vista.
@@ -14,7 +14,7 @@ import { REDUCED } from '../fx/juice.js';
 import { tilePic } from '../content/tiles/index.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
 
-const ANNOUNCE = 'seasons';
+const ANNOUNCE = 'multiverse';
 const KEY = 'chaoticgolf_newDeckSeen';
 // ¿ya jugaba? (algo de antes guardado en este dispositivo; se mira al cargar, antes de que el arranque escriba nada)
 const returning = (() => { try { return ['chaoticgolf_stats', 'chaoticgolf_tutorial', 'chaoticgolf_deckIntros', 'chaoticgolf_achievements', 'chaoticgolf_lastpve', 'chaoticgolf_intros']
@@ -64,7 +64,31 @@ function seasonsArt() {
     (REDUCED ? `<circle cx="${CW * .5}" cy="${CH * 3.5}" r="8" fill="#f26d6d" stroke="#F1F1DC" stroke-width="2"/>` : `<g transform="translate(0 0)">${ball}</g>`) +
     ['spring', 'summer', 'autumn', 'winter'].map(icon).join('') + '</svg>';
 }
-const ART = { train: trainArt, seasons: seasonsArt };
+// el multiverso: el campo en el espacio con un agujero negro en medio; la pelota llega, entra y salen cuatro (la
+// original y tres copias, con borde discontinuo) cada una por un lado; un meteorito cruza el cielo
+function multiverseArt() {
+  const C = 7, R = 4, CW = 38, CH = 44, W = C * CW, H = R * CH, bx = 3, by = 2, cx = x => x * CW + CW / 2, cy = y => y * CH + CH / 2;
+  let cells = '';
+  for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) cells += `<rect x="${x * CW + 2}" y="${y * CH + 2}" width="${CW - 4}" height="${CH - 4}" rx="5" fill="${((x + y) >> 1) & 1 ? '#5C9854' : '#4F8A4B'}"/>`;
+  const bh = tilePic({ type: 'blackhole' }).replace('<svg ', `<svg x="${bx * CW + 1}" y="${by * CH + 1}" width="${CW - 2}" height="${CH - 2}" `);
+  const dur = 4, X = cx(bx), Y = cy(by);
+  // la pelota llega por la izquierda y entra; después salen las cuatro (en bucle)
+  const ball = (to, copy) => `<circle cx="${X}" cy="${Y}" r="8" fill="#f26d6d"${copy ? ' fill-opacity=".8" stroke-dasharray="3 2"' : ''} stroke="#F1F1DC" stroke-width="2" opacity="0">` +
+    (REDUCED ? `<set attributeName="opacity" to="1"/><set attributeName="cx" to="${to[0]}"/><set attributeName="cy" to="${to[1]}"/>`
+      : `<animate attributeName="opacity" dur="${dur}s" repeatCount="indefinite" keyTimes="0;.42;.45;.9;1" values="0;0;1;1;0"/>` +
+        `<animate attributeName="cx" dur="${dur}s" repeatCount="indefinite" keyTimes="0;.45;.7;1" values="${X};${X};${to[0]};${to[0]}"/>` +
+        `<animate attributeName="cy" dur="${dur}s" repeatCount="indefinite" keyTimes="0;.45;.7;1" values="${Y};${Y};${to[1]};${to[1]}"/>`) + '</circle>';
+  const incoming = REDUCED ? '' : `<circle cx="${cx(0)}" cy="${Y}" r="8" fill="#f26d6d" stroke="#F1F1DC" stroke-width="2">` +
+    `<animate attributeName="cx" dur="${dur}s" repeatCount="indefinite" keyTimes="0;.4;1" values="${cx(0)};${X};${X}"/>` +
+    `<animate attributeName="r" dur="${dur}s" repeatCount="indefinite" keyTimes="0;.32;.42;1" values="8;8;0;0"/></circle>`;
+  const meteor = REDUCED ? '' : `<g opacity="0"><animate attributeName="opacity" dur="${dur * 1.5}s" repeatCount="indefinite" keyTimes="0;.7;.74;.86;1" values="0;0;1;0;0"/>` +
+    `<path d="M${W * .78} ${-4}L${W * .6} ${H * .32}" stroke="#FFE1A8" stroke-width="3" stroke-linecap="round"/><circle cx="${W * .6}" cy="${H * .32}" r="4" fill="#FFD58A"/></g>`;
+  const hole = `<g transform="translate(${cx(6)} ${cy(0)})"><circle r="7" fill="#242424"/><path d="M1 0v-17l9 3.5-9 3.5" fill="#E8873A" stroke="#F1F1DC" stroke-width="1.2"/></g>`;
+  return `<svg class="ndArt" viewBox="-8 -8 ${W + 16} ${H + 16}" role="img" aria-label="${esc(t('newDeck.alt'))}">` +
+    `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#1B1440"/><rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#3F7440"/>` +
+    cells + bh + hole + incoming + ball([cx(5), Y], false) + ball([X, cy(0)], true) + ball([X, cy(3)], true) + ball([cx(1), Y], true) + meteor + '</svg>';
+}
+const ART = { train: trainArt, seasons: seasonsArt, multiverse: multiverseArt };
 
 // al llegar al menú principal (una vez): true si se ha enseñado
 export function maybeAnnounceDeck() {

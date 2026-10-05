@@ -7,8 +7,7 @@ export default {
   art: 'icon.dedo',
   stroke: true,
   face: { art: 'dedo', value: '1-3' },
-  play(game, p, idx) {
-    // el dedo solo puede usarse sobre tu propia pelota
-    game.setPending({ kind: 'dedoAmount', p, idx, ball: game.ownBall(p) });
-  },
+  // el dedo solo puede usarse sobre tu propia pelota (multiverso: o una de sus copias, que se elige antes)
+  play(game, p, idx) { game.playOwn(p, idx, this.id); },
+  start(game, p, idx, ball) { game.setPending({ kind: 'dedoAmount', p, idx, ball }); },
 };

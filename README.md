@@ -41,7 +41,7 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 ```
 index.html                 esqueleto de la página (sin lógica ni onclick)
 styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
-                           themes (temas del campo), features (componentes nuevos), train y seasons (sus barajas),
+                           themes (temas del campo), features (componentes nuevos), train, seasons y multiverse (sus barajas),
                            skins (pelotas y "Tu pelota") y phone (interfaz táctil)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
@@ -49,6 +49,7 @@ src/
   engine/                  REGLAS PURAS — sin DOM, sin sonido, sin timers
     game.js                clase Game: estado S + acción pendiente + eventos
     seasons.js             (baraja de las estaciones) viento, fuego, hojas y lluvia, bola de nieve y cambio de estación
+    multiverse.js          (baraja del multiverso) copias de pelotas, agujero negro, gravedad y lluvia de meteoritos
     rng.js                 RNG con semilla (partidas reproducibles)
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
@@ -71,6 +72,7 @@ src/
     train-view.js          (baraja del tren) vías, andenes, locomotora y vagones; su animación
     seasons-view.js        (baraja de las estaciones) la estación en pantalla, su indicador, el viento, la bola de nieve
                            y sus animaciones · season-art.js  iconos de las estaciones y la bola de nieve
+    multiverse-view.js     (baraja del multiverso) animaciones: tragar, partirse, desaparecer, gravedad, meteoritos
     new-deck.js            "¡Nueva baraja!": el anuncio, una vez, de la baraja que se estrena
     skins.js / my-ball.js  pelotas que se ganan (3 niveles cada una) y la ventana "Tu pelota"
     editor.js / my-levels.js / lab.js  creador de niveles, Mis niveles (guardar, compartir, recibir) y trampas al probar
@@ -238,11 +240,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
-  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, **estaciones** y
-  **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
+  **multiverso** y **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
-  desplazarse (las seis caben en 860 px de alto, con algo de aire; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
+  desplazarse (las siete caben en 860 px de alto; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -454,6 +456,52 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - **Puzles de las estaciones** (p28-p29, al final del índice): **Cortafuegos** (calentamiento: cruza el fuego para llegar)
     y **Viaje en la nieve** (experto: ponte en el camino de la bola, que te recoja, y sube el hoyo hasta ella). Buscados con
     `npm run puzzles:search -- fire|fireBall|ice|iceFinger|snow|snowHole` (temas de estación: `season`, `snow`).
+- **Baraja del multiverso** (reglas en `src/engine/multiverse.js`, cartas en `cards/multiverso.js`, pieza en
+  `tiles/blackhole.js`, animaciones en `src/ui/multiverse-view.js` y `styles/multiverse.css`; +2 columnas; sin búnkeres ni
+  portales; fuera de Ultimate: `noUltimate`). Mazo: Agujero negro ×1 (uno por partida: si ya hay uno en el tablero, su carta
+  no se juega), Gravedad 2 ×2 (negra), Gravedad 1 ×1 (naranja) y Lluvia de meteoritos ×3; cada jugador empieza con una de ellas.
+  - **Agujero negro** (negra, se pone en una casilla vacía y se queda): la pelota que **pasa o se para** en una casilla
+    pegada en cruz (o la suya) entra y salen **4**: la original sigue recto y 3 **copias** salen a los lados y hacia atrás,
+    con los pasos que le quedaban (si no le quedaba ninguno, 1). Al salir no la vuelve a tragar ese mismo agujero (sí
+    otro). Las copias también se multiplican, con un tope de **8 pelotas por jugador**, la original incluida (`MAX_BALLS`) y de 6 agujeros por
+    jugada (corta los bucles entre dos agujeros). Una copia que sale y choca nada más salir se pierde; la original, a la
+    casilla libre más cercana. Poner un agujero junto a una pelota no hace nada: hay que moverse.
+  - **Copias**: son pelotas de su jugador (`copy: true`, número `COPY_BASE + 10·n + jugador`; `ownerOf` saca el jugador y
+    `playerTag` les pone ′: «J1′»). Si una entra en el hoyo, gana su jugador (JAQUE como siempre); si se sale del tablero
+    o le cae un meteorito, **desaparece para siempre**. Con varias pelotas, los palos y el dedo preguntan antes **cuál**
+    se mueve (acción `pickOwn`; el palo 1 no deja elegir la que está en un búnker). Se ven translúcidas, con borde
+    discontinuo y un brillo que las recorre.
+  - **El hoyo también se multiplica** al pasar (o pararse) junto al agujero negro, con la misma lógica: salen 4 hoyos (el de
+    siempre sigue recto y 3 copias, `S.holeCopies`, con su `id` hole1, hole2…; `allHoles`, `holeAt`). Una pelota en
+    cualquiera gana; las cartas de hoyo preguntan **cuál** se mueve (`pickHole`); la copia que se sale del tablero desaparece;
+    la gravedad también las atrae; un meteorito las destruye (al de siempre no le hace nada); como mucho 8 hoyos (`MAX_HOLES`). En un JAQUE, mover un
+    hoyo solo saca las pelotas de ese hoyo (si queda alguna en otro, el JAQUE sigue). La IA mira el hoyo más cercano.
+  - **Gravedad** (en cualquier casilla salvo la del agujero negro, aunque esté ocupada; negra con cruz de 2, naranja con cruz de 1): las pelotas y el
+    **hoyo** de su cruz van hacia ella, por rondas (primero la más cercana de cada brazo): hasta el centro o hasta pararse
+    al lado si está ocupado. Si llegan 2 o más pelotas a la vez, **chocan y se quedan** donde estaban. Si el centro es el
+    hoyo, la pelota que llega entra; si el hoyo llega a una pelota, se la traga. Mover el hoyo en un JAQUE lo anula. Lo que
+    tiene delante otra pelota o un muro (roca, bloque) no se mueve: tira hacia el centro, tiembla y un tope morado marca
+    lo que le cierra el paso (evento `gstuck`); lo que sí se mueve va con un velo morado translúcido (`gpull`).
+  - **Lluvia de meteoritos** (negra): caen, uno tras otro, en la mitad de las casillas al azar (con el RNG de la partida):
+    copia alcanzada (de pelota o del hoyo), fuera; pelota original, a su salida. Al hoyo de siempre y a las piezas no les
+    hacen nada. Sin vista previa (`random`).
+    El primero que cae en una casilla vacía (nunca una salida ni la casilla inicial del hoyo) se queda como **roca**
+    (`tiles/meteorite.js`): un muro como el bloque de madera, casi cúbico y llenando la casilla; aparece al caer su meteorito
+    (`meteorRock`). Cada meteorito baja en diagonal con su estela detrás, inclinada en la dirección de la caída.
+  - En pantalla: el campo flota en el espacio (nebulosa que deriva despacio, dos capas de estrellas que titilan, una
+    galaxia lejana, estrellas fugaces de vez en cuando, un planeta con su anillo y su luna, marco violeta con halo), el agujero
+    como Gargantua (Interstellar: la sombra con su anillo de fotones, la luz del disco curvada por encima y por debajo y el
+    disco cruzando por delante, con la luz fluyendo; `BH_GARGANTUA`, también en la carta y en el icono de la baraja) sobre una
+    casilla de noche, y un halo en las casillas donde traga. La gravedad tiñe su cruz de morado, de fuera adentro, con
+    flechas hacia el centro y un remolino en él. La presentación enseña las 4
+    cartas con escenas jugadas con el motor (las copias aparecen y la gravedad junta pelota y hoyo). Se anuncia como
+    «¡Nueva baraja!» a quien ya jugaba.
+  - La IA elige pelota y casilla de gravedad como cualquier otra elección y valora la mejor pelota de cada jugador.
+    Equilibrio (`npm run simulate -- --deck multiverse`): 100 % terminadas, reparto justo por asiento, ~4,5 rondas (la
+    gravedad, que junta pelota y hoyo, es lo que más acorta; con más cartas especiales en el mazo bajaba a ~3,5); con un solo
+    agujero negro, ~4,7.
+  - **En el creador** (grupo Multiverso): agujero negro y roca, y la plantilla de mazo Multiverso.
+  - Pendiente: desafíos, reto diario, puzles y pelota de logros.
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
@@ -463,8 +511,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Congelada, la llama del reto diario del menú se ve en azul hielo. `records.daily.frozen` (`setStreakFrozen`); evento
   **regalo** (`congelar`).
 - **"¡Nueva baraja!"** (`src/ui/new-deck.js`): cuando el juego estrena una baraja, quien ya jugaba la ve anunciada una
-  vez al llegar al menú principal: una ventana pequeña con la ilustración (ahora, el campo partido en sus cuatro
-  estaciones, cada una con lo suyo, y una pelota que las cruza), el
+  vez al llegar al menú principal: una ventana pequeña con la ilustración (ahora, una pelota que entra en un agujero negro
+  y salen cuatro), el
   anuncio, una frase y "Jugar ahora" (su partida rápida) o "Luego". A quien llega por primera vez no se le anuncia
   (todo es nuevo). Para la próxima baraja: `ANNOUNCE` y su ilustración.
 - **Cartas nuevas de cada baraja** (`src/ui/deck-intro.js`): la primera vez que juegas una baraja con cartas
@@ -568,6 +616,7 @@ npm run test:ui                   # interfaz en Chrome real: guardado, pausa, mu
 npm run simulate                  # telemetría: 500 partidas bot-contra-bot, victorias y uso de cartas
 npm run simulate -- --random 0 --players 4 --size l --games 2000
 npm run simulate -- --deck seasons            # con una baraja: su mazo, su tamaño y lo suyo (y cuánto actúa cada mecánica)
+npm run simulate -- --deck multiverse         # (multiverso: agujeros, copias, gravedad y meteoritos por partida)
 npm run smoke                     # prueba de humo en Chrome real (capturas en smoke-out/)
 npm run golden                    # regenera el oráculo desde tests/oracle/original.html
 npm run preload                   # regenera la precarga de index.html (tras añadir un módulo o un nivel)

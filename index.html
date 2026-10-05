@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="styles/features.css">
 <link rel="stylesheet" href="styles/train.css">
 <link rel="stylesheet" href="styles/seasons.css">
+<link rel="stylesheet" href="styles/multiverse.css">
 <link rel="stylesheet" href="styles/skins.css">
 <link rel="stylesheet" href="styles/phone.css">
 <script src="src/boot-watch.js" defer></script>
@@ -73,6 +74,7 @@
 <link rel="modulepreload" href="src/content/decks.js">
 <link rel="modulepreload" href="src/content/levels/generate.js">
 <link rel="modulepreload" href="src/content/levels/share.js">
+<link rel="modulepreload" href="src/content/tiles/blackhole.js">
 <link rel="modulepreload" href="src/content/tiles/index.js">
 <link rel="modulepreload" href="src/engine/game.js">
 <link rel="modulepreload" href="src/engine/rng.js">
@@ -113,6 +115,7 @@
 <link rel="modulepreload" href="src/content/cards/dedo.js">
 <link rel="modulepreload" href="src/content/cards/estaciones.js">
 <link rel="modulepreload" href="src/content/cards/hoyo.js">
+<link rel="modulepreload" href="src/content/cards/multiverso.js">
 <link rel="modulepreload" href="src/content/cards/no.js">
 <link rel="modulepreload" href="src/content/cards/palo-reactivo.js">
 <link rel="modulepreload" href="src/content/cards/palo.js">
@@ -123,11 +126,14 @@
 <link rel="modulepreload" href="src/content/tiles/corner.js">
 <link rel="modulepreload" href="src/content/tiles/lake.js">
 <link rel="modulepreload" href="src/content/tiles/launcher.js">
+<link rel="modulepreload" href="src/content/tiles/meteorite.js">
 <link rel="modulepreload" href="src/content/tiles/portal.js">
 <link rel="modulepreload" href="src/content/tiles/river.js">
 <link rel="modulepreload" href="src/content/tiles/seasons.js">
 <link rel="modulepreload" href="src/content/tiles/train.js">
 <link rel="modulepreload" href="src/content/tiles/tunnel.js">
+<link rel="modulepreload" href="src/engine/multiverse.js">
+<link rel="modulepreload" href="src/ui/multiverse-view.js">
 <link rel="modulepreload" href="src/ui/skin-canvas.js">
 <link rel="modulepreload" href="src/content/tiles/wood.js">
 <link rel="preload" href="src/content/levels/story/index.json" as="fetch" crossorigin>
@@ -406,6 +412,14 @@
   <div id="gameDecor" aria-hidden="true">
     <!-- oleaje del lago: una capa que se desliza (se mueve sin repintar la pantalla) -->
     <div class="dWaves"></div>
+    <!-- escena del multiverso: nebulosa que deriva, dos capas de estrellas que titilan, una galaxia lejana, estrellas
+         fugaces y un planeta con su anillo y su luna -->
+    <div class="dSpace nebula"></div>
+    <svg class="dSpace stars a" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><g fill="#fff"><circle cx="130" cy="45" r="0.64"/><circle cx="29" cy="161" r="0.51"/><circle cx="23" cy="152" r="0.37"/><circle cx="173" cy="21" r="0.39"/><circle cx="170" cy="248" r="0.41"/><circle cx="89" cy="188" r="0.78"/><circle cx="231" cy="119" r="0.79"/><circle cx="19" cy="258" r="0.48"/><circle cx="58" cy="35" r="0.49"/><circle cx="326" cy="54" r="0.61"/><circle cx="256" cy="112" r="0.60"/><circle cx="25" cy="18" r="0.44"/><circle cx="272" cy="128" r="0.49"/><circle cx="234" cy="136" r="0.48"/><circle cx="318" cy="210" r="0.46"/><circle cx="230" cy="158" r="0.74"/><circle cx="292" cy="86" r="0.79"/><circle cx="47" cy="125" r="0.69"/><circle cx="61" cy="147" r="0.37"/><circle cx="267" cy="229" r="0.61"/><circle cx="350" cy="94" r="0.66"/><circle cx="238" cy="174" r="0.56"/><circle cx="336" cy="283" r="0.56"/><circle cx="266" cy="18" r="0.67"/><circle cx="259" cy="298" r="0.72"/><circle cx="114" cy="116" r="0.65"/><circle cx="9" cy="139" r="0.43"/><circle cx="47" cy="18" r="0.70"/><circle cx="52" cy="74" r="0.53"/><circle cx="349" cy="24" r="0.55"/><circle cx="220" cy="265" r="0.72"/><circle cx="346" cy="84" r="0.54"/><circle cx="144" cy="265" r="0.78"/><circle cx="60" cy="53" r="0.45"/><circle cx="93" cy="145" r="0.62"/><circle cx="105" cy="1" r="0.54"/><circle cx="148" cy="170" r="0.78"/><circle cx="276" cy="155" r="0.63"/><circle cx="270" cy="16" r="0.75"/><circle cx="312" cy="262" r="0.71"/><circle cx="157" cy="120" r="0.40"/><circle cx="254" cy="19" r="0.38"/><circle cx="84" cy="49" r="0.50"/><circle cx="21" cy="0" r="0.42"/><circle cx="41" cy="109" r="0.36"/><circle cx="350" cy="184" r="0.42"/><circle cx="101" cy="104" r="0.51"/><circle cx="49" cy="255" r="0.80"/><circle cx="186" cy="145" r="0.39"/><circle cx="41" cy="103" r="0.47"/><circle cx="332" cy="48" r="0.36"/><circle cx="380" cy="158" r="0.42"/><circle cx="217" cy="8" r="0.59"/><circle cx="391" cy="259" r="0.66"/><circle cx="104" cy="110" r="0.43"/><circle cx="309" cy="160" r="0.70"/><circle cx="132" cy="67" r="0.72"/><circle cx="394" cy="256" r="0.71"/><circle cx="327" cy="222" r="0.45"/><circle cx="207" cy="107" r="0.36"/><circle cx="11" cy="84" r="0.47"/><circle cx="277" cy="287" r="0.55"/><circle cx="375" cy="296" r="0.78"/><circle cx="146" cy="66" r="0.45"/><circle cx="79" cy="61" r="0.63"/><circle cx="360" cy="252" r="0.57"/><circle cx="261" cy="240" r="0.39"/><circle cx="264" cy="273" r="0.70"/><circle cx="300" cy="143" r="0.43"/><circle cx="316" cy="100" r="0.71"/></g></svg>
+    <svg class="dSpace stars b" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><g fill="#fff"><circle cx="389" cy="119" r="1.14"/><circle cx="379" cy="217" r="1.00"/><circle cx="51" cy="45" r="1.44"/><circle cx="323" cy="44" r="1.40"/><circle cx="392" cy="197" r="1.11"/><circle cx="219" cy="39" r="0.91"/><circle cx="388" cy="195" r="1.22"/><circle cx="373" cy="130" r="1.42"/><circle cx="330" cy="63" r="1.05"/><circle cx="117" cy="72" r="1.25"/><circle cx="104" cy="126" r="0.98"/><circle cx="364" cy="106" r="1.17"/><circle cx="233" cy="271" r="1.15"/><circle cx="367" cy="150" r="1.22"/><circle cx="209" cy="6" r="1.16"/><circle cx="73" cy="1" r="1.38"/><circle cx="69" cy="142" r="1.34"/><circle cx="223" cy="98" r="1.21"/><circle cx="222" cy="235" r="0.96"/><circle cx="224" cy="75" r="1.07"/><circle cx="309" cy="152" r="1.24"/><circle cx="304" cy="274" r="1.17"/></g><g fill="#FFE1A8"><circle cx="245" cy="152" r="1.10"/><circle cx="277" cy="136" r="1.11"/><circle cx="191" cy="282" r="1.18"/><circle cx="351" cy="283" r="1.00"/><circle cx="224" cy="283" r="1.24"/><circle cx="55" cy="36" r="1.08"/></g><g fill="#C9D8FF"><circle cx="29" cy="72" r="0.93"/><circle cx="268" cy="235" r="1.26"/><circle cx="62" cy="215" r="1.16"/><circle cx="57" cy="265" r="1.29"/><circle cx="88" cy="286" r="1.06"/><circle cx="195" cy="297" r="1.23"/></g></svg>
+    <svg class="dSpace galaxy" viewBox="0 0 200 120"><g transform="rotate(-18 100 60)"><ellipse cx="100" cy="60" rx="92" ry="26" fill="#9B7BE8" opacity=".10"/><ellipse cx="100" cy="60" rx="62" ry="17" fill="#C9A6FF" opacity=".14"/><path d="M100 60C130 40 170 48 178 62M100 60C70 80 30 72 22 58" fill="none" stroke="#E2CCFF" stroke-width="3" opacity=".22" stroke-linecap="round"/><ellipse cx="100" cy="60" rx="20" ry="7" fill="#FFF1D8" opacity=".55"/><ellipse cx="100" cy="60" rx="8" ry="3.4" fill="#fff" opacity=".85"/></g></svg>
+    <div class="dSpace shoot a"></div><div class="dSpace shoot b"></div>
+    <svg class="dSpace planet" viewBox="0 0 140 120"><circle cx="60" cy="60" r="34" fill="#6B4FC4"/><path d="M60 26a34 34 0 0 1 0 68a26 34 0 0 0 0-68z" fill="#3E2C86" opacity=".55"/><path d="M38 40a34 34 0 0 1 50 2" fill="none" stroke="#8C72DD" stroke-width="6" stroke-linecap="round"/><path d="M30 62q30-8 60 0" fill="none" stroke="#7E62D2" stroke-width="4" opacity=".7" stroke-linecap="round"/><circle cx="74" cy="72" r="5" fill="#5A40AA"/><circle cx="48" cy="66" r="3.4" fill="#5A40AA"/><ellipse cx="60" cy="62" rx="56" ry="13" fill="none" stroke="#F2B05E" stroke-width="3" transform="rotate(-18 60 60)" opacity=".85"/><ellipse cx="60" cy="62" rx="48" ry="10" fill="none" stroke="#FFE1A8" stroke-width="1.2" transform="rotate(-18 60 60)" opacity=".5"/><g class="moon"><circle cx="124" cy="22" r="7" fill="#CFC6E8"/><circle cx="121" cy="20" r="1.6" fill="#AFA4CE"/><circle cx="126" cy="25" r="1.1" fill="#AFA4CE"/></g></svg>
     <!-- escena Ultimate: manchas de color iridiscente que flotan y un destello que cruza -->
     <div class="dIri a"></div><div class="dIri b"></div><div class="dIri c"></div><div class="dIri d"></div><div class="dIriSweep"></div>
     <!-- escena de lago (baraja de agua): nenúfares, juncos, piedras y ondas -->

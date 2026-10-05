@@ -12,6 +12,7 @@ export function blockedReason(g, p, key) {
   if (S.winner !== null && def.color !== 'orange') return t('reason.jaqueOrange');
   if (def.color === 'black' && p !== S.turn) return t('reason.notYourTurn');
   if (def.color === 'black' && S.blackPlayed >= 2) return t('reason.twoBlacks');
-  if (def.canPlay && !def.canPlay(g, p)) return def.blockedReason ? t(def.blockedReason) : t('reason.generic');
+  // (blockedReason puede depender de la partida: una función que devuelve la clave)
+  if (def.canPlay && !def.canPlay(g, p)) { const r = typeof def.blockedReason === 'function' ? def.blockedReason(g, p) : def.blockedReason; return r ? t(r) : t('reason.generic'); }
   return null;
 }

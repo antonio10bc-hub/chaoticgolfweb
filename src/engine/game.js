@@ -39,6 +39,7 @@ import { TILES, isTrap, isHardTrap, isPortal, isRiver, isLake, isWater, isBlock,
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 import { makeCircuit, stepDir, stepsToNext, MAX_CARS } from './train.js';
 import { seasonMethods } from './seasons.js';
+import { multiverseMethods, playerTag, ownerOf } from './multiverse.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
@@ -60,7 +61,7 @@ const MAX_CHAIN = 12;
 export const clone = o => JSON.parse(JSON.stringify(o));
 const randInt = (rand, a, b) => a + Math.floor(rand() * (b - a + 1));
 export const manhattan = (ax, ay, bx, by) => Math.abs(ax - bx) + Math.abs(ay - by);
-export const playerTag = i => t('player.tag', { n: i + 1 });
+export { playerTag, ownerOf, COPY_BASE } from './multiverse.js'; // (J1, J2…; la copia de una pelota lleva ′)
 // jugadores que aparecen en una línea de log (etiquetas "J3" en p / b / a; el JAQUE lleva el número)
 function logPlayers(key, params) {
   if (!params) return [];
@@ -336,7 +337,7 @@ export class Game {
   tileAt(x, y) { return (this.S.train && this.trainTileAt(x, y)) || (this.S.season?.snow && this.snowTileAt(x, y)) || this.S.tiles.find(t => t.x === x && t.y === y); }
   realTileAt(x, y) { return this.S.tiles.find(t => t.x === x && t.y === y); }
   parAt(x, y) { return this.S.parCells.find(p => p.x === x && p.y === y); }
-  isHole(x, y) { const h = this.S.hole; return h.x === x && h.y === y; }
+  isHole(x, y) { const h = this.S.hole; return (h.x === x && h.y === y) || !!this.S.holeCopies?.some(c => c.x === x && c.y === y); } // (multiverso: también sus copias)
   // las casillas PAR son solo una referencia impresa: no bloquean colocación
   cellFree(x, y) { return this.inBoard(x, y) && !this.ballAt(x, y) && !this.tileAt(x, y) && !this.isHole(x, y); }
   trapAt(x, y) { return isTrap(this.tileAt(x, y)); }       // atrapa (búnker, vagón, bola de nieve)
@@ -683,7 +684,7 @@ export class Game {
   holeInTrap() { return this.hardTrapAt(this.S.hole.x, this.S.hole.y); }
   // distancia efectiva de una carta de hoyo (la trampa resta 1)
   holeMoveDist(def) { return def.dist - (this.holeInTrap() ? 1 : 0); }
-  holeDist(x, y) { return manhattan(x, y, this.S.hole.x, this.S.hole.y); }
+  holeDist(x, y) { const c = this.S.holeCopies; return c?.length ? Math.min(...this.allHoles().map(h => manhattan(x, y, h.x, h.y))) : manhattan(x, y, this.S.hole.x, this.S.hole.y); } // (el más cercano)
   ownBall(p) { return this.S.balls.find(b => b.player === p); }
 
   /* ---------- mazo ---------- */
@@ -803,6 +804,7 @@ export class Game {
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir });
         this.tip('fall');
+        if (ball.copy) { ball.x = cx; ball.y = cy; this.copyGone(ball, 'fall'); return; } // (multiverso) la copia, para siempre
         this.resetBallToSpawn(ball);
         this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
         this.log('log.ballFell', { b, x: ball.x, y: ball.y });
@@ -823,6 +825,10 @@ export class Game {
       }
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: pid, x: cx, y: cy, ...mv });
+      if (this.S.tiles.length && this.blackHoleNear(cx, cy)) { // (multiverso) pegada a un agujero negro: se la traga
+        ball.x = cx; ball.y = cy;
+        if (this.bhCheck(ball, cx, cy, dir, remaining)) return;
+      }
       if (this.waterAt(cx, cy)) { // agua: se acaba el movimiento y actúa el río o el lago
         ball.x = cx; ball.y = cy;
         this.log('log.ballMoved', { b, x0: startX, y0: startY, x1: cx, y1: cy });
@@ -874,6 +880,7 @@ export class Game {
       this.tip('decoy');
       return;
     }
+    pl = ownerOf(pl); // (multiverso) la copia de una pelota gana por su jugador
     if (this._trainAuto) { // el tren, solo (al acabar un turno, sin que nadie juegue), ha metido una pelota: gana el tren
       S.winner = -1; S.winners = []; S.trainWin = true;
       return;
@@ -904,6 +911,7 @@ export class Game {
       this.anim({ t: 'sink', p: pid });
       this.registerWin(ball.player);
     } else if (!safe && this.plantBites(ball)) this.finishMoveChecks(ball, { safe: true }); // (estaciones) se la come la planta: a su salida
+    else if (!safe && this.S.tiles.length) this.bhCheck(ball, ball.x, ball.y, 'up', 0); // (multiverso) se ha parado junto a un agujero negro
   }
 
   // movimiento transferido por colisión: también sufre la penalización de trampa
@@ -966,23 +974,25 @@ export class Game {
 
   // el hoyo se mueve con la misma lógica que una pelota: portales, trampas y caída del tablero;
   // si termina sobre una pelota, se la traga y ese jugador gana
-  moveHole(dirKey, dist) {
-    const S = this.S;
+  // (multiverso) h: qué hoyo (el de siempre o una de sus copias, que no van al agua, ni a lanzaderas ni a las estaciones)
+  moveHole(dirKey, dist, h = this.S.hole) {
+    const S = this.S, main = h === S.hole, pid = main ? 'hole' : h.id, x0 = h.x, y0 = h.y;
     this.tip('holeMove');
     const { dx, dy } = DIRS[dirKey];
-    let cx = S.hole.x, cy = S.hole.y, dir = dirKey;
+    let cx = h.x, cy = h.y, dir = dirKey;
     let remaining = dist;
     while (remaining > 0) {
-      const nc = this.nextCell(cx, cy, dir, 'hole', (px, py, other) => {
+      const nc = this.nextCell(cx, cy, dir, pid, (px, py, other) => {
         this.log('log.holePortal');
-        this.anim({ t: 'move', p: 'hole', x: px, y: py });
-        this.anim({ t: 'teleport', p: 'hole', x: other.x, y: other.y });
+        this.anim({ t: 'move', p: pid, x: px, y: py });
+        this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
       });
-      if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: 'hole', x: cx, y: cy }); break; }
+      if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy }); break; }
       dir = nc.dir;
       const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
-        this.anim({ t: 'fall', p: 'hole', x: nx, y: ny });
+        this.anim({ t: 'fall', p: pid, x: nx, y: ny });
+        if (!main) { h.x = cx; h.y = cy; this.holeGone(h, 'fall'); return; } // (la copia del hoyo, para siempre)
         let hx = S.hole.initX, hy = S.hole.initY;
         this.log('log.holeFell', { x: hx, y: hy });
         this.tip('holeFell');
@@ -1009,7 +1019,16 @@ export class Game {
         return;
       }
       cx = nx; cy = ny; remaining--;
-      this.anim({ t: 'move', p: 'hole', x: cx, y: cy });
+      this.anim({ t: 'move', p: pid, x: cx, y: cy });
+      if (S.tiles.length && this.blackHoleNear(cx, cy)) { // (multiverso) pegado a un agujero negro: se lo traga y salen 4 hoyos
+        const [ox, oy] = [h.x, h.y]; h.x = cx; h.y = cy;
+        if (this.bhCheck(h, cx, cy, dir, remaining)) return;
+        h.x = ox; h.y = oy;
+      }
+      if (!main) { // (las copias: el resto, como en el césped)
+        if (this.trapAt(cx, cy) && remaining > 0) remaining = 0;
+        continue;
+      }
       if (this.waterAt(cx, cy)) { const [wx, wy] = this.holeInWater(cx, cy); this.holeLandAt(wx, wy); return; }
       if (this.launcherOn(cx, cy)) { const [lx, ly] = this.launchHole(cx, cy); this.holeLandAt(lx, ly); return; }
       if (this.S.season) { // (estaciones) igual que una pelota
@@ -1023,21 +1042,21 @@ export class Game {
         remaining = 0;
       }
     }
-    this.log('log.holeMoved', { x0: S.hole.x, y0: S.hole.y, x1: cx, y1: cy });
-    this.holeLandAt(cx, cy);
+    this.log('log.holeMoved', { x0, y0, x1: cx, y1: cy });
+    this.holeLandAt(cx, cy, h);
   }
 
   // el hoyo se asienta en (x,y): "plof" si es trampa y, si una pelota ocupa la casilla, se la traga (JAQUE)
-  holeLandAt(x, y) {
-    const S = this.S;
-    if (isLauncher(this.tileAt(x, y))) { // (igual que la pelota: fuera de la lanzadera ya usada)
+  holeLandAt(x, y, h = this.S.hole) {
+    const S = this.S, main = h === S.hole, pid = main ? 'hole' : h.id;
+    if (main && isLauncher(this.tileAt(x, y))) { // (igual que la pelota: fuera de la lanzadera ya usada)
       const spot = this.nearestFree(x, y);
       if (spot) { this.anim({ t: 'move', p: 'hole', x: spot.x, y: spot.y }); this.log('log.holeOffLauncher'); x = spot.x; y = spot.y; }
     }
     // (estaciones) a su lado hay una planta carnívora: se lo come y vuelve a su casilla inicial
-    if (this.S.season && !this.isHoleHome(x, y)) { const pl = this.plantNear(x, y); if (pl) [x, y] = this.holeOut(x, y, 'eaten', pl); }
-    S.hole.x = x; S.hole.y = y;
-    if (this.trapAt(x, y)) this.anim({ t: 'settle', p: 'hole' });
+    if (main && this.S.season && !this.isHoleHome(x, y)) { const pl = this.plantNear(x, y); if (pl) [x, y] = this.holeOut(x, y, 'eaten', pl); }
+    h.x = x; h.y = y;
+    if (this.trapAt(x, y)) this.anim({ t: 'settle', p: pid });
     const b = this.ballAt(x, y);
     if (b) {
       b.holed = true;
@@ -1045,18 +1064,17 @@ export class Game {
       this.tip('swallow');
       this.anim({ t: 'sink', p: 'b' + b.player });
       this.registerWin(b.player);
-    }
+    } else if (S.tiles.length) this.bhCheck(h, x, y, 'up', 0); // (multiverso) se ha parado junto a un agujero negro
   }
 
   // al mover el hoyo durante un JAQUE, las pelotas que estaban dentro se quedan
   // en la casilla que ocupaba el hoyo (la primera en la casilla exacta, el resto
   // en la libre más cercana) y la victoria queda anulada
-  popHoledBalls() {
+  // (multiverso) h: con copias del hoyo, solo salen las que están dentro de ese; si aún queda alguna en otro, el JAQUE sigue
+  popHoledBalls(h = null) {
     const S = this.S;
-    const hx = S.hole.x, hy = S.hole.y;
-    for (const pl of S.winners) {
-      const b = S.balls.find(bb => bb.player === pl);
-      if (!b || !b.holed) continue;
+    const hx = (h || S.hole).x, hy = (h || S.hole).y;
+    for (const b of S.balls.filter(bb => bb.holed && !bb.decoy && S.winners.includes(ownerOf(bb.player)) && (!h || (bb.x === hx && bb.y === hy)))) { // (con sus copias)
       b.holed = false;
       let px = hx, py = hy;
       const occ = this.ballAt(px, py);
@@ -1074,6 +1092,10 @@ export class Game {
       b.x = px; b.y = py;
       this.anim({ t: 'appear', p: 'b' + b.player, x: px, y: py });
       this.log('log.ballLeavesHole', { b: playerTag(b.player), x: px, y: py });
+    }
+    if (h) { // (las que siguen dentro de otro hoyo)
+      S.winners = [...new Set(S.balls.filter(bb => bb.holed && !bb.decoy).map(bb => ownerOf(bb.player)))].filter(o => S.winners.includes(o));
+      if (S.winners.length) { S.winner = S.winners[0]; return; }
     }
     S.winner = null; S.winners = []; S.jaque = false;
     this.log('log.jaqueCancelled');
@@ -1096,6 +1118,7 @@ export class Game {
   consumeCard(p, idx) {
     const S = this.S;
     const cardKey = S.hands[p][idx];
+    this._splits = 0; // (multiverso) agujeros negros atravesados en esta jugada
     this.emit({ t: 'card', p, idx, key: cardKey });
     this.pushHistory();
     if (p === S.turn) S.playedThisTurn++; // regla: si juegas cartas, no puedes descartar este turno
@@ -1212,7 +1235,8 @@ export class Game {
         // sacar la pelota del hoyo: se anula su victoria y se golpea desde la casilla del hoyo
         const b = pd.ball;
         b.holed = false;
-        S.winners = S.winners.filter(w => w !== b.player);
+        const pl = ownerOf(b.player); // (multiverso: sigue ganando si tiene otra pelota dentro)
+        if (!S.balls.some(o => o.holed && o !== b && ownerOf(o.player) === pl)) S.winners = S.winners.filter(w => w !== pl);
         if (S.winners.length === 0) { S.winner = null; S.jaque = false; }
         else S.winner = S.winners[0];
         this.anim({ t: 'appear', p: 'b' + b.player, x: b.x, y: b.y });
@@ -1244,6 +1268,16 @@ export class Game {
       S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : type === 'fire' ? { type, x, y, g: this.newFireId() } : { type, x, y });
       this.emit({ t: 'tilePlaced', x, y });
       this.log('log.tilePlaced', { tile: t(`tiles.${type}.name`), x, y });
+      this.afterPlay();
+      return true;
+    }
+    if (pd.kind === 'pickOwn') return this.pickOwnAt(x, y); // (multiverso) cuál de tus pelotas se mueve
+    if (pd.kind === 'pickHole') return this.pickHoleAt(x, y); // (multiverso) cuál de los hoyos se mueve
+    if (pd.kind === 'gravity') { // (multiverso) la gravedad, en cualquier casilla (salvo el agujero negro)
+      if (!this.gravitySpot(x, y)) return false;
+      this.pending = null;
+      this.consumeCard(pd.p, pd.idx);
+      this.gravityPull(x, y, pd.r);
       this.afterPlay();
       return true;
     }
@@ -1302,6 +1336,7 @@ export class Game {
     if (!this.inBoard(nx, ny)) {
       this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir: dirKey });
       this.tip('fall');
+      if (ball.copy) { this.copyGone(ball, 'fall'); return this.endSerpent({ checked: true }); } // (multiverso) la copia, para siempre
       this.resetBallToSpawn(ball);
       this.anim({ t: 'appear', p: pid, x: ball.x, y: ball.y });
       this.log('log.ballFell', { b, x: ball.x, y: ball.y });
@@ -1326,6 +1361,8 @@ export class Game {
     ball.x = nx; ball.y = ny;
     this.anim({ t: 'move', p: pid, x: nx, y: ny });
     pd.stepsLeft--;
+    // (multiverso) pegada a un agujero negro: se la traga y salen 4 en línea recta con los pasos que le quedaban
+    if (this.S.tiles.length && this.bhCheck(ball, nx, ny, dirKey, pd.stepsLeft)) return this.endSerpent({ checked: true });
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
     if (this.launcherOn(nx, ny)) { this.launchBall(ball); return this.endSerpent(); } // lanzadera: vuela
     if (this.S.season) { // (estaciones) cada paso también cuenta: viento, hojas, charcos, hielo y fuego
@@ -1361,6 +1398,7 @@ export class Game {
   // checked: las comprobaciones del final ya se han hecho (al resbalar en el hielo)
   endSerpent({ checked = false } = {}) {
     const pd = this.pending;
+    if (!this.S.balls.includes(pd.ball)) checked = true; // (multiverso: la copia se ha ido para siempre)
     this.log('log.ballMoved', { b: playerTag(pd.ball.player), x0: pd.startX, y0: pd.startY, x1: pd.ball.x, y1: pd.ball.y });
     if (!checked) this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
     this.pending = null;
@@ -1373,8 +1411,8 @@ export class Game {
   pickHoled(pl) {
     const pd = this.pending;
     if (!pd || pd.kind !== 'pickHoled') return false;
-    const b = this.S.balls.find(bb => bb.player === pl);
-    if (!b || !b.holed) return false;
+    const b = this.S.balls.find(bb => bb.player === pl && bb.holed) || this.S.balls.find(bb => bb.holed && !bb.decoy && ownerOf(bb.player) === pl);
+    if (!b) return false;
     this.pending = { kind: 'move', p: pd.p, idx: pd.idx, n: 1, ball: b, extract: true, targets: this.straightTargets(b, 1) };
     return true;
   }
@@ -1395,7 +1433,7 @@ export class Game {
 
   boardSnap() {
     const S = this.S;
-    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train, season: S.season }); // (sin tren ni estaciones, la clave no se guarda)
+    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train, season: S.season, holeCopies: S.holeCopies }); // (sin tren, estaciones ni copias del hoyo, la clave no se guarda)
   }
   restoreBoardSnap(snap) {
     const S = this.S;
@@ -1404,6 +1442,7 @@ export class Game {
     S.winners = clone(snap.winners || []);
     if (snap.train) S.train = clone(snap.train);
     if (snap.season) S.season = clone(snap.season);
+    if (snap.holeCopies || S.holeCopies) S.holeCopies = clone(snap.holeCopies || []);
   }
 
   /* ---------- el tren ----------
@@ -1650,6 +1689,9 @@ export class Game {
     if (pd.kind === 'serpent') return this.serpentTargets().some(t => t.x === x && t.y === y) ? 'sel' : null;
     if (pd.kind === 'placeTile') return this.canPlaceTile(pd.tileType, x, y) ? 'sel' : null;
     if (pd.kind === 'snowRoll') return pd.targets.some(q => q.x === x && q.y === y) ? 'sel' : null;
+    if (pd.kind === 'pickOwn') { const b = this.ballAt(x, y); return b && !b.decoy && ownerOf(b.player) === pd.p && CARDS[pd.card].canStart?.(this, b) !== false ? 'sel' : null; }
+    if (pd.kind === 'gravity') return this.gravitySpot(x, y) ? 'sel' : null;
+    if (pd.kind === 'pickHole') return this.holeCanMove(this.holeAt(x, y), CARDS[pd.card]) ? 'sel' : null;
     return null;
   }
 
@@ -1705,5 +1747,5 @@ export class Game {
   }
 }
 
-// (baraja de las estaciones) sus reglas viven en seasons.js
-Object.assign(Game.prototype, seasonMethods);
+// (barajas de las estaciones y del multiverso) sus reglas viven en seasons.js y multiverse.js
+Object.assign(Game.prototype, seasonMethods, multiverseMethods);

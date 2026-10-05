@@ -27,6 +27,12 @@ export const DECKS = [
   { id: 'seasons', color: '#C2618B', emblem: 'seasons', scene: 'seasons', grow: { cols: 2, rows: 0 }, seasons: true, noUltimate: true,
     newCards: ['estacion', 'incendio', 'oNieve'], introLead: 'deckIntro.leads.seasons', // (la presentación cuenta qué trae cada estación)
     counts: base => ({ ...base, bunker: 0, portal: 0, estacion: 4, incendio: 1, oNieve: 3 }) },
+  // el multiverso: agujeros negros que parten la pelota en 4 (la original y 3 copias; una copia en el hoyo también gana,
+  // pero si se sale del tablero desaparece), gravedad que atrae lo que hay en cruz y lluvia de meteoritos. Sin búnkeres
+  // ni portales. noUltimate: sus cartas no van en Ultimate
+  { id: 'multiverse', color: '#5B3FB8', emblem: 'blackhole', scene: 'space', grow: { cols: 2, rows: 0 }, noUltimate: true,
+    newCards: ['agujeroNegro', 'gravedad', 'oGravedad', 'meteoritos'],
+    counts: base => ({ ...base, bunker: 0, portal: 0, agujeroNegro: 1, gravedad: 2, oGravedad: 1, meteoritos: 3 }) },
   // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
   // Ultimate: las cartas de TODAS las demás barajas (las futuras también se suman solas), un campo
   // enorme, palos de 10 y el palo iridiscente

@@ -17,6 +17,8 @@
 //            no están en S.tiles ni se dibujan en la casilla (son piezas móviles: src/ui/train-view.js).
 //   seasonal — (baraja de las estaciones) hoja seca, charco, hielo, planta carnívora e incendio (tiles/seasons.js);
 //            soft — la bola de nieve atrapa como un búnker, pero salir de ella no cuesta nada.
+//   blackhole — (baraja del multiverso) se traga la pelota que pasa o se para a su lado y la parte en 4 (tiles/blackhole.js).
+//   meteorite — (baraja del multiverso) la roca que deja una lluvia de meteoritos: un muro, como el bloque (tiles/meteorite.js).
 // Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
 import portal from './portal.js';
@@ -28,8 +30,10 @@ import tunnel from './tunnel.js';
 import launcher from './launcher.js';
 import { loco, wagon } from './train.js';
 import { leaf, puddle, ice, plant, fire, snowball } from './seasons.js';
+import blackhole from './blackhole.js';
+import meteorite from './meteorite.js';
 
-export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon, leaf, puddle, ice, plant, fire, snowball };
+export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon, leaf, puddle, ice, plant, fire, snowball, blackhole, meteorite };
 
 export const tileDef = type => TILES[type];
 export const isTrap = tile => !!(tile && TILES[tile.type]?.trap);

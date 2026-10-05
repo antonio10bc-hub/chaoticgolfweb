@@ -22,9 +22,10 @@ export const resetDeckIntros = () => { try { localStorage.removeItem(KEY); } cat
 export const hasDeckIntro = id => !!deckById(id).newCards?.some(k => CARDS[k]?.demo);
 
 /* ---------- la escena: se juega con el motor ---------- */
-const PIECE_EVENTS = ['move', 'drift', 'teleport', 'fall', 'splash', 'appear', 'sink', 'launch', 'tunnel', 'bump', 'gust', 'burn', 'eaten'];
+const PIECE_EVENTS = ['move', 'drift', 'teleport', 'fall', 'splash', 'appear', 'sink', 'launch', 'tunnel', 'bump', 'gust', 'burn', 'eaten',
+  'absorb', 'clone', 'vanish', 'clash', 'gstuck']; // (las últimas: multiverso)
 // (estaciones) lo que cambia en el campo y la bola de nieve
-const FIELD_EVENTS = ['tilePlaced', 'crunch', 'season', 'grow', 'snow', 'snowIn', 'snowOut'];
+const FIELD_EVENTS = ['tilePlaced', 'crunch', 'season', 'grow', 'snow', 'snowIn', 'snowOut', 'meteor', 'meteorRock', 'gravity']; // (y del multiverso)
 function runDemo(demo) {
   const g = Game.fromLevel({ cols: demo.cols, rows: demo.rows, hole: demo.hole, ball: demo.ball, parCells: [], tiles: demo.tiles || [],
     deckCounts: { palo1: 1 }, extraBalls: demo.extraBalls || [], train: demo.train, season: demo.season }, { seed: demo.seed ?? 3 });
@@ -45,8 +46,8 @@ function runDemo(demo) {
     for (const e of g.takeEvents()) {
       if (e.t === 'tilePlaced') { const tl = g.realTileAt(e.x, e.y); if (tl) events.push({ ...e, tile: { ...tl } }); continue; }
       if (FIELD_EVENTS.includes(e.t)) { events.push(e); continue; }
-      if (typeof e.p === 'string' && (e.p.startsWith('b') && PIECE_EVENTS.includes(e.t) ||
-        (before.train && (e.t === 'train' || e.t === 'wagon' || (e.p === 'hole' && e.t === 'move'))))) events.push(e);
+      if (typeof e.p === 'string' && (e.p.startsWith('b') && PIECE_EVENTS.includes(e.t) || (e.p === 'hole' && e.t === 'move') || // (el hoyo: el tren o la gravedad)
+        (before.train && (e.t === 'train' || e.t === 'wagon')))) events.push(e);
     }
   };
   play(demo);
@@ -59,7 +60,8 @@ const SEASON_GRASS = { spring: ['#59A757', '#4C9A4C'], summer: ['#98A84D', '#8C9
 /* ---------- el dibujo (SVG) con las pelotas animadas ---------- */
 const CW = 40, CH = 52, G = 4;
 // dibujo real de una loseta (el de la partida) dentro del SVG de la escena
-const embed = (tl, x0, y0) => tilePic(tl).replace('<svg ', `<svg x="${x0 + 1}" y="${y0 + 1}" width="${CW - 2}" height="${CH - 2}" `);
+const embed = (tl, x0, y0) => (tl.type === 'blackhole' ? `<rect x="${x0 + G / 2}" y="${y0 + G / 2}" width="${CW - G}" height="${CH - G}" rx="5" fill="#2A2150"/>` : '') + // (el agujero negro, en su casilla de noche)
+  tilePic(tl).replace('<svg ', `<svg x="${x0 + 1}" y="${y0 + 1}" width="${CW - 2}" height="${CH - 2}" `);
 function demoSVG(demo) {
   const d = runDemo(demo), W = demo.cols * CW, H = demo.rows * CH;
   const cx = x => x * CW + CW / 2, cy = y => y * CH + CH / 2;
@@ -103,9 +105,10 @@ function demoSVG(demo) {
     if (last[0] < tm) f.push([tm, last[1], last[2], last[3], last[4]]); // quieta hasta ahora
     tm += dt; f.push([tm, x, y, o, sc]); pos[id] = [x, y];
   };
-  let pendingSplash = null; const splashes = [], tunnels = [];
+  let pendingSplash = null; const splashes = [], tunnels = [], copies = [];
   // (estaciones) las piezas del campo con su momento de aparecer y desaparecer, la bola de nieve y el cambio de estación
-  const field = d.season ? d.tiles.map(tl => ({ tl, t0: 0, t1: Infinity })) : null, live = () => field.filter(f => f.t1 === Infinity);
+  // (también si la carta pone una pieza: aparece a su tiempo)
+  const field = d.season || d.events.some(e => e.t === 'tilePlaced' || e.t === 'meteorRock') ? d.tiles.map(tl => ({ tl, t0: 0, t1: Infinity })) : null, live = () => field.filter(f => f.t1 === Infinity);
   const sf = d.snow ? [[0, cx(d.snow.x), cy(d.snow.y), 1]] : [[0, 0, 0, 0]], skey = (t1, x, y, o) => { const l = sf[sf.length - 1]; if (l[0] < tm) sf.push([tm, l[1], l[2], l[3]]); sf.push([t1, x, y, o]); };
   let seasonAt = null, seasonTo = null;
   for (const e of d.events) {
@@ -126,6 +129,16 @@ function demoSVG(demo) {
     if (e.t === 'snow') { skey(tm + TSTEP, cx(e.x), cy(e.y), 1); tm += TSTEP; continue; }
     if (e.t === 'snowOut') { const l = sf[sf.length - 1]; skey(tm + 300, l[1], l[2], 0); tm += 300; continue; }
     if (e.t === 'gust') { key(e.p, 140, cx(e.x), cy(e.y)); trail[e.p]?.push([cx(e.x), cy(e.y)]); continue; }
+    // (multiverso) el agujero negro se la traga, salen las copias, se van; la gravedad y los meteoritos
+    if (e.t === 'absorb') { key(e.p, 300, cx(e.x), cy(e.y), 1, .35); key(e.p, 180, cx(e.x), cy(e.y), 1, 1); trail[e.p]?.push([cx(e.x), cy(e.y)]); continue; }
+    if (e.t === 'clone') { fr[e.p] = [[0, cx(e.x), cy(e.y), 0, .3]]; trail[e.p] = [[cx(e.x), cy(e.y)]]; pos[e.p] = [cx(e.x), cy(e.y)]; copies.push(e.p);
+      key(e.p, 1, cx(e.x), cy(e.y), 0, .3); key(e.p, 200, cx(e.x), cy(e.y), 1, 1); continue; }
+    if (e.t === 'vanish') { const [px, py] = pos[e.p] || [cx(e.x), cy(e.y)]; key(e.p, 260, px, py, 0, 1.4); continue; }
+    if (e.t === 'clash') { const [px, py] = pos[e.p]; key(e.p, 110, (px + cx(e.x)) / 2, (py + cy(e.y)) / 2); key(e.p, 130, px, py); continue; }
+    if (e.t === 'gravity') { splashes.push({ x: cx(e.x), y: cy(e.y), t0: tm, grav: true }); tm += 450; continue; }
+    if (e.t === 'meteorRock') { field?.push({ tl: { type: 'meteorite', x: e.x, y: e.y }, t0: tm, t1: Infinity }); tm += 120; continue; }
+    if (e.t === 'gstuck') { const [px, py] = pos[e.p] || [0, 0], v = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[e.dir]; key(e.p, 120, px + v[0] * 7, py + v[1] * 7); key(e.p, 90, px + v[0] * 3, py + v[1] * 3); key(e.p, 90, px + v[0] * 6, py + v[1] * 6); key(e.p, 110, px, py); continue; }
+    if (e.t === 'meteor') { splashes.push({ x: cx(e.x), y: cy(e.y), t0: tm, meteor: true }); tm += e.hit ? 300 : 70; continue; }
     if (e.t === 'burn' || e.t === 'eaten') { const x = cx(e.x), y = cy(e.y); key(e.p, 160, x, y); splashes.push({ x, y, t0: tm, burn: true }); key(e.p, 320, x, y, 0, .4); continue; }
     const id = e.p, clampX = v => Math.max(0, Math.min(demo.cols - 1, v)), clampY = v => Math.max(0, Math.min(demo.rows - 1, v));
     if (e.t === 'train') { for (let k = 0; k <= 3; k++) tkey(k, tm, tm + TSTEP, e.i, k <= e.cars ? 1 : 0); tm += TSTEP; continue; }
@@ -166,7 +179,10 @@ function demoSVG(demo) {
     return `<animate attributeName="${attr}" dur="${total}ms" repeatCount="indefinite" calcMode="linear" keyTimes="${kt}" values="${f.map(k => fmt(k[i])).join(';')}"/>`; };
   const pulse = (x, y, t0, dt, shape) => { const a = (t0 / total).toFixed(4), b = ((t0 + dt) / total).toFixed(4);
     return `<g opacity="0">${shape}<animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" keyTimes="0;${a};${b};1" values="0;1;0;0"/></g>`; };
-  const extras = splashes.map(s => pulse(s.x, s.y, s.t0, 400, s.burn ? `<circle cx="${s.x}" cy="${s.y}" r="13" fill="none" stroke="#FFD23F" stroke-width="2.4"/>` : `<ellipse cx="${s.x}" cy="${s.y}" rx="14" ry="7" fill="none" stroke="#fff" stroke-width="1.6"/>`)).join('') +
+  const extras = splashes.map(s => pulse(s.x, s.y, s.t0, s.grav ? 520 : 400, s.burn ? `<circle cx="${s.x}" cy="${s.y}" r="13" fill="none" stroke="#FFD23F" stroke-width="2.4"/>`
+    : s.grav ? `<circle cx="${s.x}" cy="${s.y}" r="16" fill="none" stroke="#C78BF2" stroke-width="2.4"/><circle cx="${s.x}" cy="${s.y}" r="8" fill="none" stroke="#C78BF2" stroke-width="2"/>`
+    : s.meteor ? `<circle cx="${s.x}" cy="${s.y}" r="9" fill="rgba(255,213,138,.55)" stroke="#F2B05E" stroke-width="2"/>`
+    : `<ellipse cx="${s.x}" cy="${s.y}" rx="14" ry="7" fill="none" stroke="#fff" stroke-width="1.6"/>`)).join('') +
     tunnels.map(s => pulse(s.x, s.y, s.t0, 960, `<text x="${s.x}" y="${s.y - 18}" text-anchor="middle" class="dmQ">? ? ?</text>`)).join('');
   const COLORS = ['#f26d6d', '#F1F1DC', '#5b8def'];
   // el hoyo (se anima si lo empuja el tren) y la locomotora con sus vagones
@@ -179,7 +195,10 @@ function demoSVG(demo) {
     if (REDUCED) return `<g transform="translate(${last[1]} ${last[2]}) rotate(${last[3]})">${sprite(k ? WAGON : LOCO)}</g>`;
     return `<g>${tAnim(f, f.map(q => q[1] + ' ' + q[2]).join(';'))}<g><animateTransform attributeName="transform" type="rotate" dur="${total}ms" repeatCount="indefinite" calcMode="linear" keyTimes="${kt}" values="${f.map(q => q[3]).join(';')}"/>` +
       `<g opacity="${f[0][4]}"><animate attributeName="opacity" dur="${total}ms" repeatCount="indefinite" calcMode="discrete" keyTimes="${kt}" values="${f.map(q => q[4]).join(';')}"/>${sprite(k ? WAGON : LOCO)}</g></g></g>`; }).join('') : '';
-  const balls = d.balls.map((b, i) => { const f = fr[b.id]; f.push([total, ...f[f.length - 1].slice(1)]);
+  const copyBalls = copies.map(id => { const f = fr[id]; f.push([total, ...f[f.length - 1].slice(1)]); const last = f[f.length - 1]; // (multiverso: las copias, con borde discontinuo)
+    return REDUCED ? (last[3] ? `<circle cx="${last[1]}" cy="${last[2]}" r="9" fill="#f26d6d" opacity=".8" stroke="#F1F1DC" stroke-width="2" stroke-dasharray="3 2"/>` : '')
+      : `<circle cx="${f[0][1]}" cy="${f[0][2]}" r="9" fill="#f26d6d" fill-opacity=".8" stroke="#F1F1DC" stroke-width="2" stroke-dasharray="3 2">${anim(f, 'cx', 1)}${anim(f, 'cy', 2)}${anim(f, 'opacity', 3)}${anim(f, 'r', 4, v => (9 * v).toFixed(2))}</circle>`; }).join('');
+  const balls = copyBalls + d.balls.map((b, i) => { const f = fr[b.id]; f.push([total, ...f[f.length - 1].slice(1)]);
     const col = b.decoy ? '#F1F1DC' : COLORS[i] || '#f26d6d', last = f[f.length - 1];
     return REDUCED ? `<circle cx="${last[1]}" cy="${last[2]}" r="9" fill="${col}" stroke="#F1F1DC" stroke-width="2"/>`
       : `<circle cx="${f[0][1]}" cy="${f[0][2]}" r="9" fill="${col}" stroke="${b.decoy ? '#9A9A8C' : '#F1F1DC'}" stroke-width="2">${anim(f, 'cx', 1)}${anim(f, 'cy', 2)}${anim(f, 'opacity', 3)}${anim(f, 'r', 4, v => (9 * v).toFixed(2))}</circle>`; }).join('');

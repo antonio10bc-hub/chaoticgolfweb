@@ -32,6 +32,7 @@ import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve
 import { PERSONAS, personaById, faceSVG } from './persona.js';
 import { DECKS } from '../content/decks.js';
 import { SEASON_ICON } from './season-art.js';
+import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
 import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
@@ -381,6 +382,13 @@ const DECK_ART = {
     `<g transform="translate(13 9) scale(.62)">${SEASON_ICON.spring}</g><g transform="translate(32.5 9) scale(.62)">${SEASON_ICON.summer}</g>` +
     `<g transform="translate(32.5 36) scale(.62)">${SEASON_ICON.autumn}</g><g transform="translate(13 36) scale(.62)">${SEASON_ICON.winter}</g></g></g>` +
     `<circle cx="30" cy="30" r="6.4" fill="#F1F1DC"/>` + FLAGP(30, 31.4) + frame,
+  // el multiverso: un agujero negro con su disco en el cielo estrellado, la pelota que entra y sus copias que salen
+  // (al pasar por la tarjeta, el disco gira)
+  // el multiverso: Gargantua (el agujero negro de Interstellar) en el cielo estrellado (al pasar por la tarjeta, la luz
+  // fluye por el disco)
+  blackhole: () => cardBase('blackhole', '#2A1F55', '#07040F') +
+    `<g clip-path="url(#dk-blackhole-c)"><g fill="#fff">${[[16, 12, .8], [44, 10, .6], [40, 50, .7], [17, 47, .5], [47, 18, .5], [13, 29, .45]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` +
+    BH_GARGANTUA(30, 30, .38) + `</g>` + frame,
   prism: () => cardBase('prism', '#4A3A86', '#241A4A') +
     `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
     `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +

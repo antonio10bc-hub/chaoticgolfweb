@@ -1,7 +1,7 @@
 // Quién es quién en la partida: personas en este dispositivo, bots, quién está mirando
 // (en una partida con varias personas se pasan el móvil), nombres visibles y avatares.
 import { app } from './app.js';
-import { playerTag } from '../engine/game.js';
+import { playerTag, ownerOf } from '../engine/game.js';
 import { pColor } from '../art.js';
 import { t } from '../i18n/index.js';
 import { botName, faceSVG } from './persona.js';
@@ -12,7 +12,7 @@ export function humansOf(S = app.game?.S) {
   if (app.mode !== 'pve') return [...Array(S.nPlayers).keys()];
   return S.humans || [S.human];
 }
-export const isBot = p => app.mode === 'pve' && !humansOf().includes(p);
+export const isBot = p => app.mode === 'pve' && !humansOf().includes(ownerOf(p)); // (la copia de una pelota, como su jugador)
 export const multiHuman = () => app.mode === 'pve' && humansOf().length > 1;
 
 // persona que tiene ahora el dispositivo (su mano es la del dock)
@@ -28,6 +28,7 @@ export const handRevealed = p => !multiHuman() || (p === app.viewer && app.passF
 
 // nombre visible: los bots tienen el suyo; las personas, "Jugador N"
 export function displayName(p) {
+  p = ownerOf(p); // (multiverso: la copia se llama como su jugador)
   const own = app.game?.S.playerNames?.[p]; // el nombre que se ha puesto la persona (perfil)
   if (own) return own;
   const b = isBot(p) ? botName(p) : null;

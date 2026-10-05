@@ -4,6 +4,7 @@
 // Si hay arte bitmap (assets/art, clave def.art) se usa en lugar del SVG.
 import { ART } from '../art.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
+import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
 
 const INK = '#242424', CREAM = '#F1F1DC', ACC = '#E8873A', NAVY = '#2D4F7C', SAND = '#ECE6CC';
 const G_MID = '#5C9854', G_PUTT = '#8DB05F', G_LIGHT = '#A3C173', SH = 'rgba(20,40,20,.22)';
@@ -44,7 +45,21 @@ const locoFront = () =>
   `<path d="M35 72 L50.5 82 L66 72 Z" fill="${GOLD}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
 // estaciones: la rueda de las cuatro (flor, sol, hoja, copo)
 const seIcon = (s, x, y, k = 1.25) => `<g transform="translate(${x - 12 * k} ${y - 12 * k}) scale(${k})">${SEASON_ICON[s]}</g>`;
+// multiverso: el agujero negro (Gargantua, como en el tablero), gravedad (flechas hacia el centro en cruz) y meteoritos
 const ARTS = {
+  agujeroNegro: () => `<circle cx="50" cy="52" r="42" fill="#120B24" opacity=".9"/>` + BH_GARGANTUA(50, 52, .86) +
+    `<g fill="#fff"><circle cx="20" cy="24" r="1.4"/><circle cx="80" cy="26" r="1.1"/><circle cx="78" cy="80" r="1.3"/><circle cx="24" cy="78" r="1"/></g>`,
+  gravedad: () => `<circle cx="50" cy="52" r="40" fill="#5B3FB8" opacity=".14"/>` +
+    `<circle cx="50" cy="52" r="26" fill="none" stroke="#7B5CE0" stroke-width="1.6" stroke-dasharray="3 4"/><circle cx="50" cy="52" r="15" fill="none" stroke="#7B5CE0" stroke-width="1.6" stroke-dasharray="3 4"/>` +
+    `<circle cx="50" cy="52" r="7" fill="#7B5CE0" stroke="${INK}" stroke-width="1.6"/>` +
+    [[0, -1], [0, 1], [-1, 0], [1, 0]].map(([dx, dy]) => { const x = 50 + dx * 36, y = 52 + dy * 36, ex = 50 + dx * 20, ey = 52 + dy * 20, px = dy, py = -dx;
+      return `<path d="M${x} ${y}L${ex} ${ey}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
+        `<path d="M${ex + dx * 6 + px * 6} ${ey + dy * 6 + py * 6}L${ex} ${ey}L${ex + dx * 6 - px * 6} ${ey + dy * 6 - py * 6}" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`; }).join(''),
+  meteoritos: () => `<circle cx="50" cy="52" r="40" fill="#E8873A" opacity=".16"/>` +
+    [[60, 40, 1], [34, 58, .75], [72, 74, .6]].map(([x, y, k]) =>
+      `<path d="M${x + 4} ${y - 4}L${x + 26 * k} ${y - 26 * k}" stroke="#FFD58A" stroke-width="${7 * k}" stroke-linecap="round" opacity=".8"/>` +
+      `<circle cx="${x}" cy="${y}" r="${10 * k}" fill="#8A5A3C" stroke="${INK}" stroke-width="1.6"/><circle cx="${x - 3 * k}" cy="${y + 2 * k}" r="${2.6 * k}" fill="#6B4430"/>`).join('') +
+    `<path d="M20 88Q34 82 50 88T80 88" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".4"/>`,
   // cambio de estación: la rueda de las cuatro, con una flecha que da la vuelta
   estacion: () => `<circle cx="50" cy="52" r="40" fill="#F6CADB" opacity=".3"/>` +
     `<g class="seWheel"><circle cx="50" cy="52" r="30" fill="#fff" stroke="${INK}" stroke-width="1.6"/>` +

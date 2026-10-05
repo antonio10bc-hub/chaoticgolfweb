@@ -23,6 +23,7 @@ import oPalo1 from './palo-reactivo.js';
 import no from './no.js';
 import { trenVuelta, oTren1, vagon } from './tren.js';
 import { estacion, incendio, oNieve } from './estaciones.js';
+import { agujeroNegro, gravedad2, oGravedad, meteoritos } from './multiverso.js';
 
 const CARD_LIST = [
   palo1, palo2, palo3, dedo,
@@ -37,6 +38,7 @@ const CARD_LIST = [
   palo10, paloIri,                                  // Ultimate
   trenVuelta, oTren1, vagon,                        // baraja del tren
   estacion, incendio, oNieve,                       // baraja de las estaciones
+  agujeroNegro, gravedad2, oGravedad, meteoritos,   // baraja del multiverso
 ];
 
 for (const c of CARD_LIST) {

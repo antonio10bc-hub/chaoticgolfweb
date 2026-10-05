@@ -39,6 +39,7 @@ import { paintLab, labGodClick } from './lab.js';
 import { previewCard, cardTargets } from './preview.js';
 import { autoZoom } from './board-zoom.js';
 import { seasonBefore, seasonPrep } from './seasons-view.js';
+import { ownerOf } from '../engine/game.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
@@ -67,7 +68,8 @@ function noteRoute(g, me, ev) {
 const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode === 'pve' && !multiHuman() ? g.S.human : null;
 export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon',
-  'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack']); // (las últimas: baraja de las estaciones)
+  'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack',
+  'absorb', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteor', 'meteorRock']); // (las últimas: baraja de las estaciones)
 const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', burn: 'caidas', eaten: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
@@ -263,7 +265,7 @@ export function clickCell(x, y) {
   if (app.mode === 'pve' && !app.ai.acting) { // en PVE solo se decide la acción propia (la de quien tiene el dispositivo)
     const pd = g.pending, me = viewer();
     if (pd.p !== undefined && pd.p !== me) return false;
-    if (pd.kind === 'serpent' && pd.ball !== g.ownBall(me)) return false;
+    if (pd.kind === 'serpent' && ownerOf(pd.ball.player) !== me) return false; // (o una de sus copias)
   }
   return dispatch(gg => gg.clickCell(x, y));
 }

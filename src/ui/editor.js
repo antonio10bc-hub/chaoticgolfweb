@@ -50,6 +50,7 @@ const GROUPS = [
   ['mini', ['block', 'corner', 'tunnel', 'launcher']],
   ['train', ['track', 'station', 'loco']],
   ['seasons', ['leaf', 'puddle', 'ice', 'plant', 'fire', 'snowball']],
+  ['multiverse', ['blackhole', 'meteorite']], // (el agujero negro y la roca de los meteoritos)
 ];
 // (estaciones) la estación de cada pieza: al ponerla en un nivel sin estación, el nivel pasa a esa
 const SEASON_OF = { leaf: 'autumn', puddle: 'autumn', ice: 'winter', plant: 'spring', fire: 'summer', snowball: 'winter' };

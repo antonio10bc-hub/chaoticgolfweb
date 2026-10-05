@@ -12,6 +12,7 @@
    ========================================================= */
 import { CARDS } from '../content/cards/index.js';
 import { TILES } from '../content/tiles/index.js';
+import { ownerOf } from '../engine/multiverse.js';
 
 // personalidades: pesos de la evaluación y ganas de reaccionar con naranjas
 export const STYLES = {
@@ -45,10 +46,9 @@ const MAX_LEAVES = 4000; // tope de seguridad por decisión
 /* ---------- lectura del tablero ---------- */
 
 // ¿puede la pelota embocar con un solo palo? (alineada con el hoyo a 1-3 y sin nada en medio)
-function alignedClear(g, b) {
-  const h = g.S.hole;
+function alignedClear(g, b, h = g.S.hole) {
   if (b.x !== h.x && b.y !== h.y) return false;
-  const dist = g.holeDist(b.x, b.y);
+  const dist = Math.abs(b.x - h.x) + Math.abs(b.y - h.y);
   if (dist < 1 || dist > 3) return false;
   const dx = Math.sign(h.x - b.x), dy = Math.sign(h.y - b.y);
   for (let i = 1; i < dist; i++) {
@@ -59,10 +59,9 @@ function alignedClear(g, b) {
 }
 
 // ¿llega el dedo (≤3 pasos, camino libre y codicioso) al hoyo?
-function dedoReach(g, b) {
-  const h = g.S.hole;
+function dedoReach(g, b, h = g.S.hole) {
   let x = b.x, y = b.y;
-  const steps = g.holeDist(x, y);
+  const steps = Math.abs(x - h.x) + Math.abs(y - h.y);
   if (steps < 1 || steps > 3) return false;
   const free = (ox, oy) => g.inBoard(ox, oy) && (g.isHole(ox, oy) || (!g.tileAt(ox, oy) && !g.ballAt(ox, oy)));
   for (let s = 0; s < steps; s++) {
@@ -75,10 +74,15 @@ function dedoReach(g, b) {
 }
 
 // 0 = lejos, 1 = el dedo llega, 2 = un palo emboca directo
+// (multiverso: con copias del hoyo, la mejor de todas)
 export function sinkThreat(g, b) {
   if (!b || b.holed) return 0;
-  if (alignedClear(g, b)) return 2;
-  return dedoReach(g, b) ? 1 : 0;
+  let best = 0;
+  for (const h of g.allHoles()) {
+    if (alignedClear(g, b, h)) return 2;
+    if (!best && dedoReach(g, b, h)) best = 1;
+  }
+  return best;
 }
 
 /* ---------- evaluación ---------- */
@@ -93,20 +97,30 @@ export function evaluate(g, p, style = 'trick') {
   // hoyo en su casilla inicial)
   const fate = S.season?.wind ? what => g.windFate(what) : () => null;
   const hf = fate('hole'), hx = hf ? hf.x : S.hole.x, hy = hf ? hf.y : S.hole.y;
-  const dist = b => { const f = fate(b); return f ? Math.abs(f.x - hx) + Math.abs(f.y - hy) : Math.abs(b.x - hx) + Math.abs(b.y - hy); };
+  const copies = S.holeCopies?.length ? S.holeCopies : null; // (multiverso: el hoyo más cercano)
+  const dist = b => { const f = fate(b), x = f ? f.x : b.x, y = f ? f.y : b.y, d = Math.abs(x - hx) + Math.abs(y - hy);
+    return copies ? Math.min(d, ...copies.map(h => Math.abs(x - h.x) + Math.abs(y - h.y))) : d; };
   const snowed = b => !!S.season?.snow && g.trapAt(b.x, b.y) && !g.inTrap(b); // (en la bola de nieve: rodará quién sabe adónde)
-  const me = g.ownBall(p);
-  if (me && !me.holed) {
-    score -= dist(me) * W.self;
-    if (g.inTrap(me)) score -= W.trap;
-    if (snowed(me)) score -= W.trap * .5;
-    score += sinkThreat(g, me) * W.ready;
-  }
+  // (multiverso) con copias, cuenta la mejor pelota de cada jugador; tener más pelotas da algo más de opciones
+  const best = new Map();
   for (const b of S.balls) {
-    if (b.player === p || b.holed || b.decoy) continue;
-    score += Math.min(dist(b), 8) * W.opp;
-    score -= sinkThreat(g, b) * W.threat;
-    if (g.inTrap(b)) score += W.oppTrap;
+    if (b.holed || b.decoy) continue;
+    const o = ownerOf(b.player), v = { b, d: dist(b), th: sinkThreat(g, b) }, cur = best.get(o);
+    if (!cur) best.set(o, { ...v, n: 1 });
+    else { cur.n++; if (v.th > cur.th || (v.th === cur.th && v.d < cur.d)) Object.assign(cur, v); }
+  }
+  const me = best.get(p);
+  if (me) {
+    score -= me.d * W.self;
+    if (g.inTrap(me.b)) score -= W.trap;
+    if (snowed(me.b)) score -= W.trap * .5;
+    score += me.th * W.ready + (me.n - 1) * 3;
+  }
+  for (const [o, v] of best) {
+    if (o === p) continue;
+    score += Math.min(v.d, 8) * W.opp;
+    score -= v.th * W.threat + (v.n - 1) * 3;
+    if (g.inTrap(v.b)) score += W.oppTrap;
   }
   return score;
 }
@@ -121,8 +135,14 @@ function pendingChoices(g) {
     case 'serpent': for (const t of g.serpentTargets()) out.push(['cell', t.x, t.y]); break;
     case 'dedoAmount': for (const n of [1, 2, 3]) out.push(['amount', n]); break;
     case 'pickHoled': for (const b of S.balls) if (b.holed) out.push(['pickHoled', b.player]); break;
-    case 'pickBall':
+    case 'pickBall': case 'pickOwn': case 'pickHole': // (multiverso: cuál de tus pelotas, o cuál de los hoyos, se mueve)
       for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) if (g.selectableAt(x, y)) out.push(['cell', x, y]);
+      break;
+    case 'gravity': // (multiverso) solo las casillas con algo en su cruz
+      for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
+        const near = (px, py) => (px === x || py === y) && Math.abs(px - x) + Math.abs(py - y) <= pd.r && (px !== x || py !== y);
+        if (g.gravitySpot(x, y) && (g.allHoles().some(h => near(h.x, h.y)) || S.balls.some(b => !b.holed && near(b.x, b.y)))) out.push(['cell', x, y]);
+      }
       break;
     case 'placeTile': {
       // en tableros grandes (minigolf, Ultimate) solo se piensa cerca de las pelotas y del hoyo; las piezas
@@ -283,8 +303,8 @@ export function discardPlan(game, p) {
 
 // quien "va peor" (más lejos del hoyo) gasta antes sus cartas defensivas
 export function farness(game, p) {
-  const b = game.ownBall(p);
-  return !b || b.holed ? -1 : game.holeDist(b.x, b.y);
+  const ds = game.ballsOf(p).map(b => game.holeDist(b.x, b.y)); // (multiverso: la más cercana de sus pelotas)
+  return ds.length ? Math.min(...ds) : -1;
 }
 
 /* ---------- explicar una jugada ----------
@@ -320,13 +340,15 @@ export function explainPlay(before, after, p, cardKey) {
   if (['trenVuelta', 'oTren1'].includes(cardKey)) return { key: 'train' };
   if (cardKey === 'estacion') return { key: 'season' };
   if (cardKey === 'oNieve') return { key: 'snow' };
+  if (cardKey === 'meteoritos') return { key: 'meteors' };
+  if (cardKey === 'gravedad' || cardKey === 'oGravedad') return { key: 'gravity' };
   const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
   if (placed) {
     // ¿en el camino de quién? (la pelota rival más cercana a la loseta)
     let near = null;
     for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
     if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
-    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'puddle', 'ice', 'plant', 'fire'].includes(placed.type)) return { key: placed.type };
+    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'puddle', 'ice', 'plant', 'fire', 'blackhole'].includes(placed.type)) return { key: placed.type };
     return { key: 'portal' };
   }
   const me0 = ballOf(B, p), me1 = ballOf(A, p);

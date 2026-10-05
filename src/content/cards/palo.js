@@ -1,5 +1,6 @@
 // Palo N (negra): tu pelota avanza N casillas en línea recta.
 // Salir de una trampa (búnker) cuesta 1, así que un palo 1 no se puede jugar desde ella.
+// (multiverso) con copias de tu pelota en el tablero, primero se elige cuál se mueve (game.playOwn → start)
 // copies: copias en la baraja clásica (los palos largos, 0: solo existen en minigolf y Ultimate)
 function palo(n, copies = 6) {
   return {
@@ -11,9 +12,10 @@ function palo(n, copies = 6) {
     stroke: true,
     face: { art: 'palo', value: String(n) },
     blockedReason: 'reason.paloTrap',
-    canPlay(game, p) { return !(n <= 1 && game.inTrap(game.ownBall(p))); },
-    play(game, p, idx) {
-      const ball = game.ownBall(p);
+    canPlay(game, p) { return n > 1 || game.ballsOf(p).some(b => !game.inTrap(b)); },
+    canStart(game, ball) { return !(n <= 1 && game.inTrap(ball)); },
+    play(game, p, idx) { game.playOwn(p, idx, this.id); },
+    start(game, p, idx, ball) {
       game.setPending({ kind: 'move', p, idx, n, ball, targets: game.straightTargets(ball, n) });
     },
   };
@@ -35,8 +37,8 @@ export const paloIri = {
   icon: '<span class="ico ico-palo"></span>',
   stroke: true,
   face: { art: 'paloIri', value: '∞' },
-  play(game, p, idx) {
-    const ball = game.ownBall(p);
+  play(game, p, idx) { game.playOwn(p, idx, this.id); },
+  start(game, p, idx, ball) {
     // se elige la dirección tocando una casilla vecina
     const targets = Object.entries(DIRS_FOR_IRI).map(([dir, [dx, dy]]) => ({ x: ball.x + dx, y: ball.y + dy, dir, out: false }))
       .filter(tg => game.inBoard(tg.x, tg.y));

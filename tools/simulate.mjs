@@ -23,7 +23,7 @@ const dk = args.deck ? deckById(args.deck) : null;
 const size = dk ? deckSize(dk, SIZES[args.size || 'm']) : SIZES[args.size || 'm'];
 const deckCfg = dk ? { ...(dk.counts ? { counts: dk.counts(defaultCounts()) } : {}), ...(dk.newCards ? { startWith: dk.newCards } : {}),
   ...(deckHasTrain(dk) ? { train: true } : {}), ...(dk.trainLayout ? { trainLayout: true } : {}), ...(dk.seasons ? { seasons: true } : {}) } : {};
-const EV = ['season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'train'];
+const EV = ['season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'train', 'absorb', 'clone', 'vanish', 'gravity', 'clash', 'meteor', 'gstuck', 'meteorRock'];
 const randomSeat = args.random !== undefined ? +args.random : null;
 const rand = mulberry32(+(args.seed || Date.now() % 1e9));
 

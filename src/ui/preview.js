@@ -8,6 +8,7 @@ import { cellCenterPx, cellStep } from './geometry.js';
 import { pColor } from '../art.js';
 import { t } from '../i18n/index.js';
 import { applyAction } from '../ai/bot.js';
+import { CARDS } from '../content/cards/index.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 
@@ -19,6 +20,7 @@ function simulate(g, act) {
   const evs = sim.takeEvents();
   const pos = { hole: { x: g.S.hole.x, y: g.S.hole.y } };
   for (const b of g.S.balls) pos['b' + b.player] = { x: b.x, y: b.y };
+  for (const h of g.S.holeCopies || []) pos[h.id] = { x: h.x, y: h.y }; // (multiverso)
   const paths = {}, marks = [], unknown = new Set();
   // (baraja del tren) las casillas que recorre la locomotora y dónde se engancha un vagón nuevo
   const train = g.S.train ? [g.S.train.pos] : null; let wagon = null; // (tras un túnel, el camino es incierto: se corta con un "?")
@@ -40,7 +42,7 @@ function simulate(g, act) {
       case 'teleport': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
       case 'fall': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
       case 'appear': if (paths[ev.p]) push(ev.p, { x: ev.x, y: ev.y, kind: 'appear' }); break;
-      case 'impact': if (pos[ev.p]) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break;
+      case 'impact': case 'clash': case 'gstuck': if (pos[ev.p]) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break; // (clash: la gravedad junta dos pelotas)
       case 'sink': if (pos[ev.p]) marks.push({ kind: 'sink', ...pos[ev.p] }); break;
       case 'settle': if (pos[ev.p]) marks.push({ kind: 'sand', ...pos[ev.p] }); break;
       case 'train': train?.push(ev.i); break;
@@ -60,7 +62,7 @@ function layer() {
   }
   return svg;
 }
-const colorOf = id => id === 'hole' ? '#242424' : pColor(+id.slice(1));
+const colorOf = id => id.startsWith('hole') ? '#242424' : pColor(+id.slice(1)); // (y las copias del hoyo)
 
 function draw(res, { armedAt = null, label = 'tapAgain' } = {}) {
   const svg = layer();
@@ -142,7 +144,8 @@ export function previewCell(x, y, opts) {
   draw(simulate(g, sim => sim.clickCell(x, y)), opts);
 }
 // carta de efecto inmediato (cartas de hoyo…): se ve qué hará antes de jugarla
-const cardSim = (g, p, idx) => simulate(g, sim => sim.clickCard(p, idx) && !sim.pending);
+// (las que reparten al azar, como la lluvia de meteoritos, no: la copia no sabe dónde caerán)
+const cardSim = (g, p, idx) => CARDS[g.S.hands[p][idx]]?.random ? null : simulate(g, sim => sim.clickCard(p, idx) && !sim.pending);
 export function previewCard(p, idx, { targets = null } = {}) {
   const g = app.game;
   if (!g || g.pending || app.animating || !g.canPlay(p, g.S.hands[p][idx])) { hidePreview(); return; }

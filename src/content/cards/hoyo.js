@@ -10,8 +10,10 @@ function hoyo(id, color, dir, dist, artRot) {
     face: { art: 'hoyo', value: '+' + dist, dir },
     blockedReason: 'reason.holeTrapped',
     // con el hoyo en una trampa, la carta pierde 1 de distancia (un +1 se queda en 0)
-    canPlay(game) { return game.holeMoveDist(this) > 0; },
+    // (multiverso: con copias del hoyo, vale si alguno puede moverse, y se elige cuál)
+    canPlay(game) { return game.S.holeCopies?.length ? game.allHoles().some(h => game.holeCanMove(h, this)) : game.holeMoveDist(this) > 0; },
     play(game, p, idx) {
+      if (game.S.holeCopies?.length) { game.setPending({ kind: 'pickHole', p, idx, card: this.id }); return; }
       const dist = game.holeMoveDist(this);
       if (game.holeInTrap()) {
         if (dist <= 0) { game.notice('notice.holeTrapped', { card: this.name }); return; }
@@ -21,6 +23,14 @@ function hoyo(id, color, dir, dist, artRot) {
       // mover el hoyo durante un JAQUE anula la victoria: las pelotas salen del hoyo
       if (game.S.jaque && game.S.winner !== null) game.popHoledBalls();
       game.moveHole(this.dir, dist);
+      game.afterPlay();
+    },
+    // (multiverso) mueve el hoyo elegido (el de siempre o una copia)
+    moveOne(game, p, idx, h) {
+      const dist = this.dist - (game.hardTrapAt(h.x, h.y) ? 1 : 0);
+      game.consumeCard(p, idx);
+      if (game.S.jaque && game.S.winner !== null) game.popHoledBalls(h); // (solo salen las que estaban dentro de ese)
+      game.moveHole(this.dir, dist, h);
       game.afterPlay();
     },
   };

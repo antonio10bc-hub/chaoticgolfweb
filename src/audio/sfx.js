@@ -78,6 +78,14 @@ export function sfx(name) {
     case 'sand':   noiseHit(.16, 420, .7, 'lowpass'); noiseHit(.1, 1200, .18, 'bandpass', .03, 1.5); chain++; break; // plof búnker
     case 'sandStep': noiseHit(.07, 900, .32, 'bandpass', 0, 1.2); noiseHit(.05, 1500, .18, 'bandpass', .045, 1.4); break; // pisar arena
     case 'sandPour': noiseHit(.34, 700, .42, 'lowpass', 0, .7); noiseHit(.22, 1600, .14, 'bandpass', .08, 1); break;     // colocar búnker
+    // (baraja del multiverso)
+    case 'warpHum': tone(90, 60, .5, 'sine', .5); tone(180, 120, .45, 'triangle', .15, .02); noiseHit(.3, 500, .12, 'lowpass', 0, 1); break; // poner el agujero negro
+    case 'absorb': tone(900, 120, .34, 'sine', .4); noiseHit(.3, 1400, .14, 'bandpass', 0, 4); break;   // se la traga
+    case 'split': [523, 659, 784, 1047].forEach((f, i) => tone(f, f * 1.02, .16, 'triangle', .2, i * .03)); break; // salen 4
+    case 'vanish': tone(1400, 2600, .14, 'sine', .14); noiseHit(.12, 3200, .08, 'highpass'); break;     // la copia se va
+    case 'gravity': tone(160, 420, .5, 'sine', .35); tone(80, 210, .5, 'triangle', .15, .04); break;     // la gravedad atrae
+    case 'gstuck': tone(120, 90, .14, 'sine', .5); noiseHit(.08, 700, .2, 'lowpass', .02, 1); break;      // tira y no puede
+    case 'meteor': noiseHit(.22, 380, .5, 'lowpass', 0, .8); tone(140, 50, .18, 'sine', .45); break;      // impacto de meteorito
     case 'portalOpen': [392, 587, 784, 1175].forEach((f, i) => tone(f, f * 1.5, .22, 'sine', .22, i * .045)); noiseHit(.25, 2200, .12, 'bandpass', 0, 2); break;
     case 'chainBreak': tone(1320, 440, .18, 'triangle', .35); tone(990, 330, .22, 'sine', .25, .06); break; // cadena cortada
     case 'wood':   tone(210, 150, .09, 'triangle', .7); noiseHit(.06, 1800, .25, 'bandpass', 0, 3); break; // golpe en madera

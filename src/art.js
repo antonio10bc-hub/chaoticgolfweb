@@ -10,7 +10,7 @@
    manifiesto no se pide ningún PNG (cero peticiones 404).
    ========================================================= */
 import { app } from './ui/app.js';
-import { PLAYER_COLORS, playerTag } from './engine/game.js';
+import { PLAYER_COLORS, playerTag, ownerOf } from './engine/game.js';
 import { tileDef } from './content/tiles/index.js';
 import { t } from './i18n/index.js';
 
@@ -52,9 +52,10 @@ export async function loadArt() {
   })));
 }
 
-// color visible de un jugador (en PVE cada quien elige/asigna color)
+// color visible de un jugador (en PVE cada quien elige/asigna color); el de una copia, el de su jugador (multiverso)
 export function pColor(p) {
   const S = app.game?.S;
+  p = ownerOf(p);
   return (S && S.colorMap) ? S.colorMap[p] : PLAYER_COLORS[p % PLAYER_COLORS.length];
 }
 
@@ -70,10 +71,11 @@ export const ASSETS = {
   holeHTML: () => ART['tile.hole']
     ? `<div class="cardOnCell tile-hole artCard"><img class="fill" src="${ART['tile.hole']}" alt=""></div>`
     : `<div class="cardOnCell tile-hole">${HOLE_SVG}</div>`,
-  ballHTML: pl => ART['ball.' + (pl + 1)]
-    ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (pl + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[pl]}">${playerTag(pl)}</div></div>`
+  // (la copia de una pelota, en el multiverso, lleva el color y la forma de su jugador; su etiqueta, J1′)
+  ballHTML: pl => ART['ball.' + (ownerOf(pl) + 1)]
+    ? `<div class="cardOnCell artCard"><img class="fill" src="${ART['ball.' + (ownerOf(pl) + 1)]}" alt=""><div class="ballTag" style="background:${PLAYER_COLORS[ownerOf(pl)]}">${playerTag(pl)}</div></div>`
     : `<div class="cardOnCell tile-ball"><div class="circ" style="--pc:${pColor(pl)}"><span class="ballStamp">${playerTag(pl)}</span>` +
-      `<svg class="shp" aria-hidden="true"><use href="#shp-${pl % 7}"/></svg></div></div>`, // forma por jugador (accesibilidad)
+      `<svg class="shp" aria-hidden="true"><use href="#shp-${ownerOf(pl) % 7}"/></svg></div></div>`, // forma por jugador (accesibilidad)
   // tile.pair (portales de colores del desafío Atajos): color de la pareja y su letra (A, B, C)
   tileHTML: (type, extra = '', tile = null) => {
     const d = tileDef(type), pr = tile?.pair ? ` pair${tile.pair}` : '', letter = tile?.pair ? ' ' + 'ABCDEF'[tile.pair - 1] : '';

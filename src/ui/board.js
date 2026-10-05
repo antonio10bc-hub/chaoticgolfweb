@@ -14,13 +14,16 @@ import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
 import { dockOwner } from './hands.js';
 import { isBot } from './players.js';
+import { ownerOf } from '../engine/game.js';
 import { renderTrack, ensureTrain, syncTrain } from './train-view.js';
 import { renderSeason, ensureSnow, syncSnow, shownTile } from './seasons-view.js';
 
 let cells = [], dims = '';
 // polvo al colocar cada loseta (según su `dust`)
-const DUST = { sand: SAND_C, water: WATER_C, leaf: ['#C9692E', '#D9A441', '#7FA552'], snow: ['#FFFFFF', '#E3EEF4', '#CFE4EE'], ash: ['#FFD23F', '#E8873A', '#5A5048'] };
+const DUST = { space: ['#C78BF2', '#7B5CE0', '#FFE1A8'], rock: ['#7A6A70', '#4A3E46', '#F2913A'], sand: SAND_C, water: WATER_C, leaf: ['#C9692E', '#D9A441', '#7FA552'], snow: ['#FFFFFF', '#E3EEF4', '#CFE4EE'], ash: ['#FFD23F', '#E8873A', '#5A5048'] };
 let justPlaced = null; // última loseta colocada, para su animación de aparición
+// (multiverso) la roca de una lluvia de meteoritos no se ve hasta que cae el suyo (multiverse-view.js la destapa)
+const rockHidden = (x, y) => app.rocksHidden?.has(x + ',' + y) || app.animQueue.some(e => e.t === 'meteorRock' && e.x === x && e.y === y);
 export const markPlaced = (x, y) => { justPlaced = { x, y }; };
 let focusIdx = 0;      // casilla con el foco de teclado (tabindex roving)
 let armed = null;      // pantallas táctiles: casilla con la vista previa a la espera del segundo toque
@@ -80,9 +83,12 @@ export function renderBoard() {
     const aria = [t('a11y.cell', { x, y })];
     // (la locomotora, los vagones y la bola de nieve van en la capa de piezas; en las estaciones, la casilla tal como se ve
     // ahora: lo que cambia durante la jugada aparece a su tiempo)
-    const par = g.parAt(x, y), tile = S.season ? shownTile(g, x, y) : g.realTileAt(x, y), ball = g.ballAt(x, y);
+    let tile = S.season ? shownTile(g, x, y) : g.realTileAt(x, y);
+    if (tile?.type === 'meteorite' && rockHidden(x, y)) tile = null; // (multiverso: la roca, cuando caiga su meteorito)
+    const par = g.parAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
+    else if (S.tiles.length && g.blackHoleNear(x, y)) cls += ' bhNear'; // (multiverso) aquí te traga el agujero negro
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);
     if (tile?.type === 'launcher' && lOff.includes(x + ',' + y)) cls += ' lOff'; // ya ha lanzado en este turno
     if (tile) { // pelotas y hoyo viven en la capa de piezas; aquí solo losetas y avisos
@@ -99,7 +105,7 @@ export function renderBoard() {
     if (S.train && g.trackIndex(x, y) >= 0) { cls += ' track'; const v = g.trainTileAt(x, y); aria.push(t(v ? `tiles.${v.type}.name` : 'a11y.track')); }
     if (S.season) { if (g.windIndex(x, y) >= 0) aria.push(t(S.season.wind.on ? 'a11y.wind' : 'a11y.windWarn')); if (g.snowTileAt(x, y)) aria.push(t('a11y.snowball')); }
     if (g.isHole(x, y)) aria.push(t('a11y.hole'));
-    if (ball) aria.push(t('player.name', { n: ball.player + 1 }));
+    if (ball) aria.push(t('player.name', { n: ownerOf(ball.player) + 1 }));
     // marca sutil de las casillas iniciales reales (fijadas al empezar la partida)
     for (const m of g.initMarks) {
       if (m.x === x && m.y === y)
@@ -184,7 +190,7 @@ function focusCell(i) {
 // ¿la casilla es un destino de una jugada con recorrido (palo, dedo, palo reactivo)?
 function previewable(cell) {
   const pd = app.game?.pending;
-  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent' || pd.kind === 'snowRoll')
+  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent' || pd.kind === 'snowRoll' || pd.kind === 'gravity') // (gravedad: lo que atraerá)
     && (cell.classList.contains('selectable') || cell.classList.contains('selectable-out'));
 }
 function showTrajFor(cell) {
@@ -200,7 +206,7 @@ function ensurePiece(id, html) {
   let el = pieceEl(id);
   if (!el) {
     el = document.createElement('div');
-    el.className = 'piece ' + (id === 'hole' ? 'phole' : 'pball');
+    el.className = 'piece ' + (id.startsWith('hole') ? 'phole' : 'pball'); // (hole1, hole2…: copias del hoyo)
     el.dataset.id = id;
     el.innerHTML = html;
     $('pieces').appendChild(el);
@@ -208,15 +214,29 @@ function ensurePiece(id, html) {
   return el;
 }
 export function clearPieces() { $('pieces').innerHTML = ''; }
+// (multiverso) la pieza de una copia que nace y se pierde en la misma jugada (el estado ya no la tiene)
+export function copyPiece(id) {
+  if (id.startsWith('hole')) { const el = ensurePiece(id, ASSETS.holeHTML()); el.classList.add('copyHole'); return el; } // (copia del hoyo)
+  const el = ensurePiece(id, ASSETS.ballHTML(+id.slice(1)) + '<div class="turnMark" aria-hidden="true"></div>');
+  el.classList.add('copyBall'); el.style.setProperty('--pc', pColor(+id.slice(1)));
+  return el;
+}
 
 export function ensurePieces() {
   const g = app.game, S = g.S, pd = g.pending;
   ensureTrain(g); // (baraja del tren: locomotora y vagones, debajo de pelotas y hoyo)
   ensureSnow(g);  // (estaciones: la bola de nieve, también debajo)
   ensurePiece('hole', ASSETS.holeHTML());
+  for (const h of S.holeCopies || []) { // (multiverso) las copias del hoyo: no aparecen hasta que salen del agujero negro
+    const fresh = !pieceEl(h.id), el = ensurePiece(h.id, ASSETS.holeHTML());
+    if (fresh) { el.classList.add('copyHole'); if (app.animating || app.animQueue.length) el.style.display = 'none'; }
+  }
   const seat = skinSeat(g);
   for (const b of S.balls) {
+    const fresh = !pieceEl('b' + b.player);
     const el = ensurePiece('b' + b.player, ASSETS.ballHTML(b.player) + '<div class="turnMark" aria-hidden="true"></div>');
+    // (multiverso) la copia de una pelota: se ve distinta y no aparece hasta que sale del agujero negro (su animación)
+    if (fresh && b.copy) { el.classList.add('copyBall'); if (app.animating || app.animQueue.length) el.style.display = 'none'; }
     if (!el._skin) { // tu pelota lleva la que te has puesto (una vez por partida: las piezas se crean al empezar)
       el._skin = true;
       const sk = b.player === seat && !b.decoy ? equippedSkin() : null, circ = el.querySelector('.circ');
@@ -224,7 +244,7 @@ export function ensurePieces() {
     }
     el.style.setProperty('--pc', pColor(b.player));
     // marcador sobre la pelota de quien juega + halo en la pelota que se está moviendo/eligiendo
-    el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && b.player === S.turn && S.winner === null);
+    el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && ownerOf(b.player) === S.turn && S.winner === null);
     el.classList.toggle('isSel', !!pd?.ball && pd.ball.player === b.player);
     // JAQUE: la pelota embocada se ve como fantasma; si se puede sacar ahora, se señala como objetivo
     const ghost = b.holed && S.jaque && S.winner !== null;
@@ -247,6 +267,7 @@ export function syncPieces() {
   h.style.opacity = 1; h.firstChild.style.transform = '';
   h.classList.toggle('sunk', g.hardTrapAt(S.hole.x, S.hole.y));
   h.classList.toggle('snowed', g.trapAt(S.hole.x, S.hole.y) && !g.hardTrapAt(S.hole.x, S.hole.y)); // (dentro de la bola de nieve)
+  for (const hc of S.holeCopies || []) { const el = pieceEl(hc.id); if (el) { setPos(el, hc.x, hc.y, 0); el.style.display = 'flex'; el.style.opacity = 1; el.firstChild.style.transform = ''; } }
   for (const b of S.balls) {
     const el = pieceEl('b' + b.player);
     if (!el) continue;
@@ -257,7 +278,8 @@ export function syncPieces() {
     el.classList.toggle('ghostHoled', ghost);
     if (ghost) {
       const gi = S.balls.filter(o => o.holed && o.player < b.player).length;
-      setPos(el, S.hole.x, S.hole.y, 0); el.style.opacity = '';
+      const inH = S.holeCopies?.find(hc => hc.x === b.x && hc.y === b.y) || S.hole; // (multiverso: dentro de una copia del hoyo)
+      setPos(el, inH.x, inH.y, 0); el.style.opacity = '';
       el.firstChild.style.transform = `translate(${gi * 9}px, ${-gi * 7}px)`;
       el.classList.remove('sunk');
     } else if (!b.holed) {
@@ -266,6 +288,9 @@ export function syncPieces() {
       el.classList.toggle('snowed', g.trapAt(b.x, b.y) && !g.hardTrapAt(b.x, b.y));
     }
   }
+  // (multiverso) las copias que ya no están (se salieron del tablero, les cayó un meteorito…) se quitan
+  const ids = new Set([...S.balls.map(b => 'b' + b.player), 'hole', ...(S.holeCopies || []).map(h => h.id)]);
+  $$('#pieces .piece.pball, #pieces .piece.phole').forEach(el => { if (!ids.has(el.dataset.id)) el.remove(); });
   // limpia clases transitorias de la reproducción para no dejar estados colgados
   $$('#pieces .piece').forEach(el =>
     el.classList.remove('glide', 'falling', 'dropping', 'sinking', 'warp', 'warpOut', 'warpIn', 'air', 'acting'));

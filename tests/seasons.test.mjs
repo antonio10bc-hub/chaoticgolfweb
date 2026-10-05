@@ -32,7 +32,7 @@ test('la baraja: una tarjeta, sin búnkeres ni portales, con sus cartas y fuera 
   const ult = deckById('ultimate').counts(defaultCounts());
   for (const k of ['estacion', 'incendio', 'oNieve']) assert.ok(!ult[k], 'Ultimate no lleva ' + k);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate');
-  assert.equal(DECKS[DECKS.length - 2].id, 'seasons', 'la baraja nueva, detrás de la anterior');
+  assert.equal(DECKS[DECKS.findIndex(d => d.id === 'seasons') + 1].id, 'multiverse', 'la siguiente baraja, detrás');
 });
 
 test('partida rápida: estación al azar (con su RNG: el mazo sale igual) y lo que trae al llegar', () => {
