@@ -28,9 +28,10 @@ import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
 import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
-import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup } from './screen-pve.js';
+import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup, startPveMatch } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG } from './persona.js';
-import { DECKS } from '../content/decks.js';
+import { DECKS, ULT_DECKS, deckById as deckOfId } from '../content/decks.js';
+import { currentCombo, setCombo, toggleDeck, comboLabel, comboHistory, openComboHistory } from './ultimate.js';
 import { SEASON_ICON } from './season-art.js';
 import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
 import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
@@ -390,15 +391,48 @@ const DECK_ART = {
   blackhole: () => cardBase('blackhole', '#2A1F55', '#07040F') +
     `<g clip-path="url(#dk-blackhole-c)"><g fill="#fff">${[[16, 12, .8], [44, 10, .6], [40, 50, .7], [17, 47, .5], [47, 18, .5], [13, 29, .45]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` +
     BH_GARGANTUA(30, 30, .38) + `</g>` + frame,
-  prism: () => cardBase('prism', '#4A3A86', '#241A4A') +
+  prism: () => cardBase('prism', '#E8F7F8', '#BFE3EC') + // (nácar iridiscente: Ultimate, el combinador)
     `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
     `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +
-    `<path d="M8 36 L27 29" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>` +
+    `<path d="M8 36 L27 29" stroke="#6B8A94" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>` +
     `<g stroke-width="2.2" stroke-linecap="round">${['#FF6FA8', '#FFB347', '#FFE36B', '#7EE8C8', '#6FA8FF', '#B98CFF'].map((c, i) => `<path d="M33 ${28 + i * 1.1} L52 ${20 + i * 5}" stroke="${c}"/>`).join('')}</g></g>` +
-    `<path d="M30 15 L40 36 H20 Z" fill="rgba(255,255,255,.22)" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M30 15 L40 36 L30 31 Z" fill="rgba(255,255,255,.35)"/>` +
+    `<path d="M30 15 L40 36 H20 Z" fill="rgba(255,255,255,.7)" stroke="#6B8A94" stroke-width="1.4" stroke-linejoin="round"/><path d="M30 15 L40 36 L30 31 Z" fill="rgba(180,225,240,.6)"/>` +
     `<g class="dkTw" fill="#fff"><path d="M19 13 l1 2.6 2.6 1 -2.6 1 -1 2.6 -1 -2.6 -2.6 -1 2.6 -1z"/><path d="M41 44 l.7 1.8 1.8.7 -1.8.7 -.7 1.8 -.7 -1.8 -1.8 -.7 1.8 -.7z" opacity=".8"/></g>` + frame,
 };
-const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true">${(DECK_ART[dk.emblem === 'club' ? 'classic' : dk.emblem === 'drop' ? 'water' : dk.emblem] || DECK_ART.classic)()}</svg>`;
+export const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true">${(DECK_ART[dk.emblem === 'club' ? 'classic' : dk.emblem === 'drop' ? 'water' : dk.emblem] || DECK_ART.classic)()}</svg>`;
+
+// Ultimate, aparte del resto: un separador pequeño y su tarjeta, el combinador. Un icono por baraja (tocar = activarla o
+// quitarla; siempre queda al menos una), el campo que sale, el botón de jugar y el historial de combinaciones
+const ultSep = () => `<div class="ultSep" aria-hidden="true"><i></i><span>✦</span><i></i></div>`;
+function ultCard(dk, qsave = loadSave('pve'), still = false) {
+  const mask = currentCombo(), saved = qsave && (qsave.pveCfg?.deck || 'classic') === dk.id, n = comboHistory().length;
+  const b = (act, label, cls) => `<button class="${cls} btn-sm" data-mode="${act}">${label}</button>`;
+  const togs = ULT_DECKS.map((id, i) => { const on = !!(mask & (1 << i)), d = deckOfId(id);
+    return `<button class="ultTog${on ? ' on' : ''}" data-ult="${id}" aria-pressed="${on}" title="${esc(t('decks.' + id + '.name'))}">${deckArt(d)}<span>${esc(t('ult.short.' + id))}</span></button>`; }).join('');
+  return `<article class="deckCard ultimate${still ? ' still' : ''}" style="--dk:${dk.color}">` +
+    `<div class="dkPic">${deckArt(dk)}</div>` +
+    `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3><p>${esc(t('decks.' + dk.id + '.desc'))}</p></div>` +
+    `<div class="ultTogs" role="group" aria-label="${esc(t('ult.togglesAria'))}">${togs}</div>` +
+    `<div class="dkBtns">${saved ? `<button class="btn-continue btn-sm" data-mode="resume:pve">${esc(t('menu.continue'))}</button>` : ''}` +
+    b('quick:ultimate', esc(t('modes.quick.setup')), saved ? 'btn-light' : 'btn-primary') +
+    b('ultHist', `<svg class="i" aria-hidden="true"><use href="#i-list"/></svg>${esc(t('ult.history'))}${n ? `<em>${n}</em>` : ''}`, 'btn-light ultHistBtn') +
+    `<span class="ultSize"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>${esc(comboLabel(mask))}</span>` +
+    (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '') +
+    `</div><span class="ultSheen" aria-hidden="true"></span></article>`;
+}
+// repinta solo la tarjeta de Ultimate (sin su animación de entrada)
+function paintUlt() {
+  const el = document.querySelector('.deckCard.ultimate');
+  if (el) el.outerHTML = ultCard(deckOfId('ultimate'), undefined, true);
+}
+// un enlace con una combinación compartida: la misma partida (combinación, rivales, dificultad y semilla)
+export async function playSharedCombo(e) {
+  if (!await confirmReplaceSave('pve')) return;
+  setCombo(e.mask);
+  app.pveCfg = { ...app.pveCfg, deck: 'ultimate', combo: e.mask, opps: e.opps, diff: e.diff, humans: 1, kind: 'bots', rivals: [] };
+  if (!await deckIntro('ultimate')) return;
+  startPveMatch({ seed: e.seed, recv: true });
+}
 
 export function openModes(tab) {
   hideWin();
@@ -417,6 +451,7 @@ export function openModes(tab) {
 
   /* ---- partidas rápidas: una tarjeta por baraja ---- */
   const deckCard = dk => {
+    if (dk.ultimate) return ultSep() + ultCard(dk, qsave); // (Ultimate: el combinador, aparte)
     const st = R.decks[dk.id] || { p: 0, w: 0 }, last = !dk.locked && lastPve(dk.id);
     const saved = !dk.locked && qsave && (qsave.pveCfg?.deck || 'classic') === dk.id;
     const pct = (st.p ? Math.round(100 * st.w / st.p) : 0) + '%';
@@ -568,6 +603,8 @@ export function bindModes() {
     if (lv) { playLevelCard(lv); return; }
     const tb = e.target.closest('[data-mtab]');
     if (tb) { setModesTab(tb.dataset.mtab); return; }
+    const ut = e.target.closest('[data-ult]'); // (Ultimate: activar o quitar una baraja de la combinación)
+    if (ut) { if (toggleDeck(ut.dataset.ult) == null) { ut.classList.remove('nope'); void ut.offsetWidth; ut.classList.add('nope'); toast(t('ult.needOne')); } else { sfx('select'); paintUlt(); document.querySelector(`.ultTog[data-ult="${ut.dataset.ult}"]`)?.focus(); } return; }
     const b = e.target.closest('[data-mode]');
     if (!b) return;
     const [act, arg] = b.dataset.mode.split(':');
@@ -580,6 +617,7 @@ export function bindModes() {
       case 'ch': startChallenge(arg); break;
       case 'weekly': startWeekly(); break;
       case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
+      case 'ultHist': openComboHistory({ deckArt, onPick: m => { setCombo(m); paintUlt(); } }); break;
       case 'editor': openEditor(); break;
     }
   });

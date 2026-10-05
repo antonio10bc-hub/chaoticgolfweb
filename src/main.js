@@ -11,6 +11,7 @@
      audio/    efectos de sonido y música generativa
      i18n/     textos
    ========================================================= */
+import { takeComboLink } from './ui/ultimate.js';
 import { maybeAnnounceDeck } from './ui/new-deck.js';
 import { maybeShowGift } from './ui/gift.js';
 import { renderDailyCard } from './ui/screen-modes.js';
@@ -27,7 +28,7 @@ import { bindWin } from './ui/win.js';
 import { bindScreens, showScreen, newFreeGame, applyArtExtras, suspendGame } from './ui/screens.js';
 import { bindStory, openStory, storyLevelAt, startLevel } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
-import { bindModes, openModes, startDaily, DAILY_HASHES } from './ui/screen-modes.js';
+import { bindModes, openModes, startDaily, DAILY_HASHES, playSharedCombo } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
@@ -219,6 +220,9 @@ fxAmbientStart();
     startDaily();
   };
   dailyFromLink();
+  // enlace con una combinación de Ultimate compartida (…#ultimate=CÓDIGO): la misma partida
+  const comboFromLink = () => { const e = takeComboLink(); if (!e) return; if (app.screen === 'game' && app.game) suspendGame(); track('ultimate', { desde: 'enlace' }); playSharedCombo(e); };
+  comboFromLink();
   // baraja nueva: se anuncia una vez a quien ya jugaba (al llegar al menú, sin nada más abierto)
   // y el regalo de early tester (después del anuncio, si lo hay)
   app.onStreakChange = () => { if (app.screen === 'menu') renderDailyCard(); };
@@ -227,7 +231,7 @@ fxAmbientStart();
     if (maybeAnnounceDeck()) $('dialog').addEventListener('close', () => setTimeout(maybeShowGift, 500), { once: true });
     else maybeShowGift();
   }, 1100);
-  window.addEventListener('hashchange', () => { dailyFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
+  window.addEventListener('hashchange', () => { dailyFromLink(); comboFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
 })();
 
 // PWA: jugar sin conexión (solo en http/https)

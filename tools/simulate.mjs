@@ -18,7 +18,7 @@ import { deckById, deckSize, deckHasTrain } from '../src/content/decks.js';
 const args = Object.fromEntries(process.argv.slice(2).join(' ').split('--').filter(Boolean)
   .map(s => s.trim().split(/\s+/)).map(([k, v]) => [k, v ?? true]));
 const GAMES = +(args.games || 500), PLAYERS = +(args.players || 3);
-const SIZES = { s: { cols: 5, rows: 5, par: 2 }, m: { cols: 7, rows: 9, par: 3 }, l: { cols: 9, rows: 11, par: 4 } };
+const SIZES = { s: { cols: 5, rows: 5, par: 2 }, m: { cols: 7, rows: 9, par: 3 }, l: { cols: 9, rows: 11, par: 5 } }; // (como PVE_SIZES)
 const dk = args.deck ? deckById(args.deck) : null;
 const size = dk ? deckSize(dk, SIZES[args.size || 'm']) : SIZES[args.size || 'm'];
 const deckCfg = dk ? { ...(dk.counts ? { counts: dk.counts(defaultCounts()) } : {}), ...(dk.newCards ? { startWith: dk.newCards } : {}),

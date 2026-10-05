@@ -21,7 +21,7 @@ const shoot = (g, dir, card = 'palo3', p = 0) => {
 };
 const balls = g => g.S.balls.filter(b => !b.decoy).map(b => [b.x, b.y, !!b.copy]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 
-test('la baraja: sin búnkeres ni portales, con sus cartas y fuera de Ultimate', () => {
+test('la baraja: sin búnkeres ni portales, con sus cartas (fuera del Ultimate fijo de Caos total)', () => {
   const dk = deckById('multiverse'), c = dk.counts(defaultCounts());
   assert.equal(c.bunker, 0); assert.equal(c.portal, 0);
   assert.deepEqual([c.agujeroNegro, c.gravedad, c.oGravedad, c.meteoritos], [1, 2, 1, 3]);

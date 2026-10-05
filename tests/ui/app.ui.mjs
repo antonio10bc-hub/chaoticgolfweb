@@ -190,6 +190,37 @@ it('baraja del multiverso: el hoyo también se parte en el agujero negro y las c
   assert.equal(await app(() => { const g = window.chaoticGolf.app.game; g.cancel(); g.S.hands[g.S.human] = ['gravedad']; g.clickCard(g.S.human, 0); return g.selectableAt(4, 3); }), null);
 });
 
+it('Ultimate: se combinan las barajas tocando sus iconos, el campo crece con ellas y el historial comparte la misma partida', async () => {
+  const ctx = browser.defaultBrowserContext();
+  await ctx.overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  await fresh({ chaoticgolf_deckIntros: { ultimate: true } });
+  await click('#modesBtn'); await sleep(500);
+  const size = () => app(() => document.querySelector('.ultSize').textContent);
+  assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 6, 'de inicio, las 6');
+  assert.equal(await size(), '19×13 · PAR 7');
+  for (const id of ['classic', 'minigolf', 'train', 'seasons', 'multiverse']) { await click(`.ultTog[data-ult="${id}"]`); await sleep(120); }
+  assert.deepEqual(await app(() => [...document.querySelectorAll('.ultTog.on')].map(b => b.dataset.ult)), ['water']);
+  assert.equal(await size(), '7×9 · PAR 3', 'solo agua: su campo');
+  await click('.ultTog[data-ult="water"]'); await sleep(150);
+  assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 1, 'siempre queda al menos una');
+  await click('.ultTog[data-ult="train"]'); await sleep(150);
+  await click('[data-mode="quick:ultimate"]'); await sleep(400);
+  await click('#pvePlay'); await sleep(900);
+  const g1 = await app(() => { const S = window.chaoticGolf.app.game.S; return { cols: S.cols, rows: S.rows, par: S.par, train: !!S.train, river: S.deck.includes('river'), bunker: S.deck.includes('bunker'), seed: window.chaoticGolf.app.game.seed }; });
+  assert.deepEqual([g1.cols, g1.rows, g1.par, g1.train, g1.river, g1.bunker], [13, 11, 5, true, true, false], 'agua + tren');
+  // el historial: esa combinación, y su enlace abre la misma partida
+  await click('#menuBtn'); await sleep(500);
+  await click('[data-mode="ultHist"]'); await sleep(300);
+  assert.equal(await app(() => document.querySelectorAll('#dialog[open] .ultRow').length), 1);
+  await click('#dialog[open] [data-share]'); await sleep(300);
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(link, /#ultimate=u1\./);
+  await click('#dialog[open] button[value="ok"]'); await sleep(200);
+  await page.evaluate(() => localStorage.removeItem('chaoticgolf_save_pve'));
+  await page.goto(link, { waitUntil: 'networkidle0' }); await sleep(1500);
+  assert.deepEqual(await app(() => { const { app } = window.chaoticGolf; return [app.screen, app.game.seed, app.game.S.cols]; }), ['game', g1.seed, 13], 'la misma partida');
+});
+
 it('logros: ganar un nivel a la primera desbloquea "Primera victoria" y "Hoyo en uno"', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
@@ -478,7 +509,8 @@ it('modos de juego: dos pestañas (una a la vez) y 7 barajas con estadísticas (
     ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse', 'ultimate']);
   // (las 7 caben sin desplazarse en una pantalla de 860px de alto)
   assert.ok(await app(() => document.querySelector('.deckCard.ultimate').getBoundingClientRect().bottom <= innerHeight), 'Ultimate se ve entera');
-  assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultIncl i').length), 4);
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultTog').length), 6, 'Ultimate: un icono por baraja');
+  assert.ok(await page.$('.mdPanel[data-panel="quick"] .ultSep + .deckCard.ultimate'), 'aparte, tras un separador');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
   await click('[data-mtab="special"]'); await sleep(700);

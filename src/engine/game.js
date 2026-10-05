@@ -338,6 +338,7 @@ export class Game {
   realTileAt(x, y) { return this.S.tiles.find(t => t.x === x && t.y === y); }
   parAt(x, y) { return this.S.parCells.find(p => p.x === x && p.y === y); }
   isHole(x, y) { const h = this.S.hole; return (h.x === x && h.y === y) || !!this.S.holeCopies?.some(c => c.x === x && c.y === y); } // (multiverso: también sus copias)
+  isMainHole(x, y) { const h = this.S.hole; return h.x === x && h.y === y; } // (solo el de siempre: el tren y la bola de nieve no arrastran copias)
   // las casillas PAR son solo una referencia impresa: no bloquean colocación
   cellFree(x, y) { return this.inBoard(x, y) && !this.ballAt(x, y) && !this.tileAt(x, y) && !this.isHole(x, y); }
   trapAt(x, y) { return isTrap(this.tileAt(x, y)); }       // atrapa (búnker, vagón, bola de nieve)
@@ -516,6 +517,7 @@ export class Game {
   // tras volver a la salida: si en ella hay agua, el río la arrastra (o la casilla libre más cercana);
   // si hay lago, a la casilla libre más cercana
   spawnWater(ball) {
+    if (ball.copy && !this.S.balls.includes(ball)) return; // (multiverso: la copia ya no está)
     const tl = this.tileAt(ball.x, ball.y), pid = 'b' + ball.player;
     if (isDevice(tl) || isLauncher(tl)) { // (minigolf: nadie se queda encima de una pieza)
       const spot = this.nearestFree(ball.x, ball.y);
@@ -896,6 +898,7 @@ export class Game {
   // comprobaciones al terminar un movimiento (trampa informativa + hoyo exacto)
   // safe: acaba de volver a su salida (o a su lado, si estaba ocupada): ahí no se la come ninguna planta
   finishMoveChecks(ball, { safe = false } = {}) {
+    if (ball.copy && !this.S.balls.includes(ball)) return; // (multiverso: la copia se ha ido para siempre)
     const pid = 'b' + ball.player;
     // (minigolf) acaba sobre una lanzadera que ya ha lanzado en este turno: no vuelve a lanzar, se
     // recoloca en la casilla libre de al lado
@@ -938,6 +941,7 @@ export class Game {
   // casilla más allá del otro portal, en la dirección en la que se cayó (como el hoyo).
   // Si esa casilla está fuera del tablero u ocupada por otra pelota, se queda sobre el otro portal.
   emergeFromPortal(ball, dx, dy) {
+    if (ball.copy && !this.S.balls.includes(ball)) return;
     const S = this.S, pid = 'b' + ball.player, b = playerTag(ball.player);
     let guard = 0, moved = false;
     while (isPortal(this.tileAt(ball.x, ball.y)) && guard++ < 10) {
@@ -956,7 +960,9 @@ export class Game {
     this.log('log.ballEmerges', { b, x: ball.x, y: ball.y });
   }
 
+  // (multiverso) una copia no vuelve a ninguna salida: se va para siempre (se cae, se quema, se la come la planta, el lago…)
   resetBallToSpawn(ball) {
+    if (ball.copy) { this.copyGone(ball, 'out'); return; }
     const x = ball.spawnX, y = ball.spawnY;
     const occ = this.ballAt(x, y);
     if (!occ || occ === ball) { ball.x = x; ball.y = y; return; }
@@ -1495,13 +1501,13 @@ export class Game {
     if (isDevice(this.realTileAt(nx, ny))) return block();
     const ball = this.ballAt(nx, ny);
     if (ball && !this.trainPush(ball, dir)) return block();
-    if (!ball && this.isHole(nx, ny) && !this.trainPushHole(dir)) return block();
+    if (!ball && this.isMainHole(nx, ny) && !this.trainPushHole(dir)) return block(); // (una copia del hoyo en la vía: el tren espera)
     if (this.ballAt(nx, ny) || this.isHole(nx, ny)) return block(); // (no se ha podido apartar)
     // lo que va en la arena de los vagones viaja con ellos
     const riders = [];
     for (let k = 1; k <= tr.cars; k++) {
       const [wx, wy] = this.trainCell(k), b = this.ballAt(wx, wy);
-      riders.push({ k, b, hole: this.isHole(wx, wy) });
+      riders.push({ k, b, hole: this.isMainHole(wx, wy) });
     }
     tr.pos = ni;
     // (lo que viaja va antes del paso de la locomotora en la cola: la interfaz los mueve a la vez)

@@ -241,7 +241,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   alejas), choques, portales, caídas, rivales y racha.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  **multiverso** y **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  **multiverso** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
   desplazarse (las siete caben en 860 px de alto, con aire entre ellas: la cabecera de la pantalla se compacta; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
@@ -518,6 +518,22 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - Pelota de logros **Cosmos** (10 · 50 · 100 victorias con la baraja): la bola por dentro como un trozo de espacio (nebulosa y
     estrellas, translúcida: se sigue viendo el color de quien juega) · el disco de Gargantua alrededor (por detrás arriba, por
     delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
+- **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
+  `styles/ultimate.css`). Su tarjeta va aparte, tras un separador pequeño, con paleta iridiscente y etérea (nácar con reflejos
+  rosa, aguamarina, menta y oro pálido; nada de morados) y, en lugar de estadísticas, un icono por baraja: tocarlo la activa o
+  la quita (siempre queda al menos una; se recuerda en el dispositivo). Se combinan las **6**, también la clásica (sin ella, ni
+  búnkeres ni portales). La partida junta sus cartas y lo suyo (vías del tren, estaciones) y siempre trae el palo iridiscente
+  (el de 10, en campos de 13 columnas o más). El **campo crece con la combinación** (una baraja: su campo; las 6: 19×13) y,
+  cuanto más grande, **más largo el PAR** (las 6: PAR 7); la tarjeta y la configuración enseñan el campo (en Ultimate no se
+  elige tamaño). **Historial** (botón de la tarjeta): una fila por combinación jugada con su balance y la última vez; tocarla
+  la reactiva y **Compartir** copia un enlace (`#ultimate=u1.<combinación>.<rivales>.<dificultad>.<semilla>`) con el mismo
+  reparto: quien lo abre entra directo en esa misma partida (mismo campo, mazo y rivales), y la combinación entra en su
+  historial como «recibida». El Ultimate fijo de antes (clásica, agua, minigolf y tren) sigue para el desafío Caos total y la
+  plantilla del creador. Con las copias del multiverso y todo lo demás a la vez, cualquier forma de «volver a la salida» (lago,
+  viento, fuego, planta, lanzadera, tren…) hace desaparecer la copia (`resetBallToSpawn`); el tren y la bola de nieve solo
+  arrastran el hoyo de siempre (una copia del hoyo en la vía hace esperar al tren). Simuladas las 63 combinaciones sin errores;
+  las 6 juntas, ~16 rondas (como el Ultimate de antes).
+- **Tamaños de la partida rápida** (`PVE_SIZES`): pequeño 5×5 PAR 2, mediano 7×9 PAR 3 y grande 9×11 **PAR 5**.
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.

@@ -294,7 +294,7 @@ export const seasonMethods = {
     if (!sn) return 0;
     const [dx, dy] = D[dir];
     sn.dir = dir;
-    let riders = S.balls.filter(b => !b.holed && b.x === sn.x && b.y === sn.y), hole = this.isHole(sn.x, sn.y), steps = 0;
+    let riders = S.balls.filter(b => !b.holed && b.x === sn.x && b.y === sn.y), hole = this.isMainHole(sn.x, sn.y), steps = 0;
     this.log('log.snowRolls', { dir: t('dirs.' + dir) });
     while (steps < SNOW_STEPS && !this.snowWall(sn.x + dx, sn.y + dy)) {
       sn.x += dx; sn.y += dy; steps++;
@@ -306,7 +306,7 @@ export const seasonMethods = {
       const caught = S.balls.filter(b => !b.holed && b.x === sn.x && b.y === sn.y && !riders.includes(b));
       if (caught.length) { riders.push(...caught); this.log('log.snowCatches', { b: joinAnd(caught.map(b => this.ptag(b))) }); this.tip('snow'); }
       for (const b of caught) this.anim({ t: 'settle', p: 'b' + b.player });
-      if (!hole && this.isHole(sn.x, sn.y)) {
+      if (!hole && this.isMainHole(sn.x, sn.y)) {
         const inside = S.balls.filter(b => b.holed && !b.decoy);
         if (S.jaque && S.winner !== null && inside.length) { // se lleva la pelota ganadora: JAQUE anulado
           for (const b of inside) { b.holed = false; b.x = sn.x; b.y = sn.y; riders.push(b); this.anim({ t: 'appear', p: 'b' + b.player, x: sn.x, y: sn.y }); }

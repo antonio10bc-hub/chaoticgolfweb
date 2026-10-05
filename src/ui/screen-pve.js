@@ -18,16 +18,13 @@ import { PERSONAS, personaById, assignPersonas, faceSVG } from './persona.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
 import { resumeGame, saveSub } from './resume.js';
 import { openModes } from './screen-modes.js';
-import { deckById, deckSize, deckHasTrain } from '../content/decks.js';
+import { deckById, deckSize, deckHasTrain, comboCfg, comboSize, validCombo, PVE_SIZES } from '../content/decks.js';
+import { currentCombo, recordCombo, comboLabel } from './ultimate.js';
 import { deckIntro } from './deck-intro.js';
 import { defaultCounts } from '../content/cards/index.js';
 import { showLineup } from './lineup.js';
 
-export const PVE_SIZES = {
-  s: { cols: 5, rows: 5, par: 2 },
-  m: { cols: 7, rows: 9, par: 3 },
-  l: { cols: 9, rows: 11, par: 4 },
-};
+export { PVE_SIZES }; // (los tamaños de la partida rápida: content/decks.js)
 export const PVE_COLORS = [...PLAYER_COLORS, '#e8833a'];
 // color de muestra de cada personalidad (en la elección de rivales)
 export const STYLE_COLOR = { aggro: '#f26d6d', trick: '#9b6dd6', cautious: '#5b8def', chaos: '#f2b705' };
@@ -36,6 +33,7 @@ export const STYLE_COLOR = { aggro: '#f26d6d', trick: '#9b6dd6', cautious: '#5b8
 export function openPveSetup(deck = app.pveCfg.deck || 'classic') {
   app.pveCfg.color = loadProfile().color;
   app.pveCfg.deck = deckById(deck).locked ? 'classic' : deck;
+  if (deckById(deck).ultimate) app.pveCfg.combo = currentCombo(); // (la combinación activada en su tarjeta)
   buildPveSetup();
   showScreen('pve');
 }
@@ -73,6 +71,7 @@ function buildPveSetup() {
   const dk = deckById(cfg.deck);
   $('pveDeckTag').textContent = t('decks.' + dk.id + '.name');
   $('pveDeckTag').style.setProperty('--dk', dk.color);
+  $('pveDeckTag').classList.toggle('ult', !!dk.ultimate); // (Ultimate: iridiscente, con texto oscuro)
   const local = cfg.kind === 'local';
   $$('#pveKind .pveOpt').forEach(b => { const on = cfg.kind === b.dataset.kind; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
   $('pveHumansRow').hidden = !local;
@@ -108,6 +107,11 @@ function buildPveSetup() {
     ` title="${esc(t('pve.pickColor'))}" aria-label="${esc(t('pve.colorAria', { n: i + 1 }))}" aria-pressed="${cfg.color === i}"></button>`).join('');
   // tu pelota (las que has ganado, en "Tu pelota"): con una sola persona, bajo el color
   $('pveSkins').innerHTML = cfg.humans === 1 ? pveSkinsHTML() : '';
+  // (Ultimate: el campo lo da la combinación de barajas, no se elige)
+  const ult = !!dk.ultimate;
+  $('pveSizes').hidden = ult; $('pveSizeH').hidden = ult;
+  $('pveComboSize').hidden = !ult;
+  if (ult) $('pveComboSize').textContent = t('ult.sizeNote', { size: comboLabel(cfg.combo = validCombo(cfg.combo) ? cfg.combo : currentCombo()) });
   $$('#pveSizes .pveOpt').forEach(b => {
     b.classList.toggle('sel', cfg.size === b.dataset.size); b.setAttribute('aria-pressed', cfg.size === b.dataset.size);
     const sz = deckSize(dk, PVE_SIZES[b.dataset.size]); b.querySelector('small').textContent = `${sz.cols}×${sz.rows}`; // (tamaño real con la baraja)
@@ -147,7 +151,7 @@ export function createVsGame(cfg, { extra = {}, rivals = [], seed } = {}) {
   // barajado de colores gastaba más o menos azar según tu color (el naranja no está entre los de los bots) y el reparto
   // del reto diario no era el mismo para todo el mundo
   const game = Game.pve({ players: cfg.opps + cfg.humans, humans: cfg.humans, aiLevel: cfg.diff, ...sz, ...extra,
-    humanColor: PLAYER_COLORS[0] }, seed != null ? { seed } : {});
+    humanColor: PLAYER_COLORS[0] }, seed != null ? { seed } : {}); // (seed: reto diario o Ultimate compartido)
   return { game, people, rivals };
 }
 // tras startGame: aplica caras, nombres y colores (necesita app.mode = 'pve' ya puesto)
@@ -167,7 +171,7 @@ export function lastPve(deck = 'classic') {
   try { const c = JSON.parse(localStorage.getItem(lastKey(deck))); return c && PVE_SIZES[c.size] ? { ...c, deck } : null; } catch (e) { return null; }
 }
 export function cfgSub(c) {
-  const sz = deckSize(deckById(c.deck), PVE_SIZES[c.size]), parts = [`${sz.cols}×${sz.rows}`];
+  const dk = deckById(c.deck), sz = dk.ultimate && validCombo(c.combo) ? comboSize(c.combo) : deckSize(dk, PVE_SIZES[c.size]), parts = [`${sz.cols}×${sz.rows}`];
   if (c.humans > 1) parts.push(t('pve.peopleN', { n: c.humans }));
   // (la baraja no se repite aquí: la tarjeta de cada baraja ya dice cuál es)
   if (c.opps) parts.push(t(c.opps > 1 ? 'pve.botsN' : 'pve.botN', { n: c.opps }), t('pve.diff' + c.diff[0].toUpperCase() + c.diff.slice(1)));
@@ -180,17 +184,25 @@ export async function repeatLastPve(deck = 'classic') {
   startPveMatch();
 }
 
-export function startPveMatch() {
+// seed: (Ultimate compartido) el mismo reparto que quien lo compartió · recv: viene de un enlace
+export function startPveMatch({ seed = null, recv = false } = {}) {
   const cfg = app.pveCfg;
   clampPve(cfg);
-  app.lastPveCfg = { ...cfg };
   const dk = deckById(cfg.deck);
-  const extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
-  if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)
-  if (deckHasTrain(dk)) extra.train = true; // (circuito de vías: la baraja del tren y Ultimate)
-  if (dk.seasons) extra.seasons = true; // (baraja de las estaciones)
-  if (dk.trainLayout) extra.trainLayout = true; // (la del tren: salidas abajo, vías en medio, hoyo arriba)
-  const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra });
+  let extra;
+  if (dk.ultimate) { // (Ultimate: la combinación de barajas activada; su campo crece con ella)
+    if (!validCombo(cfg.combo)) cfg.combo = currentCombo();
+    const c = comboCfg(cfg.combo);
+    extra = { counts: c.counts, startWith: c.startWith, ...c.size, ...(c.train ? { train: true } : {}), ...(c.trainLayout ? { trainLayout: true } : {}), ...(c.seasons ? { seasons: true } : {}) };
+  } else {
+    extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
+    if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)
+    if (deckHasTrain(dk)) extra.train = true; // (circuito de vías: la baraja del tren)
+    if (dk.seasons) extra.seasons = true; // (baraja de las estaciones)
+    if (dk.trainLayout) extra.trainLayout = true; // (la del tren: salidas abajo, vías en medio, hoyo arriba)
+  }
+  app.lastPveCfg = { ...cfg };
+  const made = createVsGame(cfg, { rivals: cfg.rivals.slice(0, cfg.opps), extra, seed: seed ?? undefined });
   startGame(made.game, 'pve');
   dressVsGame(made);
   try { localStorage.setItem(lastKey(cfg.deck), JSON.stringify(app.lastPveCfg)); } catch (e) { /* sin storage */ }
@@ -199,6 +211,7 @@ export function startPveMatch() {
   showScreen('game');
   saveGame();
   recordStart(cfg.humans > 1 ? 'local' : 'pve', { deck: cfg.deck || 'classic' });
+  if (dk.ultimate) recordCombo(cfg.combo, cfg.humans > 1 ? { recv } : { seed: made.game.seed, opps: cfg.opps, diff: cfg.diff, recv }); // (historial: para compartir el mismo reparto)
   // antes de que juegue nadie: quién eres, contra quién y en qué orden; al pulsar Empezar, si abre la máquina, juega
   startAfterLineup(t(cfg.humans > 1 ? 'stats.mode_local' : 'stats.mode_pve'));
 }

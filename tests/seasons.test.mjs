@@ -23,14 +23,14 @@ const shoot = (g, dir, card = 'palo3', p = 0) => {
 };
 const at = (o, x, y) => o.x === x && o.y === y;
 
-test('la baraja: una tarjeta, sin búnkeres ni portales, con sus cartas y fuera de Ultimate', () => {
+test('la baraja: una tarjeta, sin búnkeres ni portales, con sus cartas (fuera del Ultimate fijo de Caos total; en el combinador, sí)', () => {
   const dk = deckById('seasons'), c = dk.counts(defaultCounts());
   assert.equal(c.bunker, 0); assert.equal(c.portal, 0);
   assert.deepEqual([c.estacion, c.incendio, c.oNieve], [4, 1, 3]);
   assert.equal(c.charco, undefined, 'sin carta de charco / hielo / planta: llegan solos');
   for (const k of ['estacion', 'incendio', 'oNieve']) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
   const ult = deckById('ultimate').counts(defaultCounts());
-  for (const k of ['estacion', 'incendio', 'oNieve']) assert.ok(!ult[k], 'Ultimate no lleva ' + k);
+  for (const k of ['estacion', 'incendio', 'oNieve']) assert.ok(!ult[k], 'el Ultimate fijo no lleva ' + k);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate');
   assert.equal(DECKS[DECKS.findIndex(d => d.id === 'seasons') + 1].id, 'multiverse', 'la siguiente baraja, detrás');
 });

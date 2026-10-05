@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="styles/train.css">
 <link rel="stylesheet" href="styles/seasons.css">
 <link rel="stylesheet" href="styles/multiverse.css">
+<link rel="stylesheet" href="styles/ultimate.css">
 <link rel="stylesheet" href="styles/skins.css">
 <link rel="stylesheet" href="styles/phone.css">
 <script src="src/boot-watch.js" defer></script>
@@ -67,6 +68,7 @@
 <link rel="modulepreload" href="src/ui/settings.js">
 <link rel="modulepreload" href="src/ui/sound-panel.js">
 <link rel="modulepreload" href="src/ui/tutorial.js">
+<link rel="modulepreload" href="src/ui/ultimate.js">
 <link rel="modulepreload" href="src/ui/win.js">
 <link rel="modulepreload" href="src/ai/bot.js">
 <link rel="modulepreload" href="src/content/cards/index.js">
@@ -368,7 +370,8 @@
     <div id="pveSkins" role="group" data-i18n-aria="pve.skin" aria-label="Tu pelota"></div>
     </section>
     <section class="pveCol table">
-    <h4 data-i18n="pve.size">Tamaño del tablero</h4>
+    <h4 id="pveSizeH" data-i18n="pve.size">Tamaño del tablero</h4>
+    <p class="ultSizeNote" id="pveComboSize" hidden></p>
     <div class="pveOpts" id="pveSizes">
       <button class="pveOpt size" data-size="s"><span class="optGrid s" aria-hidden="true"></span><b data-i18n="pve.sizeSName">Pequeño</b><small>5×5</small></button>
       <button class="pveOpt size sel" data-size="m"><span class="optGrid m" aria-hidden="true"></span><b data-i18n="pve.sizeMName">Mediano</b><small>7×9</small></button>

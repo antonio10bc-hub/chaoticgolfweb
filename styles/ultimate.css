@@ -1,0 +1,100 @@
+/* =========================================================
+   Ultimate Chaotic Golf, el combinador (src/ui/screen-modes.js · ultCard)
+   Aparte del resto de barajas, tras un separador pequeño. Paleta iridiscente y etérea: nácar claro con reflejos de
+   rosa, aguamarina, menta y oro pálido (nada de morados), borde de arcoíris pastel y un brillo lento. Un icono por
+   baraja: tocar = activarla o quitarla.
+   ========================================================= */
+.ultSep { display: flex; align-items: center; gap: 12px; margin: -4px 8px; height: 10px; color: rgba(241,241,220,.75); pointer-events: none; }
+.ultSep i { flex: 1; height: 1.5px; border-radius: 1px; background: linear-gradient(90deg, transparent, rgba(255,214,234,.8), rgba(176,236,246,.9), rgba(196,244,220,.8), transparent); }
+.ultSep span { font-size: 12px; line-height: 1; background: linear-gradient(90deg, #FFD3EA, #B9ECF6, #CFF7E2, #FFF0C2); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.deckCard.ultimate { --dk: #9FD8E8; position: relative; overflow: hidden; isolation: isolate;
+  grid-template-areas: "pic main togs" "pic btns togs";
+  background-color: #F7F5EF;
+  background-image: var(--grain),
+    radial-gradient(90% 120% at 0% 0%, rgba(255,205,228,.75), transparent 55%),
+    radial-gradient(80% 120% at 100% 100%, rgba(176,236,246,.8), transparent 55%),
+    radial-gradient(60% 90% at 62% 0%, rgba(205,247,226,.75), transparent 60%),
+    radial-gradient(50% 80% at 35% 110%, rgba(255,240,194,.8), transparent 60%);
+  box-shadow: 0 24px 60px rgba(40,70,80,.28), 0 0 34px rgba(190,236,246,.45); }
+/* borde fino de arcoíris pastel que se desliza despacio */
+.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; z-index: 2;
+  background: linear-gradient(115deg, #FFC7E2, #A9E4F5, #BDF3DA, #FFEAB0, #FFC7E2); background-size: 300% 100%; animation: iriShift 10s steps(150) infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.deckCard.ultimate > * { position: relative; z-index: 1; }
+.deckCard.ultimate .dkPic { background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.35) 75%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 6px 18px rgba(120,180,200,.25); }
+.deckCard.ultimate .dkPic .dkArt { filter: drop-shadow(0 0 8px rgba(170,230,245,.7)); }
+.deckCard.ultimate .dkMain h3 { font-size: 23px; letter-spacing: -.025em;
+  background: linear-gradient(90deg, #D9709E, #4FA9C9 45%, #49B48C 75%, #C9962E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.deckCard.ultimate .dkMain p { color: #4B5A60; }
+.deckCard.ultimate .dkBtns .btn-primary { --b-bg: #2A3A44; --b-fg: #FFFFFF; --b-line: #2A3A44;
+  background-image: linear-gradient(100deg, rgba(255,199,226,.28), rgba(169,228,245,.32) 45%, rgba(189,243,218,.28) 75%, rgba(255,234,176,.28)); }
+.deckCard.ultimate .dkBtns .btn-light { --b-bg: rgba(255,255,255,.7); --b-fg: #2A3A44; --b-line: rgba(42,58,68,.22); }
+.deckCard.ultimate .dkBtns .btn-text { color: #4B5A60; }
+.ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: #2A3A44; color: #fff; }
+.ultSize { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #4B5A60; padding: 0 4px; white-space: nowrap; }
+.ultSize .i { width: 14px; height: 14px; opacity: .7; }
+
+/* los seis iconos: tocar = activarla o quitarla */
+.ultTogs { grid-area: togs; display: grid; grid-template-columns: repeat(6, 56px); gap: 5px; align-self: center; }
+.ultTog { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 5px; border-radius: 14px; cursor: pointer;
+  background: rgba(255,255,255,.45); border: 1.5px dashed rgba(42,58,68,.22); color: #6B7A80;
+  transition: background-color .18s, border-color .18s, transform .18s var(--ease-out), box-shadow .18s; }
+.ultTog .dkArt { width: 30px; height: 30px; filter: grayscale(1) opacity(.45); transition: filter .2s, transform .2s var(--ease-out); }
+.ultTog span { font-size: 10px; font-weight: 600; letter-spacing: .01em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ultTog.on { background: rgba(255,255,255,.92); border: 1.5px solid transparent; color: #2A3A44;
+  background-image: linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)), linear-gradient(115deg, #FFC7E2, #A9E4F5, #BDF3DA, #FFEAB0);
+  background-origin: border-box; background-clip: padding-box, border-box; box-shadow: 0 4px 14px rgba(120,180,200,.3); }
+.ultTog.on .dkArt { filter: none; transform: scale(1.04); }
+.ultTog:hover { transform: translateY(-2px); }
+.ultTog:focus-visible { outline: 2px solid #4FA9C9; outline-offset: 2px; }
+.ultTog.nope { animation: ultNope .35s ease-in-out; }
+@keyframes ultNope { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* el brillo que la cruza despacio, de vez en cuando */
+.deckCard.ultimate > .ultSheen { position: absolute; z-index: 0; inset: 0; pointer-events: none; transform: translateX(-120%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.55) 45%, rgba(255,255,255,.12) 55%, transparent 70%); animation: ultSheen 9s ease-in-out 2s infinite; }
+@keyframes ultSheen { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.deckCard.ultimate.still { animation: none; }
+html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultimate > .ultSheen { animation: none; }
+
+/* móvil y pantallas estrechas: los iconos debajo, en una fila de seis */
+/* (con 7 barajas en una pantalla de altura normal: la tarjeta, compacta) */
+@media (min-width: 641px) and (max-height: 980px) {
+  .deckList:has(> .ultSep) .deckCard.ultimate { padding-block: 8px; }
+  .deckList:has(> .ultSep) .deckCard.ultimate .dkMain h3 { font-size: 20px; }
+  .deckList:has(> .ultSep) .deckCard.ultimate .dkMain p { font-size: 12px; }
+}
+@media (min-width: 641px) and (max-width: 1060px) { .ultTogs { grid-template-columns: repeat(3, 56px); } } /* (estrecho: en dos filas) */
+@media (max-width: 640px) {
+  .deckCard.ultimate { grid-template-areas: "pic main" "togs togs" "btns btns"; }
+  .ultTogs { grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; gap: 4px; }
+  .ultTog span { font-size: 8.5px; letter-spacing: -.01em; }
+}
+
+/* ---------- la configuración de la partida: la etiqueta y el campo de la combinación ---------- */
+.pveDeckTag.ult { color: #24424C; background: linear-gradient(100deg, #FFD3EA, #B9ECF6 40%, #CFF7E2 70%, #FFF0C2); }
+.ultSizeNote { margin: 0 0 14px; font-size: 13px; color: var(--ink-soft); }
+.ultSizeNote[hidden] { display: none; }
+
+/* ---------- el historial de combinaciones ---------- */
+#dialog:has(.ultHistory) { width: min(600px, 94vw); }
+.dlgBox.ultHistory { width: auto; }
+.ultLead { color: var(--ink-soft); font-size: 13.5px; }
+.ultList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: min(52vh, 420px); overflow: auto; }
+.ultRow { display: flex; align-items: center; gap: 8px; }
+.ultShare { flex: 0 0 auto; }
+.ultPick { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 8px 12px; border-radius: 14px; text-align: left; cursor: pointer;
+  background: rgba(255,255,255,.6); border: 1px solid var(--cream-line); }
+.ultPick:hover { background: #fff; }
+.ultIcons { display: flex; gap: 3px; flex: 0 0 auto; }
+.ultIcons i { width: 26px; height: 26px; display: grid; place-items: center; }
+.ultIcons .dkArt { width: 26px; height: 26px; }
+.ultInfo { display: flex; flex-direction: column; min-width: 0; }
+.ultInfo b { font-size: 14px; font-weight: 600; }
+.ultInfo small { font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ultInfo em { font-style: normal; font-weight: 600; color: #3E8FAE; }
+.ultShare .i { width: 15px; height: 15px; margin-right: 4px; }
+
+/* la partida: el marco del campo, iridiscente y claro (sin violeta) */
+#gameScreen[data-scene="prism"] #boardWrap { box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 0 0 7px #BDE7F3, 0 0 40px 10px rgba(170,230,245,.5), 0 8.4px 25.2px 3.5px rgba(40,70,80,.18); }
