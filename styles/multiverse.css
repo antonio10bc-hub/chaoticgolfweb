@@ -148,18 +148,23 @@ html.phone #gameDecor .dSpace.nebula { animation: none; filter: blur(30px); } /*
 /* la carta de la baraja (Modos de juego): al pasar por encima, la luz fluye más deprisa por el disco */
 .deckCard:hover .dkArt .bhFlow, .deckCard:focus-within .dkArt .bhFlow { animation-duration: .9s; }
 
-/* ---------- Modos de juego con 7 barajas: más compactas, para que quepan sin desplazarse ---------- */
+/* ---------- Modos de juego con 7 barajas: compactas para que quepan sin desplazarse, con aire entre ellas ---------- */
 @media (min-width: 641px) and (max-height: 980px) {
-  .deckList:has(.deckCard:nth-child(7)) { gap: 8px; }
-  .deckList:has(.deckCard:nth-child(7)) .deckCard { padding: 7px 16px 7px 12px; row-gap: 3px; }
-  .deckList:has(.deckCard:nth-child(7)) .deckCard.ultimate { padding-block: 11px; }
-  .deckList:has(.deckCard:nth-child(7)) .dkPic { width: 50px; height: 50px; border-radius: 13px; }
-  .deckList:has(.deckCard:nth-child(7)) .dkPic .dkArt { width: 40px; height: 40px; }
+  .deckList:has(.deckCard:nth-child(7)) { gap: 13px; }
+  .deckList:has(.deckCard:nth-child(7)) .deckCard { padding: 10px 16px 10px 12px; row-gap: 4px; }
+  .deckList:has(.deckCard:nth-child(7)) .deckCard.ultimate { padding-block: 13px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkPic { width: 52px; height: 52px; border-radius: 13px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkPic .dkArt { width: 42px; height: 42px; }
   .deckList:has(.deckCard:nth-child(7)) .dkMain h3 { font-size: 16.5px; margin-bottom: 0; }
   .deckList:has(.deckCard:nth-child(7)) .dkMain p { font-size: 12px; line-height: 1.25; }
   .deckList:has(.deckCard:nth-child(7)) .dkMain .mdStats { margin-top: 2px; }
   .deckList:has(.deckCard:nth-child(7)) .dkBtns .btn-sm { padding-block: 4px; }
-  .deckList:has(.deckCard:nth-child(7)) .dkStats { padding: 4px; }
+  .deckList:has(.deckCard:nth-child(7)) .dkStats { padding: 5px 4px; }
   .deckList:has(.deckCard:nth-child(7)) .dkStats dd { font-size: 16.5px; }
-  #modesScreen:has(.deckCard:nth-child(7)) .sTitle { font-size: clamp(34px, 6vh, 64px); }
+  #modesScreen:has(.deckCard:nth-child(7)) .sTitle { font-size: clamp(30px, 5.4vh, 58px); margin-bottom: 0; }
+  #modesScreen:has(.deckCard:nth-child(7)) { padding-top: 0; padding-bottom: 10px; }
+  #modesScreen:has(.deckCard:nth-child(7)) .sSub { margin-bottom: 0; }
+  #modesScreen:has(.deckCard:nth-child(7)) .mdTabs { margin-top: 14px; margin-bottom: 0; }
+  #modesScreen:has(.deckCard:nth-child(7)) .mdPanel { margin-top: 0; }
+}
 }

@@ -15,7 +15,7 @@ const N = +Narg;
 const BASES = [{ id: 'base7', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal' }, { id: 'base9', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal' }, { id: 'baseMini', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'minigolf' }];
 const VARS = variantsFile ? (await import(new URL(variantsFile, 'file://' + process.cwd() + '/').href)).default : [];
 const list = [...VARS, ...BASES, ...CHALLENGES, ...WEEKLY.map(w => ({ ...w, weekly: true }))].filter(c => which === 'all' || which.split(',').includes(c.id) || (which === 'weekly' && c.weekly) || (which === 'vars' && VARS.includes(c)) || (which === 'ch' && !c.weekly && !c.id.startsWith('base') && !VARS.includes(c)) || (which === 'base' && c.id.startsWith('base')));
-const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F' }; // (estaciones; * bola de nieve)
+const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F', blackhole: '@', meteorite: 'R' }; // (estaciones; * bola de nieve)
 const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 function make(ch, seed) {
   const { cfg, extra } = challengeCfg(ch);
@@ -42,7 +42,7 @@ function draw(S) {
   return s;
 }
 const MECH = ['train', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'teleport', 'fall', 'settle', 'iri', 'impact',
-  'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'snow', 'season']; // (las últimas: estaciones)
+  'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'snow', 'season', 'absorb', 'gravity', 'gstuck', 'meteor', 'meteorRock']; // (las últimas: estaciones)
 for (const ch of list) {
   const rand = mulberry32(4242);
   if (show === '1') { const g = make(ch, 12345); console.log(`\n== ${ch.id} ${g.S.cols}x${g.S.rows} par ${g.S.par} · ${ch.opps + 1} jug · ${ch.diff}`); console.log(draw(g.S)); }

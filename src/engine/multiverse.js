@@ -14,7 +14,8 @@
      meteoritos     (negra) caen, uno tras otro, en la mitad de las casillas (al azar): la copia alcanzada desaparece; la
                     original vuelve a su salida (como si se hubiera caído del tablero). La copia del hoyo alcanzada también
                     desaparece; al hoyo de siempre y a las piezas no les hace nada.
-                    El primero que cae en una casilla vacía (que no sea una salida ni la casilla inicial del hoyo) se queda
+                    El primero que cae en una casilla vacía (que no sea una salida, la casilla inicial del hoyo ni pegada a un
+                    hoyo) se queda
                     ahí como una roca: un muro, como el bloque de madera.
    El hoyo también: si pasa (o se para) junto a un agujero negro salen 4 hoyos; las copias del hoyo (S.holeCopies, con su
    `id`: hole1, hole2…) son hoyos de verdad (la pelota que entra en cualquiera gana), las cartas de hoyo preguntan cuál se
@@ -253,7 +254,9 @@ export const multiverseMethods = {
     this.log('log.meteors', { n: hits.length });
     this.tip('meteors');
     // (el primero que cae en una casilla vacía se queda como roca; nunca en una salida ni en la casilla inicial del hoyo)
-    const home = (x, y) => (x === S.hole.initX && y === S.hole.initY) || S.balls.some(b => b.spawnX === x && b.spawnY === y);
+    // (ni pegada a un hoyo: podría encerrarlo entre rocas para siempre)
+    const home = (x, y) => (x === S.hole.initX && y === S.hole.initY) || S.balls.some(b => b.spawnX === x && b.spawnY === y) ||
+      this.allHoles().some(h => Math.abs(h.x - x) + Math.abs(h.y - y) <= 1);
     let rock = false;
     for (const [x, y] of hits) {
       const b = this.ballAt(x, y), hc = S.holeCopies?.find(h => h.x === x && h.y === y); // (y las copias del hoyo)

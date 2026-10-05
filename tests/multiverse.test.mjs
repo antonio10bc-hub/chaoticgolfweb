@@ -338,3 +338,17 @@ test('meteoritos: también destruyen las copias del hoyo que alcanzan (al hoyo d
   }
   assert.ok(checked > 0, 'algún meteorito ha dado a una copia');
 });
+
+test('dedo: si la pelota que mueve desaparece por una cadena de choques, el dedo se acaba (sin quedarse colgado)', () => {
+  // la copia que mueve el dedo choca con otra pelota en el borde de arriba: esa pasa junto al agujero negro y una de
+  // sus copias vuelve hacia atrás… pase lo que pase, el dedo nunca se queda con una pelota que ya no está
+  for (let seed = 1; seed <= 30; seed++) {
+    const g = level({ seed, tiles: [BH(3, 1)], ball: { x: 3, y: 4 }, extraBalls: [{ x: 3, y: 3 }] });
+    g.S.hands[0] = ['dedo']; g.clickCard(0, 0); g.chooseAmount(3);
+    for (let k = 0; k < 6 && g.pending?.kind === 'serpent'; k++) {
+      const tg = g.serpentTargets()[seed % 4] || g.serpentTargets()[0];
+      g.clickCell(tg.x, tg.y);
+      if (g.pending) assert.ok(g.S.balls.includes(g.pending.ball), 'la pelota del dedo sigue en el tablero');
+    }
+  }
+});

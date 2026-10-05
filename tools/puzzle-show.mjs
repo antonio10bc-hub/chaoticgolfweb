@@ -9,7 +9,7 @@ const [theme, n = 0] = process.argv.slice(2);
 const c = JSON.parse(fs.readFileSync(`puzzle-candidates/${theme}.json`))[+n];
 if (!c) { console.log('sin candidato'); process.exit(); }
 const L = c.L;
-const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F' }; // (estaciones: * bola de nieve)
+const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F', blackhole: '@', meteorite: 'R' }; // (estaciones: * bola de nieve)
 const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 const draw = (hole, balls, tiles) => {
   let s = '';

@@ -630,7 +630,7 @@ export default {
     loop: { name: 'Bucle infinito', desc: 'Provoca un bucle de choques entre portales.' },
   },
 
-  dailyFeat: { season: 'Estaciones', train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
+  dailyFeat: { multiverse: 'Multiverso', mv: { blackhole: 'Agujero negro', gravity: 'Gravedad', meteors: 'Meteoritos' }, season: 'Estaciones', train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },
@@ -651,6 +651,9 @@ export default {
     leafLitter: { name: 'Hojarasca', desc: 'Otoño: una alfombra de hojas secas frena cada tiro; busca el pasillo.' },
     iceRink: { name: 'Pista de hielo', desc: 'Invierno: el hielo te lanza hacia el hoyo… y más allá. Y la bola de nieve, al acecho.' },
     carnivore: { name: 'Jardín carnívoro', desc: 'Plantas carnívoras guardan el hoyo y sopla el viento. ¿Cambias de estación?' },
+    eventHorizon: { name: 'Horizonte de sucesos', desc: 'Un agujero negro junto al camino: pasa a su lado y sal partido en cuatro.' },
+    asteroids: { name: 'Campo de asteroides', desc: 'Rocas que hacen de muro: rebota en ellas… y cuidado, que caen más.' },
+    gravityWell: { name: 'Pozo de gravedad', desc: 'El hoyo, en un pozo de rocas abierto por un lado. La gravedad lo saca… o te mete.' },
     crossing: { name: 'Paso a nivel', desc: 'Una vía entre la salida y el hoyo: crúzala sin que te pille el tren.' },
     station: { name: 'Estación central', desc: 'El hoyo, dentro de un circuito: el tren le da vueltas con su vagón.' },
     express: { name: 'Expreso', desc: 'Vía larga entre charcas: en cada curva, el tren te tira al agua.' },

@@ -78,12 +78,13 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
 }
 // fondo del reto diario: el de la mecánica del día (también para partidas guardadas antes de existir)
 // el nombre de la mecánica del día (la de las estaciones, con la que toca: «Estaciones: Invierno»)
-const dailyFeatName = (feature, season) => t('dailyFeat.' + feature) + (season ? ': ' + t('seasons.' + season + '.title') : '');
+// (y la del multiverso, con lo que le toca: «Multiverso: Gravedad»)
+const dailyFeatName = (feature, season, sub) => t('dailyFeat.' + feature) + (season ? ': ' + t('seasons.' + season + '.title') : sub ? ': ' + t('dailyFeat.mv.' + sub) : '');
 export const dailyScene = feature => DAILY_FEATURES.find(f => f.id === feature)?.scene || '';
 function startDailyGame(date = dailyDate()) {
   const d = dailySetup(date);
   const { extra } = challengeCfg(d.ch);
-  startVsGame({ cfg: { opps: 2, diff: d.diff }, extra, ch: d.ch, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date, feature: d.ch.feature, season: d.ch.season?.now, scene: dailyScene(d.ch.feature) } });
+  startVsGame({ cfg: { opps: 2, diff: d.diff }, extra, ch: d.ch, rivals: d.rivals, seed: d.seed, variant: 'daily', run: { date, feature: d.ch.feature, season: d.ch.season?.now, sub: d.ch.sub, scene: dailyScene(d.ch.feature) } });
 }
 export async function startDaily() {
   if (!await modeIntro('daily')) return;
@@ -129,7 +130,7 @@ export function renderDailyCard() {
     `<span class="dPreview dRivals">${rv.map(face).join('')}` +
     (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done') + ' · ' + t('modes.daily.bestToday', { turns: turnsLabel(today.best) }))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + `</span>` +
     `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><span class="dTitle"><b>${esc(t('modes.daily.title'))}</b>${flame}</span>` +
-    `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(dailyFeatName(ch.feature, ch.season?.now))}</span></span></span>` + // (la mecánica del día)
+    `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(dailyFeatName(ch.feature, ch.season?.now, ch.sub))}</span></span></span>` + // (la mecánica del día)
     `<span class="dVs">${esc(vs)}</span>` +
     (status ? `<span class="dMeta${sk.atRisk && !saved ? ' risk' : ''}"><span>${esc(status)}</span></span>` : '') + `</span>` +
     `<span class="dPlay" title="${esc(play)}"><span class="dPlayLbl">${esc(play)}</span><svg class="i" aria-hidden="true"><use href="#${today?.best && !saved ? 'i-reset' : 'i-arrow-r'}"/></svg></span>`;
@@ -282,7 +283,7 @@ const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 export function modeChipText() {
   const r = app.run;
   switch (app.variant) {
-    case 'daily': return `${t('modes.daily.title')} · ${r?.feature ? dailyFeatName(r.feature, r.season) : new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
+    case 'daily': return `${t('modes.daily.title')} · ${r?.feature ? dailyFeatName(r.feature, r.season, r.sub) : new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
     case 'rush': return `${t('modes.holeN', { n: r.hole + 1, total: r.total })} · ${t('modes.rush.pts', { n: (r.scores || []).reduce((a, b) => a + b, 0) })}`;
     case 'challenge': return t('challenges.' + r.id + '.name');
     case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;

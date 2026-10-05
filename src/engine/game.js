@@ -1355,6 +1355,8 @@ export class Game {
       this.log('log.collisionDedo', { a: b, b: playerTag(hit.player), n: pd.stepsLeft });
       this.tip('hit');
       this.moveBallTransfer(hit, dirKey, 1);
+      // (multiverso) la cadena ha llegado a un agujero negro y una copia ha echado del tablero a la que movía el dedo
+      if (!this.S.balls.includes(ball) || ball.holed) return this.endSerpent({ checked: true });
       if (pd.stepsLeft === 0) return this.endSerpent();
       return true;
     }

@@ -928,9 +928,9 @@ it('reto diario: fondo de su mecánica y, al acabar, tu pelota (con la puesta) e
     chaoticgolf_stats: { version: 1, daily: { days: {}, bestStreak: 8 } } });
   const scenes = await app(async () => { const m = await import('/src/content/challenges.js'), sm = await import('/src/ui/screen-modes.js');
     return Object.fromEntries(m.DAILY_FEATURES.map(f => [f.id, sm.dailyScene(f.id)])); });
-  assert.deepEqual(scenes, { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons' });
+  assert.deepEqual(scenes, { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space' });
   await click('#dailyCard'); await sleep(900);
-  assert.equal(await app(() => document.getElementById('gameScreen').dataset.scene), await app(() => { const s = { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons' }; return s[window.chaoticGolf.app.run.feature]; }));
+  assert.equal(await app(() => document.getElementById('gameScreen').dataset.scene), await app(() => { const s = { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space' }; return s[window.chaoticGolf.app.run.feature]; }));
   await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 40000 });
   await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls.find(x => x.player === S.human);
     for (const o of S.balls) if (o !== b && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;

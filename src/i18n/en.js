@@ -627,7 +627,7 @@ export default {
     loop: { name: 'Infinite loop', desc: 'Trigger a collision loop between portals.' },
   },
 
-  dailyFeat: { season: 'Seasons', train: 'Train', portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
+  dailyFeat: { multiverse: 'Multiverse', mv: { blackhole: 'Black hole', gravity: 'Gravity', meteors: 'Meteors' }, season: 'Seasons', train: 'Train', portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
   modes: {
     chStat: '{w} wins out of {p} games',
     groups: { warmup: 'Warm-up', mid: 'Intermediate', expert: 'Expert' },
@@ -648,6 +648,9 @@ export default {
     leafLitter: { name: 'Leaf litter', desc: 'Autumn: a carpet of dry leaves slows every shot; find the gap.' },
     iceRink: { name: 'Ice rink', desc: 'Winter: ice sends you towards the hole… and beyond. And the snowball lies in wait.' },
     carnivore: { name: 'Carnivorous garden', desc: 'Carnivorous plants guard the hole and the wind blows. Change the season?' },
+    eventHorizon: { name: 'Event horizon', desc: 'A black hole by the path: pass next to it and come out split in four.' },
+    asteroids: { name: 'Asteroid field', desc: 'Rocks that work as walls: bounce off them… and watch out, more keep falling.' },
+    gravityWell: { name: 'Gravity well', desc: 'The hole sits in a pit of rocks open on one side. Gravity pulls it out… or pulls you in.' },
     crossing: { name: 'Level crossing', desc: 'A track between the start and the hole: cross it before the train gets you.' },
     station: { name: 'Central station', desc: 'The hole sits inside a circuit: the train circles it with its wagon.' },
     express: { name: 'Express', desc: 'A long track between ponds: at every curve, the train throws you in.' },

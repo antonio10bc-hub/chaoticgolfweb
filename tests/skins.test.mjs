@@ -40,7 +40,7 @@ test('desafíos y puzles: un nivel por grupo completo, en orden (calentamiento, 
   assert.equal(skinProgress(skinById('crown'), rec({ challenges: warm }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('crown'), rec({ challenges: mid }), PUZ).lvl, 0, 'sin el calentamiento no cuenta el intermedio');
   const p = skinProgress(skinById('crown'), rec({ challenges: { ...warm, ...mid } }), PUZ);
-  assert.equal(p.lvl, 2); assert.equal(p.group, 'expert'); assert.equal(p.value, 0); assert.equal(p.target, 8); // (6 + el del tren + el de las estaciones)
+  assert.equal(p.lvl, 2); assert.equal(p.group, 'expert'); assert.equal(p.value, 0); assert.equal(p.target, 9); // (6 + el del tren + el de las estaciones + el del multiverso)
   const all = Object.fromEntries([...Array(24).keys()].map(i => [i, true]));
   assert.equal(skinProgress(skinById('puzzle'), rec({ puzzles: all }), PUZ).lvl, 3);
   assert.equal(skinProgress(skinById('puzzle'), rec({ puzzles: { 0: true, 1: true } }), PUZ).value, 2);

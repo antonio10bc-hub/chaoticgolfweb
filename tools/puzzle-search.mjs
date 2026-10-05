@@ -3,7 +3,8 @@
 // piezas que nadie toca. Guarda los candidatos en puzzle-candidates/<tema>.json (verlos con puzzle-show).
 //   node tools/puzzle-search.mjs <tema> [intentos=3000] [semilla=1]
 // Temas: bunker river block corner launcher lake iri launchBlock lakeCorner portalLaunch iriLaunch
-//        riverLaunch chaos dance iriPortal placeLaunch fire ice iceFinger snow snowHole (añadir más en la tabla T)
+//        riverLaunch chaos dance iriPortal placeLaunch fire ice iceFinger snow snowHole bhCopy rocks gravity holeSplit
+//        (añadir más en la tabla T)
 // (estaciones: season fija la estación del nivel y snow pone la bola de nieve en una casilla libre)
 import fs from 'node:fs';
 import { CARD_KEYS } from '../src/content/cards/index.js';
@@ -39,6 +40,11 @@ const T = {
   fireMid:  { band: 'mid', season: 'summer', tiles: { fire: 3 }, pool: [...CLUBS, 'dedo', ...HOLE, 'oPalo1'], need: ['flareBall'], ess: ['fire'] },
   snow:     { band: 'mid', season: 'winter', snow: true, tiles: { ice: 1 }, pool: ['oNieve', ...CLUBS, ...HOLE], need: ['snow'], card: /oNieve/, snowEss: true },
   snowHole: { band: 'exp', season: 'winter', snow: true, tiles: {}, pool: ['oNieve', ...CLUBS, ...HOLE, ...OHOLE], need: ['snow'], card: /oNieve/, snowEss: true },
+  // multiverso: la copia que sale del agujero negro es la que emboca · rocas que hacen de muro · la gravedad · el hoyo partido
+  bhCopy:   { band: 'warm', tiles: { blackhole: 1 }, pool: [...CLUBS, ...HOLE], need: ['absorb', 'copySink'], ess: ['blackhole'] },
+  rocks:    { band: 'warm', tiles: { meteorite: 2 }, pool: [...CLUBS, 'palo4', ...HOLE], need: ['bump'], ess: ['meteorite'] },
+  gravity:  { band: 'mid', tiles: { meteorite: 1 }, pool: ['gravedad', 'oGravedad', ...CLUBS, ...HOLE], need: ['gravity'], card: /ravedad/ },
+  holeSplit: { band: 'exp', tiles: { blackhole: 1 }, pool: [...CLUBS, ...HOLE, 'oGravedad'], need: ['holeSplit'], ess: ['blackhole'] },
   placeLaunch: { band: 'exp', tiles: { block: 1 }, pool: ['launcher', 'palo1', 'palo2', 'palo3'], hand: 2, need: ['tilePlaced', 'launch'], card: /launcher/, big: true },
 }[theme];
 if (!T) throw new Error('tema ' + theme);
@@ -84,7 +90,8 @@ function build() {
   if (extraBalls.length) L.extraBalls = extraBalls;
   return L;
 }
-const has = (evs, need) => need.every(n => n === 'iri' ? evs.some(e => e.t === 'move' && e.iri) : n === 'flareBall' ? evs.some(e => e.t === 'flare' && e.p === 'b0') : evs.some(e => e.t === n));
+const has = (evs, need) => need.every(n => n === 'iri' ? evs.some(e => e.t === 'move' && e.iri) : n === 'flareBall' ? evs.some(e => e.t === 'flare' && e.p === 'b0')
+  : n === 'copySink' ? evs.some(e => e.t === 'sink' && /^b\d{3}/.test(e.p)) : n === 'holeSplit' ? evs.some(e => e.t === 'absorb' && e.p === 'hole') : evs.some(e => e.t === n));
 const iriSink = evs => { const i = evs.findIndex(e => e.t === 'sink' && e.p === 'b0'); if (i < 0) return false; for (let j = i - 1; j >= 0; j--) if (evs[j].t === 'move' && evs[j].p === 'b0') return !!evs[j].iri; return false; };
 
 let best = [];

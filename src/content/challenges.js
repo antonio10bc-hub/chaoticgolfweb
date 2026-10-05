@@ -47,6 +47,12 @@ export const DECKS = {
     oHoyoUp: 1, oHoyoDown: 1, oHoyoLeft: 1, oHoyoRight: 1, no: 2 }),
   // caos total: todas las cartas, pero con menos piezas para colocar (el campo ya trae de todo)
   chaos: () => ({ ...deckOf('ultimate'), river: 2, lake: 2, block: 2, corner: 2, tunnel: 1, launcher: 1, bunker: 1, portal: 1 }),
+  // (multiverso) asteroides: rocas en el campo y más que caen con la lluvia de meteoritos; una gravedad naranja para salir del paso
+  rocks: () => ({ ...defaultCounts(), bunker: 0, portal: 0, meteoritos: 1, oGravedad: 1 }),
+  // horizonte de sucesos: el agujero negro ya está en el campo (sin su carta) y meteoritos; sin gravedad
+  horizon: () => ({ ...deckOf('multiverse'), agujeroNegro: 0, gravedad: 0, oGravedad: 0, meteoritos: 2 }),
+  // pozo de gravedad: el hoyo en un pozo de rocas; más gravedad que nunca
+  well: () => ({ ...deckOf('multiverse'), agujeroNegro: 0, gravedad: 1, oGravedad: 1, meteoritos: 2 }),
   // dedo: el dedo manda
   fingers: () => ({ ...zero(), ...BASE, palo1: 4, palo2: 4, palo3: 2, dedo: 8 }),
   // largos: solo tiros largos (semanal)
@@ -89,6 +95,7 @@ function sanitize(tiles, C) {
 }
 const col = (type, x, y0, y1) => Array.from({ length: y1 - y0 + 1 }, (_, i) => ({ type, x, y: y0 + i })); // columna (ríos)
 const cells = (type, list) => list.map(([x, y]) => ({ type, x, y }));
+const rock = (x, y) => ({ type: 'meteorite', x, y }); // (multiverso) roca de meteorito: un muro
 
 /* ---------- los desafíos ---------- */
 // board: tamaño del campo (y su PAR) · opps: bots · diff · deck: su mazo · scene: fondo (baraja)
@@ -138,6 +145,10 @@ export const CHALLENGES = [
         ...[-2, 2].map(dx => ({ type: 'leaf', x: C.cx + dx + v.pick([0, 1]), y: C.hy + 4 })),
         { type: 'puddle', x: C.cx - 2, y: C.hy }, { type: 'puddle', x: C.cx + 2, y: C.hy + v.pick([0, 1]) }]; } },
 
+  // horizonte de sucesos (multiverso): un agujero negro a un lado del camino; pasar a su lado parte la pelota en cuatro (más
+  // opciones de llegar… y copias que se pierden por el borde), y el hoyo, si lo llevas hasta él, también se multiplica
+  { id: 'eventHorizon', group: 'warmup', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'horizon', scene: 'space', mirror: true,
+    layout: (C, v) => [{ type: 'blackhole', x: C.cx + 2, y: C.hy + v.pick([1, 2]) }, rock(C.cx - 2, C.hy + v.pick([2, 3]))] },
   /* --- intermedio: la mecánica pide pensar la jugada --- */
   { id: 'portals', group: 'mid', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', mirror: true,
     layout: (C, v) => [
@@ -184,6 +195,10 @@ export const CHALLENGES = [
   { id: 'iceRink', group: 'mid', icon: 'i-snow', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'winterOnly', scene: 'seasons', mirror: true,
     season: { now: 'winter', snow: (C, v) => ({ x: C.cx + v.pick([2, 3]), y: C.hy }) },
     layout: (C, v) => [...col('ice', C.cx - 2, C.hy + 1, C.by - 1), ...col('ice', C.cx + 2, C.hy + 2, C.by), ...cells('ice', [[C.cx - 1, C.hy - 1], [C.cx - 3, C.by + v.pick([1, 2])]])] },
+  // campo de asteroides (multiverso): rocas que hacen de muro entre la salida y el hoyo (rebota lo que llega) y una junto al
+  // hoyo, que devuelve al hoyo el tiro que se pasa; la lluvia de meteoritos deja más
+  { id: 'asteroids', group: 'mid', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'rocks', scene: 'space', mirror: true,
+    layout: (C, v) => [rock(C.cx + 2, C.hy), rock(C.cx - 2, C.hy + 2 + v.pick([0, 1])), rock(C.cx + v.pick([2, 3]), C.hy + 3)] },
   { id: 'onlyOrange', group: 'mid', icon: 'i-bolt', board: { cols: 5, rows: 5, par: 1 }, opps: 1, diff: 'normal', deck: 'orange', rules: { onlyOrange: true } },
   /* --- experto: combinaciones y mucho que leer --- */
   { id: 'sawmill', group: 'expert', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'mill', scene: 'lake', mirror: true,
@@ -223,6 +238,12 @@ export const CHALLENGES = [
   { id: 'carnivore', group: 'expert', icon: 'i-season', board: { cols: 9, rows: 9, par: 3 }, opps: 2, diff: 'normal', deck: 'seasons', scene: 'seasons', mirror: true,
     season: { now: 'spring' },
     layout: (C, v) => [...cells('plant', [[C.cx - 2, C.hy], [C.cx + 1, C.hy + 2], [C.cx - 1, C.hy + 3]]), { type: 'plant', x: C.cx + v.pick([2, 3]), y: C.hy - 1 + v.pick([0, 1]) }] },
+  // pozo de gravedad (multiverso, sin PAR): el hoyo en un pozo de rocas, abierto solo por un lado (que cambia), rocas en la
+  // subida y un agujero negro al otro lado. La gravedad saca el hoyo del pozo… o mete la pelota
+  { id: 'gravityWell', group: 'expert', icon: 'i-burst', board: { cols: 9, rows: 10, par: 5 }, opps: 2, diff: 'normal', deck: 'well', scene: 'space', mirror: true, noPar: true,
+    layout: (C, v) => { const o = v.pick([-1, 1]); // (el lado por el que se abre el pozo)
+      return [rock(C.cx - 1, C.hy - 1), rock(C.cx, C.hy - 1), rock(C.cx + 1, C.hy - 1), rock(C.cx - o, C.hy), rock(C.cx - 1, C.hy + 1), rock(C.cx, C.hy + 1), rock(C.cx + 1, C.hy + 1),
+        rock(C.cx + 3 * o, C.hy + 3), rock(C.cx - 2 * o, C.hy + 4), { type: 'blackhole', x: C.cx - 3 * o, y: C.hy + 2 }]; } },
   { id: 'crowd', group: 'expert', icon: 'i-users', board: { cols: 9, rows: 9, par: 4 }, opps: 6, diff: 'hard',
     layout: C => [{ type: 'bunker', x: C.cx - 2, y: C.hy }, { type: 'bunker', x: C.cx + 2, y: C.hy }] },
   { id: 'fullChaos', group: 'expert', icon: 'i-chaos', board: { cols: 11, rows: 10, par: 5 }, opps: 3, diff: 'normal', deck: 'chaos', scene: 'prism', mirror: true,
@@ -366,17 +387,29 @@ export const DAILY_FEATURES = [
       autumn: { layout: C => [...cells('leaf', [[C.cx - 1, C.hy + 1], [C.cx + 1, C.hy + 2], [C.cx - 2, C.hy + 2]]), { type: 'puddle', x: C.cx + 2, y: C.hy }] },
       winter: { deck: 'dailyWinter', snow: C => ({ x: 0, y: C.hy + 1 }), layout: C => cells('ice', [[C.cx + 1, C.hy + 1]]) },
     } },
+  // multiverso: cada vez que le toca, lo siguiente (agujero negro, gravedad, meteoritos), en pequeño. Agujero negro: uno en
+  // la fila de las salidas, a un lado (salir por ahí parte la pelota en cuatro) · gravedad: dos cartas y una roca que estorba ·
+  // meteoritos: dos lluvias y una roca junto al hoyo que devuelve el tiro que se pasa
+  { id: 'multiverse', scene: 'space', icon: 'i-spiral', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    variants: {
+      blackhole: { layout: C => [{ type: 'blackhole', x: C.cx + 2, y: C.by }] },
+      gravity: { deck: 'dailyGravity', layout: C => [rock(C.cx - 1, C.hy + 1)] },
+      meteors: { deck: 'dailyMeteors', layout: C => [rock(C.cx + 1, C.hy)] },
+    } },
 ];
 DECKS.daily = () => ({ ...defaultCounts(), bunker: 0, portal: 0 }); // (solo la pieza del día en el campo)
+DECKS.dailyGravity = () => ({ ...DECKS.daily(), gravedad: 2, oGravedad: 1 });
+DECKS.dailyMeteors = () => ({ ...DECKS.daily(), meteoritos: 2 });
 DECKS.dailyWinter = () => ({ ...DECKS.daily(), oNieve: 2 });
 DECKS.dailyIri = () => ({ ...DECKS.daily(), paloIri: 3 });
 DECKS.dailyTrain = () => ({ ...DECKS.daily(), trenVuelta: 1, oTren1: 2, vagon: 1 });
 // el orden de las mecánicas: cada vez que entra una nueva, la rueda sigue donde iba (ese día y los de antes, lo mismo para
-// todo el mundo): el tren, el 2 de octubre de 2026; las estaciones, el 3
+// todo el mundo): el tren, el 2 de octubre de 2026; las estaciones, el 3; el multiverso, el 6
 const DAILY_WHEELS = [
   { from: null, order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'] },
   { from: '2026-10-02', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train'] },
   { from: '2026-10-03', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season'] },
+  { from: '2026-10-06', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season', 'multiverse'] },
 ];
 // número de día desde el 1 de enero de 2026 (fechas "AAAA-MM-DD" en hora local)
 const dayNumber = date => { const [y, m, d] = date.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 0, 1)) / 864e5); };
@@ -401,6 +434,10 @@ export function dailyChallenge(date, seed) {
   if (f.seasons) { // (estaciones: le toca la siguiente cada vez que sale)
     const now = SEASONS[mod(turn, 4)], sv = f.seasons[now];
     Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, season: { now, snow: sv.snow } });
+  }
+  if (f.variants) { // (multiverso: agujero negro, gravedad y meteoritos, por turnos)
+    const keys = Object.keys(f.variants), sub = keys[mod(turn, keys.length)], sv = f.variants[sub];
+    Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, sub });
   }
   return ch;
 }

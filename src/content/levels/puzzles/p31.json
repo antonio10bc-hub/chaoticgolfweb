@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "group": "mid",
+  "name": "Atracción fatal",
+  "name_en": "Fatal attraction",
+  "cols": 5,
+  "rows": 6,
+  "hole": {
+    "x": 2,
+    "y": 5
+  },
+  "ball": {
+    "x": 3,
+    "y": 2
+  },
+  "tiles": [
+    {
+      "type": "meteorite",
+      "x": 4,
+      "y": 2
+    }
+  ],
+  "hand": [
+    "gravedad",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

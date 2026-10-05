@@ -244,7 +244,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **multiverso** y **Ultimate**. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
-  desplazarse (las siete caben en 860 px de alto; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
+  desplazarse (las siete caben en 860 px de alto, con aire entre ellas: la cabecera de la pantalla se compacta; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
@@ -501,7 +501,21 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     gravedad, que junta pelota y hoyo, es lo que más acorta; con más cartas especiales en el mazo bajaba a ~3,5); con un solo
     agujero negro, ~4,7.
   - **En el creador** (grupo Multiverso): agujero negro y roca, y la plantilla de mazo Multiverso.
-  - Pendiente: desafíos, reto diario, puzles y pelota de logros.
+  - **Desafíos del multiverso** (uno por dificultad, `scene: 'space'`): **Horizonte de sucesos** (calentamiento: un agujero
+    negro a un lado del camino, sin su carta ni gravedad), **Campo de asteroides** (intermedio: rocas que hacen de muro y una
+    lluvia de meteoritos que deja más) y **Pozo de gravedad** (experto, sin PAR: el hoyo en un pozo de rocas abierto por un
+    lado que cambia, rocas en la subida y un agujero negro al otro lado). Simulados (`sim:challenges`): 4,5 · 6,8 · 7,3 rondas,
+    sin ventaja por salida (el pozo, sin PAR, para que la salida del centro no tenga la calle directa). Las rocas de meteorito
+    nunca caen pegadas a un hoyo (lo podrían encerrar entre rocas para siempre).
+  - **Reto diario del multiverso** (en la rueda desde el 6 de octubre de 2026, sin cambiar los días anteriores; sale por primera
+    vez el 9): cada vez que le toca, lo siguiente: agujero negro (en la fila de las salidas, a un lado) · gravedad (dos cartas y
+    una roca que estorba) · meteoritos (dos lluvias y una roca junto al hoyo). La tarjeta dice cuál («Multiverso: Gravedad»;
+    `variants` en `DAILY_FEATURES`, `ch.sub`). Simulados: 3,4 · 3,8 · 4,5 rondas (como el resto de días, 3-4,5).
+  - **Puzles del multiverso** (p30-p32, al final del índice): **Horizonte doble** (calentamiento: parte el hoyo y luego la
+    pelota), **Atracción fatal** (intermedio: la gravedad junta pelota y hoyo) y **Hoyos gemelos** (experto: parte el hoyo,
+    lleva una copia junto a la pelota y júntalas con la gravedad naranja). Buscados con
+    `npm run puzzles:search -- bhCopy|rocks|gravity|holeSplit`.
+  - Pendiente: pelota de logros.
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
