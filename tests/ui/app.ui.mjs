@@ -507,8 +507,9 @@ it('modos de juego: dos pestañas (una a la vez) y 7 barajas con estadísticas (
   // las barajas nuevas van detrás de la última y Ultimate siempre al final, con las barajas que reúne
   assert.deepEqual(await app(() => [...document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard [data-mode^="quick:"]')].map(b => b.dataset.mode.slice(6))),
     ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse', 'ultimate']);
-  // (las 7 caben sin desplazarse en una pantalla de 860px de alto)
-  assert.ok(await app(() => document.querySelector('.deckCard.ultimate').getBoundingClientRect().bottom <= innerHeight), 'Ultimate se ve entera');
+  // (Ultimate, aparte y más grande: la lista se desplaza hasta ella y se ve entera)
+  await app(() => document.querySelector('.deckCard.ultimate').scrollIntoView({ block: 'end', behavior: 'instant' })); await sleep(400);
+  assert.ok(await app(() => { const r = document.querySelector('.deckCard.ultimate').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; }), 'Ultimate se ve entera');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultTog').length), 6, 'Ultimate: un icono por baraja');
   assert.ok(await page.$('.mdPanel[data-panel="quick"] .ultSep + .deckCard.ultimate'), 'aparte, tras un separador');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);

@@ -457,6 +457,7 @@ export default {
     includes: 'Includes',    soon: 'Coming soon', played: 'Played', won: 'Wins', pct: 'Win rate',
   },
   ult: {
+    count: '{n} of {total} decks', 
     size: '{c}×{r} · PAR {par}', sizeNote: 'Combination course: {size}',
     togglesAria: 'Decks in the combination: tap to add or remove them', needOne: 'Keep at least one deck',
     history: 'History', historyTitle: 'Combinations', historyLead: 'Tap one to switch it on. Share it and whoever opens the link plays your very same game.',

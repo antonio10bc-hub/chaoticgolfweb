@@ -9,47 +9,64 @@
 .ultSep span { font-size: 12px; line-height: 1; background: linear-gradient(90deg, #FFD3EA, #B9ECF6, #CFF7E2, #FFF0C2); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 .deckCard.ultimate { --dk: #9FD8E8; position: relative; overflow: hidden; isolation: isolate;
-  grid-template-areas: "pic main togs" "pic btns togs";
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 22px 24px 20px;
   background-color: #F7F5EF;
   background-image: var(--grain),
     radial-gradient(90% 120% at 0% 0%, rgba(255,205,228,.75), transparent 55%),
     radial-gradient(80% 120% at 100% 100%, rgba(176,236,246,.8), transparent 55%),
     radial-gradient(60% 90% at 62% 0%, rgba(205,247,226,.75), transparent 60%),
     radial-gradient(50% 80% at 35% 110%, rgba(255,240,194,.8), transparent 60%);
-  box-shadow: 0 24px 60px rgba(40,70,80,.28), 0 0 34px rgba(190,236,246,.45); }
-/* borde fino de arcoíris pastel que se desliza despacio */
-.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; z-index: 2;
+  box-shadow: 0 24px 60px rgba(40,70,80,.28), 0 0 40px rgba(190,236,246,.5); }
+/* borde de arcoíris pastel que se desliza despacio */
+.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2.5px; pointer-events: none; z-index: 2;
   background: linear-gradient(115deg, #FFC7E2, #A9E4F5, #BDF3DA, #FFEAB0, #FFC7E2); background-size: 300% 100%; animation: iriShift 10s steps(150) infinite;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
 .deckCard.ultimate > * { position: relative; z-index: 1; }
-.deckCard.ultimate .dkPic { background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.35) 75%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 6px 18px rgba(120,180,200,.25); }
-.deckCard.ultimate .dkPic .dkArt { filter: drop-shadow(0 0 8px rgba(170,230,245,.7)); }
-.deckCard.ultimate .dkMain h3 { font-size: 23px; letter-spacing: -.025em;
-  background: linear-gradient(90deg, #D9709E, #4FA9C9 45%, #49B48C 75%, #C9962E); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.deckCard.ultimate .dkMain p { color: #4B5A60; }
-.deckCard.ultimate .dkBtns .btn-primary { --b-bg: #2A3A44; --b-fg: #FFFFFF; --b-line: #2A3A44;
-  background-image: linear-gradient(100deg, rgba(255,199,226,.28), rgba(169,228,245,.32) 45%, rgba(189,243,218,.28) 75%, rgba(255,234,176,.28)); }
-.deckCard.ultimate .dkBtns .btn-light { --b-bg: rgba(255,255,255,.7); --b-fg: #2A3A44; --b-line: rgba(42,58,68,.22); }
-.deckCard.ultimate .dkBtns .btn-text { color: #4B5A60; }
-.ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: #2A3A44; color: #fff; }
-.ultSize { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #4B5A60; padding: 0 4px; white-space: nowrap; }
-.ultSize .i { width: 14px; height: 14px; opacity: .7; }
 
-/* los seis iconos: tocar = activarla o quitarla */
-.ultTogs { grid-area: togs; display: grid; grid-template-columns: repeat(6, 56px); gap: 5px; align-self: center; }
-.ultTog { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 5px; border-radius: 14px; cursor: pointer;
-  background: rgba(255,255,255,.45); border: 1.5px dashed rgba(42,58,68,.22); color: #6B7A80;
-  transition: background-color .18s, border-color .18s, transform .18s var(--ease-out), box-shadow .18s; }
-.ultTog .dkArt { width: 30px; height: 30px; filter: grayscale(1) opacity(.45); transition: filter .2s, transform .2s var(--ease-out); }
-.ultTog span { font-size: 10px; font-weight: 600; letter-spacing: .01em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ultTog.on { background: rgba(255,255,255,.92); border: 1.5px solid transparent; color: #2A3A44;
-  background-image: linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)), linear-gradient(115deg, #FFC7E2, #A9E4F5, #BDF3DA, #FFEAB0);
-  background-origin: border-box; background-clip: padding-box, border-box; box-shadow: 0 4px 14px rgba(120,180,200,.3); }
-.ultTog.on .dkArt { filter: none; transform: scale(1.04); }
-.ultTog:hover { transform: translateY(-2px); }
-.ultTog:focus-visible { outline: 2px solid #4FA9C9; outline-offset: 2px; }
+/* arriba: el prisma, el nombre y qué es */
+.ultTop { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 640px; }
+.ultEmblem { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 2px;
+  background: radial-gradient(circle at 50% 40%, #fff, rgba(255,255,255,.4) 75%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 6px 16px rgba(120,180,200,.3); }
+.ultEmblem .dkArt { width: 38px; height: 38px; filter: drop-shadow(0 0 6px rgba(170,230,245,.7)); }
+.ultTop h3 { font-size: 30px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05;
+  background: linear-gradient(90deg, #D9709E, #4FA9C9 40%, #49B48C 70%, #C9962E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ultTop p { font-size: 14px; color: #4B5A60; line-height: 1.35; max-width: 640px; text-wrap: balance; }
+
+/* en medio: las seis barajas, grandes. Activada: rellena, con borde de arcoíris, brillo y ✓. Apagada: translúcida, en gris y con + */
+.ultTogs { display: grid; grid-template-columns: repeat(6, 96px); gap: 12px; justify-content: center; margin-top: 12px; }
+.ultTog { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px; border-radius: 18px; cursor: pointer;
+  background: rgba(255,255,255,.28); border: 2px dashed rgba(42,58,68,.25); color: #7A888E;
+  transition: background-color .2s, border-color .2s, transform .2s var(--ease-out), box-shadow .2s; }
+.ultTog .dkArt { width: 54px; height: 54px; filter: grayscale(1) opacity(.4); transition: filter .25s, transform .25s var(--ease-out); }
+.ultName { font-size: 12.5px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ultMark { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; color: #7A888E; box-shadow: 0 0 0 1.5px rgba(42,58,68,.25), 0 2px 6px rgba(40,70,80,.15); transition: background .2s, color .2s, transform .2s var(--ease-out); }
+.ultMark .i { width: 14px; height: 14px; }
+.ultTog.on { background: #fff; border: 2px solid transparent; color: #24424C; transform: translateY(-3px);
+  background-image: linear-gradient(#fff, #fff), linear-gradient(115deg, #FF9FCB, #6FCBE6, #7FE0B4, #FFD36E);
+  background-origin: border-box; background-clip: padding-box, border-box;
+  box-shadow: 0 10px 24px rgba(90,170,200,.35), 0 0 0 5px rgba(255,255,255,.55); }
+.ultTog.on .dkArt { filter: drop-shadow(0 3px 6px rgba(40,70,80,.2)); transform: scale(1.06); }
+.ultTog.on .ultMark { color: #fff; background: linear-gradient(135deg, #FF9FCB, #6FCBE6 50%, #7FE0B4); box-shadow: 0 2px 8px rgba(80,160,190,.45); transform: scale(1.08); }
+.ultTog:hover { transform: translateY(-4px); }
+.ultTog:not(.on):hover { background: rgba(255,255,255,.55); border-color: rgba(42,58,68,.4); }
+.ultTog:not(.on):hover .dkArt { filter: grayscale(.5) opacity(.7); }
+.ultTog:focus-visible { outline: 2px solid #4FA9C9; outline-offset: 3px; }
 .ultTog.nope { animation: ultNope .35s ease-in-out; }
-@keyframes ultNope { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes ultNope { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* debajo: cuántas y el campo que sale; y los botones */
+.ultSum { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #4B5A60; }
+.ultSum > span:first-child { font-weight: 600; }
+.ultSize { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.ultSize .i { width: 14px; height: 14px; opacity: .7; }
+.ultBtns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.ultBtns .btn-primary { --b-bg: #2A3A44; --b-fg: #FFFFFF; --b-line: #2A3A44; padding-inline: 22px;
+  background-image: linear-gradient(100deg, rgba(255,199,226,.28), rgba(169,228,245,.32) 45%, rgba(189,243,218,.28) 75%, rgba(255,234,176,.28)); }
+.ultBtns .btn-light { --b-bg: rgba(255,255,255,.75); --b-fg: #2A3A44; --b-line: rgba(42,58,68,.22); }
+.ultBtns .btn-text { color: #4B5A60; }
+.ultHistBtn .i { width: 15px; height: 15px; margin-right: 5px; }
+.ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #2A3A44; color: #fff; }
 
 /* el brillo que la cruza despacio, de vez en cuando */
 .deckCard.ultimate > .ultSheen { position: absolute; z-index: 0; inset: 0; pointer-events: none; transform: translateX(-120%);
@@ -58,18 +75,17 @@
 .deckCard.ultimate.still { animation: none; }
 html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultimate > .ultSheen { animation: none; }
 
-/* móvil y pantallas estrechas: los iconos debajo, en una fila de seis */
-/* (con 7 barajas en una pantalla de altura normal: la tarjeta, compacta) */
-@media (min-width: 641px) and (max-height: 980px) {
-  .deckList:has(> .ultSep) .deckCard.ultimate { padding-block: 8px; }
-  .deckList:has(> .ultSep) .deckCard.ultimate .dkMain h3 { font-size: 20px; }
-  .deckList:has(> .ultSep) .deckCard.ultimate .dkMain p { font-size: 12px; }
-}
-@media (min-width: 641px) and (max-width: 1060px) { .ultTogs { grid-template-columns: repeat(3, 56px); } } /* (estrecho: en dos filas) */
-@media (max-width: 640px) {
-  .deckCard.ultimate { grid-template-areas: "pic main" "togs togs" "btns btns"; }
-  .ultTogs { grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; gap: 4px; }
-  .ultTog span { font-size: 8.5px; letter-spacing: -.01em; }
+/* pantallas estrechas: los seis iconos se encogen (siguen en una fila) */
+@media (max-width: 760px) {
+  .deckCard.ultimate { padding: 18px 12px 16px; gap: 12px; }
+  .ultTop h3 { font-size: 24px; }
+  .ultTop p { font-size: 13px; }
+  .ultTogs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; width: 100%; }
+  .ultTog { padding: 9px 2px 7px; border-radius: 14px; gap: 4px; }
+  .ultTog .dkArt { width: 36px; height: 36px; }
+  .ultName { font-size: 9px; letter-spacing: -.01em; }
+  .ultMark { width: 18px; height: 18px; top: -6px; right: -6px; }
+  .ultMark .i { width: 11px; height: 11px; }
 }
 
 /* ---------- la configuración de la partida: la etiqueta y el campo de la combinación ---------- */

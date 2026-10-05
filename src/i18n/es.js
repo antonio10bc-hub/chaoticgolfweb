@@ -460,6 +460,7 @@ export default {
     includes: 'Incluye', soon: 'Próximamente', played: 'Jugadas', won: 'Victorias', pct: 'Ganadas',
   },
   ult: {
+    count: '{n} de {total} barajas', 
     size: '{c}×{r} · PAR {par}', sizeNote: 'Campo de la combinación: {size}',
     togglesAria: 'Barajas de la combinación: toca para activarlas o quitarlas', needOne: 'Deja al menos una baraja',
     history: 'Historial', historyTitle: 'Combinaciones', historyLead: 'Toca una para activarla. Compártela y quien abra el enlace jugará tu misma partida.',

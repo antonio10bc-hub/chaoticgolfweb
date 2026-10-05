@@ -519,9 +519,12 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     estrellas, translúcida: se sigue viendo el color de quien juega) · el disco de Gargantua alrededor (por detrás arriba, por
     delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
 - **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
-  `styles/ultimate.css`). Su tarjeta va aparte, tras un separador pequeño, con paleta iridiscente y etérea (nácar con reflejos
-  rosa, aguamarina, menta y oro pálido; nada de morados) y, en lugar de estadísticas, un icono por baraja: tocarlo la activa o
-  la quita (siempre queda al menos una; se recuerda en el dispositivo). Se combinan las **6**, también la clásica (sin ella, ni
+  `styles/ultimate.css`). Su tarjeta va aparte, tras un separador pequeño, más grande que las demás (la lista se desplaza hasta
+  ella), con paleta iridiscente y etérea (nácar con reflejos rosa, aguamarina, menta y oro pálido; nada de morados) y todo
+  centrado: el prisma, el nombre y qué es; una fila de seis iconos grandes, uno por baraja (tocarlo la activa o la quita;
+  activada: rellena, con borde de arcoíris, brillo y ✓; apagada: translúcida, en gris, con borde discontinuo y +; siempre
+  queda al menos una y se recuerda en el dispositivo); cuántas van y el campo que sale; y debajo, continuar, nueva partida,
+  historial y cartas nuevas. Se combinan las **6**, también la clásica (sin ella, ni
   búnkeres ni portales). La partida junta sus cartas y lo suyo (vías del tren, estaciones) y siempre trae el palo iridiscente
   (el de 10, en campos de 13 columnas o más). El **campo crece con la combinación** (una baraja: su campo; las 6: 19×13) y,
   cuanto más grande, **más largo el PAR** (las 6: PAR 7); la tarjeta y la configuración enseñan el campo (en Ultimate no se

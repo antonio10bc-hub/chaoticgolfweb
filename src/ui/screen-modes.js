@@ -406,17 +406,19 @@ export const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden
 const ultSep = () => `<div class="ultSep" aria-hidden="true"><i></i><span>✦</span><i></i></div>`;
 function ultCard(dk, qsave = loadSave('pve'), still = false) {
   const mask = currentCombo(), saved = qsave && (qsave.pveCfg?.deck || 'classic') === dk.id, n = comboHistory().length;
-  const b = (act, label, cls) => `<button class="${cls} btn-sm" data-mode="${act}">${label}</button>`;
-  const togs = ULT_DECKS.map((id, i) => { const on = !!(mask & (1 << i)), d = deckOfId(id);
-    return `<button class="ultTog${on ? ' on' : ''}" data-ult="${id}" aria-pressed="${on}" title="${esc(t('decks.' + id + '.name'))}">${deckArt(d)}<span>${esc(t('ult.short.' + id))}</span></button>`; }).join('');
+  const on = ULT_DECKS.filter((_, i) => mask & (1 << i)).length;
+  const b = (act, label, cls) => `<button class="${cls}" data-mode="${act}">${label}</button>`;
+  // cada baraja: su icono grande y su nombre; activada, con borde de arcoíris y ✓; apagada, en gris y con +
+  const togs = ULT_DECKS.map((id, i) => { const act = !!(mask & (1 << i)), d = deckOfId(id);
+    return `<button class="ultTog${act ? ' on' : ''}" data-ult="${id}" aria-pressed="${act}" title="${esc(t('decks.' + id + '.name'))}">` +
+      `<span class="ultMark" aria-hidden="true"><svg class="i"><use href="#${act ? 'i-check' : 'i-plus'}"/></svg></span>${deckArt(d)}<span class="ultName">${esc(t('ult.short.' + id))}</span></button>`; }).join('');
   return `<article class="deckCard ultimate${still ? ' still' : ''}" style="--dk:${dk.color}">` +
-    `<div class="dkPic">${deckArt(dk)}</div>` +
-    `<div class="dkMain"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3><p>${esc(t('decks.' + dk.id + '.desc'))}</p></div>` +
+    `<header class="ultTop"><span class="ultEmblem">${deckArt(dk)}</span><h3>${esc(t('decks.' + dk.id + '.name'))}</h3><p>${esc(t('decks.' + dk.id + '.desc'))}</p></header>` +
     `<div class="ultTogs" role="group" aria-label="${esc(t('ult.togglesAria'))}">${togs}</div>` +
-    `<div class="dkBtns">${saved ? `<button class="btn-continue btn-sm" data-mode="resume:pve">${esc(t('menu.continue'))}</button>` : ''}` +
+    `<p class="ultSum"><span>${esc(t('ult.count', { n: on, total: ULT_DECKS.length }))}</span><span class="ultSize"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>${esc(comboLabel(mask))}</span></p>` +
+    `<div class="ultBtns">${saved ? `<button class="btn-continue" data-mode="resume:pve">${esc(t('menu.continue'))}</button>` : ''}` +
     b('quick:ultimate', esc(t('modes.quick.setup')), saved ? 'btn-light' : 'btn-primary') +
     b('ultHist', `<svg class="i" aria-hidden="true"><use href="#i-list"/></svg>${esc(t('ult.history'))}${n ? `<em>${n}</em>` : ''}`, 'btn-light ultHistBtn') +
-    `<span class="ultSize"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>${esc(comboLabel(mask))}</span>` +
     (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '') +
     `</div><span class="ultSheen" aria-hidden="true"></span></article>`;
 }
