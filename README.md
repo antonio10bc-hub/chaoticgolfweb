@@ -314,11 +314,19 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Tu pelota** (botón de la camiseta a la derecha de Ajustes, en el menú y en Modos de juego; `src/ui/skins.js`, `src/ui/my-ball.js`,
   `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
   las 10 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
-  **Fuego** (racha del reto diario: 7 · 30 · 365 días; más llamas, más altas, brasas), **Clásica**, **Agua**, **Madera** y
-  **Prisma** (victorias con cada baraja: 10 · 50 · 100; aro de oro · laurel · destellos, agua dentro · ondas · gotas,
-  vetas · marco · molino que gira, brillo iridiscente · halo · destellos), **Rayo** (series de contrarreloj completas:
-  1 · 5 · 15; cronómetro con estela · esfera de reloj · rayos), **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
-  completo (calentamiento · intermedio · experto). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
+  **Fuego** (racha del reto diario: 7 · 30 · 365 días), **Clásica**, **Agua**, **Madera**, **Vapor**, **Estaciones**,
+  **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (series de contrarreloj completas: 1 · 5 · 15),
+  **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
+  completo (calentamiento · intermedio · experto). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
+  **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
+  fuego dentro · corona de llamas · lava y bolas de fuego en órbita; bañada en oro (hoyuelos dorados y aro) · laurel ·
+  destello y destellos en órbita; agua dentro · ondas · más agua, burbujas y gotas en órbita; vetas · marco de madera ·
+  barnizada con nudo y el molino; cinturón de hierro · vapor · caldera encendida y el tren en su vía; cuatro colores ·
+  pétalos, hojas y copos · colores vivos que giran y las cuatro estaciones en órbita; el espacio dentro · el disco de
+  Gargantua · más estrellas y copias en órbita; iridiscente · halo arcoíris · iris más vivo y destellos en órbita;
+  esfera de cronómetro con su aguja · su corona y la estela · cargada de electricidad (la aguja enloquece) y rayos en
+  órbita; orbe real (bandas de oro) · la corona · gemas en las bandas y en órbita; piezas dibujadas · el marco del
+  puzle · piezas de colores y tres en órbita. La imagen de compartir las dibuja igual (`src/ui/skin-canvas.js`). Cada tarjeta enseña sus niveles y lo que falta para el siguiente; tocar
   un nivel lo enseña en grande (también los que aún no tienes) y los ganados se ponen con un toque. Decoran la pelota sin
   cambiar su color (el color es quien juega). En el ordenador la ventana es ancha y todo cabe sin desplazarse: tu pelota en una columna a la izquierda y las 10 tarjetas a la derecha (4 × 2 desde 1200 px, 2 × 4 por debajo) y se ven en el tablero en cualquier modo de una sola persona. En Partida
   rápida, bajo el color, se elige también la pelota. Lo ganado se calcula siempre de las estadísticas; al conseguir un

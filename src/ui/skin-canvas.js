@@ -46,35 +46,42 @@ function ballBody(c, x, y, R, color) {
   c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(x - R * .38, y - R * .46, R * .24, 0, 7); c.fill();
 }
 const clipBall = (c, x, y, R) => { c.save(); c.beginPath(); c.arc(x, y, R, 0, 7); c.clip(); };
+// el destello que cruza la bola (clásica, prisma y corona III)
+function shine(c, x, y, R) {
+  const g = c.createLinearGradient(x - R, y - R, x + R, y + R); g.addColorStop(.35, 'rgba(255,255,255,0)'); g.addColorStop(.48, 'rgba(255,255,255,.7)'); g.addColorStop(.6, 'rgba(255,255,255,0)');
+  c.fillStyle = g; c.fillRect(x - R, y - R, R * 2, R * 2);
+}
 
 // x, y: centro · R: radio · sk: { id, lvl } o null (la normal)
 export async function drawSkinBall(c, x, y, R, color, sk) {
   const D = R * 2, A = SKIN_ART, lvl = sk?.lvl || 0;
   const back = [], front = [], surf = []; // (capas: detrás, sobre la superficie, delante)
   switch (sk?.id) {
-    case 'fire': {
-      const n = [3, 5, 7][lvl - 1], spread = [64, 120, 176][lvl - 1], h = D * [.52, .7, .9][lvl - 1];
-      if (lvl >= 2) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(255,176,64,.6)'], [.45, 'rgba(255,110,40,.18)'], [.68, 'rgba(255,110,40,0)']]));
-      const svg = lvl >= 3 ? A.FLAME : A.FLAME.replace('class="flCore"', 'class="flCore" opacity="0"');
-      for (let i = 0; i < n; i++) {
-        const a = n === 1 ? 0 : -spread / 2 + spread * i / (n - 1), k = 1 - Math.abs(a) / 260;
-        back.push(async () => { c.save(); c.translate(x, y); c.rotate(rad(a)); await put(c, svg, 0, -(R * .6 + h * k / 2), D * .42 * k, h * k); c.restore(); });
+    case 'fire': { // fuego dentro · corona de llamas · lava y bolas de fuego en órbita
+      const noCore = A.FLAME.replace('class="flCore"', 'class="flCore" opacity="0"'), hi = D * (lvl >= 3 ? .8 : .5);
+      if (lvl >= 2) for (let i = 0; i < 5; i++) {
+        const a = -58 + 29 * i, k = 1 - Math.abs(a) / 260, h = D * .5;
+        back.push(async () => { c.save(); c.translate(x, y); c.rotate(rad(a)); await put(c, noCore, 0, -(R * .6 + h * k / 2), D * .4 * k, h * k); c.restore(); });
       }
-      surf.push(() => glow(c, x, y + R * 1.24, R * 1.16, [[0, 'rgba(255,160,50,.75)'], [1, 'rgba(255,120,40,0)']]));
-      if (lvl >= 3) for (let i = 0; i < 7; i++) front.push(() => { const ex = x + (i - 3) * D * .13, ey = y - R - D * (.1 + (i % 3) * .14);
-        c.fillStyle = '#FFE066'; c.shadowColor = '#FF9A3C'; c.shadowBlur = D * .06; c.beginPath(); c.arc(ex, ey, D * .035 * (.8 + (i % 3) * .25), 0, 7); c.fill(); c.shadowBlur = 0; });
+      surf.push(() => glow(c, x, y + R * 1.24, R * 1.24, [[0, 'rgba(255,160,50,.8)'], [1, 'rgba(255,120,40,0)']]));
+      if (lvl >= 3) surf.push(() => glow(c, x, y + R, D, [[0, 'rgba(255,230,120,.95)'], [.4, 'rgba(255,140,40,.8)'], [.68, 'rgba(255,150,50,.3)'], [.88, 'rgba(255,150,50,0)']]));
+      for (const [px, k] of [[-6, .9], [20, 1.15], [46, .95], [70, 1.1]]) surf.push(() => { c.globalAlpha = .9;
+        const p = put(c, lvl >= 3 ? A.FLAME : noCore, x - R + D * (px + 18) / 100, y + R + D * .1 - hi * k / 2, D * .36 * k, hi * k); return p.then(() => { c.globalAlpha = 1; }); });
+      if (lvl >= 3) for (const a of [30, 150, 270]) front.push(() => { const [ox, oy] = orbit(x, y, D, a);
+        c.shadowColor = 'rgba(255,150,50,.85)'; c.shadowBlur = D * .05; return put(c, A.FLAME, ox, oy, D * .24, D * .32).then(() => { c.shadowBlur = 0; }); });
       break;
     }
-    case 'classic':
+    case 'classic': // bañada en oro · laurel · destello y destellos en órbita
       if (lvl >= 2) back.push(() => put(c, A.laurel(), x, y, D * 1.88, D * 1.88));
+      surf.push(() => { c.fillStyle = 'rgba(242,200,88,.85)'; const st = D * .075;
+        for (let yy = y - R + st / 2; yy < y + R; yy += st) for (let xx = x - R + st / 2; xx < x + R; xx += st) { c.beginPath(); c.arc(xx, yy, D * .015, 0, 7); c.fill(); }
+        glow(c, x, y, R * Math.SQRT2, lvl >= 3 ? [[.5, 'rgba(255,226,130,0)'], [.76, 'rgba(255,226,130,.7)'], [1, '#EFC24E']] : [[.56, 'rgba(242,200,88,0)'], [.8, 'rgba(242,200,88,.5)'], [1, 'rgba(230,185,74,.85)']]); });
+      if (lvl >= 3) surf.push(() => shine(c, x, y, R));
       front.push(() => { if (lvl >= 3) { c.shadowColor = 'rgba(255,215,110,.8)'; c.shadowBlur = D * .25; }
         ring(c, x, y, R + D * .008, R + D * .06, '#E0B040'); c.shadowBlur = 0; ring(c, x, y, R + D * .008, R + D * .022, '#FFF0BE'); });
-      if (lvl >= 3) {
-        surf.push(() => { const g = c.createLinearGradient(x - R, y - R, x + R, y + R); g.addColorStop(.35, 'rgba(255,255,255,0)'); g.addColorStop(.48, 'rgba(255,255,255,.7)'); g.addColorStop(.6, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(x - R, y - R, D, D); });
-        for (const [dx, dy] of [[-.58, -.42], [.58, -.3], [-.44, .5], [.52, .46]]) front.push(() => put(c, A.SPARK('#FFF4C2'), x + dx * D + D * .12, y + dy * D + D * .12, D * .24, D * .24));
-      }
+      if (lvl >= 3) ['#FFF4C2', '#FFE38A', '#FFF4C2', '#FFE38A'].forEach((col, i) => front.push(() => { const [ox, oy] = orbit(x, y, D, 45 + i * 90); return put(c, A.SPARK(col), ox, oy, D * .24, D * .24); }));
       break;
-    case 'water': {
+    case 'water': { // agua dentro · ondas · más agua, burbujas y gotas en órbita
       const h = [.4, .52, .62][lvl - 1];
       surf.push(() => put(c, A.WAVE.replace('<path ', '<path fill="rgba(91,182,214,.6)" '), x - D * .3, y + R - D * h * .9 / 2, D * 1.6, D * h * .9),
         () => put(c, A.WAVE.replace('<path ', '<path fill="rgba(125,208,236,.65)" '), x + D * .2, y + R - D * h / 2, D * 1.6, D * h),
@@ -86,17 +93,22 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
       }
       break;
     }
-    case 'wood':
-      surf.push(() => { c.strokeStyle = 'rgba(80,45,15,.24)'; c.lineWidth = D * .025;
+    case 'wood': // vetas · marco de madera · barnizada (nudo y brillo) y el molino
+      surf.push(() => { c.strokeStyle = lvl >= 3 ? 'rgba(80,45,15,.42)' : 'rgba(80,45,15,.24)'; c.lineWidth = D * (lvl >= 3 ? .03 : .025);
         for (let i = 1; i < 9; i++) { c.beginPath(); c.ellipse(x - R * .56, y + R * 1.36, D * .16 * i * 1.3, D * .16 * i * .7, 0, 0, 7); c.stroke(); } });
+      if (lvl >= 3) surf.push(() => { c.fillStyle = 'rgba(160,100,40,.25)'; c.fillRect(x - R, y - R, D, D);
+        c.save(); c.translate(x + R * .34, y - R * .38); c.rotate(rad(-20)); c.fillStyle = 'rgba(70,38,12,.75)'; c.beginPath(); c.ellipse(0, 0, D * .04, D * .025, 0, 0, 7); c.fill();
+        c.strokeStyle = 'rgba(70,38,12,.35)'; c.lineWidth = D * .015; for (const k of [1.8, 2.8]) { c.beginPath(); c.ellipse(0, 0, D * .04 * k, D * .025 * k, 0, 0, 7); c.stroke(); } c.restore();
+        c.fillStyle = 'rgba(255,250,235,.45)'; c.beginPath(); c.ellipse(x - R * .3, y - R * .58, R * .46, R * .2, rad(-26), 0, 7); c.fill(); });
       if (lvl >= 3) back.push(() => put(c, A.WINDMILL, x, y, D * 2, D * 2, rad(18)));
       if (lvl >= 2) front.push(() => { ring(c, x, y, R * .996, R * 1.2, '#B98552'); c.strokeStyle = 'rgba(122,82,48,.55)'; c.lineWidth = 1.2;
         for (let i = 0; i < 36; i++) { const a = rad(i * 10); c.beginPath(); c.moveTo(x + Math.cos(a) * R, y + Math.sin(a) * R); c.lineTo(x + Math.cos(a + .08) * R * 1.2, y + Math.sin(a + .08) * R * 1.2); c.stroke(); }
         c.strokeStyle = '#7A5230'; c.lineWidth = D * .02; c.beginPath(); c.arc(x, y, R * 1.2, 0, 7); c.stroke(); });
       break;
-    case 'steam':
+    case 'steam': // cinturón de hierro · bocanadas de vapor · la caldera encendida y el tren en su vía
+      if (lvl >= 3) surf.push(() => glow(c, x, y + R, R * 1.1, [[0, 'rgba(255,214,90,.9)'], [.45, 'rgba(240,110,40,.7)'], [1, 'rgba(200,52,31,0)']]));
       surf.push(() => { const g = c.createLinearGradient(0, y - D * .09, 0, y + D * .09); g.addColorStop(0, '#6A7078'); g.addColorStop(1, '#383C42');
-        c.fillStyle = g; c.fillRect(x - R, y - D * .09, D, D * .18); c.fillStyle = '#D9A441';
+        c.fillStyle = g; c.fillRect(x - R, y - D * .09, D, D * .18); c.fillStyle = lvl >= 3 ? '#FFE38A' : '#D9A441';
         for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(x + i * D * .16, y, D * .025, 0, 7); c.fill(); } });
       if (lvl >= 2) back.push(() => { c.fillStyle = 'rgba(255,255,255,.88)'; for (const [dx, dy, r] of [[-.12, -.62, .12], [.06, -.8, .15], [.24, -.98, .12]]) { c.beginPath(); c.arc(x + dx * D, y + dy * D, r * D, 0, 7); c.fill(); } });
       if (lvl >= 3) {
@@ -105,63 +117,71 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
         front.push(() => { const [ox, oy] = orbit(x, y, D, 60); return put(c, A.LOCO_MINI, ox, oy, D * .4, D * .3); });
       }
       break;
-    case 'seasons': {
-      surf.push(() => { c.globalAlpha = .62; c.fillStyle = conic(c, x, y, ['#BFE0F0', '#BFE0F0', '#F4A9C4', '#F4A9C4', '#FFD23F', '#FFD23F', '#D9703A', '#D9703A', '#BFE0F0'], rad(-135)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
+    case 'seasons': { // cuatro colores · pétalos, hojas y copos · colores vivos y las cuatro en órbita
+      surf.push(() => { c.globalAlpha = lvl >= 3 ? .88 : .62; c.fillStyle = conic(c, x, y, ['#BFE0F0', '#BFE0F0', '#F4A9C4', '#F4A9C4', '#FFD23F', '#FFD23F', '#D9703A', '#D9703A', '#BFE0F0'], rad(-135)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
       if (lvl >= 2) ['#F8C3D6', '#D9703A', '#FFFFFF'].forEach((col, i) => back.push(() => { c.fillStyle = col; c.beginPath(); c.ellipse(x - R * .6 + i * R * .6, y - R * 1.15 + i * R * .2, D * .07, D * .05, .6, 0, 7); c.fill(); }));
       if (lvl >= 3) ['spring', 'summer', 'autumn', 'winter'].forEach((s, i) => front.push(() => { const [ox, oy] = orbit(x, y, D, i * 90);
         c.fillStyle = '#F1F1DC'; c.beginPath(); c.arc(ox, oy, D * .15, 0, 7); c.fill(); return put(c, A.SEASON_SVG(s), ox, oy, D * .3, D * .3); }));
       break;
     }
-    case 'cosmos': { // (como en skins.css: la bola por dentro como el espacio, el disco de Gargantua y las copias en órbita)
-      surf.push(() => { c.globalAlpha = .55; c.globalCompositeOperation = 'multiply'; glow(c, x, y, R * 1.2, [[0, '#6A58B8'], [.7, '#2A1F5E'], [1, '#2A1F5E']]);
+    case 'cosmos': { // el espacio dentro · el disco de Gargantua · más estrellas y copias en órbita
+      surf.push(() => { c.globalAlpha = lvl >= 3 ? .85 : .55; c.globalCompositeOperation = 'multiply'; glow(c, x, y, R * 1.2, [[0, '#6A58B8'], [.7, '#2A1F5E'], [1, '#2A1F5E']]);
         glow(c, x - R * .16, y - R * .08, R * .7, [[0, 'rgba(214,120,200,.75)'], [1, 'rgba(214,120,200,0)']]);
         glow(c, x + R * .24, y + R * .16, R * .6, [[0, 'rgba(110,150,255,.6)'], [1, 'rgba(110,150,255,0)']]);
         c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.fillStyle = '#fff';
-        for (const [dx, dy, r] of [[-.4, -.32, .04], [.28, -.44, .03], [.12, .4, .035], [-.24, .24, .025]]) { c.beginPath(); c.arc(x + dx * R, y + dy * R, r * R, 0, 7); c.fill(); } });
+        for (const [dx, dy, r] of [[-.4, -.32, .04], [.28, -.44, .03], [.12, .4, .035], [-.24, .24, .025]]) { c.beginPath(); c.arc(x + dx * R, y + dy * R, r * R, 0, 7); c.fill(); }
+        if (lvl >= 3) for (const [px, py] of [[24, 30], [62, 22], [44, 66], [72, 54]]) glow(c, x - R + D * px / 100, y - R + D * py / 100, D * .06, [[0, '#fff'], [.3, 'rgba(220,210,255,.6)'], [1, 'rgba(220,210,255,0)']]); });
       const disk = half => () => { c.save(); c.translate(x, y); c.rotate(rad(-14)); c.beginPath(); c.rect(-D, half ? 0 : -D, D * 2, D); c.clip();
         c.shadowColor = 'rgba(255,180,90,.8)'; c.shadowBlur = D * .08; c.strokeStyle = '#F4A954'; c.lineWidth = D * .055;
         c.beginPath(); c.ellipse(0, 0, D * .84, D * .12, 0, 0, 7); c.stroke(); c.restore(); };
-      if (lvl >= 3) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(155,120,255,.55)'], [.45, 'rgba(91,63,184,.2)'], [.68, 'rgba(91,63,184,0)']]));
       if (lvl >= 2) { back.push(disk(false)); front.push(disk(true)); }
       if (lvl >= 3) [0, 120, 240].forEach(a => front.push(() => { const [ox, oy] = orbit(x, y, D, a);
         c.globalAlpha = .7; c.fillStyle = color; c.beginPath(); c.arc(ox, oy, D * .12, 0, 7); c.fill(); c.globalAlpha = 1;
         c.save(); c.setLineDash([D * .04, D * .03]); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = D * .02; c.beginPath(); c.arc(ox, oy, D * .14, 0, 7); c.stroke(); c.restore(); }));
       break;
     }
-    case 'prism': {
+    case 'prism': { // brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita
       const IRI = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF', '#FF8FC4'];
-      surf.push(() => { c.globalAlpha = lvl >= 3 ? .62 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
-      if (lvl >= 3) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(200,170,255,.55)'], [.45, 'rgba(255,160,210,.2)'], [.68, 'rgba(255,160,210,0)']]));
+      surf.push(() => { c.globalAlpha = lvl >= 3 ? .78 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
+      if (lvl >= 3) surf.push(() => shine(c, x, y, R));
       if (lvl >= 2) back.push(() => ring(c, x, y, R * 1.02, R * 1.24, conic(c, x, y, IRI)));
       if (lvl >= 3) ['#FFD1E8', '#CFE3FF', '#C8F5E6', '#FFF1C9'].forEach((col, i) => front.push(() => { const [ox, oy] = orbit(x, y, D, 45 + i * 90); return put(c, A.SPARK(col), ox, oy, D * .26, D * .26); }));
       break;
     }
-    case 'bolt':
-      back.push(() => { c.fillStyle = '#3E6AA8'; c.beginPath(); c.roundRect(x - D * .1, y - R - D * .2, D * .2, D * .26, [D * .05, D * .05, 0, 0]); c.fill();
+    case 'bolt': // esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
+      if (lvl >= 2) back.push(() => { c.fillStyle = '#3E6AA8'; c.beginPath(); c.roundRect(x - D * .1, y - R - D * .2, D * .2, D * .26, [D * .05, D * .05, 0, 0]); c.fill();
         c.fillStyle = '#FFD84A'; c.fillRect(x - D * .08, y - R - D * .24, D * .16, D * .05);
         for (const [dy, w] of [[-.16, .7], [0, 1], [.16, .8]]) { const g = c.createLinearGradient(x - R - D * .85 * w, 0, x - R * .6, 0);
           g.addColorStop(0, 'rgba(200,230,255,0)'); g.addColorStop(1, 'rgba(225,242,255,.95)'); c.fillStyle = g;
           c.beginPath(); c.roundRect(x - R * .2 - D * .85 * w, y + dy * D - D * .045, D * .85 * w, D * .09, D * .045); c.fill(); } });
-      if (lvl >= 3) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(127,196,255,.6)'], [.5, 'rgba(63,111,168,.15)'], [.68, 'rgba(63,111,168,0)']]));
-      if (lvl >= 2) front.push(() => { ring(c, x, y, R * 1.014, R * 1.3, '#E4F0FF'); c.strokeStyle = '#2D4F7C'; c.lineWidth = D * .036;
-        for (let i = 0; i < 12; i++) { const a = rad(i * 30); c.beginPath(); c.moveTo(x + Math.sin(a) * R * 1.06, y - Math.cos(a) * R * 1.06); c.lineTo(x + Math.sin(a) * R * 1.26, y - Math.cos(a) * R * 1.26); c.stroke(); }
-        c.lineWidth = D * .018; c.beginPath(); c.arc(x, y, R * 1.3, 0, 7); c.stroke();
-        const [tx, ty] = [x + Math.sin(rad(60)) * D * .585, y - Math.cos(rad(60)) * D * .585]; c.fillStyle = '#FFD84A'; c.beginPath(); c.arc(tx, ty, D * .06, 0, 7); c.fill(); });
-      if (lvl >= 3) front.push(() => put(c, A.BOLT, x - R * .75, y - R * .7, D * .3, D * .48, rad(-18)), () => put(c, A.BOLT, x + R * 1.1, y - R * .55, D * .3, D * .48, rad(22)));
+      if (lvl >= 3) surf.push(() => glow(c, x, y, R * 1.25, [[0, 'rgba(200,235,255,.5)'], [.55, 'rgba(90,170,255,.32)'], [.8, 'rgba(63,111,168,0)']]),
+        () => put(c, A.BOLT, x + R * .3, y - R * .32, D * .3, D * .48, rad(14)));
+      surf.push(() => { c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = D * .03;
+        for (let i = 0; i < 12; i++) { const a = rad(i * 30); c.beginPath(); c.moveTo(x + Math.sin(a) * R * .72, y - Math.cos(a) * R * .72); c.lineTo(x + Math.sin(a) * R, y - Math.cos(a) * R); c.stroke(); }
+        const ha = rad(lvl >= 3 ? 130 : 70); c.lineCap = 'round'; c.strokeStyle = '#2D4F7C'; c.lineWidth = D * .074; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.sin(ha) * R * .68, y - Math.cos(ha) * R * .68); c.stroke();
+        c.strokeStyle = '#FFD84A'; c.lineWidth = D * .05; c.stroke(); c.lineCap = 'butt';
+        c.fillStyle = '#FFD84A'; c.beginPath(); c.arc(x, y, D * .07, 0, 7); c.fill(); c.fillStyle = '#2D4F7C'; c.beginPath(); c.arc(x, y, D * .055, 0, 7); c.fill(); });
+      if (lvl >= 3) [30, 150, 270].forEach(a => front.push(() => { const [ox, oy] = orbit(x, y, D, a);
+        c.shadowColor = '#FFE27A'; c.shadowBlur = D * .05; return put(c, A.BOLT, ox, oy, D * .2, D * .32).then(() => { c.shadowBlur = 0; }); }));
       break;
-    case 'crown': {
-      const w = D * (lvl >= 2 ? .7 : .56), h = D * (lvl >= 2 ? .5 : .4), top = y - R - D * (lvl >= 2 ? .4 : .3);
-      if (lvl >= 3) back.push(() => { c.save(); for (let i = 0; i < 12; i++) { c.fillStyle = 'rgba(240,150,90,.35)'; c.beginPath(); c.moveTo(x, y);
-        c.arc(x, y, D * .84, rad(i * 30 - 4.5 - 90), rad(i * 30 + 4.5 - 90)); c.closePath(); c.fill(); } c.restore(); });
-      if (lvl >= 2) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(232,110,90,.55)'], [.45, 'rgba(181,71,63,.18)'], [.68, 'rgba(181,71,63,0)']]));
-      front.push(() => put(c, A.CROWN(lvl - 1), x, top + h / 2, w, h, rad(-8)));
-      if (lvl >= 3) front.push(() => put(c, A.SPARK('#FFE3B0'), x - D * .5, y - D * .1, D * .24, D * .24), () => put(c, A.SPARK('#FFE3B0'), x + D * .72, y, D * .24, D * .24));
+    case 'crown': { // orbe real · la corona encima · gemas en sus bandas, brillo y gemas en órbita
+      surf.push(() => { c.save(); c.shadowColor = 'rgba(90,50,10,.35)'; c.shadowBlur = D * .02; c.strokeStyle = '#E6B94A'; c.lineWidth = D * (lvl >= 3 ? .07 : .05);
+        c.beginPath(); c.ellipse(x, y, D * .16 - c.lineWidth / 2, R * 1.04 - c.lineWidth / 2, 0, 0, 7); c.stroke(); c.restore();
+        const bh = D * (lvl >= 3 ? .18 : .14), g = c.createLinearGradient(0, y - bh / 2, 0, y + bh / 2); g.addColorStop(0, '#F6D77A'); g.addColorStop(.55, '#D9A93A'); g.addColorStop(1, '#A87A22');
+        c.fillStyle = g; c.fillRect(x - R, y - bh / 2, D, bh);
+        if (lvl >= 3) for (const px of [22, 50, 78]) { const gx = x - R + D * px / 100; c.fillStyle = '#FFF0BE'; c.beginPath(); c.arc(gx, y, D * .062, 0, 7); c.fill();
+          c.fillStyle = '#D9453A'; c.beginPath(); c.arc(gx, y, D * .05, 0, 7); c.fill(); } });
+      if (lvl >= 3) surf.push(() => shine(c, x, y, R));
+      if (lvl >= 2) { const w = D * (lvl >= 3 ? .66 : .56), h = D * (lvl >= 3 ? .47 : .4), top = y - R - D * (lvl >= 3 ? .37 : .3);
+        front.push(() => put(c, A.CROWN(lvl >= 3 ? 2 : 0), x, top + h / 2, w, h, rad(-8))); }
+      if (lvl >= 3) [30, 150, 270].forEach(a => front.push(() => { const [ox, oy] = orbit(x, y, D, a); return put(c, A.GEM, ox, oy, D * .2, D * .2); }));
       break;
     }
-    case 'puzzle':
-      surf.push(() => put(c, A.JIGSAW, x, y, D, D));
-      if (lvl >= 3) back.push(() => glow(c, x, y, D * .92, [[0, 'rgba(126,232,200,.55)'], [.45, 'rgba(46,138,128,.18)'], [.68, 'rgba(46,138,128,0)']]));
-      if (lvl >= 2) (lvl >= 3 ? ['#2E8A80', '#E8873A', '#8E6BE0'] : ['#2E8A80']).forEach((col, i, arr) => front.push(() => { const [ox, oy] = orbit(x, y, D, 40 + i * 360 / arr.length); return put(c, A.PIECE(col), ox, oy, D * .3, D * .3); }));
+    case 'puzzle': // piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
+      if (lvl >= 3) surf.push(() => { c.globalAlpha = .5; c.fillStyle = conic(c, x, y, ['#2E8A80', '#2E8A80', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', '#E8873A', '#E8873A', '#8E6BE0', '#8E6BE0'], rad(-90)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });
+      surf.push(() => put(c, lvl >= 3 ? A.JIGSAW.replace('rgba(255,255,255,.55)', 'rgba(255,255,255,.9)') : A.JIGSAW, x, y, D, D));
+      if (lvl >= 2) back.push(() => { c.globalAlpha = .75; return put(c, A.FRAME, x, y, D * 1.56, D * 1.56).then(() => { c.globalAlpha = 1; }); });
+      if (lvl >= 3) ['#2E8A80', '#E8873A', '#8E6BE0'].forEach((col, i) => front.push(() => { const [ox, oy] = orbit(x, y, D, 40 + i * 120); return put(c, A.PIECE(col), ox, oy, D * .3, D * .3); }));
       break;
   }
   for (const f of back) await f();

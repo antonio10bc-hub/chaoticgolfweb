@@ -29,41 +29,29 @@
 .skFront .orb > i { left: 50%; top: 50%; width: calc(var(--bs) * .26); height: calc(var(--bs) * .26); margin: calc(var(--bs) * -.13) 0 0 calc(var(--bs) * -.13);
   transform: rotate(var(--a, 0deg)) translateY(calc(var(--bs) * -.74)) rotate(calc(var(--a, 0deg) * -1)); }
 @keyframes skSpin { to { transform: rotate(360deg); } }
-@keyframes skPulse { 0%, 100% { opacity: .55; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
 @keyframes skTwinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 45% { opacity: 1; transform: scale(1) rotate(45deg); } 70% { opacity: .2; } }
 .skFront .spk { width: calc(var(--bs) * .24); height: calc(var(--bs) * .24); left: var(--x, 0); top: var(--y, 0);
   animation: skTwinkle 2.2s ease-in-out infinite; animation-delay: var(--d, 0s); filter: drop-shadow(0 0 calc(var(--bs) * .04) rgba(255,255,255,.9)); }
 .skFront .orb .spk { left: 50%; top: 50%; animation: none; filter: drop-shadow(0 0 calc(var(--bs) * .05) rgba(255,255,255,.9)); }
-.skBack .aura { inset: calc(var(--bs) * -.42); border-radius: 50%; animation: skPulse 2.4s ease-in-out infinite; }
 
-/* ---------- FUEGO · racha: más llamas, más altas, brasas ---------- */
-.sk-fire .fl { --h: calc(var(--bs) * .52); width: calc(var(--bs) * .42); height: var(--h); left: calc(50% - var(--bs) * .21); top: calc(50% - var(--bs) * .3 - var(--h));
+/* ---------- FUEGO · racha: fuego dentro · corona de llamas · lava y bolas de fuego en órbita ---------- */
+.sk-fire .glow { inset: 0; background: radial-gradient(circle at 50% 112%, rgba(255,160,50,.8), rgba(255,120,40,0) 62%); }
+.sk-fire .fi { --h: calc(var(--bs) * .5); left: var(--x); bottom: -10%; width: 36%; height: var(--h); opacity: .88; }
+.sl3.sk-fire .fi { --h: calc(var(--bs) * .8); opacity: .95; }
+.sk-fire .fi svg, .sk-fire .fl svg { transform-origin: 50% 100%; animation: skFlick .7s ease-in-out infinite alternate; animation-delay: var(--d); }
+.sk-fire .flCore { opacity: 0; }
+.sl3.sk-fire .fi .flCore, .sk-fire .fb .flCore { opacity: .95; }
+@keyframes skFlick { 0% { transform: scale(var(--k, 1)) scaleY(.86) skewX(-5deg); } 100% { transform: scale(var(--k, 1)) scaleY(1.12) skewX(5deg); } }
+.sl3.sk-fire .lava { inset: 0; background: radial-gradient(circle at 50% 100%, rgba(255,230,120,.95), rgba(255,140,40,.8) 40%, rgba(255,150,50,.3) 68%, rgba(255,150,50,0) 88%);
+  animation: skGlowFlick .9s ease-in-out infinite alternate; }
+.sk-fire .fl { --h: calc(var(--bs) * .5); width: calc(var(--bs) * .4); height: var(--h); left: calc(50% - var(--bs) * .2); top: calc(50% - var(--bs) * .3 - var(--h));
   transform-origin: 50% calc(var(--h) + var(--bs) * .3); transform: rotate(var(--a)); }
-.sl2.sk-fire .fl { --h: calc(var(--bs) * .7); }
-.sl3.sk-fire .fl { --h: calc(var(--bs) * .9); }
-.sk-fire .fl svg { transform-origin: 50% 100%; animation: skFlick .7s ease-in-out infinite alternate; animation-delay: var(--d); }
-.sk-fire .fl .flCore { opacity: 0; }
-.sl3.sk-fire .fl .flCore { opacity: .95; }
-@keyframes skFlick { 0% { transform: scale(var(--k)) scaleY(.86) skewX(-5deg); } 100% { transform: scale(var(--k)) scaleY(1.12) skewX(5deg); } }
-.sk-fire .aura { background: radial-gradient(circle, rgba(255,176,64,.6), rgba(255,110,40,.18) 45%, rgba(255,110,40,0) 68%); }
-.sk-fire .glow { inset: 0; background: radial-gradient(circle at 50% 112%, rgba(255,160,50,.75), rgba(255,120,40,0) 58%); }
-.sl3.sk-fire .lava { inset: -30%; background: conic-gradient(from 0deg, rgba(255,210,63,.0), rgba(255,140,40,.45), rgba(255,210,63,0) 30%, rgba(224,72,42,.4) 55%, rgba(255,210,63,0) 75%, rgba(255,140,40,.35)); animation: skSpin 5s linear infinite; }
-.sk-fire .em { width: calc(var(--bs) * .07 * var(--s)); height: calc(var(--bs) * .07 * var(--s)); left: calc(46% + var(--x)); top: 12%; border-radius: 50%;
-  background: #FFE066; box-shadow: 0 0 calc(var(--bs) * .06) #FF9A3C; animation: skEmber 1.8s ease-out infinite; animation-delay: var(--d);
-  will-change: transform, opacity; } /* (capa propia: si no, cada brasa repinta la pelota en cada fotograma) */
-@keyframes skEmber { 0% { opacity: 0; transform: translate(0, 0) scale(1); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(var(--bs) * .12), calc(var(--bs) * -1.1)) scale(.3); } }
+.sk-fire .orb { animation-duration: 4.5s; }
+.sk-fire .orb .fb { width: calc(var(--bs) * .24); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.12);
+  filter: drop-shadow(0 0 calc(var(--bs) * .05) rgba(255,150,50,.85)); }
+.sk-fire .orb .fb svg { transform-origin: 50% 100%; animation: skFlick .5s ease-in-out infinite alternate; }
 
-/* ---------- CLÁSICA · baraja clásica: aro de oro · laurel · destellos ---------- */
-.sk-classic .gr { inset: calc(var(--bs) * -.035); border-radius: 50%;
-  box-shadow: 0 0 0 calc(var(--bs) * .055) #D9A93A, inset 0 0 0 calc(var(--bs) * .02) rgba(255,240,190,.9), 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.35); }
-.sl3.sk-classic .gr { box-shadow: 0 0 0 calc(var(--bs) * .055) #E6B94A, inset 0 0 0 calc(var(--bs) * .02) #FFF4C2, 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.4), 0 0 calc(var(--bs) * .3) rgba(255,215,110,.7); }
-.sk-classic .laurel { inset: calc(var(--bs) * -.44); animation: skSway 4s ease-in-out infinite; }
-@keyframes skSway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
-.sl3.sk-classic .shine { inset: -10% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.75) 48%, rgba(255,245,200,.2) 54%, transparent 62%);
-  animation: skShine 2.8s ease-in-out infinite; }
-@keyframes skShine { 0%, 40% { transform: translateX(-55%); } 100% { transform: translateX(55%); } }
-
-/* ---------- AGUA · baraja de agua: agua dentro · ondas · gotas y burbujas ---------- */
+/* ---------- AGUA · baraja de agua: agua dentro · ondas · más agua, burbujas y gotas en órbita (el molde de todas) ---------- */
 .sk-water .wv { left: 0; bottom: 0; width: 200%; height: 40%; fill: rgba(125,208,236,.62); animation: skWave 3.2s linear infinite; }
 .sk-water .wv.b { height: 34%; fill: rgba(91,182,214,.55); animation-duration: 4.6s; animation-direction: reverse; }
 .sl2.sk-water .wv { height: 52%; } .sl2.sk-water .wv.b { height: 45%; }
@@ -77,12 +65,37 @@
   border: 1px solid rgba(255,255,255,.85); background: rgba(255,255,255,.25); animation: skBubble 2.4s ease-in infinite; animation-delay: var(--d); }
 @keyframes skBubble { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(calc(var(--bs) * -.55)); opacity: 0; } }
 .sk-water .orb { animation-duration: 5.5s; }
-.sk-water .drop { width: calc(var(--bs) * .22); height: calc(var(--bs) * .29); filter: drop-shadow(0 calc(var(--bs) * .02) calc(var(--bs) * .03) rgba(20,70,90,.35)); }
+.sk-water .drop { width: calc(var(--bs) * .22) !important; height: calc(var(--bs) * .29) !important; filter: drop-shadow(0 calc(var(--bs) * .02) calc(var(--bs) * .03) rgba(20,70,90,.35)); }
 
-/* ---------- MADERA · minigolf: vetas · marco de madera · molino ---------- */
+/* ---------- CLÁSICA · baraja clásica: bañada en oro · laurel · destello que la cruza y destellos en órbita ---------- */
+.sk-classic .gd { inset: 0; border-radius: 50%; /* los hoyuelos, de oro, y un borde dorado por dentro */
+  background: radial-gradient(circle, #F2C858 0 calc(var(--bs) * .016), transparent calc(var(--bs) * .021)) 0 0 / calc(var(--bs) * .075) calc(var(--bs) * .075),
+    radial-gradient(circle at 50% 50%, transparent 56%, rgba(242,200,88,.55) 80%, rgba(230,185,74,.9));
+  opacity: .9; }
+.sl3.sk-classic .gd { background: radial-gradient(circle, #F2C858 0 calc(var(--bs) * .016), transparent calc(var(--bs) * .021)) 0 0 / calc(var(--bs) * .075) calc(var(--bs) * .075),
+    radial-gradient(circle at 50% 50%, transparent 50%, rgba(255,226,130,.7) 76%, #EFC24E); opacity: 1; }
+.sk-classic .gr { inset: calc(var(--bs) * -.035); border-radius: 50%;
+  box-shadow: 0 0 0 calc(var(--bs) * .055) #D9A93A, inset 0 0 0 calc(var(--bs) * .02) rgba(255,240,190,.9), 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.35); }
+.sl3.sk-classic .gr { box-shadow: 0 0 0 calc(var(--bs) * .055) #E6B94A, inset 0 0 0 calc(var(--bs) * .02) #FFF4C2, 0 0 0 calc(var(--bs) * .075) rgba(140,106,28,.4), 0 0 calc(var(--bs) * .3) rgba(255,215,110,.7); }
+.sk-classic .laurel { inset: calc(var(--bs) * -.44); animation: skSway 4s ease-in-out infinite; }
+@keyframes skSway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.sl3.sk-classic .shine, .sl3.sk-prism .shine, .sl3.sk-crown .shine { inset: -10% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.75) 48%, rgba(255,245,200,.2) 54%, transparent 62%);
+  animation: skShine 2.8s ease-in-out infinite; }
+@keyframes skShine { 0%, 40% { transform: translateX(-55%); } 100% { transform: translateX(55%); } }
+.sk-classic .orb { animation-duration: 8s; }
+.skFront .orb .spk svg { animation: skGlint 1.6s ease-in-out infinite alternate; }
+@keyframes skGlint { from { transform: scale(.7) rotate(0deg); } to { transform: scale(1.05) rotate(45deg); } }
+
+/* ---------- MADERA · minigolf: vetas · marco de madera · barnizada (nudo y brillo) y el molino ---------- */
 .sk-wood .grain { inset: 0; background:
   repeating-radial-gradient(ellipse 130% 70% at 22% 118%, transparent 0 7%, rgba(80,45,15,.24) 7% 9%, transparent 9% 13%),
   linear-gradient(160deg, rgba(255,230,190,.18), rgba(90,55,25,.18)); }
+.sl3.sk-wood .grain { background:
+  repeating-radial-gradient(ellipse 130% 70% at 22% 118%, transparent 0 6%, rgba(80,45,15,.42) 6% 8.5%, transparent 8.5% 11%),
+  linear-gradient(160deg, rgba(220,160,90,.35), rgba(90,50,20,.45)); }
+.sk-wood .knot { left: 56%; top: 24%; width: 22%; height: 14%; border-radius: 50%; transform: rotate(-20deg);
+  background: radial-gradient(closest-side, rgba(70,38,12,.75) 0 30%, rgba(70,38,12,.3) 32% 55%, transparent 58% 70%, rgba(70,38,12,.3) 72% 85%, transparent 88%); }
+.sk-wood .varnish { left: 12%; top: 8%; width: 46%; height: 26%; border-radius: 50%; background: linear-gradient(rgba(255,250,235,.6), rgba(255,250,235,0)); transform: rotate(-26deg); }
 .sk-wood .wr { inset: calc(var(--bs) * -.1); border-radius: 50%;
   background: repeating-linear-gradient(100deg, #B98552 0 calc(var(--bs) * .03), #A8743F calc(var(--bs) * .03) calc(var(--bs) * .06), #C99257 calc(var(--bs) * .06) calc(var(--bs) * .085));
   -webkit-mask: radial-gradient(closest-side, transparent 83%, #000 84.5%); mask: radial-gradient(closest-side, transparent 83%, #000 84.5%);
@@ -90,10 +103,14 @@
 .sk-wood .mill { inset: calc(var(--bs) * -.5); }
 .sk-wood .mill .wmBlades { transform-box: view-box; transform-origin: 0 0; animation: skSpin 6s linear infinite; }
 
-/* ---------- VAPOR · baraja del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren ---------- */
+/* ---------- VAPOR · baraja del tren: cinturón de hierro · bocanadas de vapor · la caldera encendida y el tren en su vía ---------- */
 .sk-steam .band { left: 0; right: 0; top: 41%; height: 18%;
   background: radial-gradient(circle, #E6B94A 0 22%, transparent 27%) 0 50% / calc(var(--bs) * .16) 100% repeat-x, linear-gradient(#6A7078, #383C42);
   box-shadow: inset 0 calc(var(--bs) * .012) 0 rgba(255,255,255,.35), inset 0 calc(var(--bs) * -.012) 0 rgba(0,0,0,.3); }
+.sl3.sk-steam .band { background: radial-gradient(circle, #FFE38A 0 24%, transparent 29%) 0 50% / calc(var(--bs) * .16) 100% repeat-x, linear-gradient(#7A8088, #33373C); }
+.sk-steam .fire { left: 0; right: 0; top: 50%; bottom: 0; background: radial-gradient(ellipse 80% 90% at 50% 100%, rgba(255,214,90,.9), rgba(240,110,40,.7) 45%, rgba(200,52,31,0) 80%);
+  animation: skGlowFlick 1.1s ease-in-out infinite alternate; }
+@keyframes skGlowFlick { from { opacity: .65; } to { opacity: 1; } }
 .sk-steam .puff { left: var(--x); top: -2%; width: calc(var(--bs) * .26 * var(--s)); height: calc(var(--bs) * .26 * var(--s)); border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fff, rgba(235,235,235,.85) 60%, rgba(220,220,220,0) 72%); animation: skPuff 2.4s ease-out infinite; animation-delay: var(--d);
   will-change: transform, opacity; }
@@ -107,18 +124,18 @@
 .sk-steam .orb { animation-duration: 6s; }
 .sk-steam .orb .lc { width: calc(var(--bs) * .42); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.21); }
 
-/* ---------- ESTACIONES · baraja de las estaciones: la bola en cuatro colores · pétalos, hojas y copos · las cuatro en órbita ---------- */
+/* ---------- ESTACIONES · cuatro colores · pétalos, hojas y copos · colores vivos que giran y las cuatro en órbita ---------- */
 .sk-seasons .qd { inset: 0; border-radius: 50%; opacity: .62;
   background: conic-gradient(from -45deg, #F4A9C4 0 25%, #FFD23F 0 50%, #D9703A 0 75%, #BFE0F0 0); }
+.sl3.sk-seasons .qd { opacity: .88; animation: skSpin 14s linear infinite; }
 .sk-seasons .fl { left: var(--x); top: -8%; width: calc(var(--bs) * .14); height: calc(var(--bs) * .1); border-radius: 60% 0 60% 0; background: var(--c);
   box-shadow: 0 0 calc(var(--bs) * .02) rgba(0,0,0,.15); animation: skFlake 3.2s linear infinite; animation-delay: var(--d); will-change: transform, opacity; }
 @keyframes skFlake { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(calc(var(--bs) * .18), calc(var(--bs) * 1.2)) rotate(300deg); opacity: 0; } }
-.sk-seasons .aura { background: radial-gradient(closest-side, rgba(255,214,228,.55), rgba(255,214,228,0)); }
 .sk-seasons .orb { animation-duration: 9s; }
 .sk-seasons .orb .se { width: calc(var(--bs) * .3); height: calc(var(--bs) * .3); margin: calc(var(--bs) * -.15) 0 0 calc(var(--bs) * -.15); }
 .sk-seasons .orb .se svg { background: #F1F1DC; border-radius: 50%; box-shadow: 0 calc(var(--bs) * .02) calc(var(--bs) * .05) rgba(20,40,20,.25); }
 
-/* ---------- COSMOS · baraja del multiverso: la bola por dentro como el espacio · el disco de Gargantua · copias en órbita ---------- */
+/* ---------- COSMOS · el espacio dentro · el disco de Gargantua · más estrellas y copias en órbita ---------- */
 .sk-cosmos .nb { inset: -20%; opacity: .55; mix-blend-mode: multiply; animation: skSpin 16s linear infinite;
   background:
     radial-gradient(calc(var(--bs) * .02) calc(var(--bs) * .02) at 30% 34%, #fff 50%, transparent 51%),
@@ -128,66 +145,77 @@
     radial-gradient(ellipse 40% 26% at 42% 46%, rgba(214,120,200,.75), transparent 70%),
     radial-gradient(ellipse 36% 30% at 62% 58%, rgba(110,150,255,.6), transparent 70%),
     radial-gradient(circle at 50% 50%, #6A58B8, #2A1F5E 70%); }
+.sl3.sk-cosmos .nb { opacity: .85; animation-duration: 8s; }
 .sk-cosmos .nb::after { content: ''; position: absolute; inset: 0; mix-blend-mode: screen; /* (las estrellas, sin oscurecer) */
   background: radial-gradient(calc(var(--bs) * .02) calc(var(--bs) * .02) at 30% 34%, #fff 50%, transparent 51%),
     radial-gradient(calc(var(--bs) * .015) calc(var(--bs) * .015) at 64% 28%, #fff 50%, transparent 51%),
     radial-gradient(calc(var(--bs) * .018) calc(var(--bs) * .018) at 56% 70%, #fff 50%, transparent 51%); }
+.sk-cosmos .st { left: var(--x); top: var(--y); width: calc(var(--bs) * .12); height: calc(var(--bs) * .12); margin: calc(var(--bs) * -.06);
+  background: radial-gradient(closest-side, #fff 0 22%, rgba(220,210,255,.6) 30%, transparent 70%); animation: skTwinkle 1.8s ease-in-out infinite; animation-delay: var(--d); }
 .sk-cosmos .dk { left: -34%; right: -34%; top: 38%; height: 24%; border-radius: 50%; transform: rotate(-14deg);
   border: calc(var(--bs) * .055) solid #F4A954; box-shadow: 0 0 calc(var(--bs) * .08) rgba(255,180,90,.8), inset 0 0 calc(var(--bs) * .04) rgba(255,240,210,.9);
   clip-path: inset(0 0 50% 0); animation: skDisk 2.6s ease-in-out infinite; }
 .sk-cosmos .dk.fr { clip-path: inset(50% 0 0 0); }
 @keyframes skDisk { 50% { opacity: .78; } }
-.sk-cosmos .aura { background: radial-gradient(circle, rgba(155,120,255,.55), rgba(91,63,184,.2) 45%, transparent 68%); }
 .sk-cosmos .orb { animation-duration: 8s; }
 .sk-cosmos .orb .cp { width: calc(var(--bs) * .24); height: calc(var(--bs) * .24); margin: calc(var(--bs) * -.12) 0 0 calc(var(--bs) * -.12); border-radius: 50%;
   background: var(--pc); opacity: .7; outline: calc(var(--bs) * .02) dashed rgba(255,255,255,.95); outline-offset: calc(var(--bs) * .015); }
 html.reduceMotion .sk-cosmos .nb, html.reduceMotion .sk-cosmos .dk { animation: none; }
 
-/* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · destellos ---------- */
+/* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita ---------- */
 .sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }
-.sl3.sk-prism .ir { opacity: .62; }
+.sl3.sk-prism .ir { opacity: .78; animation-duration: 4s; }
 .sk-prism .halo { inset: calc(var(--bs) * -.2); border-radius: 50%; animation: skSpin 5s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4);
   -webkit-mask: radial-gradient(closest-side, transparent 72%, #000 78%, #000 88%, transparent 100%); mask: radial-gradient(closest-side, transparent 72%, #000 78%, #000 88%, transparent 100%); }
-.sk-prism .aura { background: radial-gradient(circle, rgba(200,170,255,.55), rgba(255,160,210,.2) 45%, transparent 68%); }
 .sk-prism .orb { animation-duration: 6s; }
 
-/* ---------- RAYO · contrarreloj: estela · esfera de reloj · rayos ---------- */
+/* ---------- RAYO · contrarreloj: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita ---------- */
+/* la esfera: las 12 marcas de las horas en el borde de la bola, la aguja y su eje */
+.sk-bolt .dial { inset: 0; border-radius: 50%; background: repeating-conic-gradient(from -3deg, rgba(255,255,255,.95) 0 6deg, transparent 6deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 70%, #000 72%); mask: radial-gradient(closest-side, transparent 70%, #000 72%); }
+.sk-bolt .hand { left: calc(50% - var(--bs) * .025); top: 16%; width: calc(var(--bs) * .05); height: 34%; border-radius: 999px; background: #FFD84A;
+  box-shadow: 0 0 0 calc(var(--bs) * .012) #2D4F7C; transform-origin: 50% 100%; animation: skSpin 4s steps(60) infinite; }
+.sk-bolt .pin { left: calc(50% - var(--bs) * .055); top: calc(50% - var(--bs) * .055); width: calc(var(--bs) * .11); height: calc(var(--bs) * .11); border-radius: 50%;
+  background: #2D4F7C; box-shadow: 0 0 0 calc(var(--bs) * .015) #FFD84A; }
+.sl3.sk-bolt .hand { animation: skSpin .9s linear infinite; }
+.sk-bolt .zap { inset: 0; background: radial-gradient(circle, rgba(200,235,255,.5), rgba(90,170,255,.32) 55%, rgba(63,111,168,0) 80%); animation: skZap 1.3s steps(1) infinite; }
+.sk-bolt .zz { left: 52%; top: 10%; width: 30%; height: 48%; opacity: .9; transform: rotate(14deg); animation: skZap 1.3s steps(1) infinite; animation-delay: -.5s; }
+@keyframes skZap { 0%, 55%, 70%, 100% { opacity: 1; } 60%, 65% { opacity: .15; } 85% { opacity: .5; } }
 .sk-bolt .sp { right: 58%; top: var(--y); height: calc(var(--bs) * .09); width: calc(var(--bs) * .85 * var(--w)); border-radius: 999px;
   background: linear-gradient(90deg, rgba(200,230,255,0), rgba(225,242,255,.98)); transform-origin: 100% 50%; box-shadow: 0 0 calc(var(--bs) * .05) rgba(127,196,255,.8);
   animation: skStreak .9s ease-in-out infinite; animation-delay: var(--d); }
 @keyframes skStreak { 0% { transform: scaleX(.4); opacity: .2; } 35% { opacity: 1; } 100% { transform: scaleX(1) translateX(calc(var(--bs) * -.14)); opacity: .1; } }
 .sk-bolt .knob { left: calc(50% - var(--bs) * .1); top: calc(var(--bs) * -.2); width: calc(var(--bs) * .2); height: calc(var(--bs) * .26); border-radius: calc(var(--bs) * .05) calc(var(--bs) * .05) 0 0;
   background: linear-gradient(90deg, #2D4F7C, #5B84BC 45%, #2D4F7C); box-shadow: 0 calc(var(--bs) * -.07) 0 calc(var(--bs) * -.02) #FFD84A; }
-/* esfera de reloj: un bisel claro alrededor, con las 12 marcas de las horas */
-.sk-bolt .ck { inset: calc(var(--bs) * -.15); border-radius: 50%;
-  background: repeating-conic-gradient(from -2deg, #2D4F7C 0 4deg, #E4F0FF 4deg 30deg);
-  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 79.5%); mask: radial-gradient(closest-side, transparent 78%, #000 79.5%);
-  box-shadow: 0 0 0 calc(var(--bs) * .018) #2D4F7C, 0 calc(var(--bs) * .03) calc(var(--bs) * .08) rgba(20,40,70,.35); }
-.sk-bolt .orb .tick { width: calc(var(--bs) * .12); height: calc(var(--bs) * .12); margin: calc(var(--bs) * -.06) 0 0 calc(var(--bs) * -.06); border-radius: 50%;
-  background: #FFD84A; box-shadow: 0 0 0 calc(var(--bs) * .02) #fff, 0 0 calc(var(--bs) * .12) #FFD84A; transform: translateY(calc(var(--bs) * -.585)); }
-.sk-bolt .aura { background: radial-gradient(circle, rgba(127,196,255,.6), rgba(63,111,168,.15) 50%, transparent 68%); animation-duration: 1.6s; }
-.sk-bolt .bz { left: var(--x); top: var(--y); width: calc(var(--bs) * .3); height: calc(var(--bs) * .48); transform: rotate(var(--r));
-  filter: drop-shadow(0 0 calc(var(--bs) * .06) #FFE27A); animation: skZap 1.3s steps(1) infinite; animation-delay: var(--d); }
-@keyframes skZap { 0%, 55%, 70%, 100% { opacity: 1; } 60%, 65% { opacity: .15; } 85% { opacity: .5; } }
+.sk-bolt .orb { animation-duration: 3.2s; }
+.sk-bolt .orb .bz { width: calc(var(--bs) * .2); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.1); filter: drop-shadow(0 0 calc(var(--bs) * .05) #FFE27A); }
 
-/* ---------- CORONA · desafíos: corona · con gemas y aura · con rayos ---------- */
+/* ---------- CORONA · desafíos: orbe real · la corona encima · gemas en sus bandas, brillo y gemas en órbita ---------- */
+.sk-crown .rb { left: 0; right: 0; top: 43%; height: 14%; background: linear-gradient(#F6D77A, #D9A93A 55%, #A87A22);
+  box-shadow: inset 0 calc(var(--bs) * .01) 0 rgba(255,255,255,.5), 0 0 calc(var(--bs) * .03) rgba(90,50,10,.4); }
+.sk-crown .rb.v { left: 34%; right: auto; top: -2%; width: 32%; height: 104%; border-radius: 50%; background: none; /* (el meridiano: un aro de oro de canto) */
+  border: calc(var(--bs) * .05) solid #E6B94A; box-shadow: inset 0 0 0 calc(var(--bs) * .008) rgba(255,240,190,.8), 0 0 calc(var(--bs) * .02) rgba(90,50,10,.35); }
+.sl3.sk-crown .rb:not(.v) { top: 41%; height: 18%; } .sl3.sk-crown .rb.v { border-width: calc(var(--bs) * .07); }
+.sk-crown .gm { left: var(--x); top: 50%; width: calc(var(--bs) * .1); height: calc(var(--bs) * .1); margin: calc(var(--bs) * -.05); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FF9C8A, #D9453A 55%, #8E2219); box-shadow: 0 0 0 calc(var(--bs) * .012) #FFF0BE; }
 .sk-crown .cr { width: calc(var(--bs) * .56); height: calc(var(--bs) * .4); left: calc(50% - var(--bs) * .28); top: calc(var(--bs) * -.3);
   transform: rotate(-8deg); animation: skBob 2.2s ease-in-out infinite; filter: drop-shadow(0 calc(var(--bs) * .03) calc(var(--bs) * .04) rgba(90,40,20,.35)); }
-.sl2.sk-crown .cr, .sl3.sk-crown .cr { width: calc(var(--bs) * .7); height: calc(var(--bs) * .5); left: calc(50% - var(--bs) * .35); top: calc(var(--bs) * -.4); }
+.sl3.sk-crown .cr { width: calc(var(--bs) * .66); height: calc(var(--bs) * .47); left: calc(50% - var(--bs) * .33); top: calc(var(--bs) * -.37); }
 @keyframes skBob { 0%, 100% { transform: rotate(-8deg) translateY(0); } 50% { transform: rotate(-4deg) translateY(calc(var(--bs) * -.05)); } }
-.sk-crown .aura { background: radial-gradient(circle, rgba(232,110,90,.55), rgba(181,71,63,.18) 45%, transparent 68%); }
-.sk-crown .rays { inset: calc(var(--bs) * -.62); border-radius: 50%; animation: skSpin 16s linear infinite;
-  background: repeating-conic-gradient(rgba(240,150,90,.55) 0 9deg, rgba(240,150,90,0) 9deg 30deg);
-  -webkit-mask: radial-gradient(closest-side, #000 28%, transparent 72%); mask: radial-gradient(closest-side, #000 28%, transparent 72%); }
+.sk-crown .orb { animation-duration: 7s; }
+.sk-crown .orb .gem { width: calc(var(--bs) * .2); height: calc(var(--bs) * .2); margin: calc(var(--bs) * -.1) 0 0 calc(var(--bs) * -.1); filter: drop-shadow(0 0 calc(var(--bs) * .04) rgba(255,180,160,.8)); }
 
-/* ---------- PUZLE · puzles: piezas dibujadas · una pieza en órbita · tres ---------- */
+/* ---------- PUZLE · puzles: piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita ---------- */
 .sk-puzzle .jig { inset: 0; }
+.sk-puzzle .qp { inset: 0; opacity: .5; background: conic-gradient(from 0deg, #2E8A80 0 25%, transparent 0 50%, #E8873A 0 75%, #8E6BE0 0); }
+.sl3.sk-puzzle .jig svg path { stroke: rgba(255,255,255,.9); }
+.sk-puzzle .frame { inset: calc(var(--bs) * -.28); opacity: .75; animation: skBreath 2.6s ease-in-out infinite; }
+@keyframes skBreath { 0%, 100% { transform: scale(.97); } 50% { transform: scale(1.04); } }
 .sk-puzzle .pc { width: calc(var(--bs) * .3); height: calc(var(--bs) * .3); margin: calc(var(--bs) * -.15) 0 0 calc(var(--bs) * -.15);
   filter: drop-shadow(0 calc(var(--bs) * .02) calc(var(--bs) * .03) rgba(20,40,20,.35)); }
 .sk-puzzle .pc svg { animation: skSpin 4s linear infinite reverse; }
-.sk-puzzle .aura { background: radial-gradient(circle, rgba(126,232,200,.55), rgba(46,138,128,.18) 45%, transparent 68%); }
 
 html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation: none !important; }
 

@@ -1,16 +1,18 @@
-// Pelotas personalizadas ("skins"): cada una se gana con un objetivo del juego y tiene 3 niveles, la misma
-// idea cada vez más espectacular. Decoran la pelota sin cambiar su color (el color es quien juega).
-//   fuego    racha del reto diario (7 · 30 · 365 días): más llamas, más altas, brasas
-//   clásica  victorias con la baraja clásica: aro de oro · laurel · destellos
-//   agua     victorias con la baraja de agua: agua dentro · ondas · gotas en órbita
-//   madera   victorias con la de minigolf: vetas · marco de madera · molino que gira detrás
-//   vapor    victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · vía alrededor y su tren
-//   estaciones victorias con la de las estaciones: la bola en cuatro colores · pétalos, hojas y copos · las cuatro en órbita
-//   cosmos   victorias con la del multiverso: la bola por dentro como el espacio · el disco de Gargantua alrededor · copias en órbita
-//   prisma   victorias con Ultimate: brillo iridiscente · halo arcoíris · destellos
-//   rayo     series de contrarreloj completas: estela · esfera de reloj · rayos
-//   corona   desafíos superados por grupo (calentamiento · intermedio · experto)
-//   puzle    puzles resueltos por grupo: piezas dibujadas · una pieza en órbita · tres
+// Pelotas personalizadas ("skins"): cada una se gana con un objetivo del juego y tiene 3 niveles, la misma idea
+// cada vez más espectacular, siempre con el mismo molde (el de la de agua): I, la bola cambia por dentro; II, algo por
+// fuera, sutil pero claro; III, lo de dentro más intenso y piezas que giran alrededor. Decoran la pelota sin cambiar
+// su color (el color es quien juega).
+//   fuego      racha del reto diario (7 · 30 · 365 días): fuego dentro · corona de llamas · lava y bolas de fuego en órbita
+//   clásica    victorias con la baraja clásica: bañada en oro · laurel · destello y destellos en órbita
+//   agua       victorias con la baraja de agua: agua dentro · ondas · más agua, burbujas y gotas en órbita
+//   madera     victorias con la de minigolf: vetas · marco de madera · barnizada, con nudo, y el molino que gira detrás
+//   vapor      victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · caldera encendida y el tren en su vía
+//   estaciones victorias con la de las estaciones: cuatro colores · pétalos, hojas y copos · colores vivos que giran y las cuatro en órbita
+//   cosmos     victorias con la del multiverso: el espacio dentro · el disco de Gargantua · más estrellas y copias en órbita
+//   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
+//   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
+//   corona     desafíos superados por grupo (calentamiento · intermedio · experto): orbe real · la corona · gemas en sus bandas y en órbita
+//   puzle      puzles resueltos por grupo: piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
 // Lo ganado se calcula siempre desde las estadísticas (records.js): no hay nada más que guardar que la
 // pelota puesta y qué niveles se han visto (para el aviso de "¡Nueva!"), en el perfil.
 import { app } from './app.js';
@@ -141,67 +143,79 @@ function laurel() { // dos ramas de laurel que suben por los lados desde abajo: 
 const around = (n, spread) => Array.from({ length: n }, (_, i) => n === 1 ? 0 : -spread / 2 + spread * i / (n - 1));
 const is = (cls, n, fn) => Array.from({ length: n }, (_, i) => `<i class="${cls}" style="${fn(i)}"></i>`).join('');
 
+// una gema tallada (la corona: en sus bandas y, en el nivel III, en órbita)
+const GEM = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10l4 5-9 11L1 8Z" fill="#D9453A" stroke="#fff" stroke-width="1.1" stroke-linejoin="round"/>' +
+  '<path d="M1 8h18M7 3 5.5 8 10 19M13 3l1.5 5L10 19" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9"/></svg>';
+// el marco del puzle: un aro con pestañas (hacia fuera y hacia dentro, alternas)
+const FRAME = '<svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="40" fill="none" stroke="#3FA79A" stroke-width="2"/>' +
+  Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4, r = 40 + (i % 2 ? -3.6 : 3.6); return `<circle cx="${(Math.sin(a) * r).toFixed(1)}" cy="${(-Math.cos(a) * r).toFixed(1)}" r="3.6" fill="#3FA79A"/>`; }).join('') + '</svg>';
+const orbit = (cls, items) => `<i class="orb">${items.map((html, i, all) => `<i class="${cls}" style="--a:${(i * 360 / all.length).toFixed(0)}deg">${html}</i>`).join('')}</i>`;
+
+// Las tres capas de cada pelota. Todas siguen el mismo molde (el de la de agua):
+//   I   la bola cambia por dentro (agua, fuego, oro, vetas, el cinturón, las estaciones, el espacio, el iris, la esfera
+//       del reloj, el orbe real, las piezas)
+//   II  algo por fuera, sutil pero claro (ondas, llamas, laurel, marco, vapor, pétalos, disco, halo, estela, corona, aro)
+//   III lo de dentro, más intenso, y piezas que giran alrededor de la bola
 function parts(id, lvl) {
   let back = '', surf = '', front = '';
+  const l3 = lvl >= 3;
   switch (id) {
-    case 'fire': {
-      const n = [3, 5, 7][lvl - 1], spread = [64, 120, 176][lvl - 1];
-      if (lvl >= 2) back += '<i class="aura"></i>';
-      back += around(n, spread).map((a, i) => `<i class="fl" style="--a:${a}deg;--d:${(-i * .23).toFixed(2)}s;--k:${(1 - Math.abs(a) / 260).toFixed(2)}">${FLAME}</i>`).join('');
-      surf += '<i class="glow"></i>' + (lvl >= 3 ? '<i class="lava"></i>' : '');
-      if (lvl >= 3) front += is('em', 7, i => `--x:${(i - 3) * 13}%;--d:${(-i * .37).toFixed(2)}s;--s:${(.8 + (i % 3) * .25).toFixed(2)}`);
+    case 'fire': // fuego dentro · corona de llamas · más fuego (con lava) y bolas de fuego en órbita
+      surf += '<i class="glow"></i>' + (l3 ? '<i class="lava"></i>' : '') + [[-6, .9], [20, 1.15], [46, .95], [70, 1.1]].map(([x, k], i) =>
+        `<i class="fi" style="--x:${x}%;--k:${k};--d:${(-i * .19).toFixed(2)}s">${FLAME}</i>`).join('');
+      if (lvl >= 2) back += around(5, 116).map((a, i) => `<i class="fl" style="--a:${a}deg;--d:${(-i * .23).toFixed(2)}s;--k:${(1 - Math.abs(a) / 260).toFixed(2)}">${FLAME}</i>`).join('');
+      if (l3) front += orbit('fb', [FLAME, FLAME, FLAME]);
       break;
-    }
-    case 'water':
+    case 'water': // agua dentro · ondas · más agua (con burbujas) y gotas en órbita
       surf += `<i class="wv">${WAVE}</i><i class="wv b">${WAVE}</i><i class="gloss"></i>`;
       if (lvl >= 2) back += '<i class="rp"></i><i class="rp b"></i>';
-      if (lvl >= 3) { surf += is('bb', 4, i => `--x:${18 + i * 20}%;--d:${(-i * .6).toFixed(1)}s`); front += `<i class="orb">${[0, 120, 240].map(a => `<i class="drop" style="--a:${a}deg">${DROP}</i>`).join('')}</i>`; }
+      if (l3) { surf += is('bb', 4, i => `--x:${18 + i * 20}%;--d:${(-i * .6).toFixed(1)}s`); front += orbit('drop', [DROP, DROP, DROP]); }
       break;
-    case 'classic':
+    case 'classic': // bañada en oro · laurel · más brillo (un destello que la cruza) y destellos en órbita
+      surf += '<i class="gd"></i>' + (l3 ? '<i class="shine"></i>' : '');
       front += '<i class="gr"></i>';
       if (lvl >= 2) back += `<i class="laurel">${laurel()}</i>`;
-      if (lvl >= 3) { surf += '<i class="shine"></i>'; front += [[-58, -42, 0], [58, -30, .5], [-44, 50, 1], [52, 46, 1.5]].map(([x, y, d]) => `<i class="spk" style="--x:${x}%;--y:${y}%;--d:${-d}s">${SPARK('#FFF4C2')}</i>`).join(''); }
+      if (l3) front += orbit('spk', [SPARK('#FFF4C2'), SPARK('#FFE38A'), SPARK('#FFF4C2'), SPARK('#FFE38A')]);
       break;
-    case 'wood':
-      surf += '<i class="grain"></i>';
+    case 'wood': // vetas · marco de madera · madera barnizada (nudo y brillo) y el molino que gira detrás
+      surf += '<i class="grain"></i>' + (l3 ? '<i class="knot"></i><i class="varnish"></i>' : '');
       if (lvl >= 2) front += '<i class="wr"></i>';
-      if (lvl >= 3) back += `<i class="mill">${WINDMILL}</i>`;
+      if (l3) back += `<i class="mill">${WINDMILL}</i>`;
       break;
-    case 'steam':
-      surf += '<i class="band"></i>';
+    case 'steam': // cinturón de hierro · bocanadas de vapor · la caldera encendida y el tren dando vueltas en su vía
+      surf += (l3 ? '<i class="fire"></i>' : '') + '<i class="band"></i>';
       if (lvl >= 2) back += is('puff', 3, i => `--x:${22 + i * 16}%;--d:${(-i * .8).toFixed(1)}s;--s:${[.9, 1.15, 1][i]}`);
-      if (lvl >= 3) { back += '<i class="rails"></i><i class="rails in"></i>'; front += `<i class="orb"><i class="lc">${LOCO_MINI}</i></i>`; }
+      if (l3) { back += '<i class="rails"></i><i class="rails in"></i>'; front += `<i class="orb"><i class="lc">${LOCO_MINI}</i></i>`; }
       break;
-    case 'seasons':
+    case 'seasons': // la bola en cuatro colores · pétalos, hojas y copos · los colores, vivos y girando, y las cuatro en órbita
       surf += '<i class="qd"></i>';
       if (lvl >= 2) back += is('fl', 3, i => `--x:${18 + i * 26}%;--d:${(-i * 1.1).toFixed(1)}s;--c:${['#F8C3D6', '#D9703A', '#FFFFFF'][i]}`);
-      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${['spring', 'summer', 'autumn', 'winter'].map((s, i) => `<i class="se" style="--a:${i * 90}deg">${SEASON_SVG(s)}</i>`).join('')}</i>`; }
+      if (l3) front += orbit('se', ['spring', 'summer', 'autumn', 'winter'].map(SEASON_SVG));
       break;
-    case 'cosmos': // (el disco: la mitad de arriba pasa por detrás de la bola y la de abajo, por delante)
-      surf += '<i class="nb"></i>';
+    case 'cosmos': // el espacio dentro · el disco de Gargantua (la mitad de arriba por detrás, la de abajo delante) · más estrellas y copias en órbita
+      surf += '<i class="nb"></i>' + (l3 ? is('st', 4, i => `--x:${[24, 62, 44, 72][i]}%;--y:${[30, 22, 66, 54][i]}%;--d:${(-i * .45).toFixed(2)}s`) : '');
       if (lvl >= 2) { back += '<i class="dk"></i>'; front += '<i class="dk fr"></i>'; }
-      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${[0, 120, 240].map(a => `<i class="cp" style="--a:${a}deg"></i>`).join('')}</i>`; }
+      if (l3) front += orbit('cp', ['', '', '']);
       break;
-    case 'prism':
-      surf += '<i class="ir"></i>';
+    case 'prism': // brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita
+      surf += '<i class="ir"></i>' + (l3 ? '<i class="shine"></i>' : '');
       if (lvl >= 2) back += '<i class="halo"></i>';
-      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="orb">${['#FFD1E8', '#CFE3FF', '#C8F5E6', '#FFF1C9'].map((c, i) => `<i class="spk" style="--a:${i * 90}deg">${SPARK(c)}</i>`).join('')}</i>`; }
+      if (l3) front += orbit('spk', ['#FFD1E8', '#CFE3FF', '#C8F5E6', '#FFF1C9'].map(SPARK));
       break;
-    case 'bolt':
-      back += '<i class="knob"></i>' + is('sp', 3, i => `--y:${34 + i * 16}%;--d:${(-i * .28).toFixed(2)}s;--w:${[.7, 1, .8][i]}`); // (la corona de un cronómetro y la estela)
-      if (lvl >= 2) front += '<i class="ck"></i><i class="orb fast"><i class="tick"></i></i>';
-      if (lvl >= 3) { back += '<i class="aura"></i>'; front += `<i class="bz" style="--x:-8%;--y:-12%;--r:-18deg;--d:0s">${BOLT}</i><i class="bz" style="--x:78%;--y:-4%;--r:22deg;--d:-.6s">${BOLT}</i>`; }
+    case 'bolt': // esfera de cronómetro con su aguja · la corona del cronómetro y la estela · cargada de electricidad (aguja loca) y rayos en órbita
+      surf += (l3 ? `<i class="zap"></i><i class="zz">${BOLT}</i>` : '') + '<i class="dial"></i><i class="hand"></i><i class="pin"></i>';
+      if (lvl >= 2) back += '<i class="knob"></i>' + is('sp', 3, i => `--y:${34 + i * 16}%;--d:${(-i * .28).toFixed(2)}s;--w:${[.7, 1, .8][i]}`);
+      if (l3) front += orbit('bz', [BOLT, BOLT, BOLT]);
       break;
-    case 'crown':
-      if (lvl >= 2) back += '<i class="aura"></i>';
-      if (lvl >= 3) back += '<i class="rays"></i>';
-      front += `<i class="cr">${CROWN(lvl - 1)}</i>`;
-      if (lvl >= 3) front += [[-60, -8, 0], [62, 4, .7]].map(([x, y, d]) => `<i class="spk" style="--x:${x}%;--y:${y}%;--d:${-d}s">${SPARK('#FFE3B0')}</i>`).join('');
+    case 'crown': // orbe real (bandas de oro) · la corona encima · bandas con gemas y brillo, y gemas en órbita
+      surf += '<i class="rb v"></i><i class="rb"></i>' + (l3 ? is('gm', 3, i => `--x:${[22, 50, 78][i]}%`) + '<i class="shine"></i>' : '');
+      if (lvl >= 2) front += `<i class="cr">${CROWN(l3 ? 2 : 0)}</i>`;
+      if (l3) front += orbit('gem', [GEM, GEM, GEM]);
       break;
-    case 'puzzle':
-      surf += `<i class="jig">${JIGSAW}</i>`;
-      if (lvl >= 3) back += '<i class="aura"></i>';
-      if (lvl >= 2) front += `<i class="orb">${(lvl >= 3 ? ['#2E8A80', '#E8873A', '#8E6BE0'] : ['#2E8A80']).map((c, i, a) => `<i class="pc" style="--a:${i * 360 / a.length}deg">${PIECE(c)}</i>`).join('')}</i>`;
+    case 'puzzle': // piezas dibujadas · el marco del puzle alrededor · las piezas de colores y tres piezas en órbita
+      surf += (l3 ? '<i class="qp"></i>' : '') + `<i class="jig">${JIGSAW}</i>`;
+      if (lvl >= 2) back += `<i class="frame">${FRAME}</i>`;
+      if (l3) front += orbit('pc', ['#2E8A80', '#E8873A', '#8E6BE0'].map(PIECE));
       break;
   }
   return `<span class="skBack">${back}</span><span class="skSurf">${surf}</span><span class="skFront">${front}</span>`;
@@ -210,6 +224,6 @@ export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
 // (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
-export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
+export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, GEM, FRAME, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;
