@@ -406,3 +406,13 @@ html.phone body[data-screen="editor"] #sndCfgBtn { right: 16px; }
   html.phone .edTool { padding: 5px 3px 4px; }
   html.phone .edTool .tiPic { width: 28px; height: 32px; }
 }
+
+/* ---------- móvil: sin desenfoques de fondo ----------
+   backdrop-filter es lo que más cuesta en el móvil (se recalcula al desplazarse y en cada animación de lo que hay detrás).
+   En su lugar, el mismo color algo más opaco: velos de ventanas y pausa, pestañas de Modos, botones redondos, avisos */
+html.phone *, html.phone *::backdrop { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.phone :is(#settingsOverlay, #rulesOverlay, #profileOverlay) { background: rgba(20,40,20,.66); }
+html.phone :is(#pauseOverlay, #winOverlay) { background: rgba(20,40,20,.7); }
+html.phone #dialog::backdrop { background: rgba(20,40,20,.66); }
+html.phone #lineup { background: rgba(20,40,20,.55); }
+html.phone .mdTabs { background: rgba(20,40,20,.55); }

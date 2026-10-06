@@ -532,7 +532,7 @@ export function openModes(tab) {
 }
 
 // cambia de pestaña: el indicador se desliza; el contenido sale con un fundido corto hacia un lado
-// y el nuevo entra desde el otro, con sus tarjetas escalonadas. Nunca se ven las dos a la vez
+// y el nuevo entra entero desde el otro. Nunca se ven las dos a la vez
 // (así el cambio de altura entre secciones queda oculto y no hay saltos).
 let tabSeq = 0;
 function setModesTab(tab, { instant = false, focus = false } = {}) {
@@ -560,12 +560,9 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
     show();
     out.cancel();
     if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
-    to._anims.push(to.animate([{ opacity: 0, transform: `translateX(${24 * dir}px)` }, { opacity: 1, transform: 'none' }],
-      { duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)' }));
-    // las primeras tarjetas llegan escalonadas (sutil y corto: lo de abajo ya está en su sitio)
-    const items = to.querySelectorAll(':scope > *, :scope .deckCard, :scope .chCard');
-    [...items].slice(0, 6).forEach((el, k) => to._anims.push(el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
-      { duration: 220, delay: 20 + k * 20, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' })));
+    // el panel entero llega deslizándose, de una vez (sin tarjetas escalonadas: más limpio y más barato en el móvil)
+    to._anims.push(to.animate([{ opacity: 0, transform: `translateX(${28 * dir}px)` }, { opacity: 1, transform: 'none' }],
+      { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' }));
   };
 }
 

@@ -252,8 +252,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
   **multiverso** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
-  al pasar por encima. Una baraja por fila; con altura normal de pantalla, las filas se compactan para que quepan sin
-  desplazarse (las siete caben en 860 px de alto, con aire entre ellas: la cabecera de la pantalla se compacta; Ultimate, un poco más alta). Cada una con su color, su última partida, "Repetir" y sus
+  al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
+  barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
+  deslizándose entero, de una vez; la pestaña oculta no se quita del todo (`content-visibility: hidden`), así que volver a
+  ella no recalcula sus ~2.000 elementos. Las tarjetas de Modos llevan una sombra corta y suave (`--mdShadow`): la larga de
+  antes se veía, mientras aparecían, como una mancha a través de la tarjeta de abajo. En las pantallas que se desplazan,
+  los botones fijos (sonido, ajustes, tu pelota e idioma abajo; "← Menú" arriba) se esconden al bajar y vuelven al subir
+  o al llegar arriba (`bindFabAutoHide` en `screens.js`). En el móvil no hay desenfoques de fondo (`backdrop-filter`, lo
+  que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba

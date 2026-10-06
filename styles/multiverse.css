@@ -146,23 +146,3 @@ html.reduceMotion #gameDecor .dSpace.shoot { display: none; }
 
 /* la carta de la baraja (Modos de juego): al pasar por encima, la luz fluye más deprisa por el disco */
 .deckCard:hover .dkArt .bhFlow, .deckCard:focus-within .dkArt .bhFlow { animation-duration: .9s; }
-
-/* ---------- Modos de juego con 7 barajas (y el separador de Ultimate): compactas para que quepan sin desplazarse, con aire entre ellas ---------- */
-@media (min-width: 641px) and (max-height: 980px) {
-  .deckList:has(> .ultSep) { gap: 12px; }
-  .deckList:has(> .ultSep) .deckCard { padding: 10px 16px 10px 12px; row-gap: 4px; }
-  .deckList:has(> .ultSep) .dkPic { width: 52px; height: 52px; border-radius: 13px; }
-  .deckList:has(> .ultSep) .dkPic .dkArt { width: 42px; height: 42px; }
-  .deckList:has(> .ultSep) .dkMain h3 { font-size: 16.5px; margin-bottom: 0; }
-  .deckList:has(> .ultSep) .dkMain p { font-size: 12px; line-height: 1.25; }
-  .deckList:has(> .ultSep) .dkMain .mdStats { margin-top: 2px; }
-  .deckList:has(> .ultSep) .dkBtns .btn-sm { padding-block: 4px; }
-  .deckList:has(> .ultSep) .dkStats { padding: 5px 4px; }
-  .deckList:has(> .ultSep) .dkStats dd { font-size: 16.5px; }
-  #modesScreen:has(.ultSep) .sTitle { font-size: clamp(30px, 5vh, 56px); margin-bottom: 0; }
-  #modesScreen:has(.ultSep) { padding-top: 0; padding-bottom: 28px; } /* (la lista se desplaza hasta Ultimate) */
-  #modesScreen:has(.ultSep) .sSub { margin-bottom: 0; }
-  #modesScreen:has(.ultSep) .mdTabs { margin-top: 14px; margin-bottom: 0; }
-  #modesScreen:has(.ultSep) .mdPanel { margin-top: 0; }
-}
-}

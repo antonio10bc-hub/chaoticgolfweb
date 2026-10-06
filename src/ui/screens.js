@@ -53,7 +53,22 @@ window.addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 const DISPLAY = { menu: 'flex', game: 'block', editor: 'grid', story: 'flex', pve: 'flex', modes: 'flex' };
 
 const shown = new Set(); // pantallas ya vistas: al volver, sin la presentación escalonada (styles/features.css)
+// los botones fijos (abajo: sonido, ajustes, tu pelota e idioma; arriba: "← Menú") se esconden al desplazarte hacia abajo
+// en las pantallas que se desplazan (Modos, Lo básico…) y vuelven al subir o al llegar arriba: así no tapan las tarjetas
+export function bindFabAutoHide() {
+  let last = window.scrollY, queued = false;
+  const update = () => {
+    queued = false;
+    const y = window.scrollY, dy = y - last;
+    if (y > 40 && Math.abs(dy) < 8) return; // (movimientos pequeños: nada, para que no parpadeen)
+    document.body.classList.toggle('fabHide', y > 40 && dy > 0);
+    last = y;
+  };
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+}
+
 export function showScreen(s) {
+  document.body.classList.remove('fabHide'); // (cada pantalla empieza arriba, con los botones a la vista)
   const prev = app.screen;
   app.screen = s;
   // transición: la pantalla que entra aparece con un fundido suave (salvo movimiento reducido)

@@ -4,7 +4,7 @@
    rosa, aguamarina, menta y oro pálido (nada de morados), borde de arcoíris pastel y un brillo lento. Un icono por
    baraja: tocar = activarla o quitarla.
    ========================================================= */
-.ultSep { display: flex; align-items: center; gap: 12px; margin: -4px 8px; height: 10px; color: rgba(241,241,220,.75); pointer-events: none; }
+.ultSep { display: flex; align-items: center; gap: 12px; margin: 8px 8px; height: 10px; color: rgba(241,241,220,.75); pointer-events: none; }
 .ultSep i { flex: 1; height: 1.5px; border-radius: 1px; background: linear-gradient(90deg, transparent, rgba(255,214,234,.8), rgba(176,236,246,.9), rgba(196,244,220,.8), transparent); }
 .ultSep span { font-size: 12px; line-height: 1; background: linear-gradient(90deg, #FFD3EA, #B9ECF6, #CFF7E2, #FFF0C2); -webkit-background-clip: text; background-clip: text; color: transparent; }
 

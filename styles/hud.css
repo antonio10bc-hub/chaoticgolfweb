@@ -147,6 +147,11 @@
 }
 #sfxBtn { left: 14px; }
 #sndCfgBtn { left: 56px; }
+/* al desplazarte hacia abajo se esconden (y vuelven al subir: bindFabAutoHide en screens.js); en partida y en el creador, no */
+#sfxBtn, #sndCfgBtn, #profileBtn, #langBtns, .screenTop { transition: background-color .18s var(--ease-out), color .18s, border-color .18s, transform .15s var(--ease-out), translate .3s var(--ease-out), opacity .22s; }
+body.fabHide:not([data-screen="game"]):not([data-screen="editor"]) :is(#sfxBtn, #sndCfgBtn, #profileBtn, #langBtns) { translate: 0 16px; opacity: 0; pointer-events: none; }
+body.fabHide .screenTop { translate: 0 -16px; opacity: 0; pointer-events: none; } /* (el "← Menú" de arriba, igual: hacia arriba) */
+body.fabHide:not([data-screen="game"]):not([data-screen="editor"]) #sndPanel { display: none; }
 body[data-screen="game"] #sfxBtn, body[data-screen="game"] #sndCfgBtn { --b-bg: rgba(241,241,220,.06); --b-fg: var(--cream); --b-line: rgba(241,241,220,.55); backdrop-filter: none; }
 body[data-screen="game"] #sfxBtn { top: 14px; bottom: auto; left: auto; right: 58px; }
 body[data-screen="game"] #sndCfgBtn { top: 14px; bottom: auto; left: auto; right: 16px; }
