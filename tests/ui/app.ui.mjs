@@ -463,6 +463,27 @@ it('baraja de las estaciones: el campo de la estación, su indicador, el viento 
   assert.deepEqual(await app(() => window.chaoticGolf.app.game.S.hands[window.chaoticGolf.app.game.S.human]), ['oNieve', 'palo1'], 'la carta sigue en la mano');
 });
 
+it('estadísticas del reto diario: la etiqueta junto a la racha abre la ventana (sin empezar el reto) con números, insignias y turnos', async () => {
+  const today = await app(async () => (await import('/src/content/levels/generate.js')).dateKey());
+  await fresh({ chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {},
+    daily: { days: { [today]: { best: 5, strokes: 7 } }, streak: 8, bestStreak: 8, last: today, played: 10, won: 9, dist: { 4: 3, 5: 4, 6: 2 } },
+    rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: {}, chStats: {} } });
+  assert.ok(await page.$('#dailyCard .dTags .dFlame + .dStats'), 'la etiqueta, a la derecha de la racha');
+  await click('#dailyCard .dStats'); await sleep(400);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'menu', 'no empieza el reto');
+  const d = await app(() => ({
+    nums: [...document.querySelectorAll('#dialog[open] .dsNum b')].map(b => b.textContent),
+    got: [...document.querySelectorAll('#dialog .dsBadge')].map(b => b.classList.contains('got')),
+    today: document.querySelector('#dialog .dsCol.today small')?.textContent,
+    share: !!document.querySelector('#dialog .dsShare'),
+  }));
+  assert.deepEqual(d, { nums: ['10', '90%', '8', '8'], got: [true, false, false], today: '5', share: true });
+  const text = await app(async () => (await import('/src/ui/daily-stats.js')).statsShareText());
+  assert.match(text, /10 · ✅ 90% · 🔥 8 · 🏆 8/); assert.match(text, /#reto$/);
+  await click('#dialog [value="close"]'); await sleep(300);
+  assert.ok(!await page.$('#dialog[open]'));
+});
+
 it('regalo de early tester: el aviso abre la ventana, congela la racha (no se pierde) y en Ajustes se descongela', async () => {
   await fresh({ chaoticgolf_gift: null, chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {},
     daily: { days: {}, streak: 6, bestStreak: 6, last: '2020-01-01' }, rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: {}, chStats: {} } });

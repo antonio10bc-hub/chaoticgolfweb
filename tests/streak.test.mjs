@@ -43,3 +43,21 @@ test('racha congelada (regalo de early tester): no se pierde sin jugar, sigue su
   recordDailyPlayed('2026-03-25');
   assert.equal(dailyStreakInfo('2026-03-25').n, 5);
 });
+
+test('estadísticas del reto diario: días jugados y ganados, distribución con tu mejor de cada día y arranque desde lo guardado', async () => {
+  const { recordEnd, dailyStats } = await import('../src/ui/records.js');
+  store.clear();
+  const win = (date, turns) => recordEnd('daily', { won: true, date, stats: { misTurnos: turns - 1, golpes: 3 } });
+  recordDailyPlayed('2026-04-01'); win('2026-04-01', 5);
+  recordDailyPlayed('2026-04-02'); win('2026-04-02', 7); win('2026-04-02', 4); // repetido el mismo día: cuenta el mejor
+  recordDailyPlayed('2026-04-03'); recordEnd('daily', { won: false, date: '2026-04-03', stats: { misTurnos: 6 } });
+  recordDailyPlayed('2026-04-03'); // (otra vez el mismo día: no suma)
+  const st = dailyStats('2026-04-03');
+  assert.deepEqual({ played: st.played, won: st.won, pct: st.pct, streak: st.streak, best: st.best }, { played: 3, won: 2, pct: 67, streak: 3, best: 3 });
+  assert.deepEqual(Object.fromEntries(Object.entries(st.dist).filter(([, n]) => n)), { 4: 1, 5: 1 });
+  assert.equal(dailyStats('2026-04-02').today, 4, 'el resultado de hoy (para resaltarlo)');
+  // estadísticas guardadas antes de existir los contadores: se sacan de los días guardados
+  store.set('chaoticgolf_stats', JSON.stringify({ version: 1, daily: { days: { '2026-04-01': { best: 6 }, '2026-04-02': { best: null }, '2026-04-03': { best: 6 } }, streak: 3, bestStreak: 5, last: '2026-04-03' } }));
+  const old = dailyStats('2026-04-03');
+  assert.deepEqual({ played: old.played, won: old.won, dist: old.dist }, { played: 5, won: 2, dist: { 6: 2 } });
+});

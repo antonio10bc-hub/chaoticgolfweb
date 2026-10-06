@@ -84,6 +84,7 @@ src/
     tutorial.js            presentación del nivel 1, explicación de cada carta la primera vez y el aviso naranja de
                            la primera carta naranja en tu mano (se juegan en cualquier momento, también fuera de turno)
     settings.js / prefs.js   pantalla de Ajustes (velocidad, tema, accesibilidad…) y Estadísticas
+    daily-stats.js         estadísticas del reto diario (la etiqueta junto a la racha): ventana e imagen para compartir
     save.js / records.js   guardado por modo y estadísticas globales (rachas, récords)
     pause.js / rules.js    pausa real (congela la IA) y hoja de reglas
     back.js / wake.js      botón de atrás del sistema y pantalla siempre encendida en partida
@@ -239,6 +240,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   el reto de hoy está pendiente (API de insignias). Al terminarlo, "Compartir" copia (o abre la hoja de
   compartir en el móvil) un resumen estilo Wordle: un cuadrado por turno (🟩 te acercas, 🟨 igual, 🟥 te
   alejas), choques, portales, caídas, rivales y racha.
+  **Estadísticas del reto diario** (`src/ui/daily-stats.js`): a la derecha de la racha, una etiqueta igual con el icono de
+  las tres barras (como en Wordle) abre una ventana en el centro con, en una fila, días jugados, % ganados, racha actual
+  y racha máxima; debajo, las insignias de la racha (los tres niveles de la pelota de fuego: 7 · 30 · 365 días, apagadas
+  y con candado hasta ganarlas, y una barrita de lo que falta para la siguiente); y abajo, en cuántos turnos has
+  completado cada reto (tu mejor resultado de cada día; columnas de 1 a 10+, la de hoy en naranja). "Compartir" manda una
+  imagen 1080×1350 con todo eso más el resumen en texto y el enlace al reto de hoy (hoja del sistema en el móvil;
+  imagen y texto al portapapeles en el ordenador). Los contadores (`daily.played`, `daily.won`, `daily.dist` en
+  `records.js`) no caducan como los días guardados (60); quien ya jugaba arranca con lo que se puede sacar de esos días.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
   **multiverso** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche

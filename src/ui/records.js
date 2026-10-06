@@ -21,7 +21,8 @@ const blank = () => ({
   levels: {},   // índice de Lo básico -> { turns, strokes, at }
   puzzles: {},  // índice de puzle -> true
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
-  daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null }, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
+  daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
+    played: 0, won: 0, dist: {} }, // días jugados y ganados, y en cuántos turnos (tu mejor de cada día): turnos -> días (sin límite de fechas)
   rush: { best: 0, runs: 0 }, // (done: series completas, las cinco; lo añade rushHoleDone)
   challenges: {}, // id -> true
   weekly: { weeks: {} },  // semana "AAAA-Www" -> { best, strokes }
@@ -33,6 +34,12 @@ const blank = () => ({
 });
 // antes de existir, de cada desafío solo se sabía si estaba superado: cuenta como 1 jugada y 1 victoria
 const seedChStats = d => Object.fromEntries(Object.keys(d.challenges || {}).filter(k => d.challenges[k]).map(k => [k, { p: 1, w: 1 }]));
+// antes de existir los contadores del reto diario, se sacan de los días guardados (los últimos 60) y de la mejor racha
+function seedDaily(dl = {}) {
+  const days = Object.values(dl.days || {}), dist = {};
+  for (const d of days) if (d.best != null) dist[d.best] = (dist[d.best] || 0) + 1;
+  return { played: Math.max(days.length, dl.bestStreak || 0), won: days.filter(d => d.best != null).length, dist };
+}
 // antes de existir, todas las partidas rápidas eran de la baraja clásica
 const seedDecks = d => ({ classic: { p: (d.played?.pve || 0) + (d.played?.local || 0), w: (d.won?.pve || 0) + (d.won?.local || 0) } });
 
@@ -42,7 +49,7 @@ export function loadRecords() {
     if (d && d.version === VERSION) {
       const b = blank();
       return { ...b, ...d, played: { ...b.played, ...d.played }, won: { ...b.won, ...d.won }, totals: { ...b.totals, ...d.totals },
-        pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily }, rush: { ...b.rush, ...d.rush },
+        pve: { ...b.pve, ...d.pve }, daily: { ...b.daily, ...d.daily, ...(d.daily?.dist ? { dist: { ...d.daily.dist } } : seedDaily(d.daily)) }, rush: { ...b.rush, ...d.rush },
         weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
         decks: d.decks ? { ...d.decks } : seedDecks(d),
         chStats: d.chStats ? { ...d.chStats } : seedChStats(d),
@@ -96,6 +103,7 @@ export function recordDailyPlayed(date) {
     dl.streak = dl.last === prevDay(date) || (dl.frozen && dl.streak > 0) ? dl.streak + 1 : 1;
     dl.bestStreak = Math.max(dl.bestStreak, dl.streak);
     dl.last = date;
+    if (!dl.days[date]) dl.played++;
     dl.days[date] = dl.days[date] || { best: null, strokes: null };
     // solo se guardan los últimos 60 días
     const keys = Object.keys(dl.days).sort();
@@ -114,6 +122,12 @@ export function dailyStreakInfo(date, R = loadRecords()) {
   const dl = R.daily, frozen = !!dl.frozen && dl.streak > 0, alive = frozen || dl.last === date || dl.last === prevDay(date);
   return { n: alive ? dl.streak : 0, today: dl.last === date, atRisk: alive && !frozen && dl.last !== date && dl.streak > 0,
     lost: !alive && dl.streak >= 2 ? dl.streak : 0, ...(dl.frozen ? { frozen: true } : {}) };
+}
+// estadísticas del reto diario (la ventana de la tarjeta): días jugados, % ganados, racha actual y máxima, distribución
+export function dailyStats(date, R = loadRecords()) {
+  const dl = R.daily, played = Math.max(dl.played || 0, dl.won || 0);
+  return { played, won: dl.won || 0, pct: played ? Math.round(100 * (dl.won || 0) / played) : 0,
+    streak: dailyStreakInfo(date, R).n, best: dl.bestStreak || 0, dist: dl.dist || {}, today: dl.days[date]?.best ?? null };
 }
 export const streakFrozen = () => !!loadRecords().daily.frozen;
 // congelar / descongelar la racha. Al descongelarla sigue viva hoy, como si el último reto fuera de ayer: hoy toca jugarlo
@@ -174,6 +188,11 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null, we
   if (kind === 'daily' && won && date) {
     const day = d.daily.days[date] = d.daily.days[date] || { best: null, strokes: null };
     newBest = day.best != null && (turns < day.best || (turns === day.best && strokes < day.strokes));
+    // la distribución cuenta tu mejor resultado de cada día (si lo mejoras, se mueve)
+    const dist = d.daily.dist;
+    if (day.best == null) d.daily.won++;
+    else if (newBest && turns !== day.best && dist[day.best]) dist[day.best]--;
+    if (day.best == null || (newBest && turns !== day.best)) dist[turns] = (dist[turns] || 0) + 1;
     if (day.best == null || newBest) { day.best = turns; day.strokes = strokes; }
     best = { turns: day.best, strokes: day.strokes };
   }

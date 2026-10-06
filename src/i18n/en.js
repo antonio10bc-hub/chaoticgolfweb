@@ -169,6 +169,8 @@ export default {
   },
 
   /* ---------- interface ---------- */
+  dstats: { title: 'Statistics', aria: 'Daily challenge statistics', played: 'Played', pct: 'Win %', streak: 'Current streak', best: 'Max streak',
+    badges: 'Badges', dist: 'Turns to win', none: 'Win a challenge and you\'ll see here how many turns it took.', share: 'Share' },
   common: { and: ' and ', cancel: 'Cancel', ok: 'OK', close: 'Close' },
   menu: {
     story: 'The basics', pve: 'Quick Game', tag: 'Card golf. Chaotic. With CHECK.',

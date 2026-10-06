@@ -42,6 +42,7 @@ import { modeIntro } from './mode-intro.js';
 import { syncMenuBall } from './menu-ball.js';
 import { resumeGame } from './resume.js';
 import { stats } from './controller.js';
+import { openDailyStats } from './daily-stats.js';
 
 const locale = () => getLang() === 'es' ? 'es-ES' : 'en-GB';
 const store = {
@@ -125,12 +126,14 @@ export function renderDailyCard() {
   // la racha, junto al título (lejos de las caras de los rivales): encendida si hoy ya has jugado, apagada (y latiendo) si está en peligro
   const flameCls = (sk.today ? ' lit' : '') + (sk.atRisk ? ' risk' : '') + (sk.frozen ? ' frozen' : '') + (sk.today && firstLitToday(date) ? ' ignite' : '');
   const flame = sk.n || sk.lost ? `<span class="dFlame${flameCls}" title="${esc(streakLabel(sk.n) + (sk.frozen ? ' · ' + t('modes.daily.frozen') : ''))}"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg><b>${sk.n}</b></span>` : '';
+  // y a su derecha, las estadísticas (abre su ventana: daily-stats.js)
+  const statsTag = `<span class="dStats" role="button" title="${esc(t('dstats.aria'))}" aria-label="${esc(t('dstats.aria'))}"><svg class="i" aria-hidden="true"><use href="#i-stats"/></svg></span>`;
   // el tic de completado va sobre la miniatura: el texto no cambia de forma según el estado.
   // Cada línea es una sola fila; la mecánica pasa a su propia línea si no cabe junto al título
   $('dailyCard').innerHTML =
     `<span class="dPreview dRivals">${rv.map(face).join('')}` +
     (today?.best ? `<span class="dDone" title="${esc(t('modes.daily.done') + ' · ' + t('modes.daily.bestToday', { turns: turnsLabel(today.best) }))}"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>` : '') + `</span>` +
-    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><span class="dTitle"><b>${esc(t('modes.daily.title'))}</b>${flame}</span>` +
+    `<span class="dTxt"><small class="dWhen">${esc(when)}</small><span class="dHead"><span class="dTitle"><b>${esc(t('modes.daily.title'))}</b><span class="dTags">${flame}${statsTag}</span></span>` +
     `<span class="dFeat"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg><span>${esc(dailyFeatName(ch.feature, ch.season?.now, ch.sub))}</span></span></span>` + // (la mecánica del día)
     `<span class="dVs">${esc(vs)}</span>` +
     (status ? `<span class="dMeta${sk.atRisk && !saved ? ' risk' : ''}"><span>${esc(status)}</span></span>` : '') + `</span>` +
@@ -597,7 +600,10 @@ export function bindModes() {
   $('modesBtn').addEventListener('click', () => openModes());
   bindModesSwipe();
   $('modesBack').addEventListener('click', () => showScreen('menu'));
-  $('dailyCard').addEventListener('click', () => { if ($('dailyCard').dataset.resume) resumeGame('daily'); else startDaily(); });
+  $('dailyCard').addEventListener('click', e => {
+    if (e.target.closest('.dStats')) { openDailyStats(); return; } // (la etiqueta de las estadísticas, dentro de la tarjeta)
+    if ($('dailyCard').dataset.resume) resumeGame('daily'); else startDaily();
+  });
   $('modesGrid').addEventListener('click', e => {
     const ya = e.target.closest('[data-lvedit], [data-lvdel], [data-lvcode]'); // tus niveles: editar, eliminar, añadir código
     if (ya) { yoursAction(ya); return; }

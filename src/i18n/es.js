@@ -172,6 +172,8 @@ export default {
   },
 
   /* ---------- interfaz ---------- */
+  dstats: { title: 'Estadísticas', aria: 'Estadísticas del reto diario', played: 'Jugados', pct: 'Ganados', streak: 'Racha actual', best: 'Racha máxima',
+    badges: 'Insignias', dist: 'Turnos para ganar', none: 'Cuando ganes un reto, aquí verás en cuántos turnos.', share: 'Compartir' },
   common: { and: ' y ', cancel: 'Cancelar', ok: 'Aceptar', close: 'Cerrar' },
   menu: {
     story: 'Lo básico', pve: 'Partida Rápida', tag: 'Golf de cartas. Caótico. Con JAQUE.',

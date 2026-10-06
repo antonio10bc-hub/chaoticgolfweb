@@ -891,7 +891,15 @@ body[data-screen="menu"]:not(.loading) .dFlame.ignite .i { animation: flameIgnit
 @keyframes flameIgnite { 0% { color: rgba(241,241,220,.4); } 35% { color: #FFD23F; transform: scale(1.35) translateY(-1px); } 100% { color: #F5A33A; } }
 html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMotion .dFlame.ignite .i { animation: none !important; }
 .dMeta.risk { opacity: 1; font-weight: 600; }
-@media (max-width: 420px) { .dTitle { column-gap: 5px; min-height: 20px; } .dFlame { height: 20px; padding: 0 7px 0 5px; font-size: 12px; } .dFlame .i { width: 12px; height: 12px; } }
+/* las estadísticas, a la derecha de la racha: la misma etiqueta, con las tres barras (si no caben junto al título, bajan juntas) */
+.dTags { display: inline-flex; align-items: center; gap: inherit; flex: 0 0 auto; }
+.dStats { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; height: 22px; padding: 0 8px; border-radius: 999px;
+  background: var(--ink); color: var(--cream); cursor: pointer; transition: background .15s, transform .15s; }
+.dStats .i { width: 14px; height: 14px; }
+.dStats:hover { background: var(--accent); color: var(--ink); }
+.dStats:active { transform: scale(.92); }
+@media (max-width: 420px) { .dTitle { column-gap: 5px; min-height: 20px; } .dFlame { height: 20px; padding: 0 7px 0 5px; font-size: 12px; } .dFlame .i { width: 12px; height: 12px; }
+  .dStats { height: 20px; padding: 0 7px; } .dStats .i { width: 12px; height: 12px; } }
 /* móviles muy estrechos: el título, la racha y el botón caben en una fila también en inglés */
 @media (max-width: 380px) {
   .dTxt b { font-size: 15px; }
@@ -899,6 +907,7 @@ html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMot
   .dPreview { width: 44px; height: 44px; }
   .dRivals .avatar { width: 26px; height: 26px; }
   .dFlame { gap: 1px; padding: 0 6px 0 4px; }
+  .dStats { padding: 0 5px; }
 }
 
 /* ---------- ficha del rival: tu balance y tu némesis ---------- */
@@ -1746,3 +1755,43 @@ html.reduceMotion #giftPop, html.reduceMotion #giftPop .giftSvg, html.reduceMoti
   .luH { display: none; }
   .luBox .btn-primary { margin-top: 6px; padding-top: 9px; padding-bottom: 9px; }
 }
+
+/* ---------- estadísticas del reto diario (ventana): números, insignias de la racha y turnos para ganar ---------- */
+#dialog:has(.dsBox) { width: min(440px, 94vw); }
+.dlgBox.dsBox { gap: 10px; padding: 22px 24px 18px; }
+.dsHead { display: flex; align-items: center; gap: 10px; }
+.dsIco { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 11px; background: var(--mode-daily); color: var(--ink); }
+.dsIco .i { width: 18px; height: 18px; }
+.dsBox h4 { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin-top: 6px; }
+.dsNums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; }
+.dsNum b { display: block; font-size: 30px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.dsNum small { display: block; font-size: 11.5px; line-height: 1.2; color: var(--ink-soft); }
+.dsBadges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+.dsBadge { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 8px; border-radius: 14px; background: rgba(36,36,36,.05); }
+.dsBadge.got { background: rgba(232,115,58,.13); }
+.dsBall { position: relative; display: inline-flex; height: 52px; align-items: center; }
+.dsBadge:not(.got) .dsBall .skBall { filter: grayscale(1); opacity: .35; }
+.dsLock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); }
+.dsLock .i { width: 16px; height: 16px; }
+.dsBadge small { font-size: 12px; font-weight: 600; }
+.dsBadge:not(.got) small { color: var(--ink-soft); font-weight: 500; }
+.dsBar { width: 70%; height: 4px; border-radius: 999px; background: rgba(36,36,36,.12); overflow: hidden; }
+.dsBar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.dsDist { display: flex; align-items: flex-end; gap: 6px; height: 118px; padding-top: 4px; }
+.dsCol { flex: 1 1 0; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; }
+.dsBarV { position: relative; width: 100%; max-width: 30px; height: max(6px, calc(var(--h) * 78px)); border-radius: 7px; background: var(--grass-dark);
+  transform-origin: bottom; animation: dsGrow .5s var(--ease-out) both; }
+.dsCol.zero .dsBarV { background: rgba(36,36,36,.12); }
+.dsCol.today .dsBarV { background: var(--accent); }
+.dsBarV em { position: absolute; bottom: 100%; left: 0; right: 0; margin-bottom: 2px; font-style: normal; font-size: 12px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.dsCol.zero em { display: none; }
+.dsCol small { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.dsCol.today small { color: var(--ink); font-weight: 700; }
+@keyframes dsGrow { from { transform: scaleY(0); } }
+html.reduceMotion .dsBarV { animation: none; }
+.dsNone { font-size: 13px !important; color: var(--ink-soft); }
+.dsBox .dlgBtns { justify-content: stretch; }
+.dsBox .dlgBtns button { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.dsBox .dlgBtns .i { width: 16px; height: 16px; }
+.dsShare.done { --b-bg: var(--grass-dark); --b-line: var(--grass-dark); }
+@media (max-width: 380px) { .dlgBox.dsBox { padding: 18px 16px 14px; } .dsNum b { font-size: 25px; } .dsNum small { font-size: 10.5px; } }
