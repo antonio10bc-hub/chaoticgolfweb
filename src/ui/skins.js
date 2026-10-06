@@ -2,7 +2,7 @@
 // cada vez más espectacular, siempre con el mismo molde (el de la de agua): I, la bola cambia por dentro; II, algo por
 // fuera, sutil pero claro; III, lo de dentro más intenso y piezas que giran alrededor. Decoran la pelota sin cambiar
 // su color (el color es quien juega).
-//   fuego      racha del reto diario (7 · 30 · 365 días): fuego dentro · corona de llamas · lava y bolas de fuego en órbita
+//   fuego      racha del reto diario (7 · 30 · 365 días): fuego dentro · llamas alrededor de toda la bola · lava, llamas más altas y bolas de fuego en órbita
 //   clásica    victorias con la baraja clásica: bañada en oro · laurel · destello y destellos en órbita
 //   agua       victorias con la baraja de agua: agua dentro · ondas · más agua, burbujas y gotas en órbita
 //   madera     victorias con la de minigolf: vetas · marco de madera · barnizada, con nudo, y el molino que gira detrás
@@ -106,6 +106,12 @@ export function skinSeat(g = app.game) {
 const FLAME = '<svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C13.5 7 20 10.5 20 19.5C20 26 16.4 31 12 31S4 26 4 19.5C4 15 7 12 8 7.5c1.5 3.5 2.5 4.5 3.3 5.5C11.6 8.5 10.8 5 12 1Z" fill="url(#skFlame)"/>' +
   '<path class="flCore" d="M12 13c1 4 4 5.5 4 10 0 4-2 7-4 7s-4-3-4-6.5c0-2.5 1.5-4 2.5-6 .5 1.5 1 2 1.5 2.5 0-3-.5-5 0-7Z" fill="url(#skFlameCore)"/></svg>';
 const DROP = '<svg viewBox="0 0 20 26" aria-hidden="true"><path d="M10 1C13 7 18 11 18 16.5A8 8 0 0 1 2 16.5C2 11 7 7 10 1Z" fill="#7FD0EA"/><ellipse cx="7" cy="16" rx="2" ry="3.2" fill="#fff" opacity=".7"/></svg>';
+// una bola de fuego redonda (la que gira alrededor de la de fuego III): núcleo y lenguas de fuego en todas
+// direcciones, así se ve bien la mire como la mire la órbita
+const FIREBALL = '<svg viewBox="-20 -20 40 40" aria-hidden="true"><g class="fbRing">' +
+  Array.from({ length: 10 }, (_, i) => { const t = i % 2 ? 15.5 : 19.6, m = i % 2 ? 11.5 : 14;
+    return `<path d="M0-${t}C3.4-${m} 6.4-10.5 6-6.6A6 6 0 0 1-6-6.6C-6.4-10.5-3.4-${m} 0-${t}Z" fill="url(#skFlame)" transform="rotate(${i * 36})"/>`; }).join('') +
+  '</g><circle r="10.2" fill="#F27A2E"/><circle r="8" fill="#FFB23E"/><circle r="5.6" fill="#FFE066"/><circle cx="-1.8" cy="-2" r="2.6" fill="#FFF8DC"/></svg>';
 const SPARK = c => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="${c}"/></svg>`;
 const BOLT = '<svg viewBox="0 0 16 26" aria-hidden="true"><path d="M10 0 1 15h6l-2 11 10-16H9l1-10Z" fill="#FFD84A" stroke="#fff" stroke-width="1" stroke-linejoin="round"/></svg>';
 const PIECE = c => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4.2a2.6 2.6 0 1 1 5.2 0H18v4.4a2.6 2.6 0 1 1 0 5.2V21h-4.6a2.6 2.6 0 1 0-5.2 0H4v-4.4a2.6 2.6 0 1 0 0-5.2Z" fill="${c}" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
@@ -140,7 +146,6 @@ function laurel() { // dos ramas de laurel que suben por los lados desde abajo: 
   }
   return `<svg viewBox="-50 -50 100 100" aria-hidden="true">${out}</svg>`;
 }
-const around = (n, spread) => Array.from({ length: n }, (_, i) => n === 1 ? 0 : -spread / 2 + spread * i / (n - 1));
 const is = (cls, n, fn) => Array.from({ length: n }, (_, i) => `<i class="${cls}" style="${fn(i)}"></i>`).join('');
 
 // una gema tallada (la corona: en sus bandas y, en el nivel III, en órbita)
@@ -160,11 +165,12 @@ function parts(id, lvl) {
   let back = '', surf = '', front = '';
   const l3 = lvl >= 3;
   switch (id) {
-    case 'fire': // fuego dentro · corona de llamas · más fuego (con lava) y bolas de fuego en órbita
+    case 'fire': // fuego dentro · llamas pequeñas alrededor de toda la bola · más fuego (con lava), llamas más altas y bolas de fuego en órbita
       surf += '<i class="glow"></i>' + (l3 ? '<i class="lava"></i>' : '') + [[-6, .9], [20, 1.15], [46, .95], [70, 1.1]].map(([x, k], i) =>
         `<i class="fi" style="--x:${x}%;--k:${k};--d:${(-i * .19).toFixed(2)}s">${FLAME}</i>`).join('');
-      if (lvl >= 2) back += around(5, 116).map((a, i) => `<i class="fl" style="--a:${a}deg;--d:${(-i * .23).toFixed(2)}s;--k:${(1 - Math.abs(a) / 260).toFixed(2)}">${FLAME}</i>`).join('');
-      if (l3) front += orbit('fb', [FLAME, FLAME, FLAME]);
+      if (lvl >= 2) { const n = l3 ? 16 : 12; // (la corona de llamas, alrededor de toda la bola: una grande y una pequeña)
+        back += Array.from({ length: n }, (_, i) => `<i class="fl" style="--a:${(i * 360 / n).toFixed(1)}deg;--d:${(-i * .17).toFixed(2)}s;--k:${i % 2 ? .74 : 1}">${FLAME}</i>`).join(''); }
+      if (l3) front += orbit('fb', Array(3).fill('<i class="tr"></i>' + FIREBALL)); // (con su estela, siempre detrás al girar)
       break;
     case 'water': // agua dentro · ondas · más agua (con burbujas) y gotas en órbita
       surf += `<i class="wv">${WAVE}</i><i class="wv b">${WAVE}</i><i class="gloss"></i>`;
@@ -224,6 +230,6 @@ export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
 // (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
-export const SKIN_ART = { FLAME, DROP, SPARK, BOLT, PIECE, CROWN, GEM, FRAME, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
+export const SKIN_ART = { FLAME, FIREBALL, DROP, SPARK, BOLT, PIECE, CROWN, GEM, FRAME, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;

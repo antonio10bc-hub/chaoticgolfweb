@@ -319,7 +319,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
   completo (calentamiento · intermedio · experto). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
   **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
-  fuego dentro · corona de llamas · lava y bolas de fuego en órbita; bañada en oro (hoyuelos dorados y aro) · laurel ·
+  fuego dentro · llamas pequeñas alrededor de toda la bola · más lava, llamas más altas y grandes bolas de fuego en órbita (redondas, con lenguas en todas direcciones que giran y una estela que queda siempre detrás); bañada en oro (hoyuelos dorados y aro) · laurel ·
   destello y destellos en órbita; agua dentro · ondas · más agua, burbujas y gotas en órbita; vetas · marco de madera ·
   barnizada con nudo y el molino; cinturón de hierro · vapor · caldera encendida y el tren en su vía; cuatro colores ·
   pétalos, hojas y copos · colores vivos que giran y las cuatro estaciones en órbita; el espacio dentro · el disco de

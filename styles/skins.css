@@ -44,12 +44,22 @@
 @keyframes skFlick { 0% { transform: scale(var(--k, 1)) scaleY(.86) skewX(-5deg); } 100% { transform: scale(var(--k, 1)) scaleY(1.12) skewX(5deg); } }
 .sl3.sk-fire .lava { inset: 0; background: radial-gradient(circle at 50% 100%, rgba(255,230,120,.95), rgba(255,140,40,.8) 40%, rgba(255,150,50,.3) 68%, rgba(255,150,50,0) 88%);
   animation: skGlowFlick .9s ease-in-out infinite alternate; }
-.sk-fire .fl { --h: calc(var(--bs) * .5); width: calc(var(--bs) * .4); height: var(--h); left: calc(50% - var(--bs) * .2); top: calc(50% - var(--bs) * .3 - var(--h));
-  transform-origin: 50% calc(var(--h) + var(--bs) * .3); transform: rotate(var(--a)); }
-.sk-fire .orb { animation-duration: 4.5s; }
-.sk-fire .orb .fb { width: calc(var(--bs) * .24); height: calc(var(--bs) * .32); margin: calc(var(--bs) * -.16) 0 0 calc(var(--bs) * -.12);
-  filter: drop-shadow(0 0 calc(var(--bs) * .05) rgba(255,150,50,.85)); }
-.sk-fire .orb .fb svg { transform-origin: 50% 100%; animation: skFlick .5s ease-in-out infinite alternate; }
+/* la corona de llamas: alrededor de toda la bola, saliendo de detrás de su borde (II pequeñas, III más altas) */
+.sk-fire .fl { --h: calc(var(--bs) * .3); --w: calc(var(--bs) * .22); width: var(--w); height: var(--h); left: calc(50% - var(--w) / 2); top: calc(50% - var(--bs) * .38 - var(--h));
+  transform-origin: 50% calc(var(--h) + var(--bs) * .38); transform: rotate(var(--a)); }
+.sl3.sk-fire .fl { --h: calc(var(--bs) * .46); --w: calc(var(--bs) * .3); }
+.sk-fire .orb { animation-duration: 5s; }
+/* bolas de fuego redondas, grandes, más lejos de la bola: el anillo de lenguas gira y el núcleo late */
+.sk-fire .orb .fb { width: calc(var(--bs) * .5); height: calc(var(--bs) * .5); margin: calc(var(--bs) * -.25) 0 0 calc(var(--bs) * -.25);
+  transform: rotate(var(--a)) translateY(calc(var(--bs) * -.94)) rotate(calc(var(--a) * -1));
+  filter: drop-shadow(0 0 calc(var(--bs) * .06) rgba(255,150,50,.9)); }
+.sk-fire .fb .fbRing { transform-box: view-box; transform-origin: 0 0; animation: skSpin 1.6s linear infinite; }
+.sk-fire .fb svg { animation: skFireball .45s ease-in-out infinite alternate; }
+/* la estela: sale del centro hacia atrás (la órbita gira en el sentido de las agujas del reloj); girada con su ángulo, queda siempre detrás */
+.sk-fire .fb .tr { right: 50%; top: 50%; width: calc(var(--bs) * .62); height: calc(var(--bs) * .2); margin-top: calc(var(--bs) * -.1); border-radius: 999px 0 0 999px;
+  background: linear-gradient(to left, rgba(255,214,90,.95), rgba(255,140,40,.6) 45%, rgba(232,80,40,0)); transform-origin: 100% 50%;
+  transform: rotate(var(--a)) translateY(calc(var(--bs) * -.03)); clip-path: polygon(0 45%, 100% 0, 100% 100%, 0 55%); }
+@keyframes skFireball { from { transform: scale(.92); } to { transform: scale(1.06); } }
 
 /* ---------- AGUA · baraja de agua: agua dentro · ondas · más agua, burbujas y gotas en órbita (el molde de todas) ---------- */
 .sk-water .wv { left: 0; bottom: 0; width: 200%; height: 40%; fill: rgba(125,208,236,.62); animation: skWave 3.2s linear infinite; }

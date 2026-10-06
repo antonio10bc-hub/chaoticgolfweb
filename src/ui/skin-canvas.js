@@ -57,18 +57,20 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
   const D = R * 2, A = SKIN_ART, lvl = sk?.lvl || 0;
   const back = [], front = [], surf = []; // (capas: detrás, sobre la superficie, delante)
   switch (sk?.id) {
-    case 'fire': { // fuego dentro · corona de llamas · lava y bolas de fuego en órbita
+    case 'fire': { // fuego dentro · llamas alrededor de toda la bola · lava, llamas más altas y bolas de fuego en órbita
       const noCore = A.FLAME.replace('class="flCore"', 'class="flCore" opacity="0"'), hi = D * (lvl >= 3 ? .8 : .5);
-      if (lvl >= 2) for (let i = 0; i < 5; i++) {
-        const a = -58 + 29 * i, k = 1 - Math.abs(a) / 260, h = D * .5;
-        back.push(async () => { c.save(); c.translate(x, y); c.rotate(rad(a)); await put(c, noCore, 0, -(R * .6 + h * k / 2), D * .4 * k, h * k); c.restore(); });
-      }
+      if (lvl >= 2) { const n = lvl >= 3 ? 16 : 12, h = D * (lvl >= 3 ? .46 : .3), w = D * (lvl >= 3 ? .3 : .22); // (llamas alrededor de toda la bola)
+        for (let i = 0; i < n; i++) { const a = i * 360 / n, k = i % 2 ? .74 : 1;
+          back.push(async () => { c.save(); c.translate(x, y); c.rotate(rad(a)); await put(c, noCore, 0, -(D * .38 + h * k / 2), w * k, h * k); c.restore(); }); } }
       surf.push(() => glow(c, x, y + R * 1.24, R * 1.24, [[0, 'rgba(255,160,50,.8)'], [1, 'rgba(255,120,40,0)']]));
       if (lvl >= 3) surf.push(() => glow(c, x, y + R, D, [[0, 'rgba(255,230,120,.95)'], [.4, 'rgba(255,140,40,.8)'], [.68, 'rgba(255,150,50,.3)'], [.88, 'rgba(255,150,50,0)']]));
       for (const [px, k] of [[-6, .9], [20, 1.15], [46, .95], [70, 1.1]]) surf.push(() => { c.globalAlpha = .9;
         const p = put(c, lvl >= 3 ? A.FLAME : noCore, x - R + D * (px + 18) / 100, y + R + D * .1 - hi * k / 2, D * .36 * k, hi * k); return p.then(() => { c.globalAlpha = 1; }); });
-      if (lvl >= 3) for (const a of [30, 150, 270]) front.push(() => { const [ox, oy] = orbit(x, y, D, a);
-        c.shadowColor = 'rgba(255,150,50,.85)'; c.shadowBlur = D * .05; return put(c, A.FLAME, ox, oy, D * .24, D * .32).then(() => { c.shadowBlur = 0; }); });
+      if (lvl >= 3) for (const a of [30, 150, 270]) front.push(() => { const ox = x + Math.sin(rad(a)) * D * .94, oy = y - Math.cos(rad(a)) * D * .94;
+        c.save(); c.translate(ox, oy); c.rotate(rad(a)); // (la estela, detrás según gira: en el sentido de las agujas del reloj)
+        const g = c.createLinearGradient(0, 0, -D * .62, 0); g.addColorStop(0, 'rgba(255,214,90,.95)'); g.addColorStop(.45, 'rgba(255,140,40,.6)'); g.addColorStop(1, 'rgba(232,80,40,0)');
+        c.fillStyle = g; c.beginPath(); c.moveTo(0, -D * .13); c.lineTo(-D * .62, -D * .04); c.lineTo(-D * .62, -D * .02); c.lineTo(0, D * .07); c.closePath(); c.fill(); c.restore();
+        c.shadowColor = 'rgba(255,150,50,.9)'; c.shadowBlur = D * .06; return put(c, A.FIREBALL, ox, oy, D * .5, D * .5).then(() => { c.shadowBlur = 0; }); });
       break;
     }
     case 'classic': // bañada en oro · laurel · destello y destellos en órbita
