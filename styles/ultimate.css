@@ -114,3 +114,11 @@ html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultima
 
 /* la partida: el marco del campo, iridiscente y claro (sin violeta) */
 #gameScreen[data-scene="prism"] #boardWrap { box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 0 0 7px #BDE7F3, 0 0 40px 10px rgba(170,230,245,.5), 0 8.4px 25.2px 3.5px rgba(40,70,80,.18); }
+
+/* la barra de arriba de la partida (y sonido y ajustes): tarjetas iridiscentes, que se vean sobre el fondo claro */
+body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) :is(#gameBar .btn-ghost, #sfxBtn, #sndCfgBtn) {
+  --b-fg: #2F3550; --b-line: rgba(255,255,255,.95); --b-bg: #F3F7F8; border-radius: 12px; backdrop-filter: none;
+  background-image: linear-gradient(115deg, #FFD3E6, #C9ECF7 34%, #D2F5E3 66%, #FFEEC2); background-size: 200% 100%; background-position: 0 0;
+  transition: background-position .5s var(--ease-out), transform .15s var(--ease-out); }
+body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) :is(#gameBar .btn-ghost, #sfxBtn, #sndCfgBtn):hover { background-position: 100% 0; }
+body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) #saveTick { color: #2F3550; }

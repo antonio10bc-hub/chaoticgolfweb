@@ -505,8 +505,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     El primero que cae en una casilla vacía (nunca una salida ni la casilla inicial del hoyo) se queda como **roca**
     (`tiles/meteorite.js`): un muro como el bloque de madera, casi cúbico y llenando la casilla; aparece al caer su meteorito
     (`meteorRock`). Cada meteorito baja en diagonal con su estela detrás, inclinada en la dirección de la caída.
-  - En pantalla: el campo flota en el espacio (nebulosa que deriva despacio, dos capas de estrellas que titilan, una
-    galaxia lejana, estrellas fugaces de vez en cuando, un planeta con su anillo y su luna, marco violeta con halo), el agujero
+  - En pantalla: el campo flota en el espacio, en el mismo estilo plano y vectorial que las demás barajas (cielo de un
+    solo color con franjas anchas muy suaves, sin degradados ni desenfoques: dos capas de estrellas que titilan,
+    destellos de cuatro puntas que laten, una galaxia lejana, estrellas fugaces de vez en cuando, un planeta con su
+    anillo y su luna y otro naranja más pequeño, y un marco morado liso con juntas, como las tablas del de minigolf), el agujero
     como Gargantua (Interstellar: la sombra con su anillo de fotones, la luz del disco curvada por encima y por debajo y el
     disco cruzando por delante, con la luz fluyendo; `BH_GARGANTUA`, también en la carta y en el icono de la baraja) sobre una
     casilla de noche, y un halo en las casillas donde traga. La gravedad tiñe su cruz de morado, de fuera adentro, con
@@ -649,7 +651,7 @@ la partida quieta. Reglas que hay que mantener:
 - **Nada que repinte la pantalla en cada fotograma.** Animar `background-position` a pantalla completa repinta todo:
   el oleaje del lago es una capa que se desliza con `transform` (`.dWaves`) y en el móvil el degradado de Ultimate
   queda quieto y sus manchas sin `blur(60px)`. Partida quieta con la baraja de agua: de ~1 s de pintado cada 3 s a
-  casi nada. El borde iridiscente de Ultimate en Modos va a 15 pasos por segundo.
+  casi nada. El borde iridiscente de Ultimate en Modos va a 15 pasos por segundo. En la partida de Ultimate, los botones de arriba (y sonido y ajustes) son tarjetas iridiscentes: blancos sobre el fondo claro no se veían.
 - **Nada de variables heredadas animadas en contenedores grandes.** La corriente del río y el lago se animaban con un
   reloj (`--flow`, `--lflow`) en todo `#board`: cada fotograma recalculaba todas las casillas y su contenido. En
   Ultimate (247 casillas, río y lago a la vez) el hilo principal estaba ocupado el 95 % del tiempo y la partida iba a

@@ -101,49 +101,48 @@ html.reduceMotion .piece.copyHole .cardOnCell::before { animation: none; }
 @keyframes meteorCrater { from { transform: scale(.3); opacity: 1; } 25% { transform: scale(1.1); } to { transform: scale(1.3); opacity: 0; } }
 html.reduceMotion .bhFlow, html.reduceMotion .bhRing, html.reduceMotion .rockGlow, html.reduceMotion .piece.copyBall .tile-ball .circ { animation: none; }
 
-/* ---------- escena: el campo flotando en el espacio ---------- */
+/* ---------- escena: el campo flotando en el espacio ----------
+   Plana y vectorial, como el resto de barajas (la de minigolf: césped liso y un marco de madera): cielo de un solo
+   color con franjas anchas muy suaves, estrellas, destellos de cuatro puntas, una galaxia, dos planetas y un marco
+   morado alrededor del campo. Sin degradados ni desenfoques. */
 #gameScreen[data-scene="space"] #game {
-  background-color: #0D0A26;
-  background-image: var(--grain),
-    radial-gradient(ellipse 120% 80% at 50% 115%, rgba(60,30,110,.85), transparent 60%),
-    radial-gradient(ellipse 90% 70% at 50% -20%, rgba(28,22,80,.9), transparent 70%),
-    linear-gradient(170deg, #120E33, #0B0820 55%, #150B2E);
+  background-color: #1B1545;
+  background-image: var(--grain), repeating-linear-gradient(135deg, rgba(255,255,255,.028) 0 90px, transparent 90px 180px);
 }
 #gameScreen[data-scene="space"] #gameDecor > :not(.dSpace) { display: none; }
 #gameDecor .dSpace { display: none; }
 #gameScreen[data-scene="space"] #gameDecor { overflow: hidden; }
 #gameScreen[data-scene="space"] #gameDecor .dSpace { display: block; position: absolute; pointer-events: none; }
-/* nebulosa: nubes de color, difuminadas, que derivan muy despacio */
-#gameDecor .dSpace.nebula { inset: -20%; filter: blur(46px); opacity: .9; will-change: transform;
-  background:
-    radial-gradient(ellipse 34% 26% at 22% 30%, rgba(123,92,224,.55), transparent 70%),
-    radial-gradient(ellipse 28% 22% at 30% 42%, rgba(70,150,230,.28), transparent 70%),
-    radial-gradient(ellipse 30% 24% at 80% 72%, rgba(214,90,170,.42), transparent 70%),
-    radial-gradient(ellipse 22% 18% at 72% 64%, rgba(242,150,80,.22), transparent 70%),
-    radial-gradient(ellipse 26% 20% at 62% 20%, rgba(90,60,200,.3), transparent 70%);
-  animation: nebula 60s ease-in-out infinite alternate; }
-@keyframes nebula { to { transform: translate(3%, -2%) rotate(4deg) scale(1.06); } }
 #gameDecor .dSpace.stars { inset: 0; width: 100%; height: 100%; }
 #gameDecor .dSpace.stars.a { opacity: .7; animation: twinkleA 7s ease-in-out infinite alternate; }
 #gameDecor .dSpace.stars.b { animation: twinkleB 4.4s ease-in-out infinite alternate; }
-#gameDecor .dSpace.stars.b circle { filter: drop-shadow(0 0 1.5px rgba(255,255,255,.9)); }
 @keyframes twinkleA { from { opacity: .45; } to { opacity: .85; } }
 @keyframes twinkleB { 0% { opacity: 1; } 40% { opacity: .55; } 100% { opacity: .95; } }
-#gameDecor .dSpace.galaxy { width: 26vmin; left: 2vw; top: 9vh; opacity: .85; transform: rotate(8deg); }
+/* destellos de cuatro puntas, que laten despacio */
+#gameDecor .dSpace.spark { width: 3.2vmin; min-width: 16px; }
+#gameDecor .dSpace.spark path { transform-box: fill-box; transform-origin: center; animation: sparkBeat 3.6s ease-in-out infinite; }
+#gameDecor .dSpace.spark.a { left: 22vw; top: 26vh; } #gameDecor .dSpace.spark.b { right: 20vw; top: 58vh; width: 2.4vmin; }
+#gameDecor .dSpace.spark.c { left: 9vw; bottom: 22vh; width: 2vmin; } #gameDecor .dSpace.spark.d { right: 9vw; top: 40vh; width: 1.8vmin; }
+#gameDecor .dSpace.spark.b path { animation-delay: -1.2s; } #gameDecor .dSpace.spark.c path { animation-delay: -2.4s; } #gameDecor .dSpace.spark.d path { animation-delay: -.6s; }
+@keyframes sparkBeat { 0%, 100% { transform: scale(.7); } 50% { transform: scale(1.1); } }
+#gameDecor .dSpace.galaxy { width: 26vmin; left: 2vw; top: 9vh; transform: rotate(8deg); }
 html.phone #gameDecor .dSpace.galaxy { width: 22vmin; left: 3vw; top: 6vh; } /* (en el móvil, arriba: la mano es translúcida) */
-#gameDecor .dSpace.planet { width: 26vmin; right: 3vw; top: 10vh; opacity: .95; filter: drop-shadow(0 0 24px rgba(123,92,224,.45)); }
+#gameDecor .dSpace.planet { width: 26vmin; right: 3vw; top: 10vh; }
 #gameDecor .dSpace.planet .moon { transform-box: view-box; transform-origin: 60px 60px; animation: moon 40s linear infinite; }
 @keyframes moon { to { transform: rotate(360deg); } }
-/* estrellas fugaces: de vez en cuando, una línea de luz que cruza */
-#gameDecor .dSpace.shoot { width: 140px; height: 2px; border-radius: 2px; opacity: 0;
-  background: linear-gradient(to left, rgba(255,255,255,.95), rgba(200,180,255,.5) 40%, transparent); }
+#gameDecor .dSpace.planet2 { width: 14vmin; left: 4vw; top: 60vh; }
+html.phone #gameScreen[data-scene="space"] #gameDecor .dSpace.planet2 { display: none; } /* (en el móvil, la mano va ahí) */
+/* estrellas fugaces: de vez en cuando, una raya de luz que cruza */
+#gameDecor .dSpace.shoot { width: 120px; height: 2px; border-radius: 2px; opacity: 0; background: #EDE6FF; }
 #gameDecor .dSpace.shoot.a { top: 14%; left: 62%; transform: rotate(-24deg); animation: shoot 11s 3s linear infinite; }
 #gameDecor .dSpace.shoot.b { top: 68%; left: 12%; transform: rotate(-18deg); animation: shoot 17s 9s linear infinite; }
-@keyframes shoot { 0%, 93% { opacity: 0; translate: 0 0; } 94% { opacity: 1; } 100% { opacity: 0; translate: -260px 110px; } }
-#gameScreen[data-scene="space"] #boardWrap { box-shadow: 0 0 0 4px #C78BF2, 0 0 0 9px rgba(199,139,242,.18), 0 0 60px 14px rgba(123,92,224,.5), 0 14px 36px rgba(0,0,0,.5); }
+@keyframes shoot { 0%, 93% { opacity: 0; translate: 0 0; } 94% { opacity: .9; } 100% { opacity: 0; translate: -260px 110px; } }
+/* el marco del campo: morado liso, con juntas como las tablas del de minigolf */
+#gameScreen[data-scene="space"] #boardWrap { background-color: #4A3A9C;
+  background-image: var(--grain), repeating-linear-gradient(90deg, rgba(20,10,60,.22) 0 2px, transparent 2px 38px);
+  box-shadow: inset 0 0 0 3px #7E64D8, 0 0 0 4px #2A1F66, 0 8.4px 25.2px 2px rgba(5,0,25,.4); }
 html.reduceMotion #gameDecor .dSpace, html.reduceMotion #gameDecor .dSpace * { animation: none !important; }
 html.reduceMotion #gameDecor .dSpace.shoot { display: none; }
-html.phone #gameDecor .dSpace.nebula { animation: none; filter: blur(30px); } /* (en el móvil, sin que derive: ahorra batería) */
 
 /* la carta de la baraja (Modos de juego): al pasar por encima, la luz fluye más deprisa por el disco */
 .deckCard:hover .dkArt .bhFlow, .deckCard:focus-within .dkArt .bhFlow { animation-duration: .9s; }
