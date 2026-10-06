@@ -7,7 +7,9 @@ import { t } from '../i18n/index.js';
 import { prefs, setPref, resetPrefs, THEMES, TRACKS, UI_MODES, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
 import { resetModeIntros } from './mode-intro.js';
 import { resetDeckIntros } from './deck-intro.js';
-import { chartsHTML } from './stats-charts.js';
+import { chartSections } from './stats-charts.js';
+import { statsSections } from './stats-sections.js';
+import { openDailyStats } from './daily-stats.js';
 import { SFX, MUSIC, sfx, sfxApplyVolumes, musicStart, musicStop, musicRefresh, sndSave } from '../audio/sfx.js';
 import { loadRecords, resetRecords, turnsLabel } from './records.js';
 import { resetTutorial } from './tutorial.js';
@@ -64,12 +66,10 @@ function settingsHTML() {
   <section><div class="setRow"><span class="muted">${esc(t('settings.resetSub'))}</span><button class="btn-sm danger" data-set-act="resetPrefs">${esc(t('settings.reset'))}</button></div></section>`;
 }
 
+// la pestaña de Estadísticas: gráficas (stats-charts.js) y secciones (stats-sections.js), que salen de las listas del
+// juego: lo que se añade (barajas, desafíos, puzles, pelotas, mecánicas) aparece aquí solo
 function statsHTML() {
-  const r = loadRecords();
-  const tot = r.totals;
-  const totals = [['i-club', tot.golpes, 'win.stats.strokes'], ['i-hole', tot.hundidas, 'win.stats.sunk'],
-    ['i-burst', tot.colisiones, 'win.stats.collisions'], ['i-spiral', tot.portales, 'win.stats.portals'], ['i-out', tot.caidas, 'win.stats.falls']]
-    .map(([i, v, k]) => `<div class="st"><svg class="i" aria-hidden="true"><use href="#${i}"/></svg><b>${v}</b>${esc(t(k))}</div>`).join('');
+  const r = loadRecords(), C = chartSections, S = statsSections;
   const lv = Object.entries(r.levels).sort((a, b) => a[0] - b[0]).map(([i, b]) => {
     const L = storyLevelAt(+i);
     return `<tr><td class="n">${+i + 1}</td><td>${esc(levelName(L) || t('story.untitled'))}</td><td>${esc(turnsLabel(b.turns))}</td><td>${esc(t('stats.strokesShort', { n: b.strokes }))}</td></tr>`;
@@ -79,18 +79,11 @@ function statsHTML() {
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(t('stats.streak'))} <b>${pv.streak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.bestStreak'))} <b>${pv.bestStreak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('stats.fastest'))} <b>${esc(pv.fastest != null ? turnsLabel(pv.fastest) : t('stats.none'))}</b></div></div>`;
-  const dl = r.daily, nCh = Object.keys(r.challenges).length, nPz = Object.keys(r.puzzles).length;
-  const modes = `<div class="stTotals">` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t('stats.dailyStreak'))} <b>${dl.streak}</b> · ${esc(t('stats.bestStreak'))} <b>${dl.bestStreak}</b></div>` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-timer"/></svg>${esc(t('modes.rush.title'))} <b>${r.rush.best || 0}</b> pts</div>` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('modes.challengesH'))} <b>${nCh}/6</b></div>` +
-    `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.puzzlesH'))} <b>${nPz}</b></div></div>`;
-  return `${chartsHTML(r)}
-  <section><h4>${esc(t('stats.quickH'))}</h4>${quick}</section>
-  <section><h4>${esc(t('stats.modesH'))}</h4>${modes}</section>
-  <section><h4>${esc(t('ach.title'))}</h4>${achievementsHTML()}</section>
-  <section><h4>${esc(t('stats.totals'))}</h4><div class="stTotals">${totals}</div></section>
-  <section><h4>${esc(t('stats.bestH'))}</h4>${lv
+  return C.evolution(r) + C.byMode(r) + S.decks(r) +
+    `<section><h4>${esc(t('stats.quickH'))}</h4>${quick}</section>` +
+    S.daily(r) + S.progress(r) + S.special(r) + C.byRival(r) + C.byCard(r) + S.balls(r) +
+    `<section><h4>${esc(t('ach.title'))}</h4>${achievementsHTML()}</section>` + S.totals(r) +
+    `<section><h4>${esc(t('stats.bestH'))}</h4>${lv
     ? `<div class="stTableWrap"><table class="stTable"><thead><tr><th>#</th><th>${esc(t('stats.level'))}</th><th>${esc(t('stats.turns'))}</th><th>${esc(t('stats.strokes'))}</th></tr></thead><tbody>${lv}</tbody></table></div>`
     : `<p class="muted">${esc(t('stats.noBest'))}</p>`}</section>
   <section><div class="setRow"><span class="muted">${esc(t('stats.resetSub'))}</span><button class="btn-sm danger" data-set-act="resetStats">${esc(t('stats.reset'))}</button></div></section>`;
@@ -147,6 +140,7 @@ export function bindSettings() {
     const a = e.target.closest('[data-set-act]');
     if (!a) return;
     if (a.dataset.setAct === 'close') closeSettings();
+    if (a.dataset.setAct === 'dailyStats') { openDailyStats(); return; } // (la ventana del reto diario, para verla entera y compartirla)
     if (a.dataset.setAct === 'freeze' || a.dataset.setAct === 'unfreeze') { // (regalo de early tester: la racha del reto diario)
       setStreakFrozen(a.dataset.setAct === 'freeze', dateKey()); sfx('select'); paint(); app.onStreakChange?.(); return;
     }

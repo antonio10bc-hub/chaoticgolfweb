@@ -981,6 +981,36 @@ html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMot
 .hbVal { font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; min-width: 44px; text-align: right; }
 .hbVal small { font-weight: 400; color: var(--ink-soft); }
 .hbRow:hover .hbTrack i { filter: brightness(1.08); }
+/* ---------- Estadísticas: secciones (stats-sections.js) ---------- */
+.setBody h4 .stMore { float: right; margin: -6px 0 0; padding: 3px 8px; font-size: 11px; letter-spacing: 0; text-transform: none; gap: 5px; }
+.setBody h4 .stMore .i { width: 13px; height: 13px; }
+/* por baraja: su emblema pequeño delante del nombre; las que aún no has jugado, apagadas */
+.hbLbl.dk i { flex: 0 0 auto; display: grid; place-items: center; width: 22px; height: 22px; }
+.hbLbl.dk .dkArt { width: 22px; height: 22px; }
+.hbRow.zero { opacity: .5; }
+.stNote { margin: 8px 0 0; font-size: 12px; }
+/* el reto diario: cuatro cifras en una fila, como en su ventana */
+.stNums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; }
+.stNum b { display: block; font-size: 24px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stNum small { display: block; font-size: 11.5px; color: var(--ink-soft); }
+/* progreso: barra por apartado y, debajo de puzles y desafíos, una más fina por grupo */
+.pgList { display: grid; gap: 7px; }
+.pgRow { display: grid; grid-template-columns: minmax(110px, 32%) 1fr 52px; align-items: center; gap: 10px; font-size: 13px; }
+.pgLbl { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pgTrack { height: 10px; border-radius: 999px; background: var(--ch-track); overflow: hidden; }
+.pgTrack i { display: block; height: 100%; border-radius: inherit; background: var(--grass-dark); }
+.pgVal { text-align: right; font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.pgVal b { color: var(--ink); font-weight: 600; }
+.pgRow.sub { font-size: 12px; margin-top: -2px; }
+.pgRow.sub .pgLbl { color: var(--ink-soft); padding-left: 14px; }
+.pgRow.sub .pgTrack { height: 6px; }
+.pgRow.sub .pgTrack i { background: color-mix(in srgb, var(--grass-dark) 60%, transparent); }
+/* tus pelotas: una por pelota, con el nivel que tienes */
+.sbGrid { display: grid; grid-template-columns: repeat(var(--cols, 6), minmax(0, 1fr)); gap: 8px; }
+.sbItem { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 6px; border-radius: 12px; background: rgba(36,36,36,.04); }
+.sbItem small { font-size: 11px; font-weight: 700; color: var(--ink); letter-spacing: .04em; }
+.sbItem.off .skBall { filter: grayscale(1); opacity: .35; }
+.sbItem.off small { color: var(--ink-soft); font-weight: 500; }
 @media (max-width: 480px) {
   .hbRow { grid-template-columns: minmax(118px, 40%) 1fr auto; gap: 8px; font-size: 12.5px; }
   .hbLbl.rv { flex-wrap: wrap; white-space: normal; row-gap: 2px; }

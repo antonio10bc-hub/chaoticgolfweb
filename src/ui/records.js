@@ -12,12 +12,39 @@ const VERSION = 1;
 // "1 turno" / "3 turnos"
 export const turnsLabel = n => n === 1 ? t('stats.turn1') : t('stats.turnsShort', { n });
 export const REC_MODES = ['story', 'puzzle', 'daily', 'rush', 'pve', 'local', 'challenge', 'weekly'];
+// totales de la mesa (todas las pelotas de todas tus partidas): de qué eventos del motor sale cada uno (on; ball: solo
+// los de pelotas), que el controlador cuenta al jugarse (countTotals), y su icono en Estadísticas (el texto, stats.tot.<k>).
+// Una mecánica nueva = una entrada aquí y su texto, o su evento en NOT_COUNTED: tests/stats.test.mjs comprueba que cada
+// evento animado del controlador esté en un sitio o en el otro, y que no falten textos
+export const TOTALS = [
+  { k: 'golpes', icon: 'i-club' }, // (una por jugada que mueve algo: controller.js)
+  { k: 'hundidas', icon: 'i-hole', on: ['sink'] },
+  { k: 'colisiones', icon: 'i-burst', on: ['impact'] },
+  { k: 'portales', icon: 'i-spiral', on: ['teleport'] },
+  { k: 'caidas', icon: 'i-out', on: ['fall', 'splash', 'burn', 'eaten'] },
+  { k: 'rio', icon: 'i-wave', on: ['drift'], ball: true },      // casillas que el río arrastra pelotas
+  { k: 'lanzadas', icon: 'i-launch', on: ['launch'], ball: true },
+  { k: 'tuneles', icon: 'i-tunnel', on: ['tunnel'] },
+  { k: 'tren', icon: 'i-train', on: ['train'] },                // casillas que recorre el tren
+  { k: 'nieve', icon: 'i-snow', on: ['snow'] },                 // casillas que rueda la bola de nieve
+  { k: 'tragadas', icon: 'i-blackhole', on: ['absorb'] },       // pelotas y hoyos que se traga un agujero negro
+  { k: 'meteoritos', icon: 'i-meteor', on: ['meteor'] },
+  { k: 'turnos', hidden: true },
+];
+// los eventos animados que no son un total (pasos, apariciones, efectos de otro evento ya contado…)
+export const NOT_COUNTED = ['move', 'appear', 'settle', 'chainStop', 'bump', 'deflect', 'wagon', 'season', 'wind', 'gust', 'crunch',
+  'puddle', 'slide', 'flare', 'grow', 'snowIn', 'snowOut', 'snowPack', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteorRock'];
+const isBall = e => typeof e.p === 'string' && /^b\d/.test(e.p);
+const COUNTED = TOTALS.filter(x => x.on);
+// suma un evento del motor a los totales de la partida (stats del controlador)
+export function countTotals(st, ev) { for (const x of COUNTED) if (x.on.includes(ev.t) && (!x.ball || isBall(ev))) st[x.k] = (st[x.k] || 0) + 1; }
+const zeroTotals = () => Object.fromEntries(TOTALS.map(x => [x.k, 0]));
 
 const zeros = () => Object.fromEntries(REC_MODES.map(m => [m, 0]));
 const blank = () => ({
   version: VERSION,
   played: zeros(), won: zeros(),
-  totals: { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0 },
+  totals: zeroTotals(),
   levels: {},   // índice de Lo básico -> { turns, strokes, at }
   puzzles: {},  // índice de puzle -> true
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos

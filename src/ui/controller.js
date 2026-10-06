@@ -28,6 +28,7 @@ import { passCheck } from './hotseat.js';
 import { tutorialEvent, orangeCheck } from './tutorial.js';
 import { unlock } from './achievements.js';
 import { setBotTempo } from './prefs.js';
+import { TOTALS, countTotals } from './records.js';
 import { clearPause } from './pause.js';
 import { explainPlay } from '../ai/bot.js';
 import { trackMoment, resetMoments } from './why-lost.js';
@@ -44,7 +45,7 @@ import { ownerOf } from '../engine/game.js';
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
 export let stats = null;
 const resetStats = () => {
-  stats = { golpes: 0, colisiones: 0, caidas: 0, portales: 0, hundidas: 0, turnos: 0,
+  stats = { ...Object.fromEntries(TOTALS.map(x => [x.k, 0])), // (golpes, embocadas, choques… y lo de cada mecánica: records.js)
     misTurnos: 0,                  // turnos propios (partida rápida con una persona)
     longest: { n: 0, p: null },    // jugada que más casillas movió y de quién
     hitsOnMe: {},                  // quién golpeó tu pelota: jugador -> veces
@@ -70,7 +71,6 @@ export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon',
   'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack',
   'absorb', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteor', 'meteorRock']); // (las últimas: baraja de las estaciones)
-const STAT_OF = { impact: 'colisiones', fall: 'caidas', splash: 'caidas', burn: 'caidas', eaten: 'caidas', teleport: 'portales', sink: 'hundidas' };
 
 /* ---------- arranque de partidas ---------- */
 export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {
@@ -135,7 +135,7 @@ function dispatch(fn) {
   for (const ev of events) {
     if (ANIM.has(ev.t)) {
       app.animQueue.push(ev);
-      if (STAT_OF[ev.t]) stats[STAT_OF[ev.t]]++;
+      countTotals(stats, ev);
       if (me != null && stats.route) noteRoute(g, me, ev);
       if (ev.t === 'move') moves++;
       if (ev.t === 'impact' && me != null && ev.target === 'b' + me && ev.p !== ev.target) { // te han golpeado

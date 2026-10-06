@@ -591,8 +591,20 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   que acaba con el enlace `…/#reto` (quien lo abre entra directamente en el reto de ese día; `DAILY_HASHES`). La imagen se
   prepara al terminar y el portapapeles se pide en el mismo toque (Safari solo lo permite así); si no admite imagen y
   texto juntos, se copia el texto con el enlace. El botón pasa a "¡Copiado!".
-- **Estadísticas con gráficas** (`src/ui/stats-charts.js`): evolución de los últimos 14 días, victorias por
-  modo, balance contra cada rival y tus cartas más usadas (victorias en azul, derrotas en naranja).
+- **Estadísticas** (Ajustes › Estadísticas): gráficas (`src/ui/stats-charts.js`: evolución de los últimos 14 días,
+  victorias por modo, balance contra cada rival y tus cartas más usadas; victorias en azul, derrotas en naranja) y
+  secciones (`src/ui/stats-sections.js`): victorias **por baraja** (todas, Ultimate incluida, y cuántas combinaciones
+  has jugado), **partida rápida**, **reto diario** (jugados, % ganados, racha actual y máxima; "Ver y compartir" abre su
+  ventana), **progreso** (Lo básico, puzles y desafíos, cada uno con su barra y la de cada grupo), **contrarreloj y
+  desafío semanal** (récord, series completas y jugadas, semanas jugadas y ganadas, mejor semanal), **tus pelotas**
+  (cada una con su nivel), logros, **totales** de la mesa (golpes, embocadas, choques, portales, caídas y lo de cada
+  mecánica: casillas por el río, lanzamientos, túneles, casillas del tren y de la bola de nieve, tragadas por agujeros
+  negros, meteoritos) y los mejores resultados de Lo básico.
+  **Siempre al día:** todo sale de las listas del juego (`DECKS`, `CHALLENGES` y sus grupos, los niveles y puzles,
+  `SKINS`, `ACHIEVEMENTS`, `REC_MODES`), así que una baraja, un desafío, un puzle, una pelota o un logro nuevo aparece
+  solo. Los totales salen de `TOTALS` en `records.js` (cada uno, de qué eventos del motor sale); `tests/stats.test.mjs`
+  falla si un evento animado nuevo del controlador no está decidido (un total nuevo, con su texto `stats.tot.*` e icono,
+  o en `NOT_COUNTED`) o si falta algún texto.
 - **Rivales:** 12 personajes con 4 personalidades (agresivo, tramposo, cauteloso, caótico), elegibles en
   Partida rápida, con tu balance contra cada uno y tu **némesis** (el que más te gana). Tras cada jugada un
   bot explica por qué la ha hecho.

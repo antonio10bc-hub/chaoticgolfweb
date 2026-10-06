@@ -484,6 +484,25 @@ it('estadísticas del reto diario: la etiqueta junto a la racha abre la ventana 
   assert.ok(!await page.$('#dialog[open]'));
 });
 
+it('estadísticas: salen todas las barajas, todas las pelotas y el total real de desafíos y puzles (lo nuevo aparece solo)', async () => {
+  await fresh();
+  await app(async () => (await import('/src/ui/settings.js')).openSettings('stats')); await sleep(400);
+  const d = await app(async () => {
+    const { DECKS } = await import('/src/content/decks.js'), { CHALLENGES } = await import('/src/content/challenges.js'), { SKINS } = await import('/src/ui/skins.js');
+    const { TOTALS } = await import('/src/ui/records.js'), { app } = window.chaoticGolf, box = document.getElementById('setBox');
+    return { decks: box.querySelectorAll('.hbars.decks .hbRow').length, decksWant: DECKS.filter(dk => !dk.locked).length,
+      balls: box.querySelectorAll('.sbItem').length, ballsWant: SKINS.length,
+      totals: [...box.querySelectorAll('.pgRow:not(.sub) .pgVal')].map(e => e.textContent),
+      totalsWant: ['0/' + app.storyLevels.length, '0/' + app.puzzleLevels.length, '0/' + CHALLENGES.length],
+      chips: box.querySelectorAll('.stTotals .st').length >= TOTALS.filter(x => !x.hidden).length };
+  });
+  assert.equal(d.decks, d.decksWant); assert.equal(d.balls, d.ballsWant); assert.deepEqual(d.totals, d.totalsWant); assert.ok(d.chips);
+  await click('#setBox [data-set-act="dailyStats"]'); await sleep(400);
+  assert.ok(await page.$('#dialog[open] .dsBox'), 'el reto diario, en su ventana');
+  await click('#dialog [value="close"]'); await sleep(200);
+  await app(async () => (await import('/src/ui/settings.js')).closeSettings());
+});
+
 it('regalo de early tester: el aviso abre la ventana, congela la racha (no se pierde) y en Ajustes se descongela', async () => {
   await fresh({ chaoticgolf_gift: null, chaoticgolf_stats: { version: 1, played: {}, won: {}, totals: {}, levels: {}, puzzles: {}, pve: {},
     daily: { days: {}, streak: 6, bestStreak: 6, last: '2020-01-01' }, rush: { best: 0, runs: 0 }, challenges: {}, weekly: { weeks: {} }, rivals: {}, history: {}, cards: {}, decks: {}, chStats: {} } });

@@ -75,9 +75,11 @@ function byCard(R) {
     `<span class="hbTrack"><i class="win" style="width:${100 * n / max}%"></i></span><span class="hbVal">${n}</span></div>`).join('') + `</div>`;
 }
 
-export function chartsHTML(R) {
-  return `<section><h4>${esc(t('stats.ch.evolution'))}</h4>${evolution(R)}</section>
-  <section><h4>${esc(t('stats.ch.byMode'))}</h4>${byMode(R)}</section>
-  <section><h4>${esc(t('stats.ch.byRival'))}</h4>${byRival(R)}</section>
-  <section><h4>${esc(t('stats.ch.byCard'))}</h4>${byCard(R)}</section>`;
-}
+// cada gráfica, como sección de la pestaña (el orden lo pone settings.js)
+const sec = (key, body) => `<section><h4>${esc(t(key))}</h4>${body}</section>`;
+export const chartSections = {
+  evolution: R => sec('stats.ch.evolution', evolution(R)),
+  byMode: R => sec('stats.ch.byMode', byMode(R)),
+  byRival: R => sec('stats.ch.byRival', byRival(R)),
+  byCard: R => sec('stats.ch.byCard', byCard(R)),
+};
