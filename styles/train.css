@@ -44,9 +44,9 @@ html.reduceMotion .dkArt .dkSmoke, html.reduceMotion .dkArt .dkWheels { animatio
 #dialog:has(.newDeck) { width: min(400px, calc(100vw - 24px)); }
 .dlgBox.newDeck { text-align: center; }
 .ndPic { position: relative; margin: -2px -2px 14px; }
-.ndArt { display: block; width: 100%; height: auto; border-radius: var(--rbig, 16px); }
+.ndArt { display: block; width: 100%; height: auto; border-radius: 16px; }
 .ndBadge { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); white-space: nowrap;
-  padding: 5px 14px; border-radius: var(--pill); background: var(--dk, #B5483B); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .04em;
+  padding: 5px 14px; border-radius: 999px; background: var(--dk, #B5483B); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .04em;
   animation: ndPop .5s .15s cubic-bezier(.3,1.6,.5,1) both; }
 @keyframes ndPop { from { transform: translateX(-50%) scale(.4); opacity: 0; } }
 .dlgBox.newDeck h3 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.02em; }

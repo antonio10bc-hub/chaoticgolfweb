@@ -20,25 +20,6 @@ function fxBoardClass(cls, ms) {
 export const fxShake = () => fxBoardClass('shake', JUICE.impact.shakeMs + 40);
 export const fxZoomPulse = () => fxBoardClass('zoomPulse', 650);
 export const fxZoomShake = () => fxBoardClass('zoomShake', 460);
-// sacudida de toda la mesa (al embocar): más fuerte que la del tablero
-export function fxScreenShake() {
-  if (REDUCED) return;
-  const el = $('game');
-  if (!el) return;
-  restartClass(el, 'screenShake');
-  setTimeout(() => el.classList.remove('screenShake'), 520);
-}
-// texto enorme que aparece con escala y pop sobre el tablero (¡DENTRO!, +N, xN); kind: '' | 'chip' | 'mult' | 'gold'
-export function fxPopText(px, py, text, kind = 'gold') {
-  if (REDUCED) return;
-  const d = document.createElement('div');
-  d.className = 'popText ' + kind;
-  d.textContent = text;
-  d.style.left = px + 'px'; d.style.top = py + 'px';
-  d.style.setProperty('--tilt', ((fxRand() - .5) * 14).toFixed(1) + 'deg');
-  fxGetDomLayer().appendChild(d);
-  setTimeout(() => d.remove(), 1100);
-}
 
 /* carta NO — rebobinado: captura las posiciones DOM actuales (pre-render);
    syncPieces llamará a fxRewindApply() para que las piezas retrocedan

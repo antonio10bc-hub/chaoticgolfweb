@@ -71,7 +71,7 @@
 /* flash del tablero (NO / rebobinado) */
 #boardFlash { position: absolute; inset: 0; z-index: 8; pointer-events: none;
   background: rgba(235,245,255,.92); /* plano */
-  opacity: 0; border-radius: var(--rbig, 12px); }
+  opacity: 0; border-radius: 12px; }
 #boardFlash.go { animation: flashGo .48s ease-out; }
 @keyframes flashGo { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
 .piece.rewind .cardOnCell { animation: rewindWob .42s ease-in-out; }
@@ -155,7 +155,7 @@
 #rewindTag {
   position: absolute; top: 8px; left: 8px; z-index: 9; pointer-events: none;
   background: rgba(39,68,75,.92); color: #fff; font-size: 13px; font-weight: 900;
-  padding: 5px 12px; border-radius: var(--pill); letter-spacing: .5px; opacity: 0;
+  padding: 5px 12px; border-radius: 999px; letter-spacing: .5px; opacity: 0;
   box-shadow: 0 4px 10px rgba(0,0,0,.25);
 }
 #rewindTag.go { animation: rewindTag .7s ease-out; }
@@ -192,7 +192,7 @@
 .comboText {
   font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: var(--ink);
   -webkit-text-stroke: 0; text-shadow: none;
-  background: var(--cream); padding: 4px 12px; border-radius: var(--pill); box-shadow: 0 2.4px 7.2px var(--shadow);
+  background: var(--cream); padding: 4px 12px; border-radius: 999px; box-shadow: 0 2.4px 7.2px var(--shadow);
   animation: comboSoft .85s var(--ease-out) forwards;
 }
 @keyframes comboSoft {
@@ -203,13 +203,13 @@
 }
 #rewindTag {
   display: flex; align-items: center; gap: 6px;
-  background: rgba(36,36,36,.86); color: var(--paper); font-size: 12px; font-weight: 500; letter-spacing: .12em;
+  background: rgba(36,36,36,.86); color: var(--cream); font-size: 12px; font-weight: 500; letter-spacing: .12em;
   box-shadow: 0 2.4px 7.2px var(--shadow);
 }
 #pieces.idle .piece.phole:not(.sunk) .cardOnCell { animation: none; }
 
 /* caída del tablero: el tramo del borde por el que sale la pieza destella y una onda sale hacia fuera */
-.edgeFall { position: absolute; width: var(--len); height: 6px; margin: -3px 0 0 calc(var(--len) / -2); border-radius: var(--pill); pointer-events: none;
+.edgeFall { position: absolute; width: var(--len); height: 6px; margin: -3px 0 0 calc(var(--len) / -2); border-radius: 999px; pointer-events: none;
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ec) 30%, #fff) 30%, color-mix(in srgb, var(--ec) 30%, #fff) 70%, transparent);
   box-shadow: 0 0 10px 3px var(--ec), 0 0 22px 6px color-mix(in srgb, var(--ec) 55%, transparent);
   animation: edgeFall .75s cubic-bezier(.2,.8,.3,1) both; }

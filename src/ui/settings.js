@@ -4,7 +4,7 @@
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { t } from '../i18n/index.js';
-import { prefs, setPref, resetPrefs, THEMES, TRACKS, UI_MODES, STYLES, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
+import { prefs, setPref, resetPrefs, THEMES, TRACKS, UI_MODES, currentTheme, currentThemeSlot, setTheme } from './prefs.js';
 import { resetModeIntros } from './mode-intro.js';
 import { resetDeckIntros } from './deck-intro.js';
 import { chartSections } from './stats-charts.js';
@@ -63,11 +63,7 @@ function settingsHTML() {
   <section><h4>${esc(t('settings.tutorialH'))}</h4>
     <div class="setRow"><span class="muted">${esc(t('settings.tutorialSub'))}</span><button class="btn-light btn-sm" data-set-act="tutorial">${esc(t('settings.tutorialReset'))}</button></div>
   </section>
-  <section><div class="setRow"><span class="muted">${esc(t('settings.resetSub'))}</span><button class="btn-sm danger" data-set-act="resetPrefs">${esc(t('settings.reset'))}</button></div></section>
-  <section class="setStyle"><h4>${esc(t('settings.styleH'))}</h4>
-    <div class="setRow seg"><span>${esc(t('settings.style'))}</span>${seg('style', STYLES, prefs.style, o => t('settings.style_' + o))}</div>
-    ${prefs.style === 'casino' ? toggle('setCrt', prefs.crt, t('settings.crt'), t('settings.crtSub')) : ''}
-  </section>`;
+  <section><div class="setRow"><span class="muted">${esc(t('settings.resetSub'))}</span><button class="btn-sm danger" data-set-act="resetPrefs">${esc(t('settings.reset'))}</button></div></section>`;
 }
 
 // la pestaña de Estadísticas: gráficas (stats-charts.js) y secciones (stats-sections.js), que salen de las listas del
@@ -139,12 +135,6 @@ export function bindSettings() {
       if (app.game) requestAnimationFrame(() => { ctl.fitBoard(); ctl.render(); });
       return;
     }
-    const st = e.target.closest('[data-style]');
-    if (st) { // estilo visual: el original o "Salón pixel" (src/ui/casino.js); las medidas del tablero cambian
-      setPref('style', st.dataset.style); sfx('select'); paint();
-      if (app.game) requestAnimationFrame(() => { ctl.fitBoard(); ctl.render(); });
-      return;
-    }
     const tr = e.target.closest('[data-track]');
     if (tr) { setPref('track', tr.dataset.track); musicRefresh(); paint(); return; }
     const a = e.target.closest('[data-set-act]');
@@ -178,7 +168,6 @@ export function bindSettings() {
     if (id === 'setBotFast') setPref('botFast', on);
     if (id === 'setCaddie') { setPref('caddie', on); if (app.game) ctl.render(); }
     if (id === 'setContrast') setPref('contrast', on);
-    if (id === 'setCrt') setPref('crt', on);
     if (id === 'setBigText' || id === 'setLeftHand') {
       setPref(id === 'setBigText' ? 'bigText' : 'leftHand', on);
       if (app.game) requestAnimationFrame(() => { ctl.fitBoard(); ctl.render(); }); // cambia el hueco del tablero

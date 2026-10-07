@@ -258,7 +258,7 @@ export default {
     snowball: 'bola de nieve', wind: 'viento', windWarn: 'ruta del viento (aviso)',
     board: 'Tablero', cell: 'Casilla {x},{y}', hole: 'hoyo', selectable: 'seleccionable', unplayable: 'no jugable', track: 'vía del tren',
   },
-  fx: { sink: '¡DENTRO!', combo: '¡Combo x{n}!', chainStop: '¡Bucle cortado!' },
+  fx: { combo: '¡Combo x{n}!', chainStop: '¡Bucle cortado!' },
   win: {
     trainWins: '¡Gana el tren! Ha metido una pelota en el hoyo él solo: pierde todo el mundo',
     newSkin: 'Pelota nueva: {name}',
@@ -542,8 +542,6 @@ export default {
     caddie: 'Consejo del caddie', caddieSub: 'Botón para pedir una sugerencia de jugada (se anota en el resumen)',
     botFastSub: 'Los bots juegan al doble de velocidad; tus jugadas, a tu ritmo',
     bigText: 'Texto grande', bigTextSub: 'Botones, paneles y avisos más grandes',
-    styleH: 'Estilo', style: 'Estilo visual', style_classic: 'Original', style_casino: 'Salón pixel',
-    crt: 'Tele antigua', crtSub: 'Líneas de barrido, viñeta y bordes curvos sobre la pantalla',
     contrast: 'Alto contraste', contrastSub: 'Bordes y textos más marcados; casillas válidas bien contorneadas',
     ui: 'Interfaz', ui_auto: 'Automática', ui_touch: 'Táctil', ui_desktop: 'Ordenador',
     leftHand: 'Modo zurdo', leftHandSub: 'Los botones de turno pasan a la izquierda',

@@ -2,7 +2,6 @@
 // accesibilidad y pista de música. Se guardan en localStorage y se aplican al arrancar.
 import { SPEEDS, setSpeed, setReduced, SPEED } from '../fx/juice.js';
 import { applyDevice } from './device.js';
-import { setCasinoStyle } from './casino.js';
 
 const KEY = 'chaoticgolf_prefs';
 export const THEMES = ['classic', 'autumn', 'snow', 'night', 'ocean', 'ember', 'sunset'];
@@ -18,12 +17,9 @@ const DEFAULTS = {
   contrast: false,    // alto contraste
   leftHand: false,    // botones de turno a la izquierda (zurdos)
   caddie: true,       // botón de consejo del caddie en la partida
-  style: 'classic',   // estilo visual: 'classic' (el original) | 'casino' ("Salón pixel": src/ui/casino.js)
-  crt: true,          // (Salón pixel) filtro de tele antigua: scanlines, viñeta, curvatura
   ui: 'auto',         // interfaz: 'auto' (táctil en móviles y tabletas) | 'touch' | 'desktop'
 };
 export const UI_MODES = ['auto', 'touch', 'desktop'];
-export const STYLES = ['classic', 'casino'];
 
 export const prefs = { ...DEFAULTS };
 
@@ -34,7 +30,6 @@ export function loadPrefs() {
   prefs.themes = Object.fromEntries(Object.entries(prefs.themes || {}).filter(([k, v]) => MODE_THEME[k] && THEMES.includes(v)));
   if (!TRACKS.includes(prefs.track)) prefs.track = 'auto';
   if (!UI_MODES.includes(prefs.ui)) prefs.ui = 'auto';
-  if (!STYLES.includes(prefs.style)) prefs.style = 'classic';
   applyPrefs();
 }
 export function setPref(k, v) {
@@ -84,7 +79,5 @@ export function applyPrefs() {
   root.classList.toggle('bigText', !!prefs.bigText);   // texto grande en la interfaz
   root.classList.toggle('hiContrast', !!prefs.contrast);
   root.classList.toggle('leftHand', !!prefs.leftHand);
-  root.classList.toggle('noCrt', !prefs.crt);          // sin el filtro de tele antigua
-  setCasinoStyle(prefs.style === 'casino');            // estilo visual
   applyDevice(prefs.ui);                               // interfaz táctil (móvil / tableta) o de ordenador
 }

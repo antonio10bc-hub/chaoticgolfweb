@@ -42,7 +42,7 @@ desarrollo: `npm install` (solo instala jsdom y puppeteer-core, que usan el orá
 index.html                 esqueleto de la página (sin lógica ni onclick)
 styles/                    CSS por área: base, board, hands, hud, screens, editor, fx, icons, ui,
                            themes (temas del campo), features (componentes nuevos), train, seasons y multiverse (sus barajas),
-                           skins (pelotas y "Tu pelota"), phone (interfaz táctil) y casino (el estilo "Salón pixel", bajo html.casino)
+                           skins (pelotas y "Tu pelota") y phone (interfaz táctil)
 src/
   main.js                  punto de entrada: listeners, carga de niveles y arte
   boot-watch.js            script clásico: "Reintentar" si el juego no arranca en 10 s
@@ -68,7 +68,6 @@ src/
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
     device.js              ¿móvil o tableta? decide la interfaz táctil (html.phone) por el dispositivo
-    casino.js / pixelize.js  estilo "Salón pixel" (Ajustes → Estilo) y sus ilustraciones en pixel art
     bake.js                texturas precocinadas: grano y fondo desenfocado de los menús como imagen
     train-view.js          (baraja del tren) vías, andenes, locomotora y vagones; su animación
     seasons-view.js        (baraja de las estaciones) la estación en pantalla, su indicador, el viento, la bola de nieve
@@ -90,7 +89,7 @@ src/
     pause.js / rules.js    pausa real (congela la IA) y hoja de reglas
     back.js / wake.js      botón de atrás del sistema y pantalla siempre encendida en partida
     profile.js / achievements.js  tu nombre y color (y los de cada persona) y logros
-  fx/                      partículas, efectos y constantes de "juice" (juice.js); casino-bg.js: tapete animado y tele CRT
+  fx/                      partículas, efectos y constantes de "juice" (juice.js)
   audio/                   efectos de sonido y música generativa (WebAudio, sin archivos)
   i18n/                    textos (es.js, en.js) y t()
   storage.js               localStorage con esquema versionado
@@ -168,52 +167,12 @@ tooltip sale de `cards.<id>.desc` en i18n, y el motivo de bloqueo de `blockedRea
 
 ## Dirección de arte
 
-Hay dos estilos visuales y se elige en **Ajustes → Estilo** (al final de la pestaña; `prefs.style`):
-
-**Original (por defecto):** "club de golf premium visto desde el aire": ilustración vectorial plana y cenital, césped
-segado en franjas diagonales, búnkeres orgánicos, grano fino (feTurbulence) y sombras planas largas a 45°.
+"Club de golf premium visto desde el aire": ilustración vectorial plana y cenital, césped segado en
+franjas diagonales, búnkeres orgánicos, grano fino (feTurbulence) y sombras planas largas a 45°.
 Tipografía **Outfit** (OFL, alojada en `assets/fonts/` para funcionar sin conexión). Toda la paleta está
 en variables de `styles/base.css` (`--grass-dark`, `--green-putt`, `--sand`, `--cream`, `--ink`, `--accent`…).
 La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite SVG de `index.html`
 (`#aerial`, `#i-…`) y se reutilizan con `<svg><use href="#…"/></svg>`.
-
-**Salón pixel (rama `estilo-pixel-casino`):** "salón de juego a las 3 de la mañana visto en una tele antigua". Pixel
-art psicodélico de baja resolución, sin suavizado, con contornos oscuros y sombras sólidas desplazadas hacia abajo.
-`src/ui/casino.js` lo enciende y lo apaga en caliente: pone la clase `html.casino` (que activa sus variables al final de
-`styles/base.css` y todo `styles/casino.css`), el tapete animado y el pixelizador. `src/boot-watch.js` pone la clase
-antes de pintar nada, así la pantalla de carga ya sale con el estilo elegido.
-
-- **Tapete animado** (`src/fx/casino-bg.js`): un shader WebGL pintado a 1/4 de resolución y ampliado sin suavizado:
-  líquido marmoleado que se arremolina despacio, en tres o cuatro tonos planos con tramado ordenado (Bayer). El color
-  sigue al contexto con un fundido: verde en menús y partida clásica, naranja el reto diario, azul el contrarreloj,
-  rojo los desafíos, morado los puzles y el tema "Noche", pizarra el creador; cada baraja con escena propia, el suyo
-  (turquesa el agua, madera el minigolf, rojo el tren, morado el multiverso, psicodélico el Ultimate, el de la
-  estación en las estaciones). Durante un JAQUE se enciende de rojo. Sin WebGL o con movimiento reducido, quieto.
-- **Tele CRT** (`#crt`): scanlines, viñeta, esquinas curvas, aberración cromática en los bordes y un parpadeo leve. Se
-  apaga en Ajustes → Estilo → **Tele antigua** (`prefs.crt`, clase `html.noCrt`).
-- **Pixelizador** (`src/ui/pixelize.js`): las ilustraciones SVG (cartas, losetas, hoyo, caras de los bots, barajas,
-  modos, el regalo, la ilustración del menú…) se pintan a muy baja resolución, con bordes duros y un contorno oscuro de
-  un píxel, y se muestran ampliadas sin suavizado como fondo de su propio `<svg>` (el contenido queda oculto pero en su
-  sitio: el código que lo busca o lo cambia no se entera). Un observador procesa lo que aparece; el resultado se guarda
-  por su marcado. Lo que se anima dentro de un SVG queda como foto fija. Al volver al original, cada SVG recupera su
-  dibujo. Para pixelar una ilustración nueva, se añade su selector a `TARGETS` y a la regla `html.casino.px :is(…)`.
-- **Paneles** pizarra/carbón (`#1E2A30`, `#2B3A42`) con contorno, bisel y sombra sólida; **botones** en bloque con labio
-  que se hunde al pulsar. Colores semánticos: azul ficha `#0093FF` (elegido, terminar turno), rojo multiplicador
-  `#FE5F55` (descartar, JAQUE, combos xN), dorado `#F5A623`/`#FDA200` (botones principales, objetivos, casillas
-  válidas). Cada número importante va en su bloque de color (estadísticas de las barajas, final de partida).
-- **Tipografía pixel** (OFL, en `assets/fonts/`): **Pixelify Sans** para el texto y **Jersey 10** (gruesa y condensada)
-  para títulos y números, con contorno oscuro y sombra (`--txt-out`); sin negritas inventadas (`font-synthesis: none`).
-- **Cartas** blancas con contorno, índice grande en la esquina y sombra sólida; la mano en abanico y respirando
-  (`--fan`/`--fi` desde `hands.js`, que el estilo original ignora), se elevan con rebote al pasar el ratón. Reverso
-  ornamental simétrico en rojo y blanco (`--px-back`). Pelotas: círculo de pixel (`--px-circle`) con contorno.
-- **Jugo**: partículas cuadradas pegadas a una cuadrícula de 3 px y con contorno (`particles.js`), `¡DENTRO!` enorme
-  con pop y sacudida de toda la mesa al embocar (`fxPopText`, `fxScreenShake`), combos en bloque rojo.
-
-Cómo conviven: las hojas de siempre usan unas pocas variables que en el original valen lo de antes (`--paper` y
-`--night` = crema y tinta como texto claro y bloque oscuro, `--pill` = 999px, `--rbig` = el radio de cada sitio,
-`--sel-rgb`, `--glass`); el Salón pixel las redefine (los "crema" son paneles pizarra y la "tinta", texto blanco
-cálido). Todo lo demás del estilo nuevo va en `styles/casino.css`, siempre bajo `html.casino`. Un componente nuevo se
-ve bien en los dos si usa esas variables; si necesita algo propio en el Salón pixel, se añade allí.
 
 ## Interfaz de partida
 

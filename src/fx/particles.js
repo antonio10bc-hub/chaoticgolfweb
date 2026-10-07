@@ -9,7 +9,6 @@ let fxRngState = 0x2f6e2b1;
 export const fxRand = () => { fxRngState = (fxRngState * 1103515245 + 12345) & 0x7fffffff; return fxRngState / 0x7fffffff; };
 
 const FXP = { board: [], fixed: [], raf: 0, last: 0, canvas: {}, ctx: {} };
-const PIX = 3; // tamaño del píxel de las partículas (estilo "Salón pixel")
 export const fxCount = () => FXP.board.length + FXP.fixed.length;
 
 function fxGetCanvas(fixed) {
@@ -80,7 +79,6 @@ function fxDrawLayer(fixed, dt) {
   if (!ctx) return;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, c.width / dpr, c.height / dpr);
-  const px = document.documentElement.classList.contains('casino');
   // compacta la lista in situ (sin splice) conservando el orden de dibujado (de atrás hacia delante)
   let keep = list.length;
   for (let i = list.length - 1; i >= 0; i--) {
@@ -90,17 +88,6 @@ function fxDrawLayer(fixed, dt) {
     const pr = p.age / p.ttl, q = 1 - pr, e = 1 - q * q * q;   // easeOutCubic
     if (p.shape === 'wind') { drawWind(ctx, p, pr, dpr); continue; }
     const x = p.sx + p.dx * e, y = p.sy + p.dy * e;
-    if (px) {
-      // estilo "Salón pixel": cuadrados sin girar, pegados a una cuadrícula de PIX px, con contorno oscuro
-      // y la opacidad a saltos (nada de fundidos suaves)
-      ctx.globalAlpha = (q > .5 ? 1 : q > .22 ? .7 : .35) * p.alpha;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const s = Math.max(PIX, Math.round((p.shape === 'circ' ? p.size * (1 - 0.5 * pr) : p.size) / PIX) * PIX);
-      const gx = Math.round((x - s / 2) / PIX) * PIX, gy = Math.round((y - s / 2) / PIX) * PIX;
-      ctx.fillStyle = '#0B1114'; ctx.fillRect(gx - 1, gy - 1, s + 2, s + 2);
-      ctx.fillStyle = p.color; ctx.fillRect(gx, gy, s, s);
-      continue;
-    }
     ctx.globalAlpha = q * p.alpha;
     ctx.fillStyle = p.color;
     // translate + rotate en una sola matriz

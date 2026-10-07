@@ -25,7 +25,7 @@
 
 /* arriba: el prisma, el nombre y qué es */
 .ultTop { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 640px; }
-.ultEmblem { width: 46px; height: 46px; display: grid; place-items: center; border-radius: var(--rbig, 14px); margin-bottom: 2px;
+.ultEmblem { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 2px;
   background: radial-gradient(circle at 50% 40%, #fff, rgba(255,255,255,.4) 75%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 6px 16px rgba(120,180,200,.3); }
 .ultEmblem .dkArt { width: 38px; height: 38px; filter: drop-shadow(0 0 6px rgba(170,230,245,.7)); }
 .ultTop h3 { font-size: 30px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05;
@@ -34,7 +34,7 @@
 
 /* en medio: las seis barajas, grandes. Activada: rellena, con borde de arcoíris, brillo y ✓. Apagada: translúcida, en gris y con + */
 .ultTogs { display: grid; grid-template-columns: repeat(6, 96px); gap: 12px; justify-content: center; margin-top: 12px; }
-.ultTog { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px; border-radius: var(--rbig, 18px); cursor: pointer;
+.ultTog { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px; border-radius: 18px; cursor: pointer;
   background: rgba(255,255,255,.28); border: 2px dashed rgba(42,58,68,.25); color: #7A888E;
   transition: background-color .2s, border-color .2s, transform .2s var(--ease-out), box-shadow .2s; }
 .ultTog .dkArt { width: 54px; height: 54px; filter: grayscale(1) opacity(.4); transition: filter .25s, transform .25s var(--ease-out); }
@@ -66,7 +66,7 @@
 .ultBtns .btn-light { --b-bg: rgba(255,255,255,.75); --b-fg: #2A3A44; --b-line: rgba(42,58,68,.22); }
 .ultBtns .btn-text { color: #4B5A60; }
 .ultHistBtn .i { width: 15px; height: 15px; margin-right: 5px; }
-.ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 6px; padding: 0 6px; border-radius: var(--pill); background: #2A3A44; color: #fff; }
+.ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #2A3A44; color: #fff; }
 
 /* el brillo que la cruza despacio, de vez en cuando */
 .deckCard.ultimate > .ultSheen { position: absolute; z-index: 0; inset: 0; pointer-events: none; transform: translateX(-120%);
@@ -81,7 +81,7 @@ html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultima
   .ultTop h3 { font-size: 24px; }
   .ultTop p { font-size: 13px; }
   .ultTogs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; width: 100%; }
-  .ultTog { padding: 9px 2px 7px; border-radius: var(--rbig, 14px); gap: 4px; }
+  .ultTog { padding: 9px 2px 7px; border-radius: 14px; gap: 4px; }
   .ultTog .dkArt { width: 36px; height: 36px; }
   .ultName { font-size: 9px; letter-spacing: -.01em; }
   .ultMark { width: 18px; height: 18px; top: -6px; right: -6px; }
@@ -100,7 +100,7 @@ html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultima
 .ultList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: min(52vh, 420px); overflow: auto; }
 .ultRow { display: flex; align-items: center; gap: 8px; }
 .ultShare { flex: 0 0 auto; }
-.ultPick { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 8px 12px; border-radius: var(--rbig, 14px); text-align: left; cursor: pointer;
+.ultPick { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 8px 12px; border-radius: 14px; text-align: left; cursor: pointer;
   background: rgba(255,255,255,.6); border: 1px solid var(--cream-line); }
 .ultPick:hover { background: #fff; }
 .ultIcons { display: flex; gap: 3px; flex: 0 0 auto; }
@@ -117,7 +117,7 @@ html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultima
 
 /* la barra de arriba de la partida (y sonido y ajustes): tarjetas iridiscentes, que se vean sobre el fondo claro */
 body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) :is(#gameBar .btn-ghost, #sfxBtn, #sndCfgBtn) {
-  --b-fg: #2F3550; --b-line: rgba(255,255,255,.95); --b-bg: #F3F7F8; border-radius: var(--rbig, 12px); backdrop-filter: none;
+  --b-fg: #2F3550; --b-line: rgba(255,255,255,.95); --b-bg: #F3F7F8; border-radius: 12px; backdrop-filter: none;
   background-image: linear-gradient(115deg, #FFD3E6, #C9ECF7 34%, #D2F5E3 66%, #FFEEC2); background-size: 200% 100%; background-position: 0 0;
   transition: background-position .5s var(--ease-out), transform .15s var(--ease-out); }
 body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) :is(#gameBar .btn-ghost, #sfxBtn, #sndCfgBtn):hover { background-position: 100% 0; }

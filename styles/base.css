@@ -64,10 +64,6 @@
   --shadow-long: 6px 6px 0 var(--shadow);   /* sombra plana a 45° */
   --ease-out: cubic-bezier(.2,.7,.2,1);
   --ease-pop: cubic-bezier(.2,.7,.2,1);   /* sin rebote: todo suave */
-  /* papeles que el estilo "salón pixel" (styles/casino.css) separa; aquí valen lo mismo que crema / tinta */
-  --paper: #F1F1DC;   /* texto claro sobre color o sobre el césped */
-  --night: #242424;   /* bloques oscuros: chips, pestañas elegidas, insignias */
-  --pill: 999px;      /* radio de las píldoras */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; } /* los botones son inline-flex: sin esto, hidden no los ocultaría */
@@ -97,7 +93,7 @@ button {
   --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line);
   position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background: var(--b-bg); color: var(--b-fg);
-  border: 1px solid var(--b-line); border-radius: var(--pill);
+  border: 1px solid var(--b-line); border-radius: 999px;
   padding: 7px 16px; font-family: inherit; font-size: 13px; font-weight: 500; letter-spacing: .005em; line-height: 1.15;
   cursor: pointer; user-select: none;
   transition: background-color .18s var(--ease-out), color .18s, border-color .18s, transform .15s var(--ease-out), box-shadow .2s, opacity .2s;
@@ -109,19 +105,19 @@ button:disabled:hover { background-color: var(--b-bg); }
 button.danger { --b-fg: var(--accent-deep); --b-line: color-mix(in srgb, var(--accent-deep) 60%, transparent); }
 
 /* primario: píldora sólida tinta con texto crema */
-.btn-primary { --b-bg: var(--night); --b-fg: var(--paper); --b-line: var(--night); box-shadow: 0 6px 16px rgba(20,40,20,.18); }
+.btn-primary { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); box-shadow: 0 6px 16px rgba(20,40,20,.18); }
 .btn-primary:hover { background-color: #3a3a3a; }
 .btn-primary .i { transition: transform .2s var(--ease-out); }
 .btn-primary:hover .i { transform: translateX(3px); }
 /* acento: sólido verde césped (terminar turno…) */
-.btn-accent { --b-bg: var(--turn-btn); --b-fg: var(--paper); --b-line: var(--turn-btn); box-shadow: 0 6px 16px rgba(20,40,20,.2); }
+.btn-accent { --b-bg: var(--turn-btn); --b-fg: var(--cream); --b-line: var(--turn-btn); box-shadow: 0 6px 16px rgba(20,40,20,.2); }
 .btn-accent:hover { background-color: color-mix(in srgb, var(--turn-btn) 88%, #000); }
 /* secundario claro sobre fondos oscuros o crema */
 .btn-secondary { --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--ink-line); }
 .btn-light { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream-line); }
 .btn-light:hover { background-color: #fff; }
 /* píldora de borde crema sobre el césped (Menú, Reiniciar, Historial…) */
-.btn-ghost { --b-bg: rgba(241,241,220,.06); --b-fg: var(--paper); --b-line: rgba(241,241,220,.55); }
+.btn-ghost { --b-bg: rgba(241,241,220,.06); --b-fg: var(--cream); --b-line: rgba(241,241,220,.55); }
 .btn-ghost:hover { background-color: rgba(241,241,220,.16); }
 /* botón de texto */
 .btn-text { --b-line: transparent; --b-bg: transparent; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cream-line); }
@@ -130,135 +126,3 @@ button.danger { --b-fg: var(--accent-deep); --b-line: color-mix(in srgb, var(--a
 .btn-lg { padding: 12px 22px; font-size: 16px; font-weight: 500; }
 .btn-icon { gap: 7px; }
 button .kbd { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 5px; font-size: .72em; background: rgba(0,0,0,.12); }
-
-
-/* =========================================================
-   Estilo "Salón pixel" (Ajustes → Estilo; src/ui/casino.js): su paleta y sus botones.
-   Las variables van en html.casino; las reglas, con :where() para pesar lo mismo que las de arriba
-   (los componentes de las demás hojas las siguen pudiendo cambiar). El resto, en styles/casino.css.
-   ========================================================= */
-html.casino {
-  --rbig: 10px;                 /* (radios grandes del estilo original: bloques con esquinas pequeñas) */
-  --sel-rgb: 0,147,255;         /* tinte de lo elegido */
-  --glass: rgba(30,42,48,.92);  /* paneles translúcidos sobre el tapete */
-  --cell-w: 52px;
-  --cell-h: 73px;
-
-  /* tapete (los temas de styles/themes.css lo cambian en la partida) */
-  --grass-dark:  #2E5E4E;   /* tapete oscuro */
-  --grass-mid:   #3F7A63;   /* tapete claro */
-  --green-putt:  #4E9474;   /* zona jugable */
-  --green-light: #6CC08F;   /* casillas válidas */
-  --sand:        #E9C46A;   /* búnkeres */
-  --sand-hi:     #F6DE9A;
-  /* paneles pizarra / carbón (antes crema) y texto blanco cálido (antes tinta) */
-  --cream:       #2B3A42;   /* paneles, tarjetas, fondo de menús */
-  --cream-line:  #415660;   /* bordes finos y separadores */
-  --cream-deep:  #1E2A30;   /* hundidos dentro de un panel */
-  --ink:         #FFF4E0;   /* texto principal */
-  --paper:       #FFF4E0;   /* texto claro sobre color (se queda claro en los paneles claros) */
-  --night:       #141D22;   /* bloques oscuros: chips, pestañas elegidas, insignias */
-  --accent:      #FDA200;   /* dorado / naranja: botones, objetivos, "tu turno", cartas naranjas */
-  --accent-deep: #FE5F55;   /* rojo multiplicador: alertas, JAQUE */
-  --navy:        #0093FF;   /* azul fichas */
-  --shadow:      rgba(0,0,0,.5);
-  /* colores semánticos del salón */
-  --chip:        #0093FF;   --chip-lo: #0063B0;
-  --mult:        #FE5F55;   --mult-lo: #B8332B;
-  --gold:        #F5A623;   --gold-lo: #B06F00;
-  --edge:        #0B1114;   /* contorno oscuro de todo */
-  --lip:         rgba(0,0,0,.55); /* sombra sólida desplazada hacia abajo */
-  --card-face:   #FBF5E8;   /* blanco cálido de las cartas */
-
-  /* derivados */
-  --ink-soft:    #A7BAC2;   /* texto secundario */
-  --ink-line:    rgba(255,244,224,.42);
-  --collar:      #2A5546;
-  --tree:        #1F4A3B;
-
-  /* campo de juego (los temas de styles/themes.css los redefinen) */
-  --grout:       #163A2F;   /* junta entre casillas */
-  --par-cell:    #4A8C6E;
-  --sel-cell:    #F5A623;
-  --cement-cell: #34515A;
-  --sand-cell:   #6E8F4E;
-  --on-grass:    rgba(255,244,224,.8); /* textos impresos en el tapete (PAR) */
-  --bg-a:        transparent;   /* (el fondo de la partida es el tapete animado: src/fx/casino-bg.js) */
-  --bg-b:        transparent;
-  --turn-btn:    #0093FF;   /* botón de terminar turno (no cambia con el tema del campo) */
-
-  /* compatibilidad con reglas existentes */
-  --panel: var(--cream); --panel-hi: #34474F; --panel-edge: var(--cream-line);
-  --felt: var(--grass-mid); --line: var(--ink); --gold-c: var(--cream);
-  --card-black-frame: #1E2A30; --card-orange-frame: var(--accent);
-  --cell-sand: var(--sand); --cell-cement: #8FA3AB;
-
-  /* tramado pixel (sustituye al grano): puntos de 2 px muy suaves */
-  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'><rect x='0' y='0' width='2' height='2' fill='black' fill-opacity='.07'/><rect x='4' y='4' width='2' height='2' fill='black' fill-opacity='.07'/></svg>");
-  --mow: repeating-linear-gradient(135deg, var(--grass-dark) 0 64px, var(--grass-mid) 64px 128px);
-
-  --font: "Pixelify Sans", "Jersey 10", ui-monospace, monospace;
-  --font-display: "Jersey 10", "Pixelify Sans", ui-monospace, monospace;
-  --pill: 8px;              /* (las antiguas píldoras: bloques con esquinas de pixel) */
-  --r-sm: 6px; --r-md: 8px; --r-lg: 10px;
-  --shadow-soft: 0 5px 0 var(--lip);
-  --shadow-long: 0 6px 0 var(--lip);
-  --ease-out: cubic-bezier(.2,.7,.2,1);
-  --ease-pop: cubic-bezier(.3,1.6,.5,1);   /* con rebote: todo responde con un poco de exceso */
-  /* contorno + sombra de los textos grandes */
-  --txt-out: 2px 0 0 var(--edge), -2px 0 0 var(--edge), 0 2px 0 var(--edge), 0 -2px 0 var(--edge), 2px 2px 0 var(--edge), -2px 2px 0 var(--edge), 2px -2px 0 var(--edge), -2px -2px 0 var(--edge), 0 5px 0 var(--edge);
-  --txt-sm: 0 2px 0 rgba(0,0,0,.55);
-}
-:where(html.casino) body {
-  font-family: var(--font);
-  font-weight: 400;
-  background: #10241D;
-  color: var(--ink);
-  min-height: 100vh;
-  -webkit-font-smoothing: none; font-smooth: never;
-  text-rendering: optimizeSpeed;
-  image-rendering: pixelated;
-}
-:where(html.casino) h1, :where(html.casino) h2, :where(html.casino) h3, :where(html.casino) h4, :where(html.casino) h5 { font-family: var(--font-display); font-weight: 400; letter-spacing: .01em; text-shadow: var(--txt-sm); }
-/* ---------- botones ---------- */
-/* por defecto: bloque pizarra claro con contorno oscuro, bisel y labio sólido debajo (al pulsar, se hunde) */
-:where(html.casino) button {
-  --b-bg: #3A4F59; --b-fg: var(--paper); --b-line: var(--edge); --b-lip: var(--lip);
-  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  background: var(--b-bg); color: var(--b-fg);
-  border: 2px solid var(--b-line); border-radius: var(--pill);
-  padding: 7px 16px; font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: .02em; line-height: 1.15;
-  text-shadow: 0 2px 0 rgba(0,0,0,.4);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), inset 0 -3px 0 rgba(0,0,0,.2), 0 3px 0 var(--b-lip);
-  cursor: pointer; user-select: none;
-  transition: background-color .12s steps(2), color .12s, border-color .12s, transform .18s var(--ease-pop), box-shadow .12s, opacity .2s, translate .12s;
-}
-:where(html.casino) button:hover { background-color: color-mix(in srgb, var(--b-bg) 82%, #fff); transform: translateY(-1px); }
-:where(html.casino) button:active { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(0,0,0,.2), 0 1px 0 var(--b-lip); transform: none; }
-:where(html.casino) button:disabled { opacity: .4; cursor: default; transform: none; translate: none; }
-:where(html.casino) button:disabled:hover { background-color: var(--b-bg); }
-:where(html.casino) button.danger { --b-bg: var(--mult); --b-fg: var(--paper); --b-line: var(--edge); }
-
-/* primario: bloque dorado */
-:where(html.casino) .btn-primary { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--edge); }
-:where(html.casino) .btn-primary:hover { background-color: #FFB52E; }
-:where(html.casino) .btn-primary .i { transition: transform .2s var(--ease-pop); }
-:where(html.casino) .btn-primary:hover .i { transform: translateX(3px); }
-/* acento: bloque azul ficha (terminar turno…) */
-:where(html.casino) .btn-accent { --b-bg: var(--turn-btn); --b-fg: #fff; --b-line: var(--edge); }
-:where(html.casino) .btn-accent:hover { background-color: color-mix(in srgb, var(--turn-btn) 85%, #fff); }
-/* secundario sobre los paneles */
-:where(html.casino) .btn-secondary { --b-bg: #3A4F59; --b-fg: var(--ink); --b-line: var(--edge); }
-:where(html.casino) .btn-light { --b-bg: #4A616C; --b-fg: var(--ink); --b-line: var(--edge); }
-:where(html.casino) .btn-light:hover { background-color: #587380; }
-/* sobre el tapete (Menú, Reiniciar, Historial…) */
-:where(html.casino) .btn-ghost { --b-bg: rgba(20,29,34,.72); --b-fg: var(--paper); --b-line: var(--edge); }
-:where(html.casino) .btn-ghost:hover { background-color: rgba(43,58,66,.95); }
-/* botón de texto */
-:where(html.casino) .btn-text { --b-line: transparent; --b-bg: transparent; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cream-line); box-shadow: none; }
-:where(html.casino) .btn-text:hover { background: none; color: var(--ink); }
-:where(html.casino) .btn-sm { padding: 5px 12px; font-size: 13px; }
-:where(html.casino) .btn-lg { padding: 11px 22px; font-size: 18px; font-weight: 700; }
-:where(html.casino) .btn-icon { gap: 7px; }
-:where(html.casino) button .kbd { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 3px; font-size: .72em; background: rgba(0,0,0,.25); }
-

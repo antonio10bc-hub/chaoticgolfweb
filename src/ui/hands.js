@@ -53,10 +53,8 @@ function cardHTML(g, p, idx, { mini = false } = {}) {
   const S = g.S, pd = g.pending, k = S.hands[p][idx], def = CARDS[k];
   const dealing = idx >= (prevHands[p] || 0);
   const base = 'card' + (mini ? ' mini' : '') + (dealing ? ' dealing' : '');
-  // la mano en abanico: cuánto se aparta del centro (styles/casino.css la inclina y la baja en arco)
-  const off = idx - (S.hands[p].length - 1) / 2, fan = mini ? '' : ` style="--fan:${off};--fanY:${off * off * 3};--fi:${idx}"`;
   if (hiddenFor(p)) { // dorso: se ve cuántas cartas tienen, no cuáles
-    return `<div class="${base} back" data-p="${p}" data-idx="${idx}"${fan} title="${esc(t('hands.hidden'))}"></div>`;
+    return `<div class="${base} back" data-p="${p}" data-idx="${idx}" title="${esc(t('hands.hidden'))}"></div>`;
   }
   const discarding = pd?.kind === 'discard' && pd.p === p;
   const armed = !mini && app.armed && app.armed.p === p && app.armed.idx === idx; // táctil: elegida, falta el segundo toque
@@ -67,7 +65,7 @@ function cardHTML(g, p, idx, { mini = false } = {}) {
   if (discarding && pd.selected.includes(idx)) c += ' discardSel';
   if (selected) c += ' cardSel';
   const label = def.name + (playable ? '' : ` (${t('a11y.unplayable')})`);
-  return `<div class="${c}" role="button" tabindex="0" data-p="${p}" data-idx="${idx}" data-key="${k}"${fan} aria-label="${esc(label)}">${cardFaceHTML(def)}</div>`;
+  return `<div class="${c}" role="button" tabindex="0" data-p="${p}" data-idx="${idx}" data-key="${k}" aria-label="${esc(label)}">${cardFaceHTML(def)}</div>`;
 }
 
 /* ---------- barra de acción (qué hay que hacer ahora) ---------- */

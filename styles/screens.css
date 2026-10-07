@@ -15,7 +15,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .mFrame {
   width: min(1180px, 100%); min-height: min(640px, calc(100vh - 110px));
   display: grid; grid-template-columns: 45% 1fr; gap: 14px;
-  padding: 14px; border-radius: var(--rbig, 22px);
+  padding: 14px; border-radius: 22px;
   background-image: var(--grain); background-color: var(--cream);
   box-shadow: 0 30px 70px rgba(10,25,10,.35);
   animation: winPop .45s var(--ease-out);
@@ -24,7 +24,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
   position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start;
   padding: 34px 32px 30px;
 }
-.mArt { position: relative; border-radius: var(--rbig, 14px); overflow: hidden; min-height: 320px; }
+.mArt { position: relative; border-radius: 14px; overflow: hidden; min-height: 320px; }
 .mArt svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .mTitle {
   font-size: clamp(56px, 7.6vw, 108px); font-weight: 500; line-height: .88; letter-spacing: -.055em;
@@ -39,7 +39,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .mActions { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .mActions .mRow { display: flex; gap: 10px; flex-wrap: wrap; }
 .mBtn { padding: 13px 22px; font-size: 15.5px; font-weight: 500; }
-.mBtn.story { --b-bg: var(--night); --b-fg: var(--paper); --b-line: var(--night); box-shadow: 0 8px 20px rgba(20,40,20,.18); }
+.mBtn.story { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); box-shadow: 0 8px 20px rgba(20,40,20,.18); }
 .mBtn.story:hover { background-color: #3a3a3a; }
 .mBtn.story .i { transition: transform .2s var(--ease-out); }
 .mBtn.story:hover .i { transform: translateX(3px); }
@@ -51,7 +51,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .mBottom { position: fixed; left: 100px; bottom: 14px; z-index: 65; display: flex; gap: 8px; }
 .cornerBtn {
   height: 36px; padding: 0 14px; font-size: 12.5px;
-  --b-bg: var(--glass, rgba(241,241,220,.92)); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px);
+  --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px);
 }
 .cornerBtn .i { color: var(--ink-soft); }
 /* insignia del slot actual, esquina superior izquierda del creador de niveles */
@@ -59,7 +59,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
   position: fixed; top: 12px; left: 14px; z-index: 66;
   font-size: 12px; font-weight: 500;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
-  padding: 6px 14px; border-radius: var(--pill); border: 1px solid var(--cream-line);
+  padding: 6px 14px; border-radius: 999px; border: 1px solid var(--cream-line);
   pointer-events: none;
 }
 
@@ -75,13 +75,13 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 
 /* ---- panel común de pantallas (volver) ---- */
 .screenTop { position: fixed; top: 16px; left: 16px; z-index: 5; }
-.screenTop .btn-light { --b-bg: var(--glass, rgba(241,241,220,.92)); }
+.screenTop .btn-light { --b-bg: rgba(241,241,220,.92); }
 
 /* ---- Partida rápida ---- */
 #pveScreen { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 24px; }
 #pveCard {
   background-image: var(--grain); background-color: var(--cream);
-  border-radius: var(--rbig, 20px); padding: 32px 32px 22px; width: min(500px, 94vw);
+  border-radius: 20px; padding: 32px 32px 22px; width: min(500px, 94vw);
   box-shadow: 0 30px 70px rgba(10,25,10,.35);
   animation: winPop .3s var(--ease-out);
 }
@@ -92,10 +92,10 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .pveOpts { display: flex; gap: 10px; flex-wrap: wrap; }
 .pveOpt {
   --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--cream-line);
-  flex-direction: column; gap: 5px; padding: 11px 12px 10px; border-radius: var(--rbig, 14px); font-size: 13px;
+  flex-direction: column; gap: 5px; padding: 11px 12px 10px; border-radius: 14px; font-size: 13px;
 }
-.pveOpt:hover { background-color: rgba(var(--sel-rgb, 163,193,115),.18); }
-.pveOpt.sel { --b-bg: rgba(var(--sel-rgb, 163,193,115),.35); --b-line: var(--night); }
+.pveOpt:hover { background-color: rgba(163,193,115,.18); }
+.pveOpt.sel { --b-bg: rgba(163,193,115,.35); --b-line: var(--ink); }
 .pveOpt b { font-size: 14px; font-weight: 500; }
 .pveOpt small { font-size: 11px; color: var(--ink-soft); }
 .pveOpt.size { flex: 1; min-width: 112px; }
@@ -109,7 +109,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .optGrid.m::after { background-image: linear-gradient(90deg, rgba(241,241,220,.55) 1px, transparent 1px), linear-gradient(rgba(241,241,220,.55) 1px, transparent 1px); background-size: 6px 4.66px; }
 .optGrid.l::after { background-image: linear-gradient(90deg, rgba(241,241,220,.55) 1px, transparent 1px), linear-gradient(rgba(241,241,220,.55) 1px, transparent 1px); background-size: 4.66px 3.8px; }
 .optBots { display: flex; gap: 3px; height: 22px; align-items: center; }
-.optBots i { width: 13px; height: 13px; border-radius: 50%; background: var(--night); box-shadow: 0 1.2px 3.6px var(--shadow); opacity: .8; }
+.optBots i { width: 13px; height: 13px; border-radius: 50%; background: var(--ink); box-shadow: 0 1.2px 3.6px var(--shadow); opacity: .8; }
 /* selector de color de bola: círculos planos con brillo sutil y sombra corta diagonal */
 .pveColor {
   width: 42px; height: 42px; padding: 0; border-radius: 50%; border: none;
@@ -129,26 +129,26 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 #storyScreen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 8vh 20px 50px; }
 .sTitle {
   font-size: clamp(44px, 7vw, 84px); font-weight: 500; letter-spacing: -.055em; line-height: .95;
-  text-transform: lowercase; color: var(--paper); text-align: center; user-select: none;
+  text-transform: lowercase; color: var(--cream); text-align: center; user-select: none;
 }
 .sTitle::after { content: '.'; color: var(--accent); }
 .sSub { margin: 12px 0 4.5vh; color: rgba(241,241,220,.8); font-size: 15px; }
 #lvlGrid { display: flex; flex-direction: column; gap: 20px; align-items: center; width: min(860px, 94vw); }
 .lvlSection {
-  width: 100%; background-image: var(--grain); background-color: var(--cream); border-radius: var(--rbig, 20px); padding: 20px 22px 24px;
+  width: 100%; background-image: var(--grain); background-color: var(--cream); border-radius: 20px; padding: 20px 22px 24px;
   box-shadow: 0 24px 60px rgba(10,25,10,.3);
 }
 .lvlSection h3 { margin: 0 0 16px; font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; color: var(--ink-soft); }
 .lvlRow { display: flex; flex-wrap: wrap; gap: 14px; }
 .lvlCard {
   --b-bg: transparent; --b-fg: var(--ink); --b-line: var(--cream-line);
-  position: relative; width: 170px; padding: 10px 10px 12px; border-radius: var(--rbig, 16px);
+  position: relative; width: 170px; padding: 10px 10px 12px; border-radius: 16px;
   flex-direction: column; align-items: stretch; gap: 9px; text-align: left;
   animation: btnUp .35s var(--ease-out) backwards;
 }
-.lvlCard:hover { background-color: rgba(var(--sel-rgb, 163,193,115),.18); transform: translateY(-2px); }
+.lvlCard:hover { background-color: rgba(163,193,115,.18); transform: translateY(-2px); }
 .lvlNum {
-  position: absolute; top: 16px; left: 16px; z-index: 1; min-width: 26px; height: 26px; padding: 0 7px; border-radius: var(--pill);
+  position: absolute; top: 16px; left: 16px; z-index: 1; min-width: 26px; height: 26px; padding: 0 7px; border-radius: 999px;
   display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600;
   background: var(--cream); color: var(--ink);
 }
@@ -160,13 +160,13 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
 .lvlName { font-size: 15px; font-weight: 500; line-height: 1.15; letter-spacing: -.01em; padding: 0 4px; min-height: 2.3em; display: flex; align-items: center; }
 .lvlState {
   align-self: flex-start; margin: 0 4px; display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11.5px; font-weight: 500; padding: 3px 11px; border-radius: var(--pill); border: 1px solid var(--ink-line); color: var(--ink-soft);
+  font-size: 11.5px; font-weight: 500; padding: 3px 11px; border-radius: 999px; border: 1px solid var(--ink-line); color: var(--ink-soft);
 }
 .lvlState .i { width: 13px; height: 13px; }
-.lvlCard.done .lvlState { background: var(--grass-dark); border-color: var(--grass-dark); color: var(--paper); }
-.lvlCard.next { --b-line: var(--night); }
+.lvlCard.done .lvlState { background: var(--grass-dark); border-color: var(--grass-dark); color: var(--cream); }
+.lvlCard.next { --b-line: var(--ink); }
 .lvlCard.next .lvlState { background: var(--accent); border-color: var(--accent); color: var(--ink); }
-.noLevels { border: 1px dashed var(--cream-line); border-radius: var(--rbig, 14px); padding: 18px 24px; font-size: 14px; color: var(--ink-soft); }
+.noLevels { border: 1px dashed var(--cream-line); border-radius: 14px; padding: 18px 24px; font-size: 14px; color: var(--ink-soft); }
 
 /* continuar la partida guardada: pasa a ser la acción principal del menú */
 .mBtn.continue { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--accent); box-shadow: 0 8px 20px rgba(232,135,58,.3); text-align: left; padding-block: 8px; }

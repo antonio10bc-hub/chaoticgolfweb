@@ -10,7 +10,7 @@
   --band: var(--ink);
   position: relative; flex: 0 0 auto;
   width: var(--cw); height: calc(var(--cw) * 1.4);
-  border-radius: var(--rbig, 12px);
+  border-radius: 12px;
   background-image: var(--grain); background-color: #F7F7E8;
   box-shadow: 0 0 0 1px rgba(36,36,36,.08), 0 3px 9px var(--shadow);
   cursor: pointer; user-select: none; overflow: hidden;

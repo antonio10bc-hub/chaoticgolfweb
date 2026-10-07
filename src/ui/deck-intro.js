@@ -204,7 +204,7 @@ function demoSVG(demo) {
       : `<circle cx="${f[0][1]}" cy="${f[0][2]}" r="9" fill="${col}" stroke="${b.decoy ? '#9A9A8C' : '#F1F1DC'}" stroke-width="2">${anim(f, 'cx', 1)}${anim(f, 'cy', 2)}${anim(f, 'opacity', 3)}${anim(f, 'r', 4, v => (9 * v).toFixed(2))}</circle>`; }).join('');
   const paths = Object.values(trail).filter(p => p.length > 1).map(p => `<polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="rgba(241,241,220,.55)" stroke-width="2.4" stroke-dasharray="4 5" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
   return `<svg class="dmBoard" viewBox="-6 -6 ${W + 12} ${H + 12}" role="img" aria-label="${esc(t('deckIntro.aria'))}">` +
-    `<rect x="-6" y="-6" width="${W + 12}" height="${H + 12}" rx="12" class="dmFrame" fill="#F1F1DC"/><rect x="0" y="0" width="${W}" height="${H}" rx="6" fill="#3F7440"/>` +
+    `<rect x="-6" y="-6" width="${W + 12}" height="${H + 12}" rx="12" fill="#F1F1DC"/><rect x="0" y="0" width="${W}" height="${H}" rx="6" fill="#3F7440"/>` +
     cells + (field ? fieldSVG : tiles) + track + snowG + hole + sp + paths + extras + trainG + balls + `</svg>`;
 }
 

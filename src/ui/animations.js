@@ -9,11 +9,10 @@ import { DIRS } from '../engine/game.js';
 import { pColor } from '../art.js';
 import { JUICE, GRASS_C, SAND_C, DIRT_C, WARP_C, WATER_C, WOOD_C, IRI_C, CONFETTI_C, REDUCED } from '../fx/juice.js';
 import { fxSpawn } from '../fx/particles.js';
-import { fxShake, fxScreenShake, fxPopText, fxZoomPulse, fxEdgeFall, fxSplashRing, fxTunnel, fxGetDomLayer, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
+import { fxShake, fxZoomPulse, fxEdgeFall, fxSplashRing, fxTunnel, fxGetDomLayer, fxComboText, fxChainStop, fxTrailPush, fxTrailReset, fxTrailShow, fxArmIdle } from '../fx/effects.js';
 import { sfx, resetChain } from '../audio/sfx.js';
 import { tileDef } from '../content/tiles/index.js';
 import { t } from '../i18n/index.js';
-import { casinoOn } from './casino.js';
 import { toast } from './hud.js';
 import { botReact } from './bot-react.js';
 import { unlock } from './achievements.js';
@@ -300,7 +299,6 @@ async function playEvent(ev) {
       await wait(JUICE.slowMoMs);
       inner.style.animationPlayState = '';
       fxSpawn(cup.px, cup.py, { n: JUICE.sink.confetti, colors: CONFETTI_C, size: 7, dist: 64, up: 38, dur: 650, rect: true });
-      if (casinoOn() && ev.p !== 'hole') { fxPopText(cup.px, cup.py - 20, t('fx.sink'), 'gold'); fxScreenShake(); } // (Salón pixel: ¡DENTRO! y la mesa tiembla)
       el.style.opacity = 0;                    // se desvanece ya casi dentro
       await wait(140);
       el.classList.remove('sinking');

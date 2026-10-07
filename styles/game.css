@@ -41,7 +41,7 @@
 #turnPill {
   --pc: #888;
   display: flex; align-items: center; gap: 12px;
-  padding: 5px 16px 5px 5px; border-radius: var(--pill);
+  padding: 5px 16px 5px 5px; border-radius: 999px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
   border: 1.5px solid transparent;
   box-shadow: var(--shadow-soft);
@@ -54,7 +54,7 @@
 #turnPill.mine { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,135,58,.22), var(--shadow-soft); }
 .pips { display: flex; gap: 4px; padding-left: 10px; border-left: 1px solid var(--cream-line); }
 .pips i { width: 10px; height: 14px; border-radius: 2.5px; border: 1px solid var(--ink-line); transition: background-color .25s; }
-.pips i.on { background: var(--night); border-color: var(--night); }
+.pips i.on { background: var(--ink); border-color: var(--ink); }
 
 /* ---------- mesa ---------- */
 #table {
@@ -66,7 +66,7 @@
 #boardCol { position: relative; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
 #boardWrap {
   position: relative; max-width: 100%; max-height: 100%; overflow: auto;
-  padding: 10px; border-radius: var(--rbig, 18px);
+  padding: 10px; border-radius: 18px;
   background-image: var(--grain); background-color: var(--cream);
   box-shadow: 0 8.4px 25.2px rgba(20,40,20,.22), var(--shadow-soft);
 }
@@ -76,7 +76,7 @@
 .seat {
   --pc: #888;
   position: relative; display: flex; align-items: center; gap: 11px;
-  padding: 11px 13px; border-radius: var(--rbig, 16px);
+  padding: 11px 13px; border-radius: 16px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
   border: 1.5px solid transparent;
   box-shadow: var(--shadow-soft);
@@ -96,7 +96,7 @@
 .seatAv { display: contents; } .seatBadge, .pausePhone { display: none; } /* (ficha del rival y Reiniciar en la pausa: interfaz táctil, phone.css) */
 .seatName { font-weight: 600; font-size: 14px; line-height: 1.1; display: flex; align-items: center; gap: 6px; letter-spacing: -.01em; }
 .botTag { font-size: 9.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
-  padding: 1px 7px; border-radius: var(--pill); border: 1px solid var(--ink-line); color: var(--ink-soft); }
+  padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ink-line); color: var(--ink-soft); }
 .seatStatus { font-size: 11.5px; font-weight: 400; color: var(--ink-soft); display: flex; align-items: center; gap: 2px; margin: 2px 0 6px; }
 .seat.active .seatStatus, .seat.cta .seatStatus { color: var(--accent-deep); font-weight: 500; }
 .seatCards { display: flex; gap: 4px; flex-wrap: wrap; min-height: 34px; }
@@ -113,7 +113,7 @@
 
 /* ---------- pilas (mazo / descartes / última jugada) ---------- */
 #piles { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; min-height: 0; }
-.pile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--paper); }
+.pile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--cream); }
 #deckPile { cursor: pointer; }
 .pileStack { position: relative; width: 62px; height: 87px; }
 .pileStack > i {
@@ -131,10 +131,10 @@
 #discardTop .card.mini { --cw: 62px; transform: rotate(-4deg); }
 #discardTop .card.mini .cardName { display: block; font-size: 7.5px; }
 .pileLbl { font-size: 12px; font-weight: 400; letter-spacing: .02em; }
-.pileLbl b { display: inline-block; min-width: 24px; padding: 1px 7px; margin-left: 2px; border-radius: var(--pill); border: 1px solid rgba(241,241,220,.55); font-weight: 500; }
-#lastPlay { min-height: 58px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--paper); text-align: center; }
+.pileLbl b { display: inline-block; min-width: 24px; padding: 1px 7px; margin-left: 2px; border-radius: 999px; border: 1px solid rgba(241,241,220,.55); font-weight: 500; }
+#lastPlay { min-height: 58px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--cream); text-align: center; }
 #lastPlay small { font-size: 10px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; opacity: .75; }
-.lastRow { display: flex; align-items: center; gap: 7px; background: rgba(36,36,36,.35); padding: 4px 12px 4px 4px; border-radius: var(--pill); font-size: 12.5px; }
+.lastRow { display: flex; align-items: center; gap: 7px; background: rgba(36,36,36,.35); padding: 4px 12px 4px 4px; border-radius: 999px; font-size: 12.5px; }
 .lastRow b { font-weight: 500; }
 
 /* ---------- bandeja de la mano ---------- */
@@ -145,8 +145,8 @@
 #actionBar > .hint { position: absolute; left: 0; right: 0; bottom: 0; margin-inline: auto; width: fit-content; max-width: 100%; }
 .hint {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
-  padding: 4px 6px 4px 6px; border-radius: var(--pill);
-  background: rgba(36,36,36,.82); color: var(--paper); font-size: 14px; font-weight: 400;
+  padding: 4px 6px 4px 6px; border-radius: 999px;
+  background: rgba(36,36,36,.82); color: var(--cream); font-size: 14px; font-weight: 400;
   box-shadow: 0 8px 24px rgba(20,40,20,.25);
   backdrop-filter: blur(4px);
   animation: hintIn .25s var(--ease-out);
@@ -157,7 +157,7 @@
 .hint.passive { opacity: .9; }
 .hint.idle { background: rgba(36,36,36,.55); box-shadow: none; font-size: 13px; padding: 6px 16px; }
 .hintBtns { display: flex; gap: 6px; }
-.hint button { --b-fg: var(--paper); --b-line: rgba(241,241,220,.5); }
+.hint button { --b-fg: var(--cream); --b-line: rgba(241,241,220,.5); }
 .hint button:hover { background-color: rgba(241,241,220,.14); }
 .hint .btn-light { --b-bg: var(--cream); --b-fg: var(--ink); --b-line: var(--cream); }
 .hint .btn-light:hover { background-color: #fff; }
@@ -170,7 +170,7 @@
 #dockRow {
   width: min(1080px, 100%);
   display: grid; grid-template-columns: 190px minmax(0, 1fr) auto; align-items: center; gap: 18px;
-  padding: 7px 16px 8px; border-radius: var(--rbig, 18px);
+  padding: 7px 16px 8px; border-radius: 18px;
   background-image: var(--grain); background-color: var(--cream);
   border: 1.5px solid transparent;
   box-shadow: var(--shadow-soft), 0 6px 18px rgba(20,40,20,.18);
@@ -217,7 +217,7 @@
 #jaque {
   position: absolute; left: 50%; bottom: calc(100% - 46px); transform: translateX(-50%); z-index: 25;
   display: none; align-items: center; gap: 14px;
-  padding: 10px 12px 10px 14px; border-radius: var(--rbig, 16px); min-width: min(480px, 92%);
+  padding: 10px 12px 10px 14px; border-radius: 16px; min-width: min(480px, 92%);
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
   border: 1.5px solid var(--accent-deep);
   box-shadow: 0 0 0 4px rgba(217,96,58,.18), var(--shadow-soft);
@@ -225,13 +225,13 @@
 #jaque.visible { display: flex; animation: jaqueIn .28s var(--ease-out); }
 @keyframes jaqueIn { from { transform: translate(-50%, 8px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
 .jqBadge {
-  font-size: 15px; font-weight: 600; letter-spacing: .08em; padding: 7px 12px; border-radius: var(--pill);
-  background: var(--accent-deep); color: var(--paper);
+  font-size: 15px; font-weight: 600; letter-spacing: .08em; padding: 7px 12px; border-radius: 999px;
+  background: var(--accent-deep); color: var(--cream);
 }
 .jqText { flex: 1; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
 .jqText b { font-size: 15px; font-weight: 600; }
 .jqText small { font-size: 12px; color: var(--ink-soft); }
-.jqTimer { height: 3px; border-radius: var(--pill); background: var(--cream-line); margin-top: 7px; overflow: hidden; }
+.jqTimer { height: 3px; border-radius: 999px; background: var(--cream-line); margin-top: 7px; overflow: hidden; }
 .jqTimer i { display: block; height: 100%; background: var(--accent-deep); border-radius: inherit; transform-origin: left; animation: jqTime linear forwards; }
 @keyframes jqTime { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 #jaque button { white-space: nowrap; }
@@ -241,7 +241,7 @@
   --pc: #888;
   position: fixed; top: 34%; left: 50%; z-index: 65; pointer-events: none;
   display: flex; align-items: center; gap: 14px;
-  padding: 10px 26px 10px 10px; border-radius: var(--pill);
+  padding: 10px 26px 10px 10px; border-radius: 999px;
   background-image: var(--grain); background-color: var(--cream); color: var(--ink);
   box-shadow: 0 0 0 1.5px var(--pc), var(--shadow-soft), 0 6px 18px rgba(20,40,20,.2);
   transform: translate(-50%, -50%); opacity: 0;
@@ -286,8 +286,8 @@
   #boardWrap { box-shadow: 0 4.8px 14.4px rgba(20,40,20,.22), var(--shadow-soft); padding: 7px; }
   #dock { padding: 0 8px 8px; }
   #actionBar { height: 34px; margin-bottom: 4px; }
-  .hint { font-size: 12.5px; border-radius: var(--rbig, 16px); }
-  #dockRow { grid-template-columns: 1fr; gap: 6px; padding: 7px 8px; border-radius: var(--rbig, 16px); box-shadow: var(--shadow-soft); }
+  .hint { font-size: 12.5px; border-radius: 16px; }
+  #dockRow { grid-template-columns: 1fr; gap: 6px; padding: 7px 8px; border-radius: 16px; box-shadow: var(--shadow-soft); }
   #hands { min-height: 90px; gap: 8px; }
   #hands .card { --cw: 62px; }
   #turnActions { justify-content: stretch; }
