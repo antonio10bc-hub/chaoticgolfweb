@@ -1,0 +1,519 @@
+/* =========================================================
+   ESTILO "SALÓN DE JUEGO A LAS 3 DE LA MAÑANA"
+   Pixel art psicodélico visto en una tele CRT: tapete animado (src/fx/casino-bg.js), paneles de
+   pizarra con contorno oscuro, bisel y sombra sólida hacia abajo, números enormes en bloques de
+   color (azul fichas, rojo multiplicador, dorado dinero/objetivos), cartas blancas que respiran y
+   todas las ilustraciones en pixel art (src/ui/pixelize.js). Va la última y todo va bajo html.casino: solo se aplica con el estilo
+   "Salón pixel" elegido en Ajustes (src/ui/casino.js); el estilo original no cambia.
+   ========================================================= */
+
+@font-face {
+  font-family: "Pixelify Sans"; font-style: normal; font-weight: 400 700; font-display: swap;
+  src: url(../assets/fonts/pixelify-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Pixelify Sans"; font-style: normal; font-weight: 400 700; font-display: swap;
+  src: url(../assets/fonts/pixelify-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Jersey 10"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(../assets/fonts/jersey10-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Jersey 10"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(../assets/fonts/jersey10-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------- tapete y tele ---------- */
+html.casino #feltBg { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: -1; image-rendering: pixelated; pointer-events: none; }
+html.casino body { background: #10241D; }
+html.casino #scene { display: none !important; }
+html.casino #game { background: none !important; }
+html.casino #game::after { display: none !important; }
+html.casino #gameDecor { display: none; }
+
+html.casino #crt { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; }
+html.casino #crt > i { position: absolute; inset: 0; display: block; }
+/* scanlines suaves */
+html.casino #crt .crtLines {
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  opacity: .55;
+  animation: crtFlicker 5s steps(1) infinite;
+}
+/* aberración cromática en los bordes: un velo rojo a un lado y azul al otro */
+html.casino #crt .crtFringe {
+  background:
+    linear-gradient(90deg, rgba(255,40,80,.07), transparent 7%, transparent 93%, rgba(0,160,255,.07)),
+    linear-gradient(180deg, rgba(0,160,255,.05), transparent 8%, transparent 92%, rgba(255,40,80,.05));
+
+}
+/* viñeta + curvatura: esquinas redondeadas negras y un sombreado que se curva hacia los bordes */
+html.casino #crt .crtVig {
+  border-radius: 28px / 22px;
+  box-shadow: 0 0 0 60px #050807, inset 0 0 90px 20px rgba(0,0,0,.55), inset 0 0 18px 4px rgba(0,0,0,.6);
+  background: radial-gradient(ellipse 120% 110% at 50% 50%, transparent 62%, rgba(0,0,0,.28) 100%);
+}
+@keyframes crtFlicker { 0%, 100% { opacity: .55; } 47% { opacity: .5; } 48% { opacity: .62; } 49% { opacity: .55; } }
+html.casino.reduceMotion #crt .crtLines { animation: none; }
+
+/* ---------- pixel art ---------- */
+html.casino img, html.casino canvas, html.casino svg.pxOn { image-rendering: pixelated; }
+/* las ilustraciones SVG se ven como su versión pixelada (fondo del propio svg) y su contenido se oculta */
+html.casino.px :is(svg.cardSvg, svg.tilePic, svg.holeSvg, svg.face, svg.dkArt, svg.mdArt, svg.ndArt, svg.twArt, svg.giftSvg, svg.snowSvg, svg.trainSvg, .mArt > svg):not(.pxFail) > * { visibility: hidden; }
+html.casino svg.pxOn { background-repeat: no-repeat; background-position: center; }
+html.casino svg.pxOn.pxPad { scale: 1.12; }
+
+/* ---------- tipografía ---------- */
+html.casino body { text-shadow: 0 1px 0 rgba(0,0,0,.35); letter-spacing: .01em; }
+html.casino ::selection { background: var(--chip); color: #fff; }
+/* números grandes, en la fuente condensada */
+html.casino #winStats .st b, html.casino .mdStat b, html.casino .stNum, html.casino .jqBadge, html.casino #turnBanner b, html.casino .comboText, html.casino .rushClock, html.casino .parLabel { font-family: var(--font-display); font-weight: 400; }
+
+/* ---------- paneles: pizarra con contorno, bisel y sombra sólida ---------- */
+html.casino :is(#boardWrap, .seat, #dockRow, #turnPill, #jaque, #turnBanner, #cardTip, #storyTip, #winOverlay .box, #deckPop, #sndPanel,
+  .mFrame, #pveCard, #logPanel, #toast, #coach, .lvlCard, .modeCard, dialog, .dlgBox, #lineup .luBox, #passScreen .psBox) {
+  border: 2px solid var(--edge) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.07), inset 0 -3px 0 rgba(0,0,0,.25), 0 5px 0 var(--lip) !important;
+  background-image: var(--grain);
+}
+html.casino :is(#boardWrap, .seat, #dockRow, #turnPill, #jaque, #winOverlay .box, .mFrame, #pveCard, .lvlCard, .modeCard, #cardTip, #deckPop, #sndPanel) { border-radius: 10px !important; }
+
+/* ---------- menú principal ---------- */
+html.casino .mFrame { background-color: rgba(30,42,48,.92); }
+html.casino .mArt { border-radius: 8px; border: 2px solid var(--edge); box-shadow: inset 0 0 0 2px rgba(255,255,255,.06); background: #1E4436; }
+html.casino .mTitle {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .82;
+  font-size: clamp(64px, 9vw, 132px); color: var(--paper); text-shadow: var(--txt-out);
+}
+html.casino .mTitle .l1 { color: #FFF4E0; transform: rotate(-3deg); transform-origin: left bottom; animation: titleBob 3.2s ease-in-out infinite; }
+html.casino .mTitle .l2 { color: var(--gold); transform: rotate(-3deg) translateX(.35em); transform-origin: left bottom; animation: titleBob 3.2s -1.6s ease-in-out infinite; }
+html.casino .mTitle .l1 .c-accent { color: var(--mult); }
+html.casino .mTitle .l2 .c-navy { color: var(--chip); }
+html.casino .mTitle .l2::after { width: .18em; height: .18em; border-radius: 0; background: var(--mult); box-shadow: 0 0 0 .03em var(--edge), 0 .06em 0 .03em var(--edge); }
+@keyframes titleBob { 0%, 100% { translate: 0 0; rotate: 0deg; } 50% { translate: 0 -4px; rotate: 1.2deg; } }
+html.casino .mTag { color: var(--ink-soft); font-size: 15px; }
+html.casino .mBtn { font-size: 18px; padding: 12px 22px; }
+html.casino .mBtn.story { --b-bg: var(--chip); --b-fg: #fff; --b-line: var(--edge); }
+html.casino .mBtn.story:hover { background-color: #22A6FF; }
+html.casino .mBtn.modes { --b-bg: var(--mult); --b-fg: #fff; --b-line: var(--edge); }
+html.casino .mBtn.modes:hover { background-color: #FF7A71; }
+html.casino .storyProg { background: rgba(0,0,0,.3) !important; color: #fff !important; }
+
+/* ---------- partida: tablero ---------- */
+html.casino #boardWrap { background-color: #1E2A30; padding: 10px; }
+html.casino #board { background: var(--edge); border-radius: 4px; gap: 3px; padding: 3px; }
+html.casino .cell {
+  border-radius: 3px; background-image: var(--grain);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), inset 0 -3px 0 rgba(0,0,0,.2);
+}
+html.casino .cell .parLabel { font-size: calc(var(--cell-w) * .26); letter-spacing: .04em; top: 3px; color: var(--on-grass); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+html.casino .cell.selectable {
+  background-color: var(--sel-cell); box-shadow: inset 0 0 0 2px #fff, inset 0 -4px 0 rgba(0,0,0,.25);
+  animation: pxSel .9s steps(2) infinite;
+}
+@keyframes pxSel { 0%, 100% { background-color: var(--sel-cell); } 50% { background-color: color-mix(in srgb, var(--sel-cell) 70%, #fff); } }
+html.casino .cell.selectable:hover { background-color: #FFD27A; box-shadow: inset 0 0 0 3px #fff; animation: none; }
+html.casino .cell.selectable-out { background-color: rgba(254,95,85,.35); box-shadow: inset 0 0 0 2px var(--mult); animation: none; }
+html.casino .spawnMark { border-radius: 0; width: 8px; height: 8px; background: var(--paper); box-shadow: 0 0 0 2px var(--pc, var(--edge)), 0 2px 0 2px var(--edge); }
+html.casino .spawnMark.holeMark { border-radius: 0; box-shadow: inset 0 0 0 2px var(--paper); }
+
+/* pelotas: círculo de pixel (máscara escalonada) con contorno y sombra sólida */
+html.casino .skBall:has(> .skCore:not([class*="sk-"])), html.casino .tile-ball { filter: drop-shadow(2px 0 0 var(--edge)) drop-shadow(-2px 0 0 var(--edge)) drop-shadow(0 2px 0 var(--edge)) drop-shadow(0 -2px 0 var(--edge)) drop-shadow(0 3px 0 rgba(0,0,0,.45)); }
+/* (las pelotas con aspecto propio, que asoman fuera de la bola, se quedan redondas: la máscara las cortaría) */
+html.casino .tile-ball .circ:not([class*="sk-"]), html.casino .skCore:not([class*="sk-"]) {
+  border-radius: 0; box-shadow: none;
+  -webkit-mask: var(--px-circle) center / 100% 100% no-repeat; mask: var(--px-circle) center / 100% 100% no-repeat;
+  background-image:
+    linear-gradient(transparent 0 72%, rgba(0,0,0,.22) 72%),
+    linear-gradient(90deg, transparent 0 74%, rgba(0,0,0,.14) 74%),
+    linear-gradient(rgba(255,255,255,.45), rgba(255,255,255,.45));
+  background-size: 100% 100%, 100% 100%, 22% 22%;
+  background-position: 0 0, 0 0, 28% 24%;
+  background-repeat: no-repeat;
+}
+html.casino .ballStamp { border-radius: 2px; font-family: var(--font-display); font-weight: 400; font-size: calc(var(--cell-w) * .2); background: #fff; }
+html.casino .piece.pball::before { border-radius: 0; filter: none; background: rgba(0,0,0,.35); height: 5px; left: 22%; right: 22%; }
+html.casino .piece .cardOnCell { filter: none; }
+html.casino .piece.isTurn .turnMark { border-radius: 0; background: var(--gold); box-shadow: 0 0 0 2px var(--edge); transform: none; width: 10px; height: 10px; margin-left: -5px; top: -12px; animation: markBob .8s steps(2) infinite; }
+html.casino .piece.isTurn .turnMark::after { display: none; }
+html.casino .piece.isSel .circ { box-shadow: none; }
+html.casino .piece.isSel .tile-ball { filter: drop-shadow(3px 0 0 var(--gold)) drop-shadow(-3px 0 0 var(--gold)) drop-shadow(0 3px 0 var(--gold)) drop-shadow(0 -3px 0 var(--gold)) drop-shadow(0 3px 0 var(--edge)); }
+html.casino .hitFlash { box-shadow: 0 0 0 4px #fff !important; border-radius: 0; }
+html.casino .badge { border-radius: 2px; background: var(--sand); color: var(--edge); box-shadow: 0 0 0 2px var(--edge); }
+
+/* ---------- partida: barra, asientos, pilas ---------- */
+html.casino #turnPill { background-color: var(--cream); padding: 4px 14px 4px 4px; }
+html.casino #turnPill.mine { border-color: var(--edge) !important; box-shadow: inset 0 0 0 2px var(--gold), 0 5px 0 var(--lip), 0 0 18px rgba(253,162,0,.45) !important; }
+html.casino .tpText b { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: .02em; }
+html.casino .tpText small { font-size: 12px; }
+html.casino .pips { border-left: 2px solid var(--edge); }
+html.casino .pips i { width: 12px; height: 16px; border-radius: 2px; border: 2px solid var(--edge); background: #3A4F59; }
+html.casino .pips i.on { background: var(--mult); border-color: var(--edge); box-shadow: 0 0 8px rgba(254,95,85,.7); }
+
+/* barra lateral izquierda: los asientos en un solo panel alto */
+html.casino #seats { gap: 8px; }
+html.casino .seat { background-color: var(--cream); opacity: .9; }
+html.casino .seat.active { opacity: 1; border-color: var(--edge) !important; box-shadow: inset 0 0 0 2px var(--pc), 0 5px 0 var(--lip), 0 0 16px color-mix(in srgb, var(--pc) 45%, transparent) !important; }
+html.casino .seat.active::before { border-radius: 0; background: var(--gold); box-shadow: 0 0 0 2px var(--edge); width: 8px; height: 8px; }
+html.casino .seat.cta { box-shadow: inset 0 0 0 2px var(--mult), 0 5px 0 var(--lip) !important; }
+html.casino .seatName { font-family: var(--font-display); font-size: 20px; font-weight: 400; }
+html.casino .botTag { border-radius: 2px; border: 0; background: var(--night); color: var(--ink-soft); font-size: 10px; padding: 1px 6px; }
+html.casino .seatStatus { font-size: 12px; }
+
+html.casino .avatar { box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--lip); }
+html.casino .avatar.xs { box-shadow: 0 0 0 2px var(--edge); }
+
+html.casino .pile { color: var(--paper); }
+html.casino .pileStack > i { border-radius: 6px; border: 2px solid var(--edge); }
+html.casino .pileStack > i:nth-child(3) { box-shadow: 0 3px 0 #C9C2B4, 0 6px 0 var(--edge), 0 9px 0 var(--lip) !important; }
+html.casino .pileLbl { font-size: 13px; }
+html.casino .pileLbl b { border: 0; border-radius: 3px; background: var(--chip); color: #fff; font-family: var(--font-display); font-size: 16px; font-weight: 400; box-shadow: 0 0 0 2px var(--edge); }
+html.casino #discardTop.empty { border: 2px dashed rgba(255,244,224,.4); }
+html.casino #lastPlay small { letter-spacing: .1em; font-size: 11px; }
+html.casino .lastRow { background: rgba(20,29,34,.85); border: 2px solid var(--edge); border-radius: 6px; }
+
+/* bandeja de la mano */
+html.casino #dockRow { background-color: var(--cream); }
+html.casino #dock.myTurn #dockRow { box-shadow: inset 0 0 0 2px var(--gold), 0 5px 0 var(--lip), 0 0 22px rgba(253,162,0,.3) !important; }
+html.casino #dock.cta #dockRow { box-shadow: inset 0 0 0 2px var(--mult), 0 5px 0 var(--lip), 0 0 22px rgba(254,95,85,.35) !important; }
+html.casino .ownerTxt b { font-family: var(--font-display); font-size: 22px; font-weight: 400; }
+html.casino #endTurnBtn { font-size: 18px; min-width: 170px; }
+html.casino #discardBtn { --b-bg: var(--mult); --b-fg: #fff; }
+html.casino .hint { background: rgba(20,29,34,.92); border: 2px solid var(--edge); border-radius: 8px; box-shadow: 0 4px 0 var(--lip); backdrop-filter: none; }
+html.casino .hint.act { box-shadow: inset 0 0 0 2px var(--gold), 0 4px 0 var(--lip); }
+html.casino .hint.discard { box-shadow: inset 0 0 0 2px var(--mult), 0 4px 0 var(--lip); }
+html.casino .hint.idle { background: rgba(20,29,34,.75); }
+html.casino .hintWho { border-radius: 3px; box-shadow: 0 0 0 2px var(--edge); }
+
+/* JAQUE: bloque rojo */
+html.casino #jaque { background-color: var(--cream); }
+html.casino .jqBadge { background: var(--mult); color: #fff; border-radius: 4px; font-size: 26px; letter-spacing: .06em; padding: 2px 12px; box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--lip); text-shadow: 0 2px 0 rgba(0,0,0,.4); animation: jqWobble .5s steps(2) infinite; }
+@keyframes jqWobble { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+html.casino .jqTimer { height: 6px; border-radius: 0; background: var(--night); box-shadow: 0 0 0 2px var(--edge); }
+html.casino .jqTimer i { border-radius: 0; background: var(--mult); }
+
+/* banner de cambio de turno: letras enormes que entran con pop */
+html.casino #turnBanner { background-color: var(--cream); border-radius: 10px; }
+html.casino #turnBanner b { font-size: 40px; letter-spacing: .03em; text-shadow: var(--txt-out); }
+html.casino #turnBanner.show { animation: bannerPop 1.05s var(--ease-pop) forwards; }
+@keyframes bannerPop {
+  0%   { transform: translate(-50%, -50%) scale(.4) rotate(-6deg); opacity: 0; }
+  18%  { transform: translate(-50%, -50%) scale(1.08) rotate(2deg); opacity: 1; }
+  28%  { transform: translate(-50%, -50%) scale(1) rotate(-1deg); }
+  80%  { transform: translate(-50%, -50%) scale(1) rotate(-1deg); opacity: 1; }
+  100% { transform: translate(-50%, -56%) scale(.9); opacity: 0; }
+}
+
+/* ---------- cartas: blancas, contorno oscuro, sombra sólida, índices en las esquinas ---------- */
+html.casino .card, html.casino .hintCard {
+  --ink: #1E2A30; --ink-soft: #5B6B72; --night: #1E2A30;
+  text-shadow: none;
+}
+html.casino .card {
+  --band: #1E2A30;
+  border-radius: 7px;
+  background-color: var(--card-face); background-image: none;
+  box-shadow: 0 0 0 2px var(--edge), 0 5px 0 2px var(--lip);
+  transition: transform .22s var(--ease-pop), box-shadow .15s, opacity .2s, filter .2s, translate .22s var(--ease-pop);
+}
+html.casino .card::before { box-shadow: inset 0 0 0 calc(var(--cw) * .045) var(--band), inset 0 0 0 calc(var(--cw) * .07) var(--card-face), inset 0 0 0 calc(var(--cw) * .085) color-mix(in srgb, var(--band) 30%, transparent); }
+html.casino .card.orange { --band: var(--accent); background-color: #FFF1D6; }
+html.casino .cardCorner { font-family: var(--font-display); font-weight: 400; font-size: calc(var(--cw) * .26); top: calc(var(--cw) * .08); left: calc(var(--cw) * .12); color: var(--band); }
+html.casino .card:not(.orange) .cardCorner { color: #1E2A30; }
+html.casino .cardName { font-family: var(--font-display); font-weight: 400; font-size: calc(var(--cw) * .17); letter-spacing: .02em; color: #1E2A30; }
+html.casino .cardBolt { color: var(--mult); }
+/* la mano, en abanico y respirando (rotate/translate no pisan el transform de pasar el ratón) */
+html.casino #hands { gap: 6px; }
+html.casino #hands .card:not(.back) { rotate: calc(var(--fan, 0) * 6deg); translate: 0 calc(var(--fanY, 0) * 1px); animation: breathe 3.4s ease-in-out infinite; animation-delay: calc(var(--fi, 0) * -.7s); }
+@keyframes breathe { 0%, 100% { translate: 0 calc(var(--fanY, 0) * 1px); } 50% { translate: 0 calc(var(--fanY, 0) * 1px - 3px); } }
+html.casino .card:hover { transform: translateY(-14px) scale(1.06) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); box-shadow: 0 0 0 2px var(--edge), 0 12px 0 2px rgba(0,0,0,.35); }
+html.casino #hands .card:hover { rotate: 0deg; }
+html.casino .card.cardSel { transform: translateY(-20px) scale(1.06); box-shadow: 0 0 0 2px var(--edge), 0 0 0 5px var(--gold), 0 14px 0 4px rgba(0,0,0,.35), 0 0 22px rgba(253,162,0,.6); }
+html.casino #hands .card.cardSel { rotate: 0deg; animation: none; }
+html.casino .card.unplayable { filter: saturate(.35) brightness(.75); opacity: .8; }
+html.casino .card.discardSel { box-shadow: 0 0 0 2px var(--edge), 0 0 0 5px var(--mult), 0 12px 0 4px rgba(0,0,0,.35); }
+html.casino .card.discardSel::after { border-radius: 3px; box-shadow: 0 0 0 2px var(--edge); }
+html.casino .card.ctaJaque { animation: pxCta .7s steps(2) infinite !important; }
+@keyframes pxCta { 0%, 100% { transform: translateY(-8px); box-shadow: 0 0 0 2px var(--edge), 0 0 0 5px var(--mult), 0 8px 0 4px var(--lip); } 50% { transform: translateY(-13px); box-shadow: 0 0 0 2px var(--edge), 0 0 0 6px #FF8A80, 0 13px 0 4px var(--lip), 0 0 18px rgba(254,95,85,.6); } }
+html.casino .card.mini { border-radius: 4px; box-shadow: 0 0 0 2px var(--edge), 0 3px 0 1px var(--lip); }
+html.casino .card.mini .cardCorner { font-size: 11px; top: 2px; left: 4px; }
+/* reverso: patrón ornamental simétrico en rojo y blanco */
+html.casino {
+  --card-back: var(--px-back) center / 100% 100% no-repeat, #C8323A;
+}
+html.casino .card.back, html.casino .card.mini.back { background: var(--card-back); box-shadow: 0 0 0 2px var(--edge), 0 4px 0 1px var(--lip); }
+html.casino .pileStack > i { background: var(--card-back); }
+html.casino .hintCard { border-radius: 4px; background: var(--card-face); border: 2px solid var(--edge); box-shadow: 0 2px 0 var(--lip); }
+html.casino .hintCard.orange { background: #FFF1D6; border-color: var(--edge); box-shadow: inset 0 0 0 2px var(--accent), 0 2px 0 var(--lip); }
+
+/* ---------- capas flotantes ---------- */
+html.casino #toast { background: rgba(20,29,34,.95); border-radius: 8px; font-size: 15px; backdrop-filter: none; }
+html.casino #toast.warn { box-shadow: inset 0 0 0 2px var(--mult), 0 5px 0 var(--lip) !important; }
+html.casino #cardTip { background-color: var(--cream); font-size: 14px; }
+html.casino #cardTip b { font-family: var(--font-display); font-size: 24px; font-weight: 400; }
+html.casino #cardTip .kind { border-radius: 3px; border: 0; background: var(--night); }
+html.casino #cardTip.orange { box-shadow: inset 0 0 0 2px var(--accent), 0 5px 0 var(--lip) !important; }
+html.casino #storyTip { background-color: var(--cream); font-size: 18px; }
+html.casino #storyTip::after { border-radius: 0; background: var(--cream); box-shadow: 2px 2px 0 var(--edge); }
+
+html.casino #winOverlay { background: rgba(5,8,7,.6); backdrop-filter: none; }
+html.casino #winOverlay .box { background-color: var(--cream); }
+html.casino #winOverlay.visible .box { animation: pxPop .45s var(--ease-pop); }
+@keyframes pxPop { 0% { transform: scale(.6) rotate(-4deg); opacity: 0; } 60% { transform: scale(1.04) rotate(1deg); opacity: 1; } 100% { transform: none; } }
+html.casino #winOverlay .msg { font-family: var(--font-display); font-weight: 400; font-size: 54px; letter-spacing: .02em; color: var(--gold); text-shadow: var(--txt-out); transform: rotate(-2deg); animation: titleBob 2.4s ease-in-out infinite; }
+html.casino .winIcon { border-radius: 8px; background: var(--gold); box-shadow: 0 0 0 3px var(--edge), 0 5px 0 3px var(--lip), 0 0 24px rgba(253,162,0,.6); }
+html.casino #winOverlay.lost .winIcon { background: var(--mult); }
+html.casino #winStats .st { border: 2px solid var(--edge); border-radius: 6px; background: var(--night); box-shadow: 0 3px 0 var(--lip); }
+html.casino #winStats .st:nth-child(3n+1) b { color: #5CC2FF; }
+html.casino #winStats .st:nth-child(3n+2) b { color: #FF8A80; }
+html.casino #winStats .st:nth-child(3n) b { color: var(--gold); }
+html.casino #winStats .st b { font-size: 34px; text-shadow: 0 3px 0 var(--edge); }
+html.casino #winStats .st .i { color: var(--ink-soft); }
+html.casino .winChip { border-radius: 4px; box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--lip); }
+
+html.casino #logPanel { background-color: var(--cream); }
+html.casino #logHead h4 { font-size: 28px; }
+html.casino #logList div { border-bottom: 2px solid var(--cream-deep); }
+
+/* combo +N: escala y pop */
+html.casino .comboText { font-size: 28px !important; color: var(--gold) !important; text-shadow: var(--txt-out) !important; background: none !important; box-shadow: none !important; }
+
+/* botones fijos (sonido, ajustes, idioma) */
+html.casino #sfxBtn, html.casino #sndCfgBtn { --b-bg: #3A4F59; --b-fg: var(--paper); --b-line: var(--edge); backdrop-filter: none; border-radius: 8px; }
+html.casino body[data-screen="game"] #sfxBtn, html.casino body[data-screen="game"] #sndCfgBtn { --b-bg: rgba(20,29,34,.8); --b-line: var(--edge); }
+
+/* ---------- formularios ---------- */
+html.casino input[type=range] { accent-color: var(--gold); }
+html.casino input[type=checkbox] { accent-color: var(--gold); }
+html.casino input[type=text], html.casino input:not([type]), html.casino textarea, html.casino select { background: var(--night); color: var(--ink); border: 2px solid var(--edge); border-radius: 4px; }
+
+/* ---------- formas de pixel (máscaras y patrones dibujados en una cuadrícula) ---------- */
+html.casino {
+  /* círculo de 12×12 en escalones */
+  --px-circle: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'><path d='M4 0h4v1h2v1h1v2h1v4h-1v2h-1v1h-2v1H4v-1H2v-1H1V8H0V4h1V2h1V1h2z'/></svg>");
+  /* reverso: rombos rojos y blancos en espejo con un medallón en el centro (24×34) */
+  --px-back: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 34' shape-rendering='crispEdges'><rect width='24' height='34' fill='%23C8323A'/><rect x='1' y='1' width='22' height='32' fill='none' stroke='%23FBF5E8' stroke-width='1'/><g fill='%23E8555B'><path d='M3 3h2v2H3zM7 3h2v2H7zM15 3h2v2h-2zM19 3h2v2h-2zM5 5h2v2H5zM17 5h2v2h-2zM3 7h2v2H3zM19 7h2v2h-2zM3 25h2v2H3zM19 25h2v2h-2zM5 27h2v2H5zM17 27h2v2h-2zM3 29h2v2H3zM7 29h2v2H7zM15 29h2v2h-2zM19 29h2v2h-2z'/></g><g fill='%23FBF5E8'><path d='M11 4h2v1h1v1h1v1h-1v1h-1v1h-2V8h-1V7H9V6h1V5h1zM11 25h2v1h1v1h1v1h-1v1h-1v1h-2v-1h-1v-1H9v-1h1v-1h1zM4 16h1v-1h1v-1h1v6H6v-1H5v-1H4zM20 16h-1v-1h-1v-1h-1v6h1v-1h1v-1h1z'/><path d='M10 11h4v1h2v2h1v6h-1v2h-2v1h-4v-1H8v-2H7v-6h1v-2h2z'/></g><g fill='%23C8323A'><path d='M11 13h2v1h1v1h1v4h-1v1h-1v1h-2v-1h-1v-1H9v-4h1v-1h1z'/></g><rect x='11' y='16' width='2' height='2' fill='%23F5A623'/></svg>");
+}
+
+/* =================== segunda tanda: menús, ajustes, estadísticas =================== */
+/* sin desenfoques: el pixel art no se emborrona (los velos oscurecen) */
+html.casino *, html.casino *::before, html.casino *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.casino dialog::backdrop { background: rgba(5,8,7,.62); }
+html.casino #lineup, html.casino #passScreen, html.casino #pauseOverlay { background-color: rgba(5,8,7,.6); }
+
+/* títulos de pantalla: letras gruesas con contorno y sombra, un poco inclinadas */
+html.casino .sTitle, html.casino #pveCard h2, html.casino .setHead h2, html.casino .setBox h2, html.casino #dialog h2, html.casino #dialog h3 {
+  font-family: var(--font-display); font-weight: 400; letter-spacing: .02em; text-shadow: var(--txt-out);
+}
+html.casino .sTitle { font-size: clamp(56px, 8vw, 104px); transform: rotate(-2deg); color: var(--paper); }
+html.casino .sTitle::after, html.casino #pveCard h2::after { color: var(--gold); }
+html.casino .sSub { color: var(--ink-soft); }
+
+/* botones fijos de las esquinas */
+html.casino .screenTop .btn-light, html.casino .screenTop button { --b-bg: rgba(20,29,34,.85); --b-fg: var(--paper); --b-line: var(--edge); }
+html.casino #profileBtn, html.casino .cornerBtn { --b-bg: #3A4F59; --b-fg: var(--paper); --b-line: var(--edge); border-radius: 8px; }
+html.casino #profileBtn .pfDot { border-radius: 2px; background: var(--mult); box-shadow: 0 0 0 2px var(--edge); }
+html.casino .langBtn { border-radius: 4px; --b-line: var(--edge); box-shadow: 0 3px 0 var(--lip); }
+html.casino .langBtn[aria-pressed="true"] { --b-line: var(--gold); }
+
+/* elegido = bloque azul ficha */
+html.casino .setTabs button[aria-selected="true"], html.casino .segBtns button[aria-pressed="true"], html.casino #sndPanel .speedBtns button[aria-pressed="true"], html.casino .setRow.seg .segBtns button[aria-pressed="true"], html.casino .mdTabs button[aria-selected="true"] {
+  --b-bg: var(--chip); --b-fg: #fff; --b-line: var(--edge);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.25), inset 0 -3px 0 rgba(0,0,0,.25), 0 3px 0 var(--lip) !important;
+}
+html.casino .setTabs button[aria-selected="true"]:hover { background-color: #22A6FF; }
+html.casino .setRow.seg .segBtns { background: var(--night); border: 2px solid var(--edge); }
+html.casino .setRow.seg .segBtns button { box-shadow: none; }
+html.casino .setRow.seg .segBtns button:hover { background-color: rgba(255,255,255,.08); }
+html.casino .mdTabs { background: rgba(20,29,34,.85) !important; border: 2px solid var(--edge); box-shadow: 0 4px 0 var(--lip); }
+html.casino .mdTabInd { display: none !important; }
+html.casino .mdTabs button { box-shadow: none; }
+
+/* cada número importante, en su bloque de color: azul, rojo, dorado */
+html.casino .dkStats { background: none !important; gap: 6px; padding: 0; }
+html.casino .dkStats div { border: 2px solid var(--edge) !important; border-radius: 6px; padding: 6px 8px 5px; background: var(--chip); box-shadow: inset 0 2px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.25), 0 3px 0 var(--lip); }
+html.casino .dkStats div:nth-child(2) { background: var(--mult); }
+html.casino .dkStats div:nth-child(3) { background: var(--gold); }
+html.casino .dkStats dd { font-family: var(--font-display); font-weight: 400; font-size: 34px; color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.35); }
+html.casino .dkStats dt { color: rgba(255,255,255,.85); font-size: 10px; letter-spacing: .08em; }
+html.casino .deckCard.locked .dkStats div { filter: saturate(.3) brightness(.7); }
+html.casino .dsNum b { font-family: var(--font-display); font-weight: 400; font-size: 40px; text-shadow: 0 3px 0 var(--edge); }
+html.casino .dsNum:nth-child(4n+1) b { color: #5CC2FF; } html.casino .dsNum:nth-child(4n+2) b { color: #FF8A80; } html.casino .dsNum:nth-child(4n+3) b { color: var(--gold); } html.casino .dsNum:nth-child(4n) b { color: #9BE3B4; }
+html.casino .miniSt b { color: var(--gold); }
+html.casino .mdStats .miniSt { background: var(--night); border: 2px solid var(--edge); }
+html.casino .mdStat { border: 2px solid var(--edge); background: var(--night); }
+
+/* tarjetas de nivel y de modo */
+html.casino .lvlSection { background-color: rgba(30,42,48,.94); border: 2px solid var(--edge); box-shadow: inset 0 2px 0 rgba(255,255,255,.06), 0 6px 0 var(--lip); }
+html.casino .mdPreview { border: 2px solid var(--edge); }
+html.casino .lvlCount { background: var(--chip) !important; border-radius: 4px; box-shadow: 0 0 0 2px var(--edge); }
+
+/* reto diario del menú: bloque dorado con texto blanco */
+html.casino .mDaily { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--edge); border-radius: 10px; }
+html.casino .mDaily :is(b, strong, h3) { font-family: var(--font-display); font-weight: 400; font-size: 26px; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+html.casino .mDaily .dPlay { background: var(--edge); color: #fff; border-radius: 6px; }
+
+/* regalo */
+html.casino #giftPop { border: 2px solid var(--edge); border-radius: 10px; background-color: var(--cream); box-shadow: 0 5px 0 var(--lip); }
+
+/* ventanas (diálogos, ajustes) */
+html.casino dialog { background-color: var(--cream); color: var(--ink); }
+
+/* aviso flotante "+N": escala y pop */
+html.casino .popText {
+  position: absolute; z-index: 30; pointer-events: none; white-space: nowrap;
+  font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: .03em; color: var(--gold);
+  text-shadow: var(--txt-out);
+  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg));
+  animation: popText 1.05s var(--ease-pop) forwards;
+}
+html.casino .popText.chip { color: #5CC2FF; } html.casino .popText.mult { color: #FF8A80; }
+@keyframes popText {
+  0% { transform: translate(-50%, -50%) scale(.2) rotate(var(--tilt)); opacity: 0; }
+  18% { transform: translate(-50%, -70%) scale(1.35) rotate(var(--tilt)); opacity: 1; }
+  32% { transform: translate(-50%, -70%) scale(1) rotate(var(--tilt)); }
+  78% { transform: translate(-50%, -90%) scale(1) rotate(var(--tilt)); opacity: 1; }
+  100% { transform: translate(-50%, -115%) scale(.9) rotate(var(--tilt)); opacity: 0; }
+}
+/* combo xN: bloque rojo multiplicador */
+html.casino .comboText { font-family: var(--font-display) !important; font-weight: 400 !important; font-size: 30px !important; color: #fff !important;
+  background: var(--mult) !important; border: 2px solid var(--edge); border-radius: 6px !important; padding: 0 10px !important;
+  box-shadow: 0 4px 0 var(--lip) !important; text-shadow: 0 2px 0 rgba(0,0,0,.35) !important;
+  animation: comboPx .9s var(--ease-pop) forwards !important; }
+@keyframes comboPx {
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(.3) rotate(-8deg); }
+  22% { opacity: 1; transform: translate(-50%, -100%) scale(1.3) rotate(4deg); }
+  36% { transform: translate(-50%, -100%) scale(1) rotate(-3deg); }
+  80% { opacity: 1; transform: translate(-50%, -125%) scale(1) rotate(-3deg); }
+  100% { opacity: 0; transform: translate(-50%, -150%) scale(.9) rotate(-3deg); }
+}
+/* sacudidas: más fuertes y a saltos de pixel */
+html.casino #boardArea.shake { animation: pxShake .3s steps(6) !important; }
+@keyframes pxShake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 2px; } 40% { translate: 5px -2px; } 60% { translate: -3px -2px; } 80% { translate: 3px 2px; } }
+html.casino #game.screenShake { animation: screenShake .5s steps(8); }
+@keyframes screenShake { 0%, 100% { translate: 0 0; } 12% { translate: -8px 4px; } 25% { translate: 8px -4px; } 37% { translate: -6px -3px; } 50% { translate: 6px 3px; } 62% { translate: -4px 2px; } 75% { translate: 3px -2px; } 87% { translate: -1px 1px; } }
+html.casino.reduceMotion :is(#game.screenShake, #boardArea.shake) { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { html.casino #hands .card:not(.back), html.casino .mTitle .l1, html.casino .mTitle .l2, html.casino #winOverlay .msg, html.casino .jqBadge { animation: none !important; } }
+html.casino.reduceMotion :is(#hands .card:not(.back), .mTitle .l1, .mTitle .l2, #winOverlay .msg, .jqBadge) { animation: none !important; }
+
+/* =================== tercera tanda: superficies claras que quedaban =================== */
+/* superficies blancas (bocadillos de los bots, rótulos): texto oscuro, sin sombra de texto */
+html.casino :is(.bubble, .seasonBanner) { --ink: #1E2A30; --ink-soft: #5B6B72; text-shadow: none; }
+html.casino .bubble { border: 2px solid var(--edge); border-radius: 6px; box-shadow: 0 4px 0 var(--lip); font-size: 14px; }
+html.casino .bubble::after { box-shadow: -2px 2px 0 var(--edge); }
+html.casino .seasonBanner { background: var(--card-face); border: 2px solid var(--edge); box-shadow: 0 6px 0 var(--lip); }
+html.casino .seasonBanner b { font-family: var(--font-display); font-weight: 400; font-size: 30px; }
+/* chips y botones que eran blancos: bloques pizarra */
+html.casino :is(.rivalArrow, .edTool, .chip, .ecAdd, button.edSlot, .lvCopyCode, .labCard, .ultPick) { --b-bg: #3A4F59; }
+html.casino .edTool:hover:not(.on), html.casino .ultPick:hover { background-color: #4A616C; }
+html.casino .edCard.orange .ecAdd, html.casino button.edSlot.orange, html.casino .labCard.orange { background-color: #4A3A1E; }
+html.casino .edCard.on .ecAdd { --b-bg: var(--chip); --b-fg: #fff; }
+html.casino .libCard { background: #3A4F59; border: 2px solid var(--edge); box-shadow: 0 3px 0 var(--lip); }
+html.casino .rlKeys kbd { background: var(--night); color: var(--ink); border: 2px solid var(--edge); border-radius: 3px; }
+html.casino .pveName, html.casino .setName, html.casino .dlgBox textarea, html.casino #edName, html.casino .lvCode input, html.casino .lvLinkBox .lvField { background: var(--night) !important; color: var(--ink) !important; border: 2px solid var(--edge) !important; border-radius: 4px !important; }
+html.casino .deckCard.locked { background-color: #1E2A30 !important; }
+html.casino .ultMark { background: var(--night); color: var(--ink-soft); box-shadow: 0 0 0 2px var(--edge); }
+html.casino .ultTog { background: #3A4F59 !important; border: 2px solid var(--edge) !important; box-shadow: 0 3px 0 var(--lip) !important; }
+html.casino .ultTog.on { background: var(--chip) !important; color: #fff !important; background-image: none !important; }
+html.casino .ultBtns .btn-light { --b-bg: #3A4F59; --b-fg: var(--paper); --b-line: var(--edge); }
+html.casino .deckCard.ultimate { background-color: var(--cream) !important; }
+html.casino #giftPop:hover { background-color: #34474F; }
+html.casino .setToggle .sw { border: 2px solid var(--edge); border-radius: 4px !important; }
+html.casino .setToggle .sw::after { border-radius: 2px !important; }
+/* la barra de la partida del Ultimate: como las demás */
+html.casino body[data-screen="game"]:has(#gameScreen[data-scene="prism"]) :is(#gameBar .btn-ghost, #sfxBtn, #sndCfgBtn) {
+  --b-fg: var(--paper); --b-line: var(--edge); --b-bg: rgba(20,29,34,.8); background-image: none; animation: none;
+}
+html.casino.phone #gameScreen[data-scene="prism"] #pauseBtn { --b-bg: rgba(20,29,34,.8); --b-fg: var(--paper); }
+/* (las escenas de cada baraja pintan su color en el tapete: el decorado vectorial no encaja con los píxeles) */
+html.casino #gameScreen[data-scene] #game { background: none !important; animation: none !important; }
+html.casino .mdTabs button[aria-selected="true"]:hover { background-color: #22A6FF; }
+html.casino .mdTabs button { --b-fg: var(--paper) !important; }
+html.casino .cardName { font-size: calc(var(--cw) * .155); letter-spacing: 0; }
+html.casino .saveTick { color: #9BE3B4; border: 2px solid var(--edge); }
+html.casino.phone .seatBadge { background: var(--chip); color: #fff; border-radius: 3px; box-shadow: 0 0 0 2px var(--edge); font-family: var(--font-display); font-weight: 400; font-size: 14px; }
+html.casino.phone #pauseBtn { --b-line: var(--edge); }
+html.casino.phone #deckPile { border: 2px solid var(--edge); box-shadow: 0 4px 0 var(--lip); }
+html.casino.phone #deckPile .pileLbl b { font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+
+/* =================== cuarta tanda: victoria, creador, escenas =================== */
+html.casino #winOverlay #winStats .st { background: var(--chip); border: 2px solid var(--edge); border-radius: 6px; color: rgba(255,255,255,.85);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.25), 0 3px 0 var(--lip); }
+html.casino #winOverlay #winStats .st:nth-child(3n+2) { background: var(--mult); }
+html.casino #winOverlay #winStats .st:nth-child(3n) { background: var(--gold); }
+html.casino #winOverlay #winStats .st b { font-family: var(--font-display); font-weight: 400; font-size: 32px; color: #fff !important; text-shadow: 0 3px 0 rgba(0,0,0,.35); }
+html.casino #winOverlay #winStats .st .i { color: #fff; }
+html.casino #winBtns .btn-light { --b-bg: #3A4F59; --b-line: var(--edge); }
+html.casino .edCard .ecAdd { --b-bg: #3A4F59; --b-line: var(--edge); }
+html.casino .edCard.orange .ecAdd, html.casino .edCard.orange.on .ecAdd { background-color: #4A3A1E; --b-line: var(--accent); }
+html.casino .edCard.on .ecAdd { --b-bg: var(--chip); --b-line: var(--edge); }
+html.casino .ecN { border-radius: 3px !important; font-family: var(--font-display); font-weight: 400; }
+/* el tablero no lleva marco crema en ninguna escena */
+html.casino #gameScreen[data-scene] #boardWrap { background-color: #1E2A30 !important; }
+
+html.casino .tile-ball .circ[class*="sk-"], html.casino .skCore[class*="sk-"] { box-shadow: none; }
+html.casino.noCrt #crt { display: none; }
+/* el final cabe sin desplazarse también en un móvil pequeño o en horizontal */
+html.casino #winOverlay .msg { font-size: clamp(30px, 4.2vw, 52px); line-height: 1; }
+html.casino.phone #winOverlay .msg { font-size: 25px; line-height: 1; margin-bottom: 6px; animation: none; }
+html.casino.phone #winOverlay #winStats .st { padding: 3px 1px 2px; }
+html.casino.phone #winOverlay #winStats .st b { font-size: 20px; line-height: 1; }
+@media (max-height: 460px) { html.casino #winOverlay .msg { font-size: 26px; } html.casino #winOverlay #winStats .st b { font-size: 20px; } }
+html.casino ::backdrop { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.casino #dialog::backdrop { background: rgba(5,8,7,.62); }
+
+/* (el grano del estilo original se pinta en línea en <html> al arrancar, src/ui/bake.js: aquí, el tramado pixel) */
+html.casino body { --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'><rect x='0' y='0' width='2' height='2' fill='black' fill-opacity='.07'/><rect x='4' y='4' width='2' height='2' fill='black' fill-opacity='.07'/></svg>"); }
+
+/* pantalla de carga */
+html.casino #loadScreen { background-color: #10241D; background-image: none; }
+html.casino .ldTitle { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .85; color: var(--paper); text-shadow: var(--txt-out); }
+html.casino .ldTitle span:last-child { color: var(--gold); }
+html.casino .ldTitle i { border-radius: 0; background: var(--mult); box-shadow: 0 0 0 .03em var(--edge); animation-timing-function: steps(2); }
+html.casino .ldBar { height: 10px; border-radius: 2px; background: var(--night); border: 2px solid var(--edge); box-shadow: 0 3px 0 var(--lip); }
+html.casino .ldBar i { border-radius: 0; background: var(--gold); animation-timing-function: steps(8); }
+
+/* =================== repaso de pantallas =================== */
+/* la fuente pixel no tiene negrita de verdad en los títulos: sin negritas inventadas (se emborronaban) */
+html.casino { font-synthesis: none; }
+html.casino :is(h1, h2, h3, h4, h5, .dTitle, .spTitle) { font-weight: 400; }
+html.casino :is(h3) { font-family: var(--font-display); font-size: max(1.25em, 20px); letter-spacing: .02em; }
+
+/* Ultimate: carta psicodélica oscura (marco que cambia de color, letras con contorno) */
+html.casino .ultSep { color: var(--gold); }
+html.casino .ultSep i { background: repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 10px); height: 2px; }
+html.casino .ultSep span { background: none; color: var(--gold); -webkit-background-clip: border-box; background-clip: border-box; }
+html.casino .deckCard.ultimate { background-color: #1A1030 !important;
+  background-image: var(--grain), radial-gradient(90% 120% at 0% 0%, rgba(176,48,110,.45), transparent 55%), radial-gradient(80% 120% at 100% 100%, rgba(15,92,122,.6), transparent 55%), radial-gradient(60% 90% at 62% 0%, rgba(240,160,48,.25), transparent 60%) !important; }
+html.casino .deckCard.ultimate::before { padding: 3px; background: linear-gradient(115deg, var(--mult), var(--gold), #3FE0B0, var(--chip), #B57BFF, var(--mult)); background-size: 300% 100%; }
+html.casino .ultEmblem { background: var(--night); box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--lip); border-radius: 6px; }
+html.casino .ultEmblem .dkArt { filter: none; }
+html.casino .ultTop h3 { font-size: 40px; color: var(--gold); background: none; -webkit-background-clip: border-box; background-clip: border-box; text-shadow: var(--txt-out); transform: rotate(-2deg); }
+html.casino .ultTop p, html.casino .ultSum, html.casino .ultBtns .btn-text { color: var(--ink-soft); }
+html.casino .ultTog:not(.on) { background: rgba(20,29,34,.75) !important; border: 2px dashed rgba(255,244,224,.25) !important; box-shadow: none !important; color: var(--ink-soft); }
+html.casino .ultTog.on .ultMark { background: var(--gold); color: #fff; box-shadow: 0 0 0 2px var(--edge); }
+html.casino .ultTog .ultMark { border-radius: 4px; }
+html.casino .ultHistBtn em { background: var(--mult); border-radius: 3px; }
+html.casino .pveDeckTag.ult { color: #fff; background: linear-gradient(100deg, var(--mult), #B57BFF 40%, var(--chip) 70%, var(--gold)); }
+html.casino .ultInfo em { color: var(--gold); }
+html.casino .ultPick { border: 2px solid var(--edge); box-shadow: 0 3px 0 var(--lip); }
+
+/* "Cartas nuevas" de cada baraja: tarjetas pizarra y el tablero de ejemplo con marco oscuro */
+html.casino .dmCard { background: var(--cream-deep); border: 2px solid var(--edge); box-shadow: 0 4px 0 var(--lip); border-radius: 8px; }
+html.casino .dmBoard { filter: drop-shadow(0 0 0 var(--edge)) drop-shadow(0 4px 0 var(--lip)); }
+html.casino .dmLbl, html.casino .dmQ { font-family: var(--font); }
+html.casino .dmTag { border-radius: 4px; box-shadow: 0 0 0 2px var(--edge); }
+html.casino .dmChip { border: 2px solid var(--edge); border-radius: 6px; background: var(--night); }
+
+/* círculos que sobraban: bloques */
+html.casino :is(.pauseIco, .chGo, .chDone, .winIcon) { border-radius: 8px; box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--lip); }
+html.casino .chGo { border-radius: 4px; box-shadow: 0 0 0 2px var(--edge); }
+html.casino .chCard { border: 2px solid var(--edge); box-shadow: 0 3px 0 var(--lip); }
+html.casino .mdIco { border-radius: 6px; box-shadow: 0 0 0 2px var(--edge); }
+html.casino .dmFrame { fill: #1E2A30; rx: 4px; stroke: var(--edge); stroke-width: 2px; }
+html.casino .ultBtns .btn-primary { --b-bg: var(--accent); --b-fg: #fff; --b-line: var(--edge); background-image: none !important; }
+html.casino .ultBtns .btn-primary::before, html.casino .ultBtns .btn-primary::after { display: none; }

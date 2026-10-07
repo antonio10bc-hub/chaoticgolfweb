@@ -255,7 +255,7 @@ export default {
     snowball: 'snowball', wind: 'wind', windWarn: 'wind route (warning)',
     board: 'Board', cell: 'Square {x},{y}', hole: 'hole', selectable: 'selectable', unplayable: 'not playable', track: 'train track',
   },
-  fx: { combo: 'Combo x{n}!', chainStop: 'Loop broken!' },
+  fx: { sink: 'IN!', combo: 'Combo x{n}!', chainStop: 'Loop broken!' },
   win: {
     trainWins: 'The train wins! It sank a ball all by itself: everybody loses',
     newSkin: 'New ball: {name}',
@@ -539,6 +539,8 @@ export default {
     caddie: 'Caddie tips', caddieSub: 'A button to ask for a play suggestion (noted in the summary)',
     botFastSub: 'Bots play at double speed; your plays keep your pace',
     bigText: 'Large text', bigTextSub: 'Bigger buttons, panels and notices',
+    styleH: 'Style', style: 'Visual style', style_classic: 'Original', style_casino: 'Pixel parlor',
+    crt: 'Old TV', crtSub: 'Scanlines, vignette and curved edges over the screen',
     contrast: 'High contrast', contrastSub: 'Stronger borders and text; valid squares clearly outlined',
     ui: 'Interface', ui_auto: 'Automatic', ui_touch: 'Touch', ui_desktop: 'Desktop',
     leftHand: 'Left-handed mode', leftHandSub: 'Turn buttons move to the left',

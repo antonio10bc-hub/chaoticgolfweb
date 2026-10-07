@@ -315,7 +315,7 @@ html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bott
 .pfMini .skBall { transition: transform .3s var(--ease-out); }
 .pfCard.locked .pfMini .skBall { filter: grayscale(1) opacity(.45); }
 .pfMini .pfLock { position: absolute; right: -5px; bottom: -5px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--ink); color: var(--cream); border: 2px solid var(--cream); }
+  background: var(--night); color: var(--paper); border: 2px solid var(--cream); }
 .pfMini .pfLock .i { width: 11px; height: 11px; }
 .pfCard b.nm { font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; display: flex; align-items: center; gap: 6px; }
 .pfCard .goal { font-size: 11.5px; color: var(--ink-soft); line-height: 1.25; }
@@ -344,14 +344,14 @@ html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bott
 #pveSkins .skBall { --bs: 24px !important; }
 #pveSkins:empty { display: none; }
 .pveSkin { --b-bg: transparent; --b-line: var(--cream-line); width: 40px; height: 40px; padding: 0; border-radius: 12px; overflow: visible; }
-.pveSkin.sel { --b-line: var(--ink); --b-bg: rgba(163,193,115,.3); }
+.pveSkin.sel { --b-line: var(--night); --b-bg: rgba(var(--sel-rgb, 163,193,115),.3); }
 .pveSkin .skBall { pointer-events: none; }
 .pveSkin.more { --b-line: var(--cream-line); color: var(--ink-soft); }
 .pveSkin.more .i { width: 18px; height: 18px; }
 
 /* ---- aviso al terminar una partida ---- */
 .winRec.skinNew { display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px 4px 6px; cursor: pointer;
-  background: var(--ink); border-color: var(--ink); color: var(--cream); font-weight: 600; animation: recPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
+  background: var(--night); border-color: var(--night); color: var(--paper); font-weight: 600; animation: recPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
 .winRec.skinNew:hover { background: #3a3a3a; }
 
 /* ---- móvil: la pelota arriba en su green, pequeña; las tarjetas, una columna ---- */

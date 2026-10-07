@@ -57,6 +57,7 @@ import { UMAMI_ID, flushQueue, track } from './ui/analytics.js';
 import { bindMyBall } from './ui/my-ball.js';
 
 // texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
+// (el estilo "Salón pixel" de Ajustes las tapa con su tapete animado: src/ui/casino.js, que enciende loadPrefs)
 sceneFromCache();
 bakeGrain().then(() => setTimeout(bakeScene, 200));
 performance.setResourceTimingBufferSize?.(1000); // (la lista de archivos cargados que se guardan para jugar sin conexión)
