@@ -17,10 +17,11 @@ import { isBot } from './players.js';
 import { ownerOf } from '../engine/game.js';
 import { renderTrack, ensureTrain, syncTrain } from './train-view.js';
 import { renderSeason, ensureSnow, syncSnow, shownTile } from './seasons-view.js';
+import { shownGamble, COIN_SVG } from './gambling-view.js';
 
 let cells = [], dims = '';
 // polvo al colocar cada loseta (según su `dust`)
-const DUST = { space: ['#C78BF2', '#7B5CE0', '#FFE1A8'], rock: ['#7A6A70', '#4A3E46', '#F2913A'], sand: SAND_C, water: WATER_C, leaf: ['#C9692E', '#D9A441', '#7FA552'], snow: ['#FFFFFF', '#E3EEF4', '#CFE4EE'], ash: ['#FFD23F', '#E8873A', '#5A5048'] };
+const DUST = { felt: ['#F6F0E2', '#1F6B48', '#F2C14E'], space: ['#C78BF2', '#7B5CE0', '#FFE1A8'], rock: ['#7A6A70', '#4A3E46', '#F2913A'], sand: SAND_C, water: WATER_C, leaf: ['#C9692E', '#D9A441', '#7FA552'], snow: ['#FFFFFF', '#E3EEF4', '#CFE4EE'], ash: ['#FFD23F', '#E8873A', '#5A5048'] };
 let justPlaced = null; // última loseta colocada, para su animación de aparición
 // (multiverso) la roca de una lluvia de meteoritos no se ve hasta que cae el suyo (multiverse-view.js la destapa)
 const rockHidden = (x, y) => app.rocksHidden?.has(x + ',' + y) || app.animQueue.some(e => e.t === 'meteorRock' && e.x === x && e.y === y);
@@ -77,6 +78,7 @@ export function renderBoard() {
   // despega la pelota, en animations.js); sin nada pendiente, las del estado
   if (!app.animating && !app.animQueue.length) app.lOffShown = [...(S.launched || [])];
   const lOff = app.lOffShown || [];
+  const gv = S.gamble ? shownGamble(g) : null; // (casino: el suelo ajedrezado, las monedas y los dados, como se ven ahora)
   for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
     const cell = cells[y * S.cols + x];
     let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), html = '', title = ''; // mowB: banda de segado (decorativo)
@@ -85,8 +87,15 @@ export function renderBoard() {
     // ahora: lo que cambia durante la jugada aparece a su tiempo)
     let tile = S.season ? shownTile(g, x, y) : g.realTileAt(x, y);
     if (tile?.type === 'meteorite' && rockHidden(x, y)) tile = null; // (multiverso: la roca, cuando caiga su meteorito)
+    if (gv && app.gv) tile = gv.tileAt(x, y); // (casino: los dados, donde estaban hasta que ruedan)
     const par = g.parAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
+    if (gv) { // (casino) rojo, negro o la dorada; y la moneda, si la hay
+      const gold = gv.gold(x, y);
+      cls += gold ? ' gGold' : (x + y) % 2 === 0 ? ' gRed' : ' gBlack';
+      aria.push(t(gold ? 'a11y.goldCell' : (x + y) % 2 === 0 ? 'a11y.redCell' : 'a11y.blackCell'));
+      if (gv.coin(x, y)) { html += `<span class="gCoin">${COIN_SVG}</span>`; aria.push(t('a11y.coin')); }
+    }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;
     else if (S.tiles.length && g.blackHoleNear(x, y)) cls += ' bhNear'; // (multiverso) aquí te traga el agujero negro
     if (tile) cls += waterJoins((ox, oy) => g.tileAt(x + ox, y + oy), x, y, tile);

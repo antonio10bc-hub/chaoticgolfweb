@@ -39,6 +39,7 @@ function simulate(g, act) {
       case 'launch': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
       case 'bump': if (pos[ev.p] && !unknown.has(ev.p)) marks.push({ kind: 'impact', ...pos[ev.p], dir: ev.dir }); break;
       case 'tunnel': if (pos[ev.p] && !unknown.has(ev.p)) { marks.push({ kind: 'unknown', x: ev.x, y: ev.y }); unknown.add(ev.p); } break;
+      case 'coinPick': if (pos[ev.p] && !unknown.has(ev.p)) marks.push({ kind: 'unknown', x: ev.x, y: ev.y }); break; // (casino: la moneda, cara o cruz al acabar)
       case 'teleport': push(ev.p, { x: ev.x, y: ev.y, kind: 'jump' }); break;
       case 'fall': push(ev.p, { x: ev.x, y: ev.y, kind: 'fall' }); break;
       case 'appear': if (paths[ev.p]) push(ev.p, { x: ev.x, y: ev.y, kind: 'appear' }); break;

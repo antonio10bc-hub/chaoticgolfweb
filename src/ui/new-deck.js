@@ -1,5 +1,6 @@
 // "¡Nueva baraja!": cuando el juego estrena una baraja, quien ya jugaba lo ve una vez al llegar al menú principal.
-// Una ventana pequeña: la ilustración con lo nuevo (aquí, una pelota que entra en un agujero negro y sale partida en cuatro),
+// Una ventana pequeña: la ilustración con lo nuevo (aquí, el campo ajedrezado del casino con la ruleta que gira, una moneda
+// que da vueltas y un dado),
 // el anuncio, una frase y "Jugar ahora" (Partida rápida con esa baraja) o "Luego".
 // Para la próxima baraja: ANNOUNCE = su id y su ilustración en ART. A quien llega por primera vez no se le
 // anuncia nada (para esa persona todo es nuevo): se apunta como vista.
@@ -13,8 +14,10 @@ import { track } from './analytics.js';
 import { REDUCED } from '../fx/juice.js';
 import { tilePic } from '../content/tiles/index.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
+import { wheelSVG, COIN_SVG } from './gambling-view.js';
+import { dicePic } from '../content/tiles/dice.js';
 
-const ANNOUNCE = 'multiverse';
+const ANNOUNCE = 'gambling';
 const KEY = 'chaoticgolf_newDeckSeen';
 // ¿ya jugaba? (algo de antes guardado en este dispositivo; se mira al cargar, antes de que el arranque escriba nada)
 const returning = (() => { try { return ['chaoticgolf_stats', 'chaoticgolf_tutorial', 'chaoticgolf_deckIntros', 'chaoticgolf_achievements', 'chaoticgolf_lastpve', 'chaoticgolf_intros']
@@ -88,7 +91,23 @@ function multiverseArt() {
     `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#1B1440"/><rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#3F7440"/>` +
     cells + bh + hole + incoming + ball([cx(5), Y], false) + ball([X, cy(0)], true) + ball([X, cy(3)], true) + ball([cx(1), Y], true) + meteor + '</svg>';
 }
-const ART = { train: trainArt, seasons: seasonsArt, multiverse: multiverseArt };
+// el Gambling: el campo ajedrezado (rojo y negro, con la casilla dorada) y, encima, la ruleta que gira; una moneda da
+// vueltas sobre una casilla y un dado espera en otra
+function gamblingArt() {
+  const C = 7, R = 4, CW = 38, CH = 44, W = C * CW, H = R * CH, gold = [5, 2];
+  let cells = '';
+  for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) cells += `<rect x="${x * CW + 2}" y="${y * CH + 2}" width="${CW - 4}" height="${CH - 4}" rx="5" fill="${x === gold[0] && y === gold[1] ? '#C9962E' : (x + y) % 2 === 0 ? '#8E1F2E' : '#26262D'}"/>`;
+  cells += `<text x="${gold[0] * CW + CW / 2}" y="${gold[1] * CH + CH / 2}" text-anchor="middle" dominant-baseline="central" font-size="20" fill="rgba(255,246,214,.6)">★</text>`;
+  const S = 150, wheel = wheelSVG(200).replace(/<svg[^>]*>/, `<svg x="${(W - S) / 2 - 40}" y="${(H - S) / 2}" width="${S}" height="${S}" viewBox="0 0 200 200">`)
+    .replace('<g class="rlRot">', `<g>${REDUCED ? '' : '<animateTransform attributeName="transform" type="rotate" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.7;1" keySplines=".1 .6 .2 1;0 0 1 1" values="0 100 100;1060 100 100;1060 100 100"/>'}`);
+  const coin = COIN_SVG.replace('<svg class="gCoinSvg" viewBox="0 0 40 40" aria-hidden="true">', `<svg x="${6 * CW + 6}" y="${0 * CH + 8}" width="${CW - 12}" height="${CW - 12}" viewBox="0 0 40 40">`);
+  const coinG = REDUCED ? coin : `<g>${coin}<animateTransform attributeName="transform" type="translate" dur="1.6s" repeatCount="indefinite" values="0 0;0 -5;0 0"/></g>`;
+  const dice = dicePic({ t: 4, n: 2, e: 1 }).replace('<svg class="tilePic dicePic" viewBox="0 0 100 140" aria-hidden="true">', `<svg x="${0 * CW + 3}" y="${3 * CH + 2}" width="${CW - 6}" height="${CH - 4}" viewBox="0 0 100 140">`);
+  return `<svg class="ndArt" viewBox="-8 -8 ${W + 16} ${H + 16}" role="img" aria-label="${esc(t('newDeck.alt'))}">` +
+    `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#5A2E1A"/><rect x="-4" y="-4" width="${W + 8}" height="${H + 8}" rx="11" fill="none" stroke="#C9962E" stroke-width="2"/>` +
+    `<rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#145C3E"/>` + cells + dice + coinG + wheel + '</svg>';
+}
+const ART = { train: trainArt, seasons: seasonsArt, multiverse: multiverseArt, gambling: gamblingArt };
 
 // al llegar al menú principal (una vez): true si se ha enseñado
 export function maybeAnnounceDeck() {

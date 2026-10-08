@@ -86,6 +86,19 @@ export function sfx(name) {
     case 'gravity': tone(160, 420, .5, 'sine', .35); tone(80, 210, .5, 'triangle', .15, .04); break;     // la gravedad atrae
     case 'gstuck': tone(120, 90, .14, 'sine', .5); noiseHit(.08, 700, .2, 'lowpass', .02, 1); break;      // tira y no puede
     case 'meteor': noiseHit(.22, 380, .5, 'lowpass', 0, .8); tone(140, 50, .18, 'sine', .45); break;      // impacto de meteorito
+    // (baraja del Gambling)
+    case 'coin': tone(1568, 1568, .06, 'square', .12); tone(2093, 2093, .16, 'triangle', .18, .05); break;       // se lleva una moneda
+    case 'coinFlip': [0, .08, .16, .24, .32, .4, .48].forEach((d, i) => tone(2400 - i * 90, 2300 - i * 90, .03, 'triangle', .07, d)); break; // la moneda gira en el aire
+    case 'coinHeads': [784, 988, 1319].forEach((f, i) => tone(f, f, .14, 'triangle', .22, i * .06)); break;        // cara
+    case 'coinTails': tone(330, 196, .32, 'triangle', .26); noiseHit(.08, 2400, .1, 'bandpass', 0, 3); break;      // cruz
+    case 'chips': for (let i = 0; i < 5; i++) noiseHit(.04, 3200 + i * 300, .16, 'bandpass', i * .035, 6); break; // fichas
+    case 'diceDrop': noiseHit(.05, 1800, .3, 'bandpass', 0, 4); noiseHit(.05, 2200, .2, 'bandpass', .07, 4); tone(260, 200, .06, 'triangle', .3); break; // poner un dado
+    case 'diceHit': tone(420, 300, .06, 'triangle', .5); noiseHit(.05, 2600, .26, 'bandpass', 0, 5); break;        // choca con el dado
+    case 'diceRoll': [0, .07, .13].forEach((d, i) => noiseHit(.04, 2000 + i * 400, .22 - i * .05, 'bandpass', d, 5)); break; // el dado rueda
+    case 'rouletteStart': noiseHit(.5, 900, .14, 'bandpass', 0, 1.5); tone(220, 440, .3, 'sine', .12); break;     // gira la ruleta
+    case 'rouletteTick': noiseHit(.025, 3800, .14, 'highpass'); break;                                               // la bolita salta
+    case 'rouletteStop': tone(660, 660, .1, 'triangle', .3); tone(880, 880, .18, 'triangle', .26, .08); break;     // se para
+    case 'jackpot': [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, f * 1.01, .2, 'triangle', .3, i * .07)); for (let i = 0; i < 8; i++) tone(2093 + (i % 3) * 200, 2093, .05, 'square', .08, .45 + i * .06); break; // ¡bote!
     case 'portalOpen': [392, 587, 784, 1175].forEach((f, i) => tone(f, f * 1.5, .22, 'sine', .22, i * .045)); noiseHit(.25, 2200, .12, 'bandpass', 0, 2); break;
     case 'chainBreak': tone(1320, 440, .18, 'triangle', .35); tone(990, 330, .22, 'sine', .25, .06); break; // cadena cortada
     case 'wood':   tone(210, 150, .09, 'triangle', .7); noiseHit(.06, 1800, .25, 'bandpass', 0, 3); break; // golpe en madera

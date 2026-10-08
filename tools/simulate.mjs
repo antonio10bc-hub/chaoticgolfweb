@@ -22,8 +22,8 @@ const SIZES = { s: { cols: 5, rows: 5, par: 2 }, m: { cols: 7, rows: 9, par: 3 }
 const dk = args.deck ? deckById(args.deck) : null;
 const size = dk ? deckSize(dk, SIZES[args.size || 'm']) : SIZES[args.size || 'm'];
 const deckCfg = dk ? { ...(dk.counts ? { counts: dk.counts(defaultCounts()) } : {}), ...(dk.newCards ? { startWith: dk.newCards } : {}),
-  ...(deckHasTrain(dk) ? { train: true } : {}), ...(dk.trainLayout ? { trainLayout: true } : {}), ...(dk.seasons ? { seasons: true } : {}) } : {};
-const EV = ['season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'train', 'absorb', 'clone', 'vanish', 'gravity', 'clash', 'meteor', 'gstuck', 'meteorRock'];
+  ...(deckHasTrain(dk) ? { train: true } : {}), ...(dk.trainLayout ? { trainLayout: true } : {}), ...(dk.seasons ? { seasons: true } : {}), ...(dk.gambling ? { gambling: true } : {}) } : {};
+const EV = ['season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'train', 'absorb', 'clone', 'vanish', 'gravity', 'clash', 'meteor', 'gstuck', 'meteorRock', 'coinFlip', 'goHome', 'diceRoll', 'roulette', 'goldWin'];
 const randomSeat = args.random !== undefined ? +args.random : null;
 const rand = mulberry32(+(args.seed || Date.now() % 1e9));
 

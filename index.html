@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="styles/train.css">
 <link rel="stylesheet" href="styles/seasons.css">
 <link rel="stylesheet" href="styles/multiverse.css">
+<link rel="stylesheet" href="styles/gambling.css">
 <link rel="stylesheet" href="styles/ultimate.css">
 <link rel="stylesheet" href="styles/skins.css">
 <link rel="stylesheet" href="styles/phone.css">
@@ -77,7 +78,9 @@
 <link rel="modulepreload" href="src/content/levels/generate.js">
 <link rel="modulepreload" href="src/content/levels/share.js">
 <link rel="modulepreload" href="src/content/tiles/blackhole.js">
+<link rel="modulepreload" href="src/content/tiles/dice.js">
 <link rel="modulepreload" href="src/content/tiles/index.js">
+<link rel="modulepreload" href="src/engine/gambling.js">
 <link rel="modulepreload" href="src/engine/game.js">
 <link rel="modulepreload" href="src/engine/rng.js">
 <link rel="modulepreload" href="src/engine/seasons.js">
@@ -96,6 +99,7 @@
 <link rel="modulepreload" href="src/ui/deck-intro.js">
 <link rel="modulepreload" href="src/ui/device.js">
 <link rel="modulepreload" href="src/ui/dialog.js">
+<link rel="modulepreload" href="src/ui/gambling-view.js">
 <link rel="modulepreload" href="src/ui/geometry.js">
 <link rel="modulepreload" href="src/ui/menu-ball.js">
 <link rel="modulepreload" href="src/ui/mode-art.js">
@@ -118,6 +122,7 @@
 <link rel="modulepreload" href="src/ai/autoplay.js">
 <link rel="modulepreload" href="src/content/cards/dedo.js">
 <link rel="modulepreload" href="src/content/cards/estaciones.js">
+<link rel="modulepreload" href="src/content/cards/gambling.js">
 <link rel="modulepreload" href="src/content/cards/hoyo.js">
 <link rel="modulepreload" href="src/content/cards/multiverso.js">
 <link rel="modulepreload" href="src/content/cards/no.js">
@@ -312,6 +317,9 @@
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
   <symbol id="i-blackhole" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate(-14 12 12)"/><circle cx="12" cy="12" r="4.6" fill="currentColor"/></symbol>
   <symbol id="i-meteor" viewBox="0 0 24 24"><path d="M3.5 3.5l8 8M7 3l6.5 6.5M3 7l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="15.5" r="5" fill="currentColor"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M12 9.2v5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="i-roulette" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/><path d="M12 3v5.6M12 15.4V21M3 12h5.6M15.4 12H21M5.6 5.6l3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
   <symbol id="i-stats" viewBox="0 0 24 24"><rect x="3" y="11" width="5" height="10" rx="1.2" fill="currentColor"/><rect x="9.5" y="3" width="5" height="18" rx="1.2" fill="currentColor"/><rect x="16" y="14" width="5" height="7" rx="1.2" fill="currentColor"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16.5v-5M12 16.5V7M17 16.5v-8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 5.6a3.2 3.2 0 0 1 0 6M17.5 14a5.5 5.5 0 0 1 3 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
@@ -432,6 +440,12 @@
     <svg class="dSpace spark a" viewBox="0 0 20 20"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="#FFE1A8"/></svg><svg class="dSpace spark b" viewBox="0 0 20 20"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="#C9B8FF"/></svg><svg class="dSpace spark c" viewBox="0 0 20 20"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="#FFFFFF"/></svg><svg class="dSpace spark d" viewBox="0 0 20 20"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="#A9E4F5"/></svg>
     <svg class="dSpace planet2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#E2794A"/><path d="M50 10a40 40 0 0 1 0 80a30 40 0 0 0 0-80z" fill="#B85A36"/><path d="M16 38q34-10 68 0" fill="none" stroke="#F09B66" stroke-width="7" stroke-linecap="round"/><path d="M14 60q36 8 72 0" fill="none" stroke="#C9663D" stroke-width="5" stroke-linecap="round"/><circle cx="62" cy="48" r="5" fill="#B85A36"/><circle cx="36" cy="70" r="3.5" fill="#C9663D"/></svg>
     <svg class="dSpace planet" viewBox="0 0 140 120"><circle cx="60" cy="60" r="34" fill="#6B4FC4"/><path d="M60 26a34 34 0 0 1 0 68a26 34 0 0 0 0-68z" fill="#3E2C86" opacity=".55"/><path d="M38 40a34 34 0 0 1 50 2" fill="none" stroke="#8C72DD" stroke-width="6" stroke-linecap="round"/><path d="M30 62q30-8 60 0" fill="none" stroke="#7E62D2" stroke-width="4" opacity=".7" stroke-linecap="round"/><circle cx="74" cy="72" r="5" fill="#5A40AA"/><circle cx="48" cy="66" r="3.4" fill="#5A40AA"/><ellipse cx="60" cy="62" rx="56" ry="13" fill="none" stroke="#F2B05E" stroke-width="3" transform="rotate(-18 60 60)" opacity=".85"/><ellipse cx="60" cy="62" rx="48" ry="10" fill="none" stroke="#FFE1A8" stroke-width="1.2" transform="rotate(-18 60 60)" opacity=".5"/><g class="moon"><circle cx="124" cy="22" r="7" fill="#CFC6E8"/><circle cx="121" cy="20" r="1.6" fill="#AFA4CE"/><circle cx="126" cy="25" r="1.1" fill="#AFA4CE"/></g></svg>
+    <!-- escena del casino (baraja del Gambling): la luz de la lámpara, montones de fichas, una mano de cartas y un par de dados -->
+    <div class="dCasino lamp"></div>
+    <svg class="dCasino chips" viewBox="0 0 120 100"><g><ellipse cx="38" cy="86" rx="30" ry="9" fill="#0E4630"/><ellipse cx="38" cy="80" rx="28" ry="8" fill="#6E1622"/><ellipse cx="38" cy="76" rx="28" ry="8" fill="#A3283A"/><path d="M14 76a24 6 0 0 0 48 0" fill="none" stroke="#F6F0E2" stroke-width="2.4" stroke-dasharray="6 6"/><ellipse cx="38" cy="71" rx="28" ry="8" fill="#6E1622"/><ellipse cx="38" cy="67" rx="28" ry="8" fill="#A3283A"/><path d="M14 67a24 6 0 0 0 48 0" fill="none" stroke="#F6F0E2" stroke-width="2.4" stroke-dasharray="6 6"/><ellipse cx="38" cy="62" rx="28" ry="8" fill="#1A1A20"/><ellipse cx="38" cy="58" rx="28" ry="8" fill="#2E2E36"/><path d="M14 58a24 6 0 0 0 48 0" fill="none" stroke="#F6F0E2" stroke-width="2.4" stroke-dasharray="6 6"/><ellipse cx="38" cy="53" rx="28" ry="8" fill="#1A1A20"/><ellipse cx="38" cy="49" rx="28" ry="8" fill="#2E2E36"/><path d="M14 49a24 6 0 0 0 48 0" fill="none" stroke="#F6F0E2" stroke-width="2.4" stroke-dasharray="6 6"/><ellipse cx="38" cy="44" rx="28" ry="8" fill="#8A6418"/><ellipse cx="38" cy="40" rx="28" ry="8" fill="#D9A441"/><path d="M14 40a24 6 0 0 0 48 0" fill="none" stroke="#F6F0E2" stroke-width="2.4" stroke-dasharray="6 6"/></g><g><ellipse cx="88" cy="88" rx="26" ry="8" fill="#0E4630"/><ellipse cx="88" cy="83" rx="24" ry="7" fill="#1A1A20"/><ellipse cx="88" cy="79" rx="24" ry="7" fill="#2E2E36"/><path d="M68 79a20 5 0 0 0 40 0" fill="none" stroke="#F6F0E2" stroke-width="2.2" stroke-dasharray="5 5"/><ellipse cx="88" cy="75" rx="24" ry="7" fill="#6E1622"/><ellipse cx="88" cy="71" rx="24" ry="7" fill="#A3283A"/><path d="M68 71a20 5 0 0 0 40 0" fill="none" stroke="#F6F0E2" stroke-width="2.2" stroke-dasharray="5 5"/><ellipse cx="88" cy="67" rx="24" ry="7" fill="#8A6418"/><ellipse cx="88" cy="63" rx="24" ry="7" fill="#D9A441"/><path d="M68 63a20 5 0 0 0 40 0" fill="none" stroke="#F6F0E2" stroke-width="2.2" stroke-dasharray="5 5"/></g></svg>
+    <svg class="dCasino chips2" viewBox="0 0 60 60"><ellipse cx="30" cy="34" rx="24" ry="22" fill="#0E4630"/><circle cx="30" cy="30" r="22" fill="#A3283A"/><circle cx="30" cy="30" r="22" fill="none" stroke="#F6F0E2" stroke-width="5" stroke-dasharray="7 7"/><circle cx="30" cy="30" r="13" fill="#8E1F2E" stroke="#F6F0E2" stroke-width="1.6"/><path d="M30 22l2.4 5 5.4.7-4 3.7 1 5.3-4.8-2.6-4.8 2.6 1-5.3-4-3.7 5.4-.7z" fill="#F2C14E"/></svg>
+    <svg class="dCasino cards" viewBox="0 0 140 110"><g transform="rotate(-16 40 90)"><rect x="12" y="14" width="56" height="80" rx="7" fill="#F6F0E2" stroke="#2A2226" stroke-width="2"/><text x="20" y="34" font-size="16" font-weight="700" fill="#A3283A" font-family="Georgia, serif">A</text><path d="M40 46c-8 9-14 13-14 19a7 7 0 0 0 14 2 7 7 0 0 0 14-2c0-6-6-10-14-19z" fill="#A3283A"/></g><g transform="rotate(4 70 90)"><rect x="44" y="10" width="56" height="80" rx="7" fill="#F6F0E2" stroke="#2A2226" stroke-width="2"/><text x="52" y="30" font-size="16" font-weight="700" fill="#2A2226" font-family="Georgia, serif">K</text><path d="M72 42c-9 10-15 14-15 20a7 7 0 0 0 12 4l-3 8h12l-3-8a7 7 0 0 0 12-4c0-6-6-10-15-20z" fill="#2A2226"/></g><g transform="rotate(20 100 95)"><rect x="76" y="16" width="56" height="80" rx="7" fill="#1F6B48" stroke="#F6F0E2" stroke-width="2"/><rect x="82" y="22" width="44" height="68" rx="4" fill="none" stroke="#F2C14E" stroke-width="1.6"/><path d="M104 36l10 20-10 20-10-20z" fill="#F2C14E"/></g></svg>
+    <svg class="dCasino dice2" viewBox="0 0 100 80"><g class="d1"><rect x="8" y="22" width="44" height="44" rx="9" fill="#CFC3AE"/><rect x="8" y="16" width="44" height="42" rx="9" fill="#F6F0E2" stroke="#4A3F3A" stroke-width="2"/><circle cx="19" cy="27" r="4" fill="#2A2226"/><circle cx="30" cy="37" r="4" fill="#2A2226"/><circle cx="41" cy="47" r="4" fill="#2A2226"/></g><g transform="rotate(14 74 44)"><rect x="54" y="28" width="38" height="38" rx="8" fill="#CFC3AE"/><rect x="54" y="22" width="38" height="36" rx="8" fill="#F6F0E2" stroke="#4A3F3A" stroke-width="2"/><circle cx="73" cy="40" r="6" fill="#C8243A"/></g></svg>
     <!-- escena Ultimate: manchas de color iridiscente que flotan y un destello que cruza -->
     <div class="dIri a"></div><div class="dIri b"></div><div class="dIri c"></div><div class="dIri d"></div><div class="dIriSweep"></div>
     <!-- escena de lago (baraja de agua): nenúfares, juncos, piedras y ondas -->

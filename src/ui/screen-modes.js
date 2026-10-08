@@ -36,6 +36,7 @@ import { DECKS, ULT_DECKS, deckById as deckOfId } from '../content/decks.js';
 import { currentCombo, setCombo, toggleDeck, comboLabel, comboHistory, openComboHistory } from './ultimate.js';
 import { SEASON_ICON } from './season-art.js';
 import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
+import { WHEEL } from '../engine/gambling.js';
 import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
@@ -416,6 +417,17 @@ const DECK_ART = {
   blackhole: () => cardBase('blackhole', '#2A1F55', '#07040F') +
     `<g clip-path="url(#dk-blackhole-c)"><g fill="#fff">${[[16, 12, .8], [44, 10, .6], [40, 50, .7], [17, 47, .5], [47, 18, .5], [13, 29, .45]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` +
     BH_GARGANTUA(30, 30, .38) + `</g>` + frame,
+  // el Gambling: la ruleta sobre el tapete verde, con un dado delante (al pasar por la tarjeta, la ruleta gira)
+  roulette: () => cardBase('roulette', '#2C8A5C', '#0F4A30') +
+    `<g clip-path="url(#dk-roulette-c)"><g stroke="rgba(255,255,255,.05)" stroke-width="1.4">${[0, 12, 24, 36, 48, 60].map(i => `<path d="M${i - 14} 60 L${i + 14} 0M${i - 14} 0 L${i + 14} 60"/>`).join('')}</g></g>` +
+    `<circle cx="30" cy="25" r="15.5" fill="#5A2E1A"/><circle cx="30" cy="25" r="14.5" fill="none" stroke="#E2B23C" stroke-width="1.2"/>` +
+    `<g class="dkWheel">${WHEEL.map((c, i) => { const a = k => (k / WHEEL.length) * Math.PI * 2 - Math.PI / 2, p = (k, r) => `${(30 + Math.cos(a(k)) * r).toFixed(2)} ${(25 + Math.sin(a(k)) * r).toFixed(2)}`;
+      return `<path d="M30 25L${p(i, 13)}A13 13 0 0 1 ${p(i + 1, 13)}Z" fill="${{ red: '#C8243A', black: '#24242A', gold: '#E2B23C' }[c]}" stroke="#E9D9A8" stroke-width=".5"/>`; }).join('')}` +
+    `<circle cx="30" cy="25" r="5.4" fill="#1F6B48" stroke="#E2B23C" stroke-width=".9"/><circle cx="30" cy="25" r="1.6" fill="#E2B23C"/></g>` +
+    `<path d="M30 9.5l-2.2-3.6h4.4z" fill="#F6F0E2"/>` +
+    `<g transform="rotate(-12 38 44)"><rect x="31" y="38" width="14" height="13" rx="3" fill="#CFC3AE"/><rect x="31" y="35" width="14" height="13" rx="3" fill="#F6F0E2" stroke="#4A3F3A" stroke-width=".8"/>` +
+    `<circle cx="34.6" cy="38.6" r="1.3" fill="#2A2226"/><circle cx="38" cy="41.5" r="1.3" fill="#2A2226"/><circle cx="41.4" cy="44.4" r="1.3" fill="#2A2226"/></g>` +
+    `<g transform="translate(19 45)"><ellipse rx="5.6" ry="2" cy="2" fill="#0F4A30"/><ellipse rx="5.6" ry="2" fill="#E2B23C"/><ellipse rx="3.6" ry="1.2" fill="none" stroke="#9C6A1E" stroke-width=".7"/></g>` + frame,
   prism: () => cardBase('prism', '#E8F7F8', '#BFE3EC') + // (nácar iridiscente: Ultimate, el combinador)
     `<defs><linearGradient id="dk-prism-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FC4"/><stop offset=".35" stop-color="#8FB6FF"/><stop offset=".65" stop-color="#7EE8C8"/><stop offset="1" stop-color="#FFE38A"/></linearGradient></defs>` +
     `<g clip-path="url(#dk-prism-c)"><circle cx="30" cy="30" r="20" fill="url(#dk-prism-r)" opacity=".16"/>` +

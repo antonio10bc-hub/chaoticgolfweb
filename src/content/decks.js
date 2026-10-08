@@ -35,6 +35,13 @@ export const DECKS = [
   { id: 'multiverse', color: '#5B3FB8', emblem: 'blackhole', scene: 'space', grow: { cols: 2, rows: 0 },
     newCards: ['agujeroNegro', 'gravedad', 'oGravedad', 'meteoritos'],
     counts: base => ({ ...base, bunker: 0, portal: 0, agujeroNegro: 1, gravedad: 2, oGravedad: 1, meteoritos: 3 }) },
+  // el Gambling: el casino. El suelo es ajedrezado (rojo y negro) con una casilla dorada; al empezar hay 3 monedas por
+  // jugador (cara: repites el movimiento; cruz: a tu salida), dados que te hacen rebotar lo que marcan y la ruleta, que
+  // devuelve a su salida a las pelotas del color que salga (con el dorado, la de la casilla dorada gana). Sin búnkeres ni
+  // portales. Fuera de Ultimate de momento (noUltimate)
+  { id: 'gambling', color: '#B8892B', emblem: 'roulette', scene: 'casino', grow: { cols: 2, rows: 0 }, gambling: true, noUltimate: true,
+    newCards: ['dado', 'ruleta'], introLead: 'deckIntro.leads.gambling', // (la presentación cuenta lo de las monedas y la casilla dorada)
+    counts: base => ({ ...base, bunker: 0, portal: 0, dado: 2, ruleta: 2 }) },
   // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
   // Ultimate: el combinador. En su tarjeta se activan las barajas que se quieran (las 6, o las que sea) y la partida
   // junta sus cartas y lo suyo (tren, estaciones…) en un campo que crece con la combinación (comboCfg). Siempre trae el

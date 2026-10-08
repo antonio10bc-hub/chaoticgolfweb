@@ -40,6 +40,7 @@ import { paintLab, labGodClick } from './lab.js';
 import { previewCard, cardTargets } from './preview.js';
 import { autoZoom } from './board-zoom.js';
 import { seasonBefore, seasonPrep } from './seasons-view.js';
+import { gambleBefore, gamblePrep } from './gambling-view.js';
 import { ownerOf } from '../engine/game.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
@@ -70,7 +71,8 @@ const meSeat = g => app.mode === 'story' || app.mode === 'test' ? 0 : app.mode =
 export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon',
   'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack',
-  'absorb', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteor', 'meteorRock']); // (las últimas: baraja de las estaciones)
+  'absorb', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteor', 'meteorRock', // (multiverso)
+  'coinPick', 'coinFlip', 'goHome', 'diceRoll', 'roulette', 'goldWin']); // (las últimas: baraja del Gambling)
 
 /* ---------- arranque de partidas ---------- */
 export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {
@@ -126,9 +128,11 @@ function dispatch(fn) {
   const before = app.mode === 'pve' ? g.clone({ lite: true }) : null; // para explicar la jugada y el momento clave
   const pre = piecesBefore(g); // (para compartir la jugada final)
   const seasonWas = seasonBefore(g); // (estaciones: lo que se ve ahora, para enseñar los cambios a su tiempo)
+  const gambleWas = gambleBefore(g); // (casino: las monedas y los dados de antes, igual)
   const ok = fn(g);
   const events = g.takeEvents();
   seasonPrep(g, events, seasonWas);
+  gamblePrep(g, events, gambleWas);
   let resolved = false, turnEnded = false, won = false, onlyFeedback = ok === false;
   let actor = null, moves = 0, cardKey = null;
   const me = meSeat(g);
@@ -207,6 +211,9 @@ function dispatch(fn) {
   // el tren ha metido una pelota él solo: primero se ve cómo lo hace (silbato) y luego el final
   if (won && g.S.trainWin) {
     const fin = () => { sfx('whistle'); setTimeout(() => { if (app.game === g) { botsGameOver([]); showWin(); } }, 700); };
+    if (app.animating || app.animQueue.length) app.afterAnim = fin; else fin();
+  } else if (won && g.S.goldWin) { // (casino) ¡bote! primero se ve la ruleta y la casilla dorada, y luego el final
+    const fin = () => setTimeout(() => { if (app.game === g) { botsGameOver(g.S.winners); showWin(); } }, 300);
     if (app.animating || app.animQueue.length) app.afterAnim = fin; else fin();
   } else if (won) { botsGameOver(g.S.winners); showWin(); }
   // puzle: el turno ha terminado sin embocar
@@ -317,6 +324,7 @@ export const undoMove = () => dispatch(g => g.undo());
 function noteWinStyle(g, events, actor, cardKey, jaqueBefore) {
   const S = g.S;
   for (const ev of events) {
+    if (ev.t === 'goldWin') { app.winStyle[S.winners[0]] = 'gold'; continue; } // (casino: ¡bote! en la casilla dorada)
     if (ev.t !== 'sink' || ev.p === 'hole') continue;
     const p = +ev.p.slice(1), ball = S.balls.find(b => b.player === p);
     if (!ball || ball.decoy) continue;

@@ -19,6 +19,7 @@
 //            soft — la bola de nieve atrapa como un búnker, pero salir de ella no cuesta nada.
 //   blackhole — (baraja del multiverso) se traga la pelota que pasa o se para a su lado y la parte en 4 (tiles/blackhole.js).
 //   meteorite — (baraja del multiverso) la roca que deja una lluvia de meteoritos: un muro, como el bloque (tiles/meteorite.js).
+//   dice  — (baraja del Gambling) el dado: se rebota tantas casillas como marca y rueda al otro lado (tiles/dice.js).
 // Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
 import portal from './portal.js';
@@ -32,8 +33,9 @@ import { loco, wagon } from './train.js';
 import { leaf, puddle, ice, plant, fire, snowball } from './seasons.js';
 import blackhole from './blackhole.js';
 import meteorite from './meteorite.js';
+import dice from './dice.js';
 
-export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon, leaf, puddle, ice, plant, fire, snowball, blackhole, meteorite };
+export const TILES = { bunker, portal, river, lake, block, corner, tunnel, launcher, loco, wagon, leaf, puddle, ice, plant, fire, snowball, blackhole, meteorite, dice };
 
 export const tileDef = type => TILES[type];
 export const isTrap = tile => !!(tile && TILES[tile.type]?.trap);
@@ -49,6 +51,7 @@ export const isCorner = tile => !!(tile && TILES[tile.type]?.corner);
 export const isTunnel = tile => !!(tile && TILES[tile.type]?.tunnel);
 export const isLauncher = tile => !!(tile && TILES[tile.type]?.launcher);
 export const isDevice = tile => !!(tile && TILES[tile.type]?.device);
+export const isDice = tile => !!(tile && TILES[tile.type]?.dice);
 export const isVirtual = tile => !!(tile && TILES[tile.type]?.virtual);
 // dibujo de una loseta concreta (las que giran dependen de su orientación)
 export const tilePic = tile => { const d = TILES[tile?.type]; return d?.picFor ? d.picFor(tile) : d?.pic || ''; };

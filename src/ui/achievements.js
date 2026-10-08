@@ -17,6 +17,7 @@ export const ACHIEVEMENTS = [
   { id: 'streak3', icon: 'i-flag' },        // 3 victorias seguidas en partida rápida
   { id: 'localGame', icon: 'i-users' },     // termina una partida de multijugador local
   { id: 'loop', icon: 'i-chain-break' },    // provoca un bucle entre portales
+  { id: 'goldWin', icon: 'i-roulette' },    // gana en la casilla dorada con la ruleta (baraja del Gambling)
 ];
 
 export const loadAchievements = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };

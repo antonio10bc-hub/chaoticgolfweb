@@ -26,7 +26,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'multiverse', chaoticgolf_gift: 'open', ...seed });
+      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
@@ -554,24 +554,24 @@ it('baraja nueva: se anuncia una vez a quien ya jugaba ("Jugar ahora" lleva a su
   await sleep(900);
   assert.ok(await app(() => !!document.querySelector('#dialog[open] .newDeck .ndArt')), 'el anuncio, con su ilustración');
   await click('#dialog[open] button[value="play"]'); await sleep(500);
-  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.pveCfg.deck]), ['pve', 'multiverse']);
+  assert.deepEqual(await app(() => [window.chaoticGolf.app.screen, window.chaoticGolf.app.pveCfg.deck]), ['pve', 'gambling']);
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')), 'solo una vez');
   // primera visita: nada (todo es nuevo), y queda apuntada
   await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')));
-  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'multiverse');
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'gambling');
 });
 
-it('modos de juego: dos pestañas (una a la vez) y 7 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
+it('modos de juego: dos pestañas (una a la vez) y 8 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
   assert.equal(await vis(), 'quick');
-  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 7); // (el contrarreloj usa el mismo estilo de tarjeta)
+  assert.equal(await app(() => document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard').length), 8); // (el contrarreloj usa el mismo estilo de tarjeta)
   // las barajas nuevas van detrás de la última y Ultimate siempre al final, con las barajas que reúne
   assert.deepEqual(await app(() => [...document.querySelectorAll('.mdPanel[data-panel="quick"] .deckCard [data-mode^="quick:"]')].map(b => b.dataset.mode.slice(6))),
-    ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse', 'ultimate']);
+    ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse', 'gambling', 'ultimate']);
   // (Ultimate, aparte y más grande: la lista se desplaza hasta ella y se ve entera)
   await app(() => document.querySelector('.deckCard.ultimate').scrollIntoView({ block: 'end', behavior: 'instant' })); await sleep(400);
   assert.ok(await app(() => { const r = document.querySelector('.deckCard.ultimate').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; }), 'Ultimate se ve entera');
@@ -835,7 +835,7 @@ async function phonePage(vp = PHONE) {
   await p.evaluate(() => { localStorage.clear();
     localStorage.setItem('chaoticgolf_tutorial', JSON.stringify({ intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) }));
     localStorage.setItem('chaoticgolf_deckIntro', JSON.stringify({ classic: 1, water: 1, mini: 1, ultimate: 1 }));
-    localStorage.setItem('chaoticgolf_newDeckSeen', '"multiverse"');
+    localStorage.setItem('chaoticgolf_newDeckSeen', '"gambling"');
     localStorage.setItem('chaoticgolf_prefs', JSON.stringify({ speed: 'fast', botFast: true })); }); // (los bots, rápidos: en Ultimate las jugadas son largas)
   await p.reload({ waitUntil: 'networkidle0' });
   await p.waitForFunction(() => window.chaoticGolf?.app.game); await sleep(500);

@@ -21,7 +21,7 @@ export const TOTALS = [
   { k: 'hundidas', icon: 'i-hole', on: ['sink'] },
   { k: 'colisiones', icon: 'i-burst', on: ['impact'] },
   { k: 'portales', icon: 'i-spiral', on: ['teleport'] },
-  { k: 'caidas', icon: 'i-out', on: ['fall', 'splash', 'burn', 'eaten'] },
+  { k: 'caidas', icon: 'i-out', on: ['fall', 'splash', 'burn', 'eaten', 'goHome'] }, // (goHome: cruz o la ruleta, en el casino)
   { k: 'rio', icon: 'i-wave', on: ['drift'], ball: true },      // casillas que el río arrastra pelotas
   { k: 'lanzadas', icon: 'i-launch', on: ['launch'], ball: true },
   { k: 'tuneles', icon: 'i-tunnel', on: ['tunnel'] },
@@ -29,11 +29,15 @@ export const TOTALS = [
   { k: 'nieve', icon: 'i-snow', on: ['snow'] },                 // casillas que rueda la bola de nieve
   { k: 'tragadas', icon: 'i-blackhole', on: ['absorb'] },       // pelotas y hoyos que se traga un agujero negro
   { k: 'meteoritos', icon: 'i-meteor', on: ['meteor'] },
+  { k: 'monedas', icon: 'i-coin', on: ['coinFlip'] },           // monedas lanzadas (casino)
+  { k: 'dados', icon: 'i-dice', on: ['diceRoll'] },             // veces que rueda un dado
+  { k: 'ruletas', icon: 'i-roulette', on: ['roulette'] },       // vueltas de la ruleta
   { k: 'turnos', hidden: true },
 ];
 // los eventos animados que no son un total (pasos, apariciones, efectos de otro evento ya contado…)
 export const NOT_COUNTED = ['move', 'appear', 'settle', 'chainStop', 'bump', 'deflect', 'wagon', 'season', 'wind', 'gust', 'crunch',
-  'puddle', 'slide', 'flare', 'grow', 'snowIn', 'snowOut', 'snowPack', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteorRock'];
+  'puddle', 'slide', 'flare', 'grow', 'snowIn', 'snowOut', 'snowPack', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteorRock',
+  'coinPick', 'goldWin'];
 const isBall = e => typeof e.p === 'string' && /^b\d/.test(e.p);
 const COUNTED = TOTALS.filter(x => x.on);
 // suma un evento del motor a los totales de la partida (stats del controlador)

@@ -28,7 +28,7 @@ test('la baraja: sin búnkeres ni portales, con sus cartas (fuera del Ultimate f
   for (const k of dk.newCards) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
   const ult = deckById('ultimate').counts(defaultCounts());
   for (const k of dk.newCards) assert.ok(!ult[k], 'Ultimate no lleva ' + k);
-  assert.equal(DECKS[DECKS.length - 2].id, 'multiverse', 'la baraja nueva, detrás de la anterior');
+  assert.equal(DECKS[DECKS.findIndex(d => d.id === 'multiverse') + 1].id, 'gambling', 'la siguiente baraja, detrás');
 });
 
 test('agujero negro: se pone en una casilla vacía y se queda en el tablero', () => {

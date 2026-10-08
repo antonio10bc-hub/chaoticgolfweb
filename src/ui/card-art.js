@@ -5,6 +5,8 @@
 import { ART } from '../art.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
 import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
+import { pips } from '../content/tiles/dice.js';
+import { WHEEL } from '../engine/gambling.js';
 
 const INK = '#242424', CREAM = '#F1F1DC', ACC = '#E8873A', NAVY = '#2D4F7C', SAND = '#ECE6CC';
 const G_MID = '#5C9854', G_PUTT = '#8DB05F', G_LIGHT = '#A3C173', SH = 'rgba(20,40,20,.22)';
@@ -45,8 +47,24 @@ const locoFront = () =>
   `<path d="M35 72 L50.5 82 L66 72 Z" fill="${GOLD}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
 // estaciones: la rueda de las cuatro (flor, sol, hoja, copo)
 const seIcon = (s, x, y, k = 1.25) => `<g transform="translate(${x - 12 * k} ${y - 12 * k}) scale(${k})">${SEASON_ICON[s]}</g>`;
+// casino: la ruleta (sus franjas roja, negra y la dorada) y el dado de marfil con la pelota que rebota
+const RL = { red: '#C8243A', black: '#2A2A30', gold: '#E2B23C' };
+const wheelArt = (cx, cy, R) => { const n = WHEEL.length, pt = (i, r) => `${(cx + Math.cos(i / n * 2 * Math.PI - Math.PI / 2) * r).toFixed(2)} ${(cy + Math.sin(i / n * 2 * Math.PI - Math.PI / 2) * r).toFixed(2)}`;
+  return `<circle cx="${cx + 3}" cy="${cy + 3}" r="${R + 3}" fill="${SH}"/><circle cx="${cx}" cy="${cy}" r="${R + 3}" fill="#5A2E1A" stroke="${INK}" stroke-width="1.6"/>` +
+    `<g class="cardWheel">${WHEEL.map((c, i) => `<path d="M${cx} ${cy}L${pt(i, R)}A${R} ${R} 0 0 1 ${pt(i + 1, R)}Z" fill="${RL[c]}" stroke="#E9D9A8" stroke-width="1"/>`).join('')}` +
+    `<circle cx="${cx}" cy="${cy}" r="${R * .42}" fill="#1F6B48" stroke="#E2B23C" stroke-width="1.6"/><path d="M${cx - R * .3} ${cy}H${cx + R * .3}M${cx} ${cy - R * .3}V${cy + R * .3}" stroke="#E2B23C" stroke-width="2.4" stroke-linecap="round"/></g>` +
+    `<circle cx="${cx + R * .62}" cy="${cy - R * .52}" r="3.6" fill="#fff" stroke="${INK}" stroke-width="1.2"/>` +
+    `<path d="M${cx} ${cy - R - 8}l-5 -8h10z" fill="${CREAM}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`; };
 // multiverso: el agujero negro (Gargantua, como en el tablero), gravedad (flechas hacia el centro en cruz) y meteoritos
 const ARTS = {
+  ruleta: () => `<circle cx="50" cy="52" r="42" fill="#1F6B48" opacity=".18"/>` + wheelArt(50, 54, 30),
+  dado: () => `<circle cx="50" cy="52" r="40" fill="#C8243A" opacity=".12"/>` +
+    `<path d="M14 70 Q24 40 36 60" fill="none" stroke="${INK}" stroke-width="1.6" stroke-dasharray="3 4" opacity=".5"/>` + ball(16, 74, 6) +
+    `<g transform="rotate(-10 60 50)"><rect x="40" y="34" width="40" height="40" rx="8" fill="${SH}" transform="translate(4 4)"/>` +
+    `<rect x="40" y="40" width="40" height="38" rx="8" fill="#CFC3AE" stroke="${INK}" stroke-width="1.6"/>` +
+    `<rect x="40" y="30" width="40" height="38" rx="8" fill="#F6F0E2" stroke="${INK}" stroke-width="1.6"/>` + pips(5, 60, 49, 10, 10, 3.6) +
+    pips(3, 60, 73.5, 10, 1.6, 2.2, 1.4, '#4A3F3A') + `</g>` +
+    `<path d="M36 26l-6-6M42 22l-2-8M30 32l-8-3" stroke="${ACC}" stroke-width="2.4" stroke-linecap="round"/>`,
   agujeroNegro: () => `<circle cx="50" cy="52" r="42" fill="#120B24" opacity=".9"/>` + BH_GARGANTUA(50, 52, .86) +
     `<g fill="#fff"><circle cx="20" cy="24" r="1.4"/><circle cx="80" cy="26" r="1.1"/><circle cx="78" cy="80" r="1.3"/><circle cx="24" cy="78" r="1"/></g>`,
   gravedad: () => `<circle cx="50" cy="52" r="40" fill="#5B3FB8" opacity=".14"/>` +

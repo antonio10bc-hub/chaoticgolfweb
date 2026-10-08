@@ -32,14 +32,22 @@
      { t:'grow', x, y, tile }               el fuego crece, cae una hoja o llueve (un charco)
      { t:'snow', x, y, dir } / snowIn / snowOut   la bola de nieve rueda una casilla / aparece / se derrite
      { t:'snowPack', x, y, ids }            lo que lleva dentro la bola de nieve (cambia al atrapar algo)
+     (baraja del Gambling, src/engine/gambling.js)
+     { t:'coinPick', p, x, y }              la pelota se lleva la moneda de esa casilla
+     { t:'coinFlip', p, x, y, side }        la lanza al acabar la jugada: 'heads' (cara, repite) o 'tails' (cruz, a su salida)
+     { t:'goHome', p, x, y, why }           vuelve a su salida por la moneda ('coin') o por la ruleta ('roulette')
+     { t:'diceRoll', id, x0, y0, x, y, dir, face, moved }  el dado golpeado rueda (o da la vuelta en su sitio); face: { t, n, e }
+     { t:'roulette', seg, res }             gira la ruleta: franja `seg` de WHEEL, 'red' | 'black' | 'gold'
+     { t:'goldWin', p, x, y }               dorado con esa pelota en la casilla dorada: gana directamente
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
-import { TILES, isTrap, isHardTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice } from '../content/tiles/index.js';
+import { TILES, isTrap, isHardTrap, isPortal, isRiver, isLake, isWater, isBlock, isCorner, isTunnel, isLauncher, isDevice, isDice } from '../content/tiles/index.js';
 import { mulberry32, randomSeed, shuffle } from './rng.js';
 import { makeCircuit, stepDir, stepsToNext, MAX_CARS } from './train.js';
 import { seasonMethods } from './seasons.js';
 import { multiverseMethods, playerTag, ownerOf } from './multiverse.js';
+import { gamblingMethods } from './gambling.js';
 
 export const DIRS = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } };
 export const PLAYER_COLORS = ['#f26d6d', '#5b8def', '#f2b705', '#9b6dd6', '#2fbfa3', '#f27bb4'];
@@ -181,6 +189,7 @@ export class Game {
     if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
     if (cfg.train) g.setupTrain({ layout: !!cfg.trainLayout });
     if (cfg.seasons) g.setupSeasons(); // (baraja de las estaciones: una al azar, con lo que trae)
+    if (cfg.gambling) g.setupGambling(); // (baraja del Gambling: la casilla dorada y las monedas)
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
   }
@@ -192,13 +201,21 @@ export class Game {
   // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
   // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
   // hueco del mazo: las copias no cambian). Con el RNG de la partida: la misma semilla, el mismo reparto
+  // Si en el mazo ya no quedan (baraja con pocas cartas especiales, como la del Gambling), se cambia por una de las que
+  // sobran a quien empezó con dos
   dealOneOf(keys) {
     const S = this.S, set = new Set(keys);
     for (let p = 0; p < S.nPlayers; p++) {
       const hand = S.hands[p];
       if (!hand.length || hand.some(k => set.has(k))) continue;
       const pool = S.deck.map((k, j) => set.has(k) ? j : -1).filter(j => j >= 0);
-      if (!pool.length) return;
+      if (!pool.length) {
+        const q = S.hands.findIndex(h => h.filter(k => set.has(k)).length > 1);
+        if (q < 0) return;
+        const j = S.hands[q].findIndex(k => set.has(k)), h = Math.floor(this.rand() * hand.length);
+        [S.hands[q][j], hand[h]] = [hand[h], S.hands[q][j]];
+        continue;
+      }
       const j = pool[Math.floor(this.rand() * pool.length)], h = Math.floor(this.rand() * hand.length);
       [S.deck[j], hand[h]] = [hand[h], S.deck[j]];
     }
@@ -262,6 +279,9 @@ export class Game {
     g.initMarks = g.marksFromBalls();
     if (L.train?.path?.length) S.train = { path: L.train.path, stations: L.train.stations, pos: L.train.pos ?? L.train.stations[0], cars: L.train.cars || 0 };
     if (L.season?.now) g.setupSeasons({ now: L.season.now, snow: L.season.snow, fresh: false }); // (estaciones: la del nivel y su campo)
+    if (L.gamble) S.gamble = { gold: L.gamble.gold ? { ...L.gamble.gold } : null, coins: (L.gamble.coins || []).map(c => ({ x: c.x, y: c.y })) }; // (casino)
+    else if (L.deckCounts?.ruleta > 0) S.gamble = { gold: null, coins: [] }; // (con ruletas en el mazo, el suelo tiene que tener colores)
+    for (const tl of S.tiles) if (tl.type === 'dice' && !tl.t) Object.assign(tl, g.newDice()); // (un dado sin cara: una al azar)
     g.fillDeck(L.deckCounts);
     if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
     else g.drawTo2(0);
@@ -287,6 +307,7 @@ export class Game {
       if (pd.ball) pd.ball = g.S.balls.find(b => b.player === pd.ball.player);
       if (pd.targets) pd.targets = pd.targets.map(x => ({ ...x }));
       if (pd.selected) pd.selected = [...pd.selected];
+      if (pd.path) pd.path = [...pd.path]; // (el camino del dedo: lo que repite si le sale cara a una moneda)
       g.pending = pd;
     }
     return g;
@@ -377,6 +398,7 @@ export class Game {
   // no gasta el máximo de 5 ni obliga a alargarla (Game.designed la marca al montar la partida)
   canPlaceTile(type, x, y) {
     if (!this.cellFree(x, y)) return false;
+    if (this.gambleBlocks(x, y)) return false; // (casino: ni encima de una moneda ni de la casilla dorada)
     if (this.S.train && this.trackIndex(x, y) >= 0) return false; // (nada encima de las vías)
     const def = TILES[type];
     if (def?.seasonal) return this.canPlaceSeasonal(type, x, y); // (estaciones: según la estación, nunca en salidas ni en la casilla del hoyo)
@@ -760,13 +782,24 @@ export class Game {
   // portales (crossPortals), bloques y espaldas de esquina (rebote), caras de esquina (desvío 90°) y
   // túneles (salida al azar). Devuelve { x, y, dir } (dir puede haber cambiado), out: fuera del tablero,
   // stop: no puede avanzar (atascada entre piezas) y via: ha pasado por alguna pieza.
+  // dice: (casino) ha rebotado en un dado que marcaba ese número: quien llama sigue con esas casillas
   nextCell(x, y, dirKey, pid, onPortal, mv = {}) {
-    let dir = dirKey, cx = x, cy = y, via = false;
+    let dir = dirKey, cx = x, cy = y, via = false, dice = 0;
+    const res = o => dice ? { ...o, dice } : o;
     for (let guard = 0; guard < 16; guard++) {
       const { dx, dy } = DIRS[dir];
       const [nx, ny] = this.crossPortals(cx + dx, cy + dy, dx, dy, onPortal);
-      if (!this.inBoard(nx, ny)) return { x: nx, y: ny, dir, out: true, via };
+      if (!this.inBoard(nx, ny)) return res({ x: nx, y: ny, dir, out: true, via });
       const tl = this.tileAt(nx, ny);
+      if (isDice(tl)) { // (casino) el dado: rebota tantas casillas como marca y el dado rueda hacia el otro lado
+        dice = tl.t;
+        this.anim({ t: 'bump', p: pid, x: nx, y: ny, dir, dice });
+        this.log(pid === 'hole' ? 'log.holeDice' : 'log.ballDice', { b: pid === 'hole' ? '' : playerTag(+pid.slice(1)), n: dice });
+        this.tip('dice');
+        this.rollDice(tl, dir);
+        dir = OPP[dir]; cx = nx - dx; cy = ny - dy; via = true;
+        continue;
+      }
       const turn = isCorner(tl) ? CORNER_TURN[(tl.rot || 0) % 4][dir] : null;
       if (isBlock(tl) || (isCorner(tl) && !turn)) {
         const bx = nx - dx, by = ny - dy;
@@ -792,9 +825,9 @@ export class Game {
         dir = out; cx = nx; cy = ny; via = true;
         continue;
       }
-      return { x: nx, y: ny, dir, via };
+      return res({ x: nx, y: ny, dir, via });
     }
-    return { x: cx, y: cy, dir, stop: true, via };
+    return res({ x: cx, y: cy, dir, stop: true, via });
   }
 
   // mueve una pelota en línea recta; aplica portales, trampas, colisiones en cadena, caídas y hoyo
@@ -814,6 +847,7 @@ export class Game {
       this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
     };
     const seen = untilHit ? new Map() : null; // iridiscente: (casilla, dirección) ya recorridas
+    if (this.S.gamble) this.noteMove(ball, { dir: dirKey, steps, iri: untilHit || undefined }); // (casino: lo que repite con cara)
     while (remaining > 0) {
       if (seen) {
         const k = cx + ',' + cy + ',' + dir, n = (seen.get(k) || 0) + 1;
@@ -827,6 +861,7 @@ export class Game {
       const nc = this.nextCell(cx, cy, dir, pid, onPortal, mv);
       if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy, ...mv }); break; } // atascada entre piezas
       dir = nc.dir;
+      if (nc.dice && !untilHit) remaining = nc.dice; // (casino) rebota tantas casillas como marcaba el dado
       const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir });
@@ -852,6 +887,7 @@ export class Game {
       }
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: pid, x: cx, y: cy, ...mv });
+      if (this.S.gamble) this.takeCoin(ball, cx, cy); // (casino) pasa por una moneda: se la lleva
       if (this.S.tiles.length && this.blackHoleNear(cx, cy)) { // (multiverso) pegada a un agujero negro: se la traga
         ball.x = cx; ball.y = cy;
         if (this.bhCheck(ball, cx, cy, dir, remaining)) return;
@@ -1025,6 +1061,7 @@ export class Game {
       });
       if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy }); break; }
       dir = nc.dir;
+      if (nc.dice) remaining = nc.dice; // (casino) el hoyo también rebota lo que marca el dado
       const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny });
@@ -1171,6 +1208,8 @@ export class Game {
 
   afterPlay() {
     const S = this.S;
+    if (S.coinQ) this.resolveCoins(); // (casino) las monedas que se han llevado las pelotas: cara o cruz
+    if (S.goldWin) { this.emit({ t: 'resolved' }); this.emit({ t: 'win' }); return; } // (casino) dorado: gana sin JAQUE
     // regla general: si al resolver una carta una pelota y el hoyo comparten casilla,
     // sea cual sea el motivo, la pelota entra y hace JAQUE
     for (const b of S.balls) {
@@ -1302,7 +1341,8 @@ export class Game {
       const type = pd.tileType;
       this.pending = null;
       this.consumeCard(pd.p, pd.idx);
-      S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : type === 'fire' ? { type, x, y, g: this.newFireId() } : { type, x, y });
+      S.tiles.push(TILES[type]?.rotates ? { type, x, y, rot: (pd.rot || 0) % 4 } : type === 'fire' ? { type, x, y, g: this.newFireId() }
+        : type === 'dice' ? { type, x, y, ...this.newDice() } : { type, x, y }); // (el dado, con una cara al azar arriba)
       this.emit({ t: 'tilePlaced', x, y });
       this.log('log.tilePlaced', { tile: t(`tiles.${type}.name`), x, y });
       this.afterPlay();
@@ -1358,11 +1398,14 @@ export class Game {
     if (pd.stepsLeft <= 0) return this.endSerpent(); // blindaje: jamás contar en negativo
     const ball = pd.ball;
     const pid = 'b' + ball.player, b = playerTag(ball.player);
+    if (this.S.gamble) (pd.path ||= []).push(dirKey); // (casino: el camino que repetirá si le sale cara a una moneda)
     const nc = this.nextCell(ball.x, ball.y, dirKey, pid, (px, py, other) => {
       this.log('log.ballPortal', { b });
       this.anim({ t: 'move', p: pid, x: px, y: py });
       this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
     });
+    // (casino) contra un dado: rebota en línea recta tantas casillas como marcaba y el dedo se acaba
+    if (nc.dice) { pd.stepsLeft = 0; this.moveBallRaw(ball, nc.dir, nc.dice); return this.endSerpent({ checked: true }); }
     if (nc.stop) { // atascada entre piezas: pierde el paso
       if (nc.via) this.anim({ t: 'move', p: pid, x: ball.x, y: ball.y });
       pd.stepsLeft--;
@@ -1400,6 +1443,7 @@ export class Game {
     ball.x = nx; ball.y = ny;
     this.anim({ t: 'move', p: pid, x: nx, y: ny });
     pd.stepsLeft--;
+    if (this.S.gamble) this.takeCoin(ball, nx, ny, { serp: true }); // (casino) la moneda: el camino se apunta al acabar
     // (multiverso) pegada a un agujero negro: se la traga y salen 4 en línea recta con los pasos que le quedaban
     if (this.S.tiles.length && this.bhCheck(ball, nx, ny, dirKey, pd.stepsLeft)) return this.endSerpent({ checked: true });
     if (this.waterAt(nx, ny)) { this.ballInWater(ball); return this.endSerpent(); } // agua: se acaba el dedo
@@ -1438,6 +1482,7 @@ export class Game {
   endSerpent({ checked = false } = {}) {
     const pd = this.pending;
     if (!this.S.balls.includes(pd.ball)) checked = true; // (multiverso: la copia se ha ido para siempre)
+    for (const q of this.S.coinQ || []) if (q.mv?.serp) q.mv = { path: [...(pd.path || [])] }; // (casino) lo que repite con cara
     this.log('log.ballMoved', { b: playerTag(pd.ball.player), x0: pd.startX, y0: pd.startY, x1: pd.ball.x, y1: pd.ball.y });
     if (!checked) this.finishMoveChecks(pd.ball, { safe: !!pd.safe });
     this.pending = null;
@@ -1472,7 +1517,7 @@ export class Game {
 
   boardSnap() {
     const S = this.S;
-    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train, season: S.season, holeCopies: S.holeCopies }); // (sin tren, estaciones ni copias del hoyo, la clave no se guarda)
+    return clone({ balls: S.balls, hole: S.hole, tiles: S.tiles, winner: S.winner, winners: S.winners, train: S.train, season: S.season, holeCopies: S.holeCopies, gamble: S.gamble }); // (sin tren, estaciones, copias del hoyo ni casino, la clave no se guarda)
   }
   restoreBoardSnap(snap) {
     const S = this.S;
@@ -1482,6 +1527,7 @@ export class Game {
     if (snap.train) S.train = clone(snap.train);
     if (snap.season) S.season = clone(snap.season);
     if (snap.holeCopies || S.holeCopies) S.holeCopies = clone(snap.holeCopies || []);
+    if (snap.gamble) S.gamble = clone(snap.gamble);
   }
 
   /* ---------- el tren ----------
@@ -1787,5 +1833,5 @@ export class Game {
   }
 }
 
-// (barajas de las estaciones y del multiverso) sus reglas viven en seasons.js y multiverse.js
-Object.assign(Game.prototype, seasonMethods, multiverseMethods);
+// (barajas de las estaciones, del multiverso y del Gambling) sus reglas viven en seasons.js, multiverse.js y gambling.js
+Object.assign(Game.prototype, seasonMethods, multiverseMethods, gamblingMethods);

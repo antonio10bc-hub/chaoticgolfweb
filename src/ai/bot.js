@@ -132,8 +132,31 @@ export function evaluate(g, p, style = 'trick') {
     score -= v.th * W.threat + (v.n - 1) * 3;
     if (g.inTrap(v.b)) score += W.oppTrap;
   }
+  if (S.gamble) score += gambleScore(g, p, W, dist);
   return score;
 }
+
+// (casino) las monedas que se han llevado en la jugada y aún no se han lanzado (la IA no tira: S.coinPend) se valoran por
+// su riesgo: la mitad de las veces, cruz y a su salida. Y la casilla dorada: quien está en ella puede ganar con la
+// ruleta (más aún si la tiene en la mano)
+function gambleScore(g, p, W, dist) {
+  const S = g.S, home = b => Math.abs(b.spawnX - S.hole.x) + Math.abs(b.spawnY - S.hole.y);
+  let score = 0;
+  for (const id of S.coinPend || []) {
+    const b = S.balls.find(q => q.player === id);
+    if (!b || b.holed) continue;
+    const lost = Math.max(0, home(b) - dist(b)) * .5; // (lo que perdería de media)
+    score += ownerOf(id) === p ? -lost * W.self : Math.min(lost, 4) * W.opp;
+  }
+  const gd = S.gamble.gold, gb = gd && g.ballAt(gd.x, gd.y);
+  if (gb && !gb.decoy) {
+    const o = ownerOf(gb.player), v = 22 + (S.hands[o]?.includes('ruleta') ? 40 : 0);
+    score += o === p ? v : -v * .8;
+  }
+  return score;
+}
+// el valor de una jugada: el de su resultado; si es al azar con sus probabilidades (la ruleta), la media
+const valueOf = (pl, p, style) => pl.odds ? pl.odds.reduce((s, o) => s + o.p * evaluate(o.result, p, style), 0) : evaluate(pl.result, p, style);
 
 // (contrarreloj) el cazador: cada golpe a tu pelota vale mucho (S.huntHits los cuenta el motor), y también alejarte del
 // hoyo, frenarte (búnker) y quitarte el tiro directo; se acerca a tu pelota y, mejor aún, se pone en línea a 1-3
@@ -217,6 +240,11 @@ export function enumeratePlays(game, p, filter = () => true) {
     if (!def || !filter(def) || !game.canPlay(p, key)) continue;
     if (seen.has(key)) continue; // dos copias de la misma carta dan las mismas jugadas
     seen.add(key);
+    if (def.odds) { // (la ruleta) una partida por resultado posible, cada una con su probabilidad: se valora la media
+      const odds = def.odds.map(([seg, pr]) => { const g = game.clone({ lite: true }); g._forceSpin = seg; return g.clickCard(p, idx) ? { p: pr, result: g } : null; }).filter(Boolean);
+      if (odds.length) plays.push({ actions: [['card', p, idx]], key, idx, result: odds[0].result, odds });
+      continue;
+    }
     const g0 = game.clone({ lite: true });
     if (!g0.clickCard(p, idx)) continue;
     const walk = (g, actions, depth) => {
@@ -263,7 +291,7 @@ export function choosePlan(game, p, rand = Math.random) {
   const scored = [];
   for (const pl of enumeratePlays(game, p)) {
     const def = CARDS[pl.key];
-    let s = evaluate(pl.result, p, style);
+    let s = valueOf(pl, p, style);
     // las naranjas valen más guardadas para reaccionar (en "solo naranjas" no hay otra cosa que jugar)
     if (def.color === 'orange' && !game.S.rules?.onlyOrange) s -= W.orangeReserve;
     if (def.staysOnBoard) s += W.tileBias;
@@ -287,7 +315,7 @@ export function chooseReaction(game, p, rand = Math.random) {
   const base = evaluate(game, p, style);
   let best = null;
   for (const pl of enumeratePlays(game, p, def => def.color === 'orange')) {
-    const s = evaluate(pl.result, p, style) + rand() * 0.5;
+    const s = valueOf(pl, p, style) + rand() * 0.5;
     if (!best || s > best.score) best = { ...pl, score: s };
   }
   // en "solo naranjas" todo son naranjas: se reacciona solo a lo muy grave o la partida no avanzaría
@@ -304,6 +332,7 @@ export function chooseJaqueSave(game, p, rand = Math.random) {
   for (const pl of enumeratePlays(game, p, def => def.color === 'orange')) {
     const S = pl.result.S;
     if (S.winner !== null && !S.winners.includes(p)) continue; // no la evita
+    if (pl.odds?.some(o => o.result.S.winner !== null && !o.result.S.winners.includes(p))) continue; // (al azar: solo si la evita siempre)
     const s = evaluate(pl.result, p, style) + rand() * 0.5;
     if (!best || s > best.score) best = { ...pl, score: s };
   }
@@ -326,7 +355,7 @@ export function discardPlan(game, p) {
     if (def.staysOnBoard && S.tiles.length >= 4 && hand.filter(x => x === k).length > 1) { junk.push(idx); return; }
     if (def.canPlay && !def.canPlay(game, p)) { junk.push(idx); return; } // p. ej. palo 1 desde el búnker
     const plays = enumeratePlays(game, p, d => d.id === k);
-    if (!plays.some(pl => evaluate(pl.result, p, style) > base)) junk.push(idx);
+    if (!plays.some(pl => valueOf(pl, p, style) > base)) junk.push(idx);
   });
   if (!junk.length && hand.length >= 2 && hand.every(k => CARDS[k]?.color === 'orange')) {
     let worst = 0;
@@ -377,13 +406,14 @@ export function explainPlay(before, after, p, cardKey) {
   if (cardKey === 'oNieve') return { key: 'snow' };
   if (cardKey === 'meteoritos') return { key: 'meteors' };
   if (cardKey === 'gravedad' || cardKey === 'oGravedad') return { key: 'gravity' };
+  if (cardKey === 'ruleta') return { key: 'roulette' };
   const placed = A.tiles.find(tl => !B.tiles.some(o => o.x === tl.x && o.y === tl.y && o.type === tl.type));
   if (placed) {
     // ¿en el camino de quién? (la pelota rival más cercana a la loseta)
     let near = null;
     for (const r of rivals) { const b = ballOf(A, r); const d = Math.abs(b.x - placed.x) + Math.abs(b.y - placed.y); if (!near || d < near.d) near = { r, d }; }
     if (placed.type === 'bunker') return near && near.d <= 3 ? { key: 'bunkerBlock', target: near.r } : { key: 'bunker' };
-    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'puddle', 'ice', 'plant', 'fire', 'blackhole'].includes(placed.type)) return { key: placed.type };
+    if (['river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'puddle', 'ice', 'plant', 'fire', 'blackhole', 'dice'].includes(placed.type)) return { key: placed.type };
     return { key: 'portal' };
   }
   const me0 = ballOf(B, p), me1 = ballOf(A, p);

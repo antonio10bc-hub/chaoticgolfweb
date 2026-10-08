@@ -20,6 +20,7 @@ import { isBot } from './players.js';
 import { playTrain, playWagon, playTrainBump, markTrainRuns } from './train-view.js';
 import { SEASON_PLAY, markSnowRuns, seasonDone } from './seasons-view.js';
 import { MULTIVERSE_PLAY } from './multiverse-view.js';
+import { GAMBLING_PLAY, gambleDone, diceNumber } from './gambling-view.js';
 
 let combo = 0;
 
@@ -47,6 +48,7 @@ export async function playQueue(onDone) {
   app.animating = false;
   app.rocksHidden = null;
   seasonDone(); // (estaciones: el campo, ya como ha quedado)
+  gambleDone(); // (casino: las monedas y los dados, ya como han quedado)
   if (combo >= 3 && app.mode !== 'free' && app.lastActor != null && !isBot(app.lastActor)) unlock('combo3');
   syncPieces();
   fxTrailShow(); // estela fantasma del camino recorrido
@@ -61,6 +63,7 @@ async function playEvent(ev) {
   if (ev.t === 'bump' && ev.p === 'loco') return playTrainBump(ev);
   if (SEASON_PLAY[ev.t]) return SEASON_PLAY[ev.t](ev); // (baraja de las estaciones)
   if (MULTIVERSE_PLAY[ev.t]) return MULTIVERSE_PLAY[ev.t](ev); // (baraja del multiverso)
+  if (GAMBLING_PLAY[ev.t]) return GAMBLING_PLAY[ev.t](ev); // (baraja del Gambling)
   const el = pieceEl(ev.p);
   if (!el) return;
   botReact(ev); // caras y bocadillos de los bots (decorativo)
@@ -114,7 +117,8 @@ async function playEvent(ev) {
       cell?.classList.remove('woodHit'); void cell?.offsetWidth; cell?.classList.add('woodHit');
       const { px, py } = cellCenterPx(ev.x, ev.y);
       fxSpawn(px - dx * 18, py - dy * 22, { n: 5, colors: WOOD_C, size: 4, dist: 16, dur: 320 });
-      sfx('wood');
+      if (ev.dice) diceNumber(ev.x, ev.y, ev.dice); // (casino: el dado dice cuántas casillas rebota)
+      sfx(ev.dice ? 'diceHit' : 'wood');
       inner.style.transform = '';
       await wait(110);
       inner.style.transition = '';

@@ -36,6 +36,7 @@ const STYLE_FX = {
   long: { icon: 'i-arrow-r', colors: ['#8DB05F', '#A3C173', '#F1F1DC', '#E8873A'], sound: 'whoosh' },
   zigzag: { icon: 'i-hand', colors: ['#9b6dd6', '#f27bb4', '#F1F1DC', '#E8873A'], sound: 'select' },
   first: { icon: 'i-flag', colors: ['#E8873A', '#f2b705', '#F1F1DC', '#8DB05F'], sound: 'sink' },
+  gold: { icon: 'i-roulette', colors: ['#FFE38A', '#F2C14E', '#D9A441', '#F1F1DC', '#C8243A'], sound: 'jackpot' }, // (casino: la casilla dorada)
 };
 
 const FIRE_C = ['#E8873A', '#F5A33A', '#FFD23F', '#D9603A', '#F1F1DC'];
@@ -65,6 +66,7 @@ export function showWin() {
   const lost = !!S.trainWin || (mode === 'pve' && !humansOf().some(h => S.winners.includes(h)));
   let msg;
   if (S.trainWin) msg = t('win.trainWins');
+  else if (S.goldWin) msg = !multi && S.winners[0] === me && mode === 'pve' ? t('win.goldYou') : t('win.gold', { names }); // (casino: ¡bote!)
   else if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
   else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
@@ -196,6 +198,7 @@ export function showWin() {
   if (['pve', 'challenge', 'daily', 'weekly'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
+  if (S.goldWin && !lost && mode !== 'free' && mode !== 'test' && S.winners.some(w => !isBot(w))) unlock('goldWin'); // (casino: ganar en la casilla dorada)
 
   // compartir la jugada final (todos los modos): imagen con el tablero y el recorrido; en el reto
   // diario, también el resultado en texto

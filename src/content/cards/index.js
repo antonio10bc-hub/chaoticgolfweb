@@ -24,6 +24,7 @@ import no from './no.js';
 import { trenVuelta, oTren1, vagon } from './tren.js';
 import { estacion, incendio, oNieve } from './estaciones.js';
 import { agujeroNegro, gravedad2, oGravedad, meteoritos } from './multiverso.js';
+import { dado, ruleta } from './gambling.js';
 
 const CARD_LIST = [
   palo1, palo2, palo3, dedo,
@@ -39,6 +40,7 @@ const CARD_LIST = [
   trenVuelta, oTren1, vagon,                        // baraja del tren
   estacion, incendio, oNieve,                       // baraja de las estaciones
   agujeroNegro, gravedad2, oGravedad, meteoritos,   // baraja del multiverso
+  dado, ruleta,                                     // baraja del Gambling
 ];
 
 for (const c of CARD_LIST) {

@@ -179,7 +179,7 @@ function renderDock(g, owner) {
   dock.classList.toggle('cta', jaqueCta(g, owner));
   const name = app.mode === 'pve' && multiHuman() ? displayName(owner)
     : app.mode === 'pve' || S.nPlayers === 1 ? t('hands.yours') : t('player.name', { n: owner + 1 });
-  const status = S.winners.includes(owner) ? t('seat.inHole')
+  const status = S.winners.includes(owner) ? t(S.goldWin ? 'seat.onGold' : 'seat.inHole')
     : jaqueCta(g, owner) ? t('seat.canReact')
     : myTurn ? t('seat.yourTurn') : t('seat.waitName', { name: displayName(S.turn) });
   // tu pelota (con la que llevas puesta) en lugar del círculo con "J1", flotando: se repinta solo si cambia (si no,
@@ -212,7 +212,7 @@ function renderSeats(g, owner) {
     const cta = jaqueCta(g, p);
     const gone = g.hunterGone(p); // (contrarreloj) el cazador que ha entrado en el hoyo ya no juega
     const cls = 'seat' + (gone ? ' gone' : '') + (active ? ' active' : '') + (thinking ? ' thinking' : '') + (won ? ' won' : '') + (cta ? ' cta' : '') + (isBotSeat(p) ? ' bot' : '');
-    const status = gone ? t('seat.hunterOut') : won ? t('seat.inHole') : cta ? t('seat.canReact')
+    const status = gone ? t('seat.hunterOut') : won ? t(S.goldWin ? 'seat.onGold' : 'seat.inHole') : cta ? t('seat.canReact')
       : active ? (isBotSeat(p) ? t('seat.thinking') : t('seat.playing')) : t('seat.waiting');
     const dots = thinking ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : '';
     const cards = S.hands[p].map((_, i) => cardHTML(g, p, i, { mini: true })).join('');

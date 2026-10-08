@@ -1,0 +1,121 @@
+/* =========================================================
+   Baraja del Gambling: el suelo ajedrezado (rojo y negro) con la casilla dorada, las monedas, el dado, la moneda que se
+   lanza, la ruleta y la escena (una mesa de casino: tapete verde y baranda de madera con filo dorado).
+   ========================================================= */
+
+/* ---------- el suelo ---------- */
+.cell.gRed:not(.selectable):not(.selectable-out) { background-color: #8E1F2E; }
+.cell.gBlack:not(.selectable):not(.selectable-out) { background-color: #26262D; }
+.cell.gRed, .cell.gBlack { box-shadow: inset 0 1px 0 rgba(255,255,255,.07), inset 0 -2px 0 rgba(0,0,0,.18); }
+.cell.gRed .parLabel, .cell.gBlack .parLabel { color: rgba(246,240,226,.75); }
+/* la casilla dorada: oro con un destello que la cruza de vez en cuando */
+.cell.gGold:not(.selectable):not(.selectable-out) { background-color: #C9962E; }
+.cell.gGold { overflow: hidden;
+  box-shadow: inset 0 0 0 2px #FFE38A, inset 0 0 12px 2px rgba(255,240,190,.55), 0 0 10px 1px rgba(242,193,78,.45); }
+.cell.gGold::before { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, transparent 60%) no-repeat; background-size: 300% 100%;
+  animation: goldSheen 3.4s ease-in-out infinite; }
+@keyframes goldSheen { 0%, 55% { background-position: 150% 0; } 100% { background-position: -150% 0; } }
+.cell.gGold::after { content: '★'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none;
+  font-size: calc(var(--cell-w) * .42); line-height: 1; color: rgba(255,246,214,.55); }
+/* la ruleta ha caído en este color: la casilla se ilumina */
+.cell.rlHit { animation: rlHit 1.5s ease-out both; }
+@keyframes rlHit { 0% { box-shadow: inset 0 0 0 0 rgba(255,236,170,0); } 18% { box-shadow: inset 0 0 0 3px #FFE38A, inset 0 0 0 999px rgba(255,236,170,.3), 0 0 14px 2px rgba(242,193,78,.7); }
+  100% { box-shadow: inset 0 0 0 0 rgba(255,236,170,0), 0 0 0 0 rgba(242,193,78,0); } }
+.cell.jackpot { animation: jackpot .9s ease-out 2 both; }
+@keyframes jackpot { 30% { box-shadow: inset 0 0 0 3px #fff, 0 0 26px 8px rgba(255,214,90,.95); transform: scale(1.08); } }
+
+/* ---------- las monedas ---------- */
+.cell .gCoin { position: absolute; left: 50%; top: 50%; width: calc(var(--cell-w) * .46); aspect-ratio: 1; transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); animation: coinBob 2.6s ease-in-out infinite; }
+.cell .gCoin svg, .coinBadge svg, .gCoinFly svg { width: 100%; height: 100%; display: block; }
+.gCoinShine { animation: coinShine 2.6s ease-in-out infinite; }
+@keyframes coinBob { 50% { transform: translate(-50%, -58%); } }
+@keyframes coinShine { 0%, 100% { opacity: .2; } 50% { opacity: .95; } }
+/* la que se lleva una pelota: salta y se pega a ella (una chapita en su esquina hasta que la lanza) */
+.gCoinFly { position: absolute; width: var(--s, 22px); height: var(--s, 22px); margin: calc(var(--s, 22px) / -2) 0 0 calc(var(--s, 22px) / -2);
+  pointer-events: none; animation: coinFly .6s cubic-bezier(.3,.7,.4,1) both; }
+@keyframes coinFly { 0% { transform: none; } 45% { transform: translateY(-70%) scale(1.25) rotateY(360deg); opacity: 1; } 100% { transform: translate(40%, -40%) scale(.45); opacity: 0; } }
+.piece .coinBadge { position: absolute; right: 6%; top: 4%; width: 34%; aspect-ratio: 1; z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.4)); animation: badgeIn .3s var(--ease-out) both; }
+@keyframes badgeIn { from { transform: scale(0); } 70% { transform: scale(1.25); } to { transform: none; } }
+/* la moneda grande que se lanza: da vueltas encima de la pelota y cae de una cara */
+.gFlip { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 30; perspective: 400px; }
+.gFlipCoin { position: absolute; width: var(--s); height: var(--s); left: calc(var(--s) / -2); top: calc(var(--s) / -2); transform-style: preserve-3d; }
+.gFlipCoin i { position: absolute; inset: 0; backface-visibility: hidden; filter: drop-shadow(0 3px 4px rgba(0,0,0,.45)); }
+.gFlipCoin i svg { width: 100%; height: 100%; display: block; }
+.gFlipCoin .b { transform: rotateY(180deg); }
+.gFlipTxt { position: absolute; left: 0; top: calc(var(--s) / 2 + 4px); transform: translateX(-50%) scale(.4); opacity: 0; white-space: nowrap;
+  font-size: 13px; font-weight: 700; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; color: #FFF6D6; background: #2E7D4F;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3); transition: transform .22s var(--ease-out), opacity .22s; }
+.gFlip.tails .gFlipTxt { background: #A3283A; }
+.gFlip.landed .gFlipTxt { transform: translateX(-50%) scale(1); opacity: 1; }
+.gFlip.landed .gFlipCoin { animation: flipLand .3s ease-out; }
+@keyframes flipLand { 40% { transform: scale(1.18); } }
+.gFlip.out { opacity: 0; transition: opacity .25s; }
+/* el número del dado al chocar */
+.gDiceNum { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 30;
+  font-size: 18px; font-weight: 800; color: #FFF6D6; padding: 1px 8px; border-radius: 999px; background: #2A2226;
+  box-shadow: 0 0 0 2px #F2C14E, 0 3px 8px rgba(0,0,0,.35); animation: diceNum .9s ease-out both; }
+@keyframes diceNum { 0% { transform: translate(-50%, -20%) scale(.4); opacity: 0; } 20% { transform: translate(-50%, -70%) scale(1.15); opacity: 1; }
+  70% { opacity: 1; } 100% { transform: translate(-50%, -150%) scale(1); opacity: 0; } }
+.splashRing.gold { border-color: #FFE38A; height: 22px; margin-top: -11px; }
+
+/* ---------- el dado ---------- */
+.tile-dice { background: transparent; width: 100%; height: 100%; }
+.tile-dice .sub { display: none; }
+.cardOnCell .tilePic.dicePic { transform: scale(.94); }
+.cell.woodHit .dicePic { animation: woodHit .26s ease-out; }
+
+/* ---------- la ruleta: sale en medio de la pantalla ---------- */
+.rlOverlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none;
+  background: rgba(8,24,16,0); transition: background .25s; }
+.rlOverlay.in { background: rgba(8,24,16,.32); }
+.rlBox { display: flex; flex-direction: column; align-items: center; gap: 12px; transform: scale(.3) rotate(-30deg); opacity: 0;
+  transition: transform .35s var(--ease-out), opacity .25s; }
+.rlOverlay.in .rlBox { transform: none; opacity: 1; }
+.rlOverlay.out { background: rgba(8,24,16,0); }
+.rlOverlay.out .rlBox { transform: scale(.6); opacity: 0; }
+.rlSvg { width: min(58vmin, 240px); height: auto; filter: drop-shadow(0 10px 22px rgba(0,0,0,.45)); }
+.rlRot { transform-box: view-box; transform-origin: 100px 100px; }
+.rlNum { font: 700 11px/1 Outfit, sans-serif; fill: #F6F0E2; }
+.rlRes { min-width: 120px; text-align: center; padding: 6px 18px; border-radius: 999px; font-size: 20px; font-weight: 800; letter-spacing: .06em;
+  color: #FFF6D6; background: var(--rc, #2A2226); box-shadow: 0 0 0 3px #E2B23C, 0 6px 14px rgba(0,0,0,.35);
+  transform: scale(.4); opacity: 0; transition: transform .25s var(--ease-out), opacity .2s; }
+.rlOverlay.done .rlRes { transform: none; opacity: 1; }
+.rlOverlay.r-gold .rlRes { color: #5A2E1A; animation: rlGold .5s ease-in-out 3; }
+@keyframes rlGold { 50% { transform: scale(1.12); box-shadow: 0 0 0 3px #fff, 0 0 26px 8px rgba(255,214,90,.9); } }
+
+/* ---------- escena: la mesa del casino ----------
+   Plana, como el resto: tapete verde con un rombo muy suave, la baranda de madera con filo dorado alrededor del campo,
+   montones de fichas, una mano de cartas, un par de dados y la luz de la lámpara. */
+#gameScreen[data-scene="casino"] #game {
+  background-color: #145C3E;
+  background-image: var(--grain), repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 44px), repeating-linear-gradient(-45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 44px);
+}
+#gameScreen[data-scene="casino"] #gameDecor > :not(.dCasino) { display: none; }
+#gameDecor .dCasino { display: none; }
+#gameScreen[data-scene="casino"] #gameDecor { overflow: hidden; }
+#gameScreen[data-scene="casino"] #gameDecor .dCasino { display: block; position: absolute; pointer-events: none; }
+#gameDecor .dCasino.lamp { left: 50%; top: -30vh; width: 120vmin; height: 90vh; transform: translateX(-50%); border-radius: 50%;
+  background: rgba(255,236,170,.06); }
+#gameDecor .dCasino.chips { width: 15vmin; left: 3vw; bottom: 8vh; }
+#gameDecor .dCasino.cards { width: 17vmin; right: 3vw; top: 9vh; transform: rotate(10deg); }
+#gameDecor .dCasino.dice2 { width: 11vmin; right: 5vw; bottom: 12vh; }
+#gameDecor .dCasino.chips2 { width: 9vmin; left: 6vw; top: 14vh; }
+#gameDecor .dCasino.dice2 .d1 { transform-box: fill-box; transform-origin: center; animation: diceIdle 7s ease-in-out infinite; }
+@keyframes diceIdle { 0%, 88%, 100% { transform: none; } 92% { transform: rotate(-14deg) translateY(-6%); } 96% { transform: rotate(6deg); } }
+html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.dice2, html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.chips,
+html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.chips2 { display: none; } /* (en el móvil, la mano va ahí) */
+/* la baranda: madera oscura con un filo dorado, como el borde de una mesa de casino */
+#gameScreen[data-scene="casino"] #boardWrap { background-color: #5A2E1A;
+  background-image: var(--grain), repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 46px);
+  box-shadow: inset 0 0 0 3px #C9962E, inset 0 0 0 5px #3A1C0E, 0 0 0 4px #2E160A, 0 8.4px 25.2px 2px rgba(0,20,10,.45); }
+html.reduceMotion .cell.gGold::before, html.reduceMotion .cell .gCoin, html.reduceMotion .gCoinShine, html.reduceMotion #gameDecor .dCasino * { animation: none !important; }
+
+/* la carta de la baraja (Modos de juego): al pasar por encima, la ruleta gira */
+.dkArt .dkWheel { transform-box: fill-box; transform-origin: center; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+.deckCard:hover .dkArt .dkWheel, .deckCard:focus-within .dkArt .dkWheel { transform: rotate(320deg); }
+
+/* la presentación de la baraja: el número del dado en la escena */
+.dmDice { font: 800 12px Outfit, sans-serif; fill: #FFF6D6; }
