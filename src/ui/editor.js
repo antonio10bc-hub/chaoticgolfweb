@@ -31,11 +31,13 @@ import { confirmDialog } from './dialog.js';
 import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
 import { LEVEL_SIZE } from '../content/levels/share.js';
+import { COIN_SVG } from './gambling-view.js';
+import { dicePic } from '../content/tiles/dice.js';
 import { listLevels, storeLevel, deleteWithUndo, shareLevelDialog, addCodeDialog, sizeLabel } from './my-levels.js';
 
 // level: el nivel en el taller · idx: su posición en Mis niveles (null: aún sin guardar)
 // saved: cómo era al guardarlo (para saber si hay cambios) · tool/rot/pair/parN: la herramienta
-export const ED = { level: null, idx: null, saved: null, tool: 'ball', rots: {}, pair: 1, parN: 1, tab: 'deck', undo: [], redo: [] };
+export const ED = { level: null, idx: null, saved: null, tool: 'ball', rots: {}, pair: 1, parN: 1, diceN: 1, tab: 'deck', undo: [], redo: [] };
 // giro elegido para la herramienta activa (cada pieza que gira recuerda el suyo)
 const curRot = () => ED.rots[ED.tool] || 0;
 const setRot = r => { ED.rots[ED.tool] = r; };
@@ -51,6 +53,7 @@ const GROUPS = [
   ['train', ['track', 'station', 'loco']],
   ['seasons', ['leaf', 'puddle', 'ice', 'plant', 'fire', 'snowball']],
   ['multiverse', ['blackhole', 'meteorite']], // (el agujero negro y la roca de los meteoritos)
+  ['gambling', ['dice', 'coin', 'gold']], // (el dado con su número, las monedas y la casilla dorada: L.gamble)
 ];
 // (estaciones) la estación de cada pieza: al ponerla en un nivel sin estación, el nivel pasa a esa
 const SEASON_OF = { leaf: 'autumn', puddle: 'autumn', ice: 'winter', plant: 'spring', fire: 'summer', snowball: 'winter' };
@@ -89,6 +92,9 @@ function normalize(L) {
   // (estaciones) la del nivel y, en invierno, la bola de nieve en una casilla de dentro
   if (out.season && !SEASONS.includes(out.season.now)) delete out.season;
   if (out.season?.snow && (out.season.now !== 'winter' || out.season.snow.x >= out.cols || out.season.snow.y >= out.rows)) delete out.season.snow;
+  // (casino) la casilla dorada y las monedas, dentro del tablero
+  if (out.gamble) { const inG = c => c && c.x < out.cols && c.y < out.rows;
+    out.gamble = { gold: inG(out.gamble.gold) ? out.gamble.gold : null, coins: (out.gamble.coins || []).filter(inG) }; }
   delete out.at;
   return out;
 }
@@ -98,6 +104,8 @@ function exportable(L) {
   if (out.rails) { const tr = trainOf(out); if (tr) out.train = tr; delete out.rails; }
   if (!out.extraBalls?.length) delete out.extraBalls;
   if (!out.hand?.length) delete out.hand;
+  if (out.gamble && !out.gamble.gold && !out.gamble.coins.length) delete out.gamble; // (sin dorada ni monedas: el suelo, si hay ruletas, lo pone la partida)
+  for (const tl of out.tiles) if (tl.type === 'dice') { delete tl.n; delete tl.e; delete tl.id; } // (del dado basta su número)
   return out;
 }
 const snap = () => JSON.stringify(ED.level); // (tal cual: con las vías a medias, para deshacer)
@@ -141,6 +149,9 @@ const tileAt = (x, y) => ED.level.tiles.find(tl => tl.x === x && tl.y === y);
 const parAt = (x, y) => ED.level.parCells.find(p => p.x === x && p.y === y);
 const decoyAt = (x, y) => ED.level.extraBalls.findIndex(e => e.x === x && e.y === y);
 const snowAt = (x, y) => same(ED.level.season?.snow, x, y);
+const coinAt = (x, y) => (ED.level.gamble?.coins || []).findIndex(c => same(c, x, y)); // (casino)
+const goldAt = (x, y) => same(ED.level.gamble?.gold, x, y);
+const gamble = () => (ED.level.gamble ||= { gold: null, coins: [] });
 // ¿puede estar una pelota o el hoyo en esa loseta? (solo en el búnker; en el resto no se para nadie)
 const standable = tl => !tl || tl.type === 'bunker';
 /* ---- el tren: vías, paradas y locomotora, casilla a casilla ----
@@ -232,6 +243,9 @@ function modeAt(x, y, erase) {
   if (tool === 'par') return parAt(x, y)?.n === ED.parN ? 'remove' : 'paint';
   if (tool === 'decoy') return decoyAt(x, y) >= 0 ? 'remove' : 'paint';
   if (tool === 'snowball') return snowAt(x, y) ? 'remove' : 'paint';
+  if (tool === 'coin') return coinAt(x, y) >= 0 ? 'remove' : 'paint';
+  if (tool === 'gold') return goldAt(x, y) ? 'remove' : 'paint';
+  if (tool === 'dice' && tl?.type === 'dice') return tl.t === ED.diceN ? 'remove' : 'paint'; // (otro número: lo cambia)
   if (tl?.type === tool) return TILES[tool].rotates ? 'rotate' : tool === 'portal' && tl.pair !== ED.pair ? 'paint' : 'remove';
   return 'paint';
 }
@@ -265,8 +279,10 @@ function applyAt(x, y, mode) {
       return true;
     }
     case 'erase': {
-      const had = !!tl || !!parAt(x, y) || di >= 0 || railAt(x, y) || snowAt(x, y);
+      const ci = coinAt(x, y), had = !!tl || !!parAt(x, y) || di >= 0 || railAt(x, y) || snowAt(x, y) || ci >= 0 || goldAt(x, y);
       if (snowAt(x, y)) delete L.season.snow;
+      if (ci >= 0) L.gamble.coins.splice(ci, 1);
+      if (goldAt(x, y)) L.gamble.gold = null;
       if (tl) dropTile();
       if (railAt(x, y)) dropRail(x, y);
       L.parCells = L.parCells.filter(p => !same(p, x, y));
@@ -280,6 +296,7 @@ function applyAt(x, y, mode) {
       if (!standable(tl)) { bad(x, y, 'ed.bad.onPiece'); return false; }
       if (trainOn(x, y)) { bad(x, y, 'ed.bad.onTrain'); return false; }
       if (di >= 0) L.extraBalls.splice(di, 1);
+      if (coinAt(x, y) >= 0) L.gamble.coins.splice(coinAt(x, y), 1); // (casino: nadie empieza encima de una moneda)
       L[key] = { x, y };
       return true;
     }
@@ -287,6 +304,8 @@ function applyAt(x, y, mode) {
       if (tool === 'par') { L.parCells = L.parCells.filter(p => !same(p, x, y)); return true; }
       if (tool === 'decoy') { if (di >= 0) L.extraBalls.splice(di, 1); return di >= 0; }
       if (tool === 'snowball') { if (!snowAt(x, y)) return false; delete L.season.snow; return true; }
+      if (tool === 'coin') { const ci = coinAt(x, y); if (ci < 0) return false; L.gamble.coins.splice(ci, 1); return true; }
+      if (tool === 'gold') { if (!goldAt(x, y)) return false; L.gamble.gold = null; return true; }
       if (tl?.type === tool) { dropTile(); return true; }
       return false;
     }
@@ -311,6 +330,20 @@ function applyAt(x, y, mode) {
         L.extraBalls.push({ x, y });
         return true;
       }
+      if (tool === 'coin' || tool === 'gold') { // (casino) la moneda (en una casilla vacía) y la casilla dorada (una sola: se mueve)
+        if (tl || railAt(x, y) || snowAt(x, y)) { bad(x, y, 'ed.bad.onPiece'); return false; }
+        if (tool === 'coin') {
+          if (isBall || isHole || di >= 0) { bad(x, y, 'ed.bad.taken'); return false; }
+          if (coinAt(x, y) >= 0 || goldAt(x, y)) return false;
+          gamble().coins.push({ x, y });
+        } else {
+          if (goldAt(x, y)) return false;
+          const ci = coinAt(x, y); if (ci >= 0) L.gamble.coins.splice(ci, 1);
+          gamble().gold = { x, y };
+        }
+        return true;
+      }
+      if (tool === 'dice' && tl?.type === 'dice') { tl.t = ED.diceN; return true; } // (el dado que ya estaba, con el número elegido)
       if (tool === 'snowball') { // (estaciones) la bola de nieve: una sola, en una casilla sin piezas; el nivel pasa a invierno
         if (snowAt(x, y)) return false;
         if (tl || railAt(x, y)) { bad(x, y, 'ed.bad.onPiece'); return false; }
@@ -322,12 +355,15 @@ function applyAt(x, y, mode) {
       if (snowAt(x, y)) { bad(x, y, 'ed.bad.onPiece'); return false; }
       if (railAt(x, y)) { bad(x, y, 'ed.bad.onTrack'); return false; } // (nada encima de las vías)
       if ((isBall || isHole || di >= 0) && tool !== 'bunker') { bad(x, y, 'ed.bad.taken'); return false; }
+      if (goldAt(x, y)) { bad(x, y, 'ed.bad.onGold'); return false; } // (casino: en la dorada no va ninguna pieza)
       if (tool === 'portal' && L.tiles.filter(q => q.type === 'portal' && q.pair === ED.pair && q !== tl).length >= 2) {
         bad(x, y, 'ed.bad.pairFull'); return false;
       }
       if (tl) dropTile();
       L.parCells = L.parCells.filter(p => !same(p, x, y));
       const nt = { type: tool, x, y };
+      if (coinAt(x, y) >= 0) L.gamble.coins.splice(coinAt(x, y), 1); // (la pieza tapa la moneda: fuera)
+      if (tool === 'dice') nt.t = ED.diceN;
       if (TILES[tool].rotates && curRot()) nt.rot = curRot();
       if (tool === 'portal') nt.pair = ED.pair;
       L.tiles.push(nt);
@@ -357,6 +393,7 @@ function resize(dc, dr) {
   }
   if (same(L.ball, L.hole.x, L.hole.y)) L.ball = { x: L.ball.x, y: L.ball.y > 0 ? L.ball.y - 1 : L.ball.y + 1 };
   if (L.season?.snow && !inB(L.season.snow)) delete L.season.snow;
+  if (L.gamble) { L.gamble.coins = L.gamble.coins.filter(inB); if (L.gamble.gold && !inB(L.gamble.gold)) L.gamble.gold = null; }
   sfx('woodTick');
   refresh();
 }
@@ -407,6 +444,9 @@ function toolPic(tool) {
     case 'station': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="4" y="8" width="32" height="32" rx="5" fill="#CCC6B8" stroke="#ADA696" stroke-width="1.4"/>` +
       `<path d="M20 4V44" stroke="#8A5A33" stroke-width="13" stroke-dasharray="2.6 4"/><path d="M15 4V44M25 4V44" stroke="#4B5057" stroke-width="2.2"/><path d="M8 12V36M32 12V36" stroke="#E8B23A" stroke-width="2.2" stroke-linecap="round"/></svg>`;
     case 'loco': return `<svg viewBox="0 0 40 48" aria-hidden="true">${LOCO.replace(/<svg class="trainSvg" viewBox="0 0 70 100" preserveAspectRatio="none"/, '<svg x="6" y="2" width="28" height="44" viewBox="0 0 70 100"')}</svg>`;
+    case 'coin': return COIN_SVG;
+    case 'gold': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="3" y="6" width="34" height="36" rx="6" fill="#C9962E" stroke="#FFE38A" stroke-width="2"/><path d="M20 14l3.2 6.6 7.2 1-5.2 5 1.3 7.2L20 30.4l-6.5 3.4 1.3-7.2-5.2-5 7.2-1z" fill="rgba(255,246,214,.75)"/></svg>`;
+    case 'dice': return dicePic({ t: ED.diceN, n: ED.diceN === 2 || ED.diceN === 5 ? 1 : 2, e: 3 });
     case 'snowball': return SNOWBALL.replace('<svg class="snowSvg" viewBox="0 0 100 100" aria-hidden="true">', '<svg viewBox="-8 -8 116 116" aria-hidden="true">');
     default: return tilePic({ type: tool, rot: ED.rots[tool] || 0 });
   }
@@ -435,6 +475,10 @@ function renderToolOpts() {
     html += `<div class="edChips rots" role="group" aria-label="${esc(t('ed.opt.rot'))}">` + [0, 1, 2, 3].map(r =>
       `<button class="chip rotChip${curRot() === r ? ' on' : ''}" data-rot="${r}" aria-pressed="${curRot() === r}" aria-label="${esc(t('ed.opt.rotN', { n: r * 90 }))}">${tilePic({ type: tool, rot: r })}</button>`).join('') + `</div>`;
   }
+  else if (tool === 'dice') { // (casino) el número que marca el dado
+    html += `<div class="edChips" role="group" aria-label="${esc(t('ed.opt.diceN'))}"><span class="edOptLbl">${esc(t('ed.opt.diceN'))}</span>` + [1, 2, 3, 4, 5, 6].map(n =>
+      `<button class="chip${ED.diceN === n ? ' on' : ''}" data-dicen="${n}" aria-pressed="${ED.diceN === n}">${n}</button>`).join('') + `</div>`;
+  }
   else if (tool === 'track') {
     html += `<div class="edChips"><button class="chip" data-train="new">${esc(t('ed.opt.trackRandom'))}</button>` +
       (L.rails ? `<button class="chip" data-train="del">${esc(t('ed.opt.trackDel'))}</button>` : '') + `</div>`;
@@ -462,12 +506,17 @@ export function edRender() {
   const tAt = (x, y) => tmap.get(x + ',' + y);
   const pmap = new Map(L.parCells.map(p => [p.x + ',' + p.y, p]));
   const dset = new Set(L.extraBalls.map(e => e.x + ',' + e.y));
+  // (casino) con dorada, monedas o ruletas en el mazo, el suelo ajedrezado (como en la partida)
+  const casino = !!(L.gamble?.gold || L.gamble?.coins.length || L.deckCounts.ruleta > 0 || L.hand.includes('ruleta'));
   let html = '';
   for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) {
     const par = pmap.get(x + ',' + y), tile = tAt(x, y);
     let cls = 'cell' + (((x + y) >> 1) & 1 ? ' mowB' : ''), inner = '';
     const aria = [t('a11y.cell', { x, y })];
     if (par) { cls += ' par'; inner = ASSETS.parLabelHTML(par.n); aria.push('PAR ' + par.n); }
+    if (casino && !(tile && /^(water|space)/.test(TILES[tile.type].cellClass))) cls += goldAt(x, y) ? ' gGold' : (x + y) % 2 === 0 ? ' gRed' : ' gBlack';
+    if (coinAt(x, y) >= 0) { inner += `<span class="gCoin">${COIN_SVG}</span>`; aria.push(toolName('coin')); }
+    if (goldAt(x, y)) aria.push(toolName('gold'));
     if (tile) {
       cls += ' ' + TILES[tile.type].cellClass + waterJoins((ox, oy) => tAt(x + ox, y + oy), x, y, tile);
       inner += ASSETS.tileHTML(tile.type, '', tile);
@@ -537,8 +586,9 @@ function showGhost(x, y) {
   if (!cell) return;
   cell.classList.add('edHover');
   if (ED.tool === 'par') { cell.insertAdjacentHTML('beforeend', `<div class="edGhost par">${ASSETS.parLabelHTML(ED.parN)}</div>`); return; }
+  if (ED.tool === 'coin' || ED.tool === 'gold') { cell.insertAdjacentHTML('beforeend', `<div class="edGhost">${ED.tool === 'coin' ? `<span class="gCoin">${COIN_SVG}</span>` : '<div class="edGoldGhost"></div>'}</div>`); return; }
   const inner = ED.tool === 'ball' ? ASSETS.ballHTML(0) : ED.tool === 'hole' ? ASSETS.holeHTML() : ED.tool === 'decoy' ? decoyHTML()
-    : ASSETS.tileHTML(ED.tool, '', { type: ED.tool, rot: curRot(), pair: ED.tool === 'portal' ? ED.pair : undefined });
+    : ASSETS.tileHTML(ED.tool, '', { type: ED.tool, rot: curRot(), pair: ED.tool === 'portal' ? ED.pair : undefined, t: ED.diceN });
   cell.insertAdjacentHTML('beforeend', `<div class="edGhost">${inner}</div>`);
 }
 
@@ -685,7 +735,7 @@ export function bindEditor() {
     ED.tool = b.dataset.tool; sfx('select'); renderTools();
   });
   $('edToolOpts').addEventListener('click', e => {
-    const b = e.target.closest('[data-parn], [data-pair], [data-rot], [data-train], [data-cars], [data-season]');
+    const b = e.target.closest('[data-parn], [data-pair], [data-rot], [data-train], [data-cars], [data-season], [data-dicen]');
     if (!b) return;
     if (b.dataset.season !== undefined) { // (estaciones) la del nivel; fuera del invierno no hay bola de nieve
       const L = ED.level, s = b.dataset.season;
@@ -704,6 +754,7 @@ export function bindEditor() {
       return;
     }
     if (b.dataset.parn) ED.parN = +b.dataset.parn;
+    if (b.dataset.dicen) ED.diceN = +b.dataset.dicen;
     if (b.dataset.pair) ED.pair = +b.dataset.pair;
     if (b.dataset.rot) setRot(+b.dataset.rot);
     sfx('select'); renderTools();

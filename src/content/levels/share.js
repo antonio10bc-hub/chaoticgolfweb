@@ -25,8 +25,8 @@ export function packLevel(L) {
   const o = { c: L.cols, r: L.rows, h: [L.hole.x, L.hole.y], b: [L.ball.x, L.ball.y] };
   if (L.name) o.n = L.name;
   if (L.parCells?.length) o.p = L.parCells.map(p => [p.x, p.y, p.n]);
-  if (L.tiles?.length) o.t = L.tiles.map(tl => { // [tipo, x, y, giro, pareja] sin los ceros del final
-    const a = [tl.type, tl.x, tl.y, tl.rot || 0, tl.pair || 0];
+  if (L.tiles?.length) o.t = L.tiles.map(tl => { // [tipo, x, y, giro, pareja] sin los ceros del final (el dado: su número en el giro)
+    const a = [tl.type, tl.x, tl.y, tl.type === 'dice' ? tl.t || 0 : tl.rot || 0, tl.pair || 0];
     while (a.length > 3 && !a[a.length - 1]) a.pop();
     return a;
   });
@@ -35,6 +35,7 @@ export function packLevel(L) {
   if (d.length) o.d = Object.fromEntries(d);
   if (L.hand?.length) o.k = L.hand.filter(k => CARDS[k]);
   if (L.train?.path?.length) o.tr = { p: L.train.path.flat(), s: L.train.stations, i: L.train.pos, c: L.train.cars || 0 }; // (el circuito, casilla a casilla)
+  if (L.gamble && (L.gamble.gold || L.gamble.coins?.length)) o.g = [L.gamble.gold ? [L.gamble.gold.x, L.gamble.gold.y] : 0, (L.gamble.coins || []).flatMap(c => [c.x, c.y])]; // (casino: la dorada y las monedas)
   if (L.season?.now) o.s = L.season.snow ? [L.season.now, L.season.snow.x, L.season.snow.y] : [L.season.now]; // (la estación y la bola de nieve)
   return o;
 }
@@ -57,6 +58,7 @@ export function unpackLevel(o) {
     const tl = { type: a[0], x: a[1], y: a[2] };
     if (TILES[a[0]].rotates && Number.isInteger(a[3]) && a[3] > 0 && a[3] < 4) tl.rot = a[3];
     if (a[0] === 'portal' && Number.isInteger(a[4]) && a[4] > 0 && a[4] < 7) tl.pair = a[4];
+    if (a[0] === 'dice' && Number.isInteger(a[3]) && a[3] >= 1 && a[3] <= 6) tl.t = a[3];
     tiles.push(tl);
   }
   const parCells = (Array.isArray(o.p) ? o.p : []).filter(a => Array.isArray(a) && inB(a[0], a[1]) && Number.isInteger(a[2]) && a[2] > 0 && a[2] < 100)
@@ -79,6 +81,14 @@ export function unpackLevel(o) {
       L.train = { path, stations: st, pos: tr.i, cars };
       L.tiles = L.tiles.filter(tl => !path.some(([x, y]) => x === tl.x && y === tl.y));
     }
+  }
+  // (casino) la casilla dorada y las monedas, en casillas sin piezas (las monedas, tampoco en la salida ni en el hoyo)
+  if (Array.isArray(o.g)) {
+    const gold = pt(o.g[0]), cf = Array.isArray(o.g[1]) ? o.g[1] : [], coins = [];
+    const empty = c => c && !used.has(c.x + ',' + c.y) && !L.train?.path.some(([x, y]) => x === c.x && y === c.y);
+    for (let i = 0; i + 1 < cf.length && coins.length < 200; i += 2) { const c = pt([cf[i], cf[i + 1]]);
+      if (empty(c) && !(c.x === hole.x && c.y === hole.y) && !(c.x === ball.x && c.y === ball.y) && !(gold && gold.x === c.x && gold.y === c.y) && !coins.some(q => q.x === c.x && q.y === c.y)) coins.push(c); }
+    if ((gold && empty(gold)) || coins.length) L.gamble = { gold: gold && empty(gold) ? gold : null, coins };
   }
   // la estación (y, en invierno, la bola de nieve en una casilla sin nada)
   if (Array.isArray(o.s) && SEASONS.includes(o.s[0])) {

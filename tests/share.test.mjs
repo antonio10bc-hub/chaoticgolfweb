@@ -41,3 +41,18 @@ test('compartir: un código roto o manipulado no se acepta', async () => {
   assert.equal(L.deckCounts.palo1, 2);
   assert.equal(L.deckCounts.trampa, undefined);
 });
+
+test('casino: el código guarda el número de cada dado, la casilla dorada y las monedas (y descarta las que no caben)', async () => {
+  const { packLevel, unpackLevel } = await import('../src/content/levels/share.js');
+  const L = { version: 1, name: 'Casino', cols: 6, rows: 6, hole: { x: 1, y: 0 }, ball: { x: 1, y: 5 }, parCells: [],
+    tiles: [{ type: 'dice', x: 3, y: 2, t: 5 }], deckCounts: { palo2: 3, ruleta: 1 },
+    gamble: { gold: { x: 4, y: 4 }, coins: [{ x: 2, y: 2 }, { x: 3, y: 2 }, { x: 1, y: 5 }, { x: 9, y: 9 }] } };
+  const back = unpackLevel(JSON.parse(JSON.stringify(packLevel(L))));
+  assert.deepEqual(back.tiles, [{ type: 'dice', x: 3, y: 2, t: 5 }]);
+  assert.deepEqual(back.gamble, { gold: { x: 4, y: 4 }, coins: [{ x: 2, y: 2 }] }, 'ni encima del dado, ni en la salida, ni fuera');
+  const { Game } = await import('../src/engine/game.js');
+  const g = Game.fromLevel(back, { seed: 1 });
+  const d = g.S.tiles[0];
+  assert.equal(d.t, 5); assert.ok(d.n && d.e && new Set([d.t, d.n, d.e, 7 - d.t, 7 - d.n, 7 - d.e]).size === 6, 'el dado, con sus caras');
+  assert.deepEqual(g.S.gamble.gold, { x: 4, y: 4 });
+});

@@ -615,7 +615,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - Pelota de logros **Fortuna** (10 · 50 · 100 victorias con la baraja): una ficha de casino (el canto a rayas y un aro
     discontinuo) · el aro de la ruleta (rojo, negro y la franja dorada) girando detrás · bañada en oro, con su destello, y dos
     monedas y un dado en órbita. También dibujada en la imagen de compartir.
-  - Pendiente: sus piezas en el creador (ya tiene su plantilla de mazo).
+  - **En el creador** (grupo Casino): el dado (se elige su número, del 1 al 6; con otro número, pulsar un dado lo cambia), la
+    moneda y la casilla dorada (una por nivel; ninguna pieza encima), y la plantilla de mazo Gambling. Con dorada, monedas o
+    ruletas en el mazo, el taller enseña el suelo ajedrezado. El código para compartir lleva el número de cada dado y la
+    dorada y las monedas (`o.g`), validadas al leerlo.
 - **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
   `styles/ultimate.css`). Su tarjeta va aparte, tras un separador pequeño, más grande que las demás (la lista se desplaza hasta
   ella), con paleta iridiscente y etérea (nácar con reflejos rosa, aguamarina, menta y oro pálido; nada de morados) y todo

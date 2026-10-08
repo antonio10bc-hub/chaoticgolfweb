@@ -131,3 +131,6 @@ html.reduceMotion .cell.gGold::before, html.reduceMotion .cell .gCoin, html.redu
 @keyframes bonusPick { 50% { transform: translate(-50%, -4px); } }
 .piece.bonusPick .cardOnCell { filter: drop-shadow(0 0 6px rgba(255,214,90,.95)); }
 html.reduceMotion .hint.bonusCta, html.reduceMotion .piece.bonusPick::after { animation: none; }
+
+/* el creador: el fantasma de la casilla dorada */
+.edGoldGhost { position: absolute; inset: 3px; border-radius: 5px; background: rgba(226,178,60,.6); box-shadow: inset 0 0 0 2px #FFE38A; }
