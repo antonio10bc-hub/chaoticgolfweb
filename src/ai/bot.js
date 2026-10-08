@@ -24,9 +24,13 @@ export const STYLES = {
   cautious: { self: 11, ready: 16, trap: 9, opp: 3, threat: 38, oppTrap: 4, orangeReserve: 40, reactMin: 70, reactChance: .25, tileBias: 0 },
   // caótico: le encanta llenar la mesa de búnkeres y portales y reacciona por impulso
   chaos: { self: 8, ready: 12, trap: 5, opp: 3, threat: 30, oppTrap: 6, orangeReserve: 4, reactMin: 18, reactChance: .75, tileBias: 26, noise: 6 },
+  // (contrarreloj) cazador: no quiere el hoyo, quiere golpear tu pelota (evaluateHunter)
+  // (contrarreloj) tu sitio cuando hay cazadores (el caddie y el simulador): como el tramposo, pero sin ponerse a tiro
+  prey: { self: 10, ready: 14, trap: 7, opp: 0, threat: 0, oppTrap: 0, orangeReserve: 9, reactMin: 26, reactChance: .6, tileBias: 0, danger: 26, close: 6 },
+  hunter: { hit: 70, push: 9, threat: 45, trap: 8, chase: 5, aim: 22, nearHole: 30, orangeReserve: 6, reactMin: 22, reactChance: .7, tileBias: 0, noise: 35 },
 };
-// todas las personalidades (el reparto al azar de Game.pve solo usa aggro / trick)
-export const STYLE_IDS = Object.keys(STYLES);
+// las personalidades de los rivales (el reparto al azar de Game.pve solo usa aggro / trick; el cazador es del contrarreloj)
+export const STYLE_IDS = Object.keys(STYLES).filter(k => k !== 'hunter' && k !== 'prey');
 // niveles de dificultad (S.aiLevel; sin él, 'normal' — el comportamiento de siempre):
 //   noise      ruido aleatorio sumado a cada jugada (cuanto más, más despistes)
 //   wild       probabilidad de jugar una carta cualquiera sin pensar (ni ver la victoria)
@@ -89,6 +93,7 @@ export function sinkThreat(g, b) {
 
 export function evaluate(g, p, style = 'trick') {
   const S = g.S, W = STYLES[style] || STYLES.trick;
+  if (style === 'hunter') return evaluateHunter(g, p, W);
   if (S.winner !== null) return S.winners.includes(p) ? WIN : -WIN;
   // (baraja del tren) si al acabar el turno el tren va a meter una pelota, pierde todo el mundo: casi tan malo como perder
   if (S.train && S.turn === p && g.trainThreat()) return -WIN * .8;
@@ -116,12 +121,42 @@ export function evaluate(g, p, style = 'trick') {
     if (snowed(me.b)) score -= W.trap * .5;
     score += me.th * W.ready + (me.n - 1) * 3;
   }
+  if (W.danger && me) for (const h of S.balls) { // (contrarreloj) cazadores a tiro o pegados: peligro
+    if (!h.hunter || h.holed) continue;
+    if (alignedClear(g, h, me.b)) score -= W.danger;
+    else if (Math.abs(h.x - me.b.x) + Math.abs(h.y - me.b.y) <= 2) score -= W.close;
+  }
   for (const [o, v] of best) {
-    if (o === p) continue;
+    if (o === p || S.hunters?.includes(o)) continue;
     score += Math.min(v.d, 8) * W.opp;
     score -= v.th * W.threat + (v.n - 1) * 3;
     if (g.inTrap(v.b)) score += W.oppTrap;
   }
+  return score;
+}
+
+// (contrarreloj) el cazador: cada golpe a tu pelota vale mucho (S.huntHits los cuenta el motor), y también alejarte del
+// hoyo, frenarte (búnker) y quitarte el tiro directo; se acerca a tu pelota y, mejor aún, se pone en línea a 1-3
+// casillas con el camino libre (el golpe del turno que viene). Meterse en el hoyo lo saca de la partida: lo evita.
+// Que ganes es lo peor; el JAQUE lo intenta evitar con sus naranjas como cualquier rival
+function evaluateHunter(g, p, W) {
+  const S = g.S;
+  if (S.winner !== null) return S.winners.includes(p) ? WIN : -WIN;
+  const me = S.balls.find(b => b.player === p);
+  if (!me || me.holed) return -WIN * .5;
+  const prey = S.balls.filter(b => !b.hunter && !b.decoy && !b.holed);
+  let score = (S.huntHits || 0) * W.hit;
+  const hole = S.hole, hd = b => Math.abs(b.x - hole.x) + Math.abs(b.y - hole.y);
+  let near = Infinity;
+  for (const v of prey) {
+    score += Math.min(hd(v), 10) * W.push - sinkThreat(g, v) * W.threat;
+    if (g.inTrap(v)) score += W.trap;
+    const d = Math.abs(me.x - v.x) + Math.abs(me.y - v.y);
+    if (d < near) near = d;
+    if (alignedClear(g, me, v)) score += W.aim; // en línea y a tiro: el golpe que viene
+  }
+  if (near < Infinity) score -= near * W.chase;
+  if (hd(me) <= 1) score -= W.nearHole; // pegado al hoyo: cualquier empujón lo mete
   return score;
 }
 
@@ -201,7 +236,7 @@ export function enumeratePlays(game, p, filter = () => true) {
 
 /* ---------- decisiones ---------- */
 
-const styleOf = (game, p) => game.S.aiStyles?.[p] || 'trick';
+const styleOf = (game, p) => game.S.aiStyles?.[p] || (game.S.hunters ? 'prey' : 'trick');
 
 // difícil: a las mejores jugadas negras se les suma (a medias) lo que aporta la mejor
 // segunda carta negra que quedaría en la mano — prefiere preparar combinaciones
@@ -210,7 +245,7 @@ function lookahead(scored, p, style) {
     .sort((a, b) => b.score - a.score).slice(0, 8);
   for (const pl of top) {
     const g = pl.result;
-    if (g.S.blackPlayed >= 2) continue;
+    if (g.S.blackPlayed >= g.blackMax(p)) continue;
     const now = evaluate(g, p, style);
     let bestNext = now;
     for (const nx of enumeratePlays(g, p, d => d.color === 'black')) {

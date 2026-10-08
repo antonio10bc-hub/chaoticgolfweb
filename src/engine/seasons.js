@@ -307,7 +307,7 @@ export const seasonMethods = {
       if (caught.length) { riders.push(...caught); this.log('log.snowCatches', { b: joinAnd(caught.map(b => this.ptag(b))) }); this.tip('snow'); }
       for (const b of caught) this.anim({ t: 'settle', p: 'b' + b.player });
       if (!hole && this.isMainHole(sn.x, sn.y)) {
-        const inside = S.balls.filter(b => b.holed && !b.decoy);
+        const inside = S.balls.filter(b => b.holed && !b.decoy && !b.hunter);
         if (S.jaque && S.winner !== null && inside.length) { // se lleva la pelota ganadora: JAQUE anulado
           for (const b of inside) { b.holed = false; b.x = sn.x; b.y = sn.y; riders.push(b); this.anim({ t: 'appear', p: 'b' + b.player, x: sn.x, y: sn.y }); }
           S.winner = null; S.winners = []; S.jaque = false;

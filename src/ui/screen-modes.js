@@ -23,13 +23,15 @@ import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
 import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
-import { generateLevel, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
+import { generateLevel, placeHunters, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
-import { startLevel, puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
+import { puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
 import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
-import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup, startPveMatch } from './screen-pve.js';
-import { PERSONAS, personaById, faceSVG } from './persona.js';
+import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup, startPveMatch, applyOwnLook } from './screen-pve.js';
+import { PERSONAS, personaById, faceSVG, HUNTER_NAMES } from './persona.js';
+import { isBot } from './players.js';
+import { loadProfile } from './profile.js';
 import { DECKS, ULT_DECKS, deckById as deckOfId } from '../content/decks.js';
 import { currentCombo, setCombo, toggleDeck, comboLabel, comboHistory, openComboHistory } from './ultimate.js';
 import { SEASON_ICON } from './season-art.js';
@@ -51,7 +53,9 @@ const store = {
 };
 const RUSH_KEY = 'chaoticgolf_rush';
 export const RUSH_HOLES = 5;
-const RUSH_LIMITS = [60, 75, 90, 100, 110]; // segundos de cada hoyo (más grandes, más tiempo)
+// segundos de cada hoyo (más grandes, más tiempo). Solo corre en tu turno: los turnos de los cazadores no lo gastan
+const RUSH_LIMITS = [40, 45, 50, 55, 60];
+export const RUSH_HUNTERS = 2; // cazadores en cada hoyo (src/ai/bot.js, estilo 'hunter')
 
 /* =============== reto diario =============== */
 const dailyDate = () => dateKey();
@@ -200,11 +204,27 @@ function newRush() {
   const s = randomSeed();
   return { seeds: Array.from({ length: RUSH_HOLES }, (_, i) => (s + i * 7919) >>> 0), hole: 0, total: RUSH_HOLES, scores: [] };
 }
+// cada hoyo: un campo generado (dificultad 0…4) y dos cazadores en el borde que solo quieren golpearte (si entran en el
+// hoyo, salen de la partida). Es una partida contra la máquina (la IA mueve a los cazadores); empiezas tú
 export function startRushHole(run = store.get(RUSH_KEY)) {
   if (!run) run = newRush();
   store.set(RUSH_KEY, run);
-  const lvl = generateLevel(run.seeds[run.hole], run.hole); // dificultad 0…4
-  startLevel(lvl, 'story', null, { variant: 'rush', run: { ...run, elapsed: 0, limit: RUSH_LIMITS[run.hole] || 90 }, seed: run.seeds[run.hole] ^ 0x5bd1e995 });
+  const seed = run.seeds[run.hole], lvl = generateLevel(seed, run.hole);
+  lvl.hunters = placeHunters(lvl, seed, RUSH_HUNTERS);
+  const game = Game.fromLevel(lvl, { seed: seed ^ 0x5bd1e995 });
+  startGame(game, 'pve', { level: lvl, variant: 'rush', run: { ...run, elapsed: 0, limit: RUSH_LIMITS[run.hole] || 60 } });
+  dressHunters(game.S, seed);
+  updateMenuBtn();
+  musicScene('game', { newGame: true });
+  showScreen('game');
+  saveGame();
+}
+// tu color y tu nombre; los cazadores, con nombre de matón (sacado de la semilla del hoyo)
+function dressHunters(S, seed) {
+  applyOwnLook(S, [0], [loadProfile()]);
+  const r = mulberry32((seed ^ 0x3c6ef372) >>> 0), names = [...HUNTER_NAMES];
+  for (const p of S.hunters || []) S.playerNames[p] = names.splice(Math.floor(r() * names.length), 1)[0];
+  app.viewer = 0;
 }
 export async function startRush(fresh) {
   if (!await modeIntro('rush')) return;
@@ -216,7 +236,7 @@ export async function startRush(fresh) {
 const rushLeft = r => Math.max(0, (r.limit || 90) - (r.elapsed || 0));
 // al embocar en contrarreloj: puntos del hoyo, total y siguiente (o final)
 export function rushHoleDone() {
-  const run = app.run, turns = (stats?.turnos || 0) + 1;
+  const run = app.run, turns = ((app.mode === 'pve' ? stats?.misTurnos : stats?.turnos) || 0) + 1; // (tus turnos: los de los cazadores no cuentan)
   const sc = rushScore(turns, rushLeft(run));
   const scores = [...(run.scores || []), sc.total];
   const sum = scores.reduce((a, b) => a + b, 0);
@@ -296,7 +316,8 @@ export function modeChipText() {
   return '';
 }
 
-// reloj del contrarreloj (cuenta atrás): corre con la partida a la vista, sin pausa y sin terminar.
+// reloj del contrarreloj (cuenta atrás): corre con la partida a la vista, sin pausa y sin terminar, y solo en tu turno
+// (mientras juegan o reaccionan los cazadores se para).
 // Cuanto menos tiempo queda, más rojo se tiñe el tablero; en los últimos 10 s late y hace tic.
 let lastTick = 0, lastSec = -1;
 export function paintRushTimer() {
@@ -319,6 +340,7 @@ setInterval(() => {
   lastTick = now;
   const r = app.run;
   if (app.variant !== 'rush' || !r || r.timeUp || app.screen !== 'game' || app.paused || !app.game || app.game.S.winner !== null) { paintRushTimer(); return; }
+  if (isBot(app.game.S.turn) || app.ai.acting) { paintRushTimer(); return; } // (turno de un cazador: tu tiempo no corre)
   r.elapsed = (r.elapsed || 0) + dt;
   const left = rushLeft(r), sec = Math.ceil(left);
   if (left <= 10 && sec !== lastSec && sec > 0) sfx('tick');

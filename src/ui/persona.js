@@ -14,6 +14,8 @@ export const PERSONAS = [
   { id: 'chispa', name: 'Chispa', style: 'chaos' }, { id: 'zas', name: 'Zas', style: 'chaos' }, { id: 'kiko', name: 'Kiko', style: 'chaos' },
 ];
 export const personaById = id => PERSONAS.find(p => p.id === id) || null;
+// (contrarreloj) nombres de los cazadores: no son personajes del catálogo (no salen de rivales ni llevan historial)
+export const HUNTER_NAMES = ['Mazo', 'Garrote', 'Porra', 'Tralla', 'Gancho', 'Zarpa'];
 
 // reparte personajes a los asientos de bots: los elegidos (ids) y, para el resto, otros al azar
 // sin repetir. Escribe su estilo y su nombre en el estado (metadatos: no afectan a las reglas).
@@ -41,13 +43,14 @@ export function botName(p) {
       const st = S.aiStyles[i];
       if (!st) continue;
       const list = PERSONAS.filter(pp => pp.style === st);
+      if (!list.length) continue; // (cazadores: su nombre está en S.playerNames)
       let k = (off + i) % list.length, tries = 0;
       while (used.has(list[k].name) && tries++ < list.length) k = (k + 1) % list.length;
       used.add(list[k].name); names[i] = list[k].name;
     }
     nameCache = { game: g, names };
   }
-  return nameCache.names[p] || null;
+  return nameCache.names[p] || (S.hunters?.includes(p) && S.playerNames?.[p]) || null; // (cazadores: su nombre propio)
 }
 
 /* ---------- humor ---------- */
@@ -76,7 +79,8 @@ export function faceSVG(p, forceStyle = null, forceMood = null) {
     think: 'M11 13.5l7 .8M22 12.5l7 2',
     happy: 'M11 13.5q3.5-2.4 7 0M22 13.5q3.5-2.4 7 0',
     smug: 'M11 14l7 .2M22 12.8l7 1.4',
-    idle: style === 'aggro' ? 'M11 13.6l7 2M29 13.6l-7 2'
+    idle: style === 'hunter' ? 'M10.5 13l7.5 3.2M29.5 13l-7.5 3.2' // (cazador: ceño muy fruncido)
+      : style === 'aggro' ? 'M11 13.6l7 2M29 13.6l-7 2'
       : style === 'cautious' ? 'M11 14.5l7-1.6M29 14.5l-7-1.6'      // cejas de preocupación
       : style === 'chaos' ? 'M11 12.5l7 2.5M22 15q3.5-3 7-1'         // una ceja arriba, otra abajo
       : 'M11 14q3.5-1.6 7 0M22 14q3.5-1.6 7 0',
@@ -87,7 +91,8 @@ export function faceSVG(p, forceStyle = null, forceMood = null) {
     angry: '<path d="M14 28.5h12" stroke="#242424" stroke-width="2.4" stroke-linecap="round"/><path d="M16 28.5v-1.4M20 28.5v-1.6M24 28.5v-1.4" stroke="#242424" stroke-width="1.4"/>',
     think: '<circle cx="23" cy="27.5" r="2" fill="#242424"/>',
     smug: '<path d="M15 26.5q6 3.5 11-1.5" fill="none" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>',
-    idle: style === 'aggro'
+    idle: style === 'hunter' ? '<path d="M14 28.5h12" stroke="#242424" stroke-width="2.4" stroke-linecap="round"/><path d="M16 28.5v-1.4M20 28.5v-1.6M24 28.5v-1.4" stroke="#242424" stroke-width="1.4"/>'
+      : style === 'aggro'
       ? '<path d="M15 27.5q5 1.6 10 0" fill="none" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>'
       : style === 'cautious' ? '<path d="M17 28h6" stroke="#242424" stroke-width="2.2" stroke-linecap="round"/>'
       : style === 'chaos' ? '<path d="M13 26l3 2.5 3-2.5 3 2.5 3-2.5 2 1.5" fill="none" stroke="#242424" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'

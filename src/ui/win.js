@@ -59,7 +59,7 @@ export function showWin() {
   const S = app.game.S, mode = app.mode, slot = slotOf();
   const names = joinAnd(S.winners.map(displayName));
   const multi = multiHuman(), me = S.human;
-  const solo = mode === 'story' || mode === 'test';
+  const solo = mode === 'story' || mode === 'test' || slot === 'rush'; // (contrarreloj: los cazadores no ganan; el hoyo es tuyo)
   // con varias personas nadie "pierde" frente a la pantalla salvo que ganen los bots
   // (el tren ha metido una pelota él solo: pierde todo el mundo, también en un nivel)
   const lost = !!S.trainWin || (mode === 'pve' && !humansOf().some(h => S.winners.includes(h)));
@@ -88,7 +88,7 @@ export function showWin() {
   $('winStyle').innerHTML = fx ? `<span class="wsChip ${style}"><svg class="i" aria-hidden="true"><use href="#${fx.icon}"/></svg>${esc(t('win.style.' + style))}</span>` : '';
 
   const box = $('winOverlay').querySelector('.box');
-  const turns = ((slot === 'daily' || slot === 'weekly') && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
+  const turns = ((slot === 'daily' || slot === 'weekly' || slot === 'rush') && mode === 'pve' ? stats?.misTurnos || 0 : stats?.turnos || 0) + 1;
   let chips = '', btns = '', streakGoal = false;
   const btn = (act, label, main = false) => `<button data-act="${act}" class="${main ? 'btn-primary btn-lg' : 'btn-light'}">${esc(label)}</button>`;
   const recChip = (txt, isNew = false) => `<span class="winRec${isNew ? ' new' : ''}">${esc(txt)}</span>`;

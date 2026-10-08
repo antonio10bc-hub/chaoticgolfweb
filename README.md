@@ -56,7 +56,7 @@ src/
     tiles/                 losetas (búnker, portal) con sus rasgos: trap / portal
     levels/story/          niveles de Lo básico en JSON (+ index.json)
     levels/puzzles/        puzles de "gana en 1 turno" (mano fija)
-    levels/generate.js     generador determinista (contrarreloj)
+    levels/generate.js     generador determinista (contrarreloj) y salida de sus cazadores
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
     autoplay.js            partidas bot-contra-bot instantáneas (simulador y tests)
@@ -262,10 +262,18 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
-  multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con cuenta atrás; el tablero se tiñe de rojo según se acaba
-  el tiempo; puntos por turnos y segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
+  multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con muy poco tiempo cada uno —40, 45, 50, 55 y
+  60 s: `RUSH_LIMITS`— que solo corre en tu turno; el tablero se tiñe de rojo según se acaba; puntos por tus turnos y
+  segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
   mecánica —búnker; río y pelota de obstáculo; portales y madera; lago, esquinas y lanzadera; todo en campo grande—,
-  con las piezas en la zona entre la pelota y el hoyo: `src/content/levels/generate.js`) y 18 **desafíos** en tres grupos de 6
+  con las piezas en la zona entre la pelota y el hoyo: `src/content/levels/generate.js`). En cada hoyo salen **dos
+  cazadores** (`RUSH_HUNTERS`) en casillas del borde, lejos de tu pelota (`placeHunters`): son jugadores de la máquina
+  con nombre de matón y cara de pocos amigos que solo quieren golpear tu pelota (estilo `hunter` de `src/ai/bot.js`:
+  cada golpe, que el motor cuenta en `S.huntHits`, alejarte del hoyo, quitarte el tiro y ponerse a tiro; con algo de
+  imprecisión). Juegan después de ti, una carta negra por turno y nunca fuera de su turno (ni reacciones ni JAQUE); no
+  pueden ganar y, si entran en el hoyo, salen de la partida (`hunterGone`). Por eso el hoyo es una partida contra la
+  máquina (`app.mode = 'pve'`, variante `rush`), con sus turnos siempre a doble velocidad. La presentación del modo se
+  vuelve a enseñar una vez con las reglas nuevas (`VER` en `mode-intro.js`). Y 18 **desafíos** en tres grupos de 6
   por dificultad (calentamiento, intermedio, experto). Viven en `src/content/challenges.js` (sin interfaz): cada uno
   tiene su tamaño de campo, mazo, rivales, reglas y un **campo diseñado a mano** en coordenadas relativas al recorrido
   (hoyo, columna de PAR y salidas), que cada partida varía con su semilla (se refleja de lado, cambian giros o una pieza
@@ -700,7 +708,7 @@ npm run preload                   # regenera la precarga de index.html (tras añ
 npm run sim:challenges -- pinball,prism 60      # desafíos: campo en ASCII + rondas, ventaja por salida, uso de mecánicas
 npm run sim:challenges -- ch 60 0               # todos los desafíos (weekly: las semanales · base: partidas normales)
 npm run sim:challenges -- vars 80 1 mis-variantes.mjs   # probar variantes de un campo (export default [{ id, board, layout, … }])
-npm run sim:rush -- 200                          # contrarreloj: turnos por hoyo generado, hoyos sin terminar
+npm run sim:rush -- 200 2                        # contrarreloj: tus turnos por hoyo con 2 cazadores, golpes recibidos, sin terminar
 npm run puzzles:audit                            # puzles: soluciones, % de jugadas que ganan, cartas o piezas que sobran
 npm run puzzles:search -- lakeCorner 20000 5     # buscar puzles nuevos de un tema (candidatos en puzzle-candidates/)
 npm run puzzles:show -- lakeCorner 0             # ver un candidato: tablero y solución paso a paso

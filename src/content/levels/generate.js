@@ -1,4 +1,4 @@
-// Generador de niveles en solitario (reto diario y contrarreloj).
+// Generador de niveles en solitario (reto diario y contrarreloj) y la salida de los cazadores del contrarreloj.
 // Determinista: la misma semilla da siempre el mismo tablero; el mazo lo baraja Game.fromLevel
 // con esa misma semilla, así que para todos sale igual.
 import { mulberry32 } from '../../engine/rng.js';
@@ -107,6 +107,31 @@ export function generateLevel(seed, difficulty = 2) {
     parCells, tiles, extraBalls,
     deckCounts: T.long ? { ...DECK, palo4: 3, palo1: 3 } : { ...DECK },
   };
+}
+
+// (contrarreloj) dónde empiezan los n cazadores: casillas del borde del tablero, libres, lejos de tu pelota (nunca a su
+// lado: al menos a 3 pasos y fuera de su fila y columna inmediatas), sin tocar el hoyo y separados entre sí.
+// Determinista con la semilla del hoyo
+export function placeHunters(L, seed, n = 2) {
+  const rand = mulberry32((seed ^ 0x6a09e667) >>> 0);
+  const { cols, rows } = L, d = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  const busy = new Set([...L.tiles, ...(L.extraBalls || []), ...L.parCells, L.hole, L.ball].map(c => c.x + ',' + c.y));
+  const edge = [];
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    if (x > 0 && y > 0 && x < cols - 1 && y < rows - 1) continue;
+    const c = { x, y };
+    if (busy.has(x + ',' + y) || d(c, L.ball) < 3 || d(c, L.hole) < 2) continue;
+    if (Math.abs(x - L.ball.x) <= 1 && Math.abs(y - L.ball.y) <= 1) continue;
+    edge.push(c);
+  }
+  const out = [];
+  for (let i = 0; i < n && edge.length; i++) {
+    // el primero en cualquier sitio del borde; los siguientes, lejos de los ya puestos (que no empiecen juntos)
+    const pool = out.length ? edge.filter(c => out.every(o => d(c, o) >= 4)) : edge;
+    const from = pool.length ? pool : edge, c = from[Math.floor(rand() * from.length)];
+    out.push(c); edge.splice(edge.indexOf(c), 1);
+  }
+  return out;
 }
 
 // semilla del día (hora local): "2026-09-24" → número

@@ -210,8 +210,9 @@ function renderSeats(g, owner) {
     const thinking = app.ai.thinkingOf === p;
     const won = S.winners.includes(p);
     const cta = jaqueCta(g, p);
-    const cls = 'seat' + (active ? ' active' : '') + (thinking ? ' thinking' : '') + (won ? ' won' : '') + (cta ? ' cta' : '') + (isBotSeat(p) ? ' bot' : '');
-    const status = won ? t('seat.inHole') : cta ? t('seat.canReact')
+    const gone = g.hunterGone(p); // (contrarreloj) el cazador que ha entrado en el hoyo ya no juega
+    const cls = 'seat' + (gone ? ' gone' : '') + (active ? ' active' : '') + (thinking ? ' thinking' : '') + (won ? ' won' : '') + (cta ? ' cta' : '') + (isBotSeat(p) ? ' bot' : '');
+    const status = gone ? t('seat.hunterOut') : won ? t('seat.inHole') : cta ? t('seat.canReact')
       : active ? (isBotSeat(p) ? t('seat.thinking') : t('seat.playing')) : t('seat.waiting');
     const dots = thinking ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : '';
     const cards = S.hands[p].map((_, i) => cardHTML(g, p, i, { mini: true })).join('');
@@ -219,7 +220,7 @@ function renderSeats(g, owner) {
     const canAsk = multiHuman() && !isBotSeat(p) && app.reacting == null && app.passFor == null && S.hands[p].length
       && !(S.winner !== null && !S.jaque) && !S.winners.includes(p);
     const react = canAsk ? `<button class="btn-light btn-sm seatReact" data-act="react" data-n="${p}">${esc(t('hotseat.react'))}</button>` : '';
-    const tag = isBotSeat(p) ? ` <span class="botTag">${esc(t('seat.bot'))} · ${playerTag(p)}</span>` : '';
+    const tag = isBotSeat(p) ? ` <span class="botTag">${esc(t(S.hunters?.includes(p) ? 'seat.hunter' : 'seat.bot'))} · ${playerTag(p)}</span>` : '';
     return `<div class="${cls}" data-player="${p}" style="--pc:${col}">` +
       `<span class="seatAv">${avatarHTML(p)}<b class="seatBadge" aria-hidden="true">${S.hands[p].length}</b></span>` +
       `<div class="seatBody"><div class="seatName">${esc(displayName(p))}${tag}</div>` +

@@ -243,6 +243,18 @@ export class Game {
       hands: [[]],
     }), opts);
     const S = g.S;
+    // (contrarreloj) cazadores: jugadores de la máquina que solo quieren golpear tu pelota; no pueden ganar y, si entran en
+    // el hoyo, salen de la partida. Juegan después de ti, en su orden (src/ai/bot.js, estilo 'hunter')
+    if (L.hunters?.length) {
+      S.hunters = [];
+      for (const h of L.hunters) {
+        const p = S.balls.length;
+        S.balls.push({ player: p, x: h.x, y: h.y, spawnX: h.x, spawnY: h.y, holed: false, hunter: true });
+        S.hands.push([]); S.hunters.push(p);
+      }
+      S.nPlayers = S.balls.length; S.human = 0; S.huntHits = 0;
+      S.aiStyles = S.balls.map(b => b.hunter ? 'hunter' : null);
+    }
     // pelotas de obstáculo (señuelos): no juegan turnos y si entran en el hoyo desaparecen
     if (L.extraBalls) for (const eb of L.extraBalls) {
       S.balls.push({ player: S.balls.length, x: eb.x, y: eb.y, spawnX: eb.x, spawnY: eb.y, holed: false, decoy: true });
@@ -253,6 +265,7 @@ export class Game {
     g.fillDeck(L.deckCounts);
     if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
     else g.drawTo2(0);
+    for (const p of S.hunters || []) g.drawTo2(p);
     g.log('log.levelLoaded');
     return g;
   }
@@ -307,7 +320,19 @@ export class Game {
 
   /* ---------- eventos / log ---------- */
   emit(ev) { this.events.push(ev); }
-  anim(ev) { this.events.push(ev); }
+  anim(ev) {
+    this.events.push(ev);
+    if (ev.t === 'impact' && this.S.hunters) this.countHuntHit(ev); // (contrarreloj) los golpes de los cazadores
+  }
+  // (contrarreloj) un cazador golpea una pelota que no es de cazador ni de obstáculo: un golpe más (la IA los busca)
+  countHuntHit(ev) {
+    const S = this.S, a = S.balls.find(b => 'b' + b.player === ev.p), v = S.balls.find(b => 'b' + b.player === ev.target);
+    if (a?.hunter && v && !v.hunter && !v.decoy) S.huntHits = (S.huntHits || 0) + 1;
+  }
+  // (contrarreloj) ¿ha salido ya de la partida este cazador? (ha entrado en el hoyo)
+  // cartas negras por turno: 2 (los cazadores del contrarreloj, 1)
+  blackMax(p) { return this.S.hunters?.includes(p) ? 1 : 2; }
+  hunterGone(p) { return !!this.S.hunters?.includes(p) && this.S.balls.some(b => b.player === p && b.hunter && b.holed); }
   takeEvents() { const e = this.events; this.events = []; return e; }
   log(key, params) {
     if (this.lite) return; // simulaciones de la IA: sin log
@@ -882,6 +907,11 @@ export class Game {
       this.tip('decoy');
       return;
     }
+    if (wb && wb.hunter) { // (contrarreloj) un cazador no gana: se queda en el hoyo y sale de la partida (sus cartas, al descarte)
+      this.log('log.hunterGone', { b: playerTag(wb.player) });
+      S.discard.push(...S.hands[pl]); S.hands[pl] = [];
+      return;
+    }
     pl = ownerOf(pl); // (multiverso) la copia de una pelota gana por su jugador
     if (this._trainAuto) { // el tren, solo (al acabar un turno, sin que nadie juegue), ha metido una pelota: gana el tren
       S.winner = -1; S.winners = []; S.trainWin = true;
@@ -1080,7 +1110,7 @@ export class Game {
   popHoledBalls(h = null) {
     const S = this.S;
     const hx = (h || S.hole).x, hy = (h || S.hole).y;
-    for (const b of S.balls.filter(bb => bb.holed && !bb.decoy && S.winners.includes(ownerOf(bb.player)) && (!h || (bb.x === hx && bb.y === hy)))) { // (con sus copias)
+    for (const b of S.balls.filter(bb => bb.holed && !bb.decoy && !bb.hunter && S.winners.includes(ownerOf(bb.player)) && (!h || (bb.x === hx && bb.y === hy)))) { // (con sus copias)
       b.holed = false;
       let px = hx, py = hy;
       const occ = this.ballAt(px, py);
@@ -1100,7 +1130,7 @@ export class Game {
       this.log('log.ballLeavesHole', { b: playerTag(b.player), x: px, y: py });
     }
     if (h) { // (las que siguen dentro de otro hoyo)
-      S.winners = [...new Set(S.balls.filter(bb => bb.holed && !bb.decoy).map(bb => ownerOf(bb.player)))].filter(o => S.winners.includes(o));
+      S.winners = [...new Set(S.balls.filter(bb => bb.holed && !bb.decoy && !bb.hunter).map(bb => ownerOf(bb.player)))].filter(o => S.winners.includes(o));
       if (S.winners.length) { S.winner = S.winners[0]; return; }
     }
     S.winner = null; S.winners = []; S.jaque = false;
@@ -1115,7 +1145,8 @@ export class Game {
     if (!def) return false;
     // durante el JAQUE solo se puede reaccionar con cartas naranjas
     if (S.winner !== null && (!S.jaque || def.color !== 'orange')) return false;
-    if (def.color === 'black' && (p !== S.turn || S.blackPlayed >= 2)) return false;
+    if (def.color === 'black' && (p !== S.turn || S.blackPlayed >= this.blackMax(p))) return false;
+    if (p !== S.turn && S.hunters?.includes(p)) return false; // (contrarreloj) los cazadores solo juegan en su turno: no reaccionan ni salvan el JAQUE
     if (def.canPlay && !def.canPlay(this, p)) return false;
     return true;
   }
@@ -1419,7 +1450,7 @@ export class Game {
   pickHoled(pl) {
     const pd = this.pending;
     if (!pd || pd.kind !== 'pickHoled') return false;
-    const b = this.S.balls.find(bb => bb.player === pl && bb.holed) || this.S.balls.find(bb => bb.holed && !bb.decoy && ownerOf(bb.player) === pl);
+    const b = this.S.balls.find(bb => bb.player === pl && bb.holed) || this.S.balls.find(bb => bb.holed && !bb.decoy && !bb.hunter && ownerOf(bb.player) === pl);
     if (!b) return false;
     this.pending = { kind: 'move', p: pd.p, idx: pd.idx, n: 1, ball: b, extract: true, targets: this.straightTargets(b, 1) };
     return true;
@@ -1481,7 +1512,7 @@ export class Game {
     if (!tr) return 0;
     const L = tr.path.length;
     let moved = 0, left = loop ? L : stops;
-    const sunk = () => this.S.balls.reduce((n, b) => n + (b.holed && !b.decoy ? 1 : 0), 0), sunk0 = sunk();
+    const sunk = () => this.S.balls.reduce((n, b) => n + (b.holed && !b.decoy && !b.hunter ? 1 : 0), 0), sunk0 = sunk();
     this.log(loop ? 'log.trainLoop' : 'log.trainGoes', { n: stops });
     for (let guard = 0; left > 0 && guard < L * 5; guard++) {
       if (!this.trainStep()) { this.log('log.trainBlocked'); break; }
@@ -1549,7 +1580,7 @@ export class Game {
 
   // empuja el hoyo una casilla (como una pelota); durante el JAQUE las pelotas embocadas salen a su lado
   trainPushHole(dir) {
-    const S = this.S, hx = S.hole.x, hy = S.hole.y, holed = S.balls.filter(b => b.holed && !b.decoy);
+    const S = this.S, hx = S.hole.x, hy = S.hole.y, holed = S.balls.filter(b => b.holed && !b.decoy && !b.hunter);
     this.log('log.trainPushHole');
     this.moveHole(dir, 1);
     if (S.hole.x === hx && S.hole.y === hy) return false;
@@ -1650,8 +1681,9 @@ export class Game {
 
   finishTurn() {
     const S = this.S;
-    this.drawTo2(S.turn);
+    if (!this.hunterGone(S.turn)) this.drawTo2(S.turn);
     S.turn = (S.turn + 1) % S.nPlayers;
+    for (let k = 0; k < S.nPlayers && this.hunterGone(S.turn); k++) S.turn = (S.turn + 1) % S.nPlayers; // (contrarreloj) el cazador que ha salido ya no juega
     S.blackPlayed = 0;
     S.playedThisTurn = 0;
     for (const tl of S.tiles) if (isLauncher(tl)) tl.rot = ((tl.rot || 0) + 1) % 4; // (minigolf) cada turno, un cuarto de vuelta

@@ -349,7 +349,7 @@ export function render() {
   if (a && (g.pending || g.S.hands[a.p]?.[a.idx] !== a.key || !g.canPlay(a.p, a.key))) app.armed = null;
   if (app.armed && !app.armed.targets) app.armed.targets = cardTargets(app.armed.p, app.armed.idx) || []; // (dónde tocar para jugarla)
   passCheck(); // multijugador local: pasar el dispositivo a quien le toca (antes de pintar las manos)
-  setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting)); // (ajuste: turnos de la máquina más rápidos)
+  setBotTempo(app.mode === 'pve' && (isBot(g.S.turn) || app.ai.acting), app.variant === 'rush'); // (ajuste: turnos de la máquina más rápidos; los cazadores, siempre)
   hud.renderTopbar();
   renderJaque();
   renderBoard();

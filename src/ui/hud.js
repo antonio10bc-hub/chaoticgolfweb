@@ -25,9 +25,9 @@ export function renderTopbar() {
   const title = S.winner !== null && !S.jaque ? t('turn.over')
     : (app.mode === 'pve' && mine && !multiHuman()) || S.nPlayers === 1 ? t('turn.yours') : t('turn.ofName', { name: displayName(p) });
   const sub = isBotSeat(p) && app.ai.thinkingOf === p ? t('turn.thinking') : t('turn.blacksLeft');
-  const left = Math.max(0, 2 - S.blackPlayed);
+  const max = g.blackMax(p), left = Math.max(0, max - S.blackPlayed); // (los cazadores del contrarreloj, una)
   const pips = `<span class="pips" aria-label="${esc(t('turn.blacksAria', { n: left }))}">` +
-    [0, 1].map(i => `<i class="${i < left ? 'on' : ''}"></i>`).join('') + `</span>`;
+    Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('') + `</span>`;
   set(pill, `${avatarHTML(p)}<span class="tpText"><b>${esc(title)}</b>` +
     `<small>${esc(sub)}${isBotSeat(p) && app.ai.thinkingOf === p ? '<span class="thinkDots"><i></i><i></i><i></i></span>' : ''}</small></span>${pips}`);
 

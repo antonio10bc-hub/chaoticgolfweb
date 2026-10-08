@@ -12,7 +12,7 @@ const OLD_KEY = 'chaoticgolf_save'; // formato anterior: un único guardado
 const VERSION = 1;
 export const SLOTS = ['story', 'puzzle', 'daily', 'rush', 'pve', 'challenge', 'weekly'];
 export const slotOf = (mode = app.mode, variant = app.variant) => variant || mode;
-export const VS_SLOTS = ['pve', 'challenge', 'daily', 'weekly']; // contra la máquina (al continuar arranca la IA)
+export const VS_SLOTS = ['pve', 'challenge', 'daily', 'weekly', 'rush']; // contra la máquina (al continuar arranca la IA; el contrarreloj, por sus cazadores)
 
 const finished = S => S.winner !== null && !S.jaque;
 

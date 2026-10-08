@@ -6,13 +6,16 @@ import { t } from '../i18n/index.js';
 
 const KEY = 'chaoticgolf_intros';
 const ICON = { daily: 'i-calendar', rush: 'i-timer', challenge: 'i-bolt', weekly: 'i-flag' };
+// versión de cada presentación: si cambian las reglas del modo, se vuelve a enseñar una vez (contrarreloj 2: los cazadores)
+const VER = { rush: 2 };
+const seenKey = id => VER[id] ? id + VER[id] : id;
 const seen = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
-const markSeen = id => { try { localStorage.setItem(KEY, JSON.stringify({ ...seen(), [id]: true })); } catch (e) { /* sin storage */ } };
+const markSeen = id => { try { localStorage.setItem(KEY, JSON.stringify({ ...seen(), [seenKey(id)]: true })); } catch (e) { /* sin storage */ } };
 export const resetModeIntros = () => { try { localStorage.removeItem(KEY); } catch (e) { /* sin storage */ } };
 
 // true = seguir (ya vista, o aceptada); false = la ha cerrado sin jugar
 export function modeIntro(id) {
-  if (!ICON[id] || seen()[id]) return Promise.resolve(true);
+  if (!ICON[id] || seen()[seenKey(id)]) return Promise.resolve(true);
   return new Promise(resolve => {
     const dlg = $('dialog');
     const points = t(`intro.${id}.points`).split('|');

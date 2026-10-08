@@ -26,7 +26,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'multiverse', chaoticgolf_gift: 'open', ...seed });
+      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'multiverse', chaoticgolf_gift: 'open', ...seed });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
@@ -274,6 +274,31 @@ it('primera vez en un modo: la presentación sale una sola vez', async () => {
   await click('[data-mode="rushNew"]'); await sleep(600);
   assert.equal(await page.$('#dialog[open] .intro'), null); // ya vista: arranca directamente
   assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
+});
+
+it('contrarreloj: dos cazadores en el borde, lejos de ti; su turno no gasta tu tiempo y no pueden ganar', async () => {
+  await fresh();
+  await click('#modesBtn'); await sleep(300);
+  await click('[data-mtab="special"]'); await sleep(300);
+  await click('[data-mode="rushNew"]'); await confirmIfAsked(); await sleep(900);
+  const s0 = await app(() => { const { app } = window.chaoticGolf, S = app.game.S;
+    return { mode: app.mode, v: app.variant, n: S.nPlayers, hunters: S.hunters, turn: S.turn, me: S.balls[0], hs: S.hunters.map(p => S.balls[p]), cols: S.cols, rows: S.rows,
+      seats: document.querySelectorAll('#seats .seat').length, limit: app.run.limit }; });
+  assert.equal(s0.v, 'rush'); assert.equal(s0.mode, 'pve');
+  assert.deepEqual(s0.hunters, [1, 2]); assert.equal(s0.turn, 0, 'empiezas tú');
+  assert.equal(s0.seats, 2, 'los cazadores, en sus asientos');
+  assert.ok(s0.limit <= 40, 'poco tiempo: ' + s0.limit);
+  for (const h of s0.hs) {
+    assert.ok(h.x === 0 || h.y === 0 || h.x === s0.cols - 1 || h.y === s0.rows - 1, 'en el borde');
+    assert.ok(Math.abs(h.x - s0.me.x) + Math.abs(h.y - s0.me.y) >= 3, 'lejos de ti');
+  }
+  // tu turno se acaba: mientras juegan los cazadores, el reloj no corre
+  await app(() => window.chaoticGolf.ctl.endTurn()); await sleep(300);
+  const e0 = await app(() => window.chaoticGolf.app.run.elapsed);
+  await sleep(1200);
+  const e1 = await app(() => { const { app } = window.chaoticGolf; return app.game.S.turn === 0 ? null : app.run.elapsed; });
+  if (e1 !== null) assert.equal(e1, e0, 'el reloj se para en el turno del cazador');
+  await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
 });
 
 it('desafío semanal: misma regla, semilla y rivales en dos cargas', async () => {

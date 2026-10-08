@@ -62,10 +62,11 @@ export function setTheme(th) {
 }
 
 // ritmo efectivo: la velocidad elegida y, si se pide, x2 mientras juega la máquina
-let botTempo = false;
-export function setBotTempo(on) {
-  botTempo = !!on;
-  const mult = SPEEDS[prefs.speed] * (botTempo && prefs.botFast ? .5 : 1);
+let botTempo = false, botTempoForced = false;
+// force: siempre x2 (los cazadores del contrarreloj, que no gastan tu tiempo, no te hacen esperar)
+export function setBotTempo(on, force = botTempoForced) {
+  botTempo = !!on; botTempoForced = !!force;
+  const mult = SPEEDS[prefs.speed] * (botTempo && (prefs.botFast || botTempoForced) ? .5 : 1);
   if (mult !== SPEED) setSpeed(mult);
 }
 
