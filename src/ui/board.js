@@ -199,7 +199,7 @@ function focusCell(i) {
 // ¿la casilla es un destino de una jugada con recorrido (palo, dedo, palo reactivo)?
 function previewable(cell) {
   const pd = app.game?.pending;
-  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent' || pd.kind === 'snowRoll' || pd.kind === 'gravity') // (gravedad: lo que atraerá)
+  return !!cell && !!pd && (pd.kind === 'move' || pd.kind === 'serpent' || pd.kind === 'snowRoll' || pd.kind === 'gravity' || pd.kind === 'holeMove') // (gravedad: lo que atraerá)
     && (cell.classList.contains('selectable') || cell.classList.contains('selectable-out'));
 }
 function showTrajFor(cell) {

@@ -37,7 +37,7 @@ export const TOTALS = [
 // los eventos animados que no son un total (pasos, apariciones, efectos de otro evento ya contado…)
 export const NOT_COUNTED = ['move', 'appear', 'settle', 'chainStop', 'bump', 'deflect', 'wagon', 'season', 'wind', 'gust', 'crunch',
   'puddle', 'slide', 'flare', 'grow', 'snowIn', 'snowOut', 'snowPack', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteorRock',
-  'coinPick', 'goldWin'];
+  'coinPick', 'coinDrop', 'diceTurn', 'goldWin'];
 const isBall = e => typeof e.p === 'string' && /^b\d/.test(e.p);
 const COUNTED = TOTALS.filter(x => x.on);
 // suma un evento del motor a los totales de la partida (stats del controlador)

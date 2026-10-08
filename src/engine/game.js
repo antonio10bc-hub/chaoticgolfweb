@@ -38,7 +38,9 @@
      { t:'goHome', p, x, y, why }           vuelve a su salida por la moneda ('coin') o por la ruleta ('roulette')
      { t:'diceRoll', id, x0, y0, x, y, dir, face, moved }  el dado golpeado rueda (o da la vuelta en su sitio); face: { t, n, e }
      { t:'roulette', seg, res }             gira la ruleta: franja `seg` de WHEEL, 'red' | 'black' | 'gold'
-     { t:'goldWin', p, x, y }               dorado con esa pelota en la casilla dorada: gana directamente
+     { t:'goldWin', p, x, y }               dorado con esa pelota (o el hoyo: S.holeWin) en la casilla dorada: gana directamente
+     { t:'coinDrop', x0, y0, x, y }         la moneda usada se va a otra casilla vacía
+     { t:'diceTurn', id, x, y, dir, face }  al acabar el turno, el dado cambia de número
    ========================================================= */
 import { t, joinAnd } from '../i18n/index.js';
 import { CARDS } from '../content/cards/index.js';
@@ -65,6 +67,9 @@ const FLY = 3;           // casillas que vuela una pieza desde la lanzadera
 // (P2 · A · B · P1: A golpea a B, B sale por P2 y vuelve a golpear a A…).
 // El juego original reventaba la pila en ese caso; aquí la cadena se detiene.
 const MAX_CHAIN = 12;
+// (casino) rebotes en dados que reinician las casillas en un mismo movimiento: entre dos dados, la pelota iría y vendría
+// para siempre (los dados cambian de cara al rodar); a partir de ahí rebota como en un bloque, con lo que le quede
+const MAX_DICE = 6;
 
 export const clone = o => JSON.parse(JSON.stringify(o));
 const randInt = (rand, a, b) => a + Math.floor(rand() * (b - a + 1));
@@ -847,7 +852,8 @@ export class Game {
       this.anim({ t: 'teleport', p: pid, x: other.x, y: other.y });
     };
     const seen = untilHit ? new Map() : null; // iridiscente: (casilla, dirección) ya recorridas
-    if (this.S.gamble) this.noteMove(ball, { dir: dirKey, steps, iri: untilHit || undefined }); // (casino: lo que repite con cara)
+    if (this.S.gamble) this.noteMove(ball, { dir: dirKey, steps, iri: untilHit || undefined }); // (casino: lo que vuelve a elegir con cara)
+    let diceHits = 0;
     while (remaining > 0) {
       if (seen) {
         const k = cx + ',' + cy + ',' + dir, n = (seen.get(k) || 0) + 1;
@@ -861,7 +867,7 @@ export class Game {
       const nc = this.nextCell(cx, cy, dir, pid, onPortal, mv);
       if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy, ...mv }); break; } // atascada entre piezas
       dir = nc.dir;
-      if (nc.dice && !untilHit) remaining = nc.dice; // (casino) rebota tantas casillas como marcaba el dado
+      if (nc.dice && !untilHit && ++diceHits <= MAX_DICE) remaining = nc.dice; // (casino) rebota tantas casillas como marcaba el dado (entre dos dados, con tope)
       const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny, dir });
@@ -1050,6 +1056,8 @@ export class Game {
   moveHole(dirKey, dist, h = this.S.hole) {
     const S = this.S, main = h === S.hole, pid = main ? 'hole' : h.id, x0 = h.x, y0 = h.y;
     this.tip('holeMove');
+    if (S.gamble) this.noteMove(h, { dist }); // (casino: con cara, quien lo movió lo vuelve a mover esas casillas)
+    let diceHits = 0;
     const { dx, dy } = DIRS[dirKey];
     let cx = h.x, cy = h.y, dir = dirKey;
     let remaining = dist;
@@ -1061,7 +1069,7 @@ export class Game {
       });
       if (nc.stop) { if (nc.via) this.anim({ t: 'move', p: pid, x: cx, y: cy }); break; }
       dir = nc.dir;
-      if (nc.dice) remaining = nc.dice; // (casino) el hoyo también rebota lo que marca el dado
+      if (nc.dice && ++diceHits <= MAX_DICE) remaining = nc.dice; // (casino) el hoyo también rebota lo que marca el dado
       const { dx, dy } = DIRS[dir], nx = nc.x, ny = nc.y;
       if (!this.inBoard(nx, ny)) {
         this.anim({ t: 'fall', p: pid, x: nx, y: ny });
@@ -1093,6 +1101,7 @@ export class Game {
       }
       cx = nx; cy = ny; remaining--;
       this.anim({ t: 'move', p: pid, x: cx, y: cy });
+      if (S.gamble) { const [ox, oy] = [h.x, h.y]; h.x = cx; h.y = cy; this.takeCoin(h, cx, cy); h.x = ox; h.y = oy; } // (casino) el hoyo también recoge monedas
       if (S.tiles.length && this.blackHoleNear(cx, cy)) { // (multiverso) pegado a un agujero negro: se lo traga y salen 4 hoyos
         const [ox, oy] = [h.x, h.y]; h.x = cx; h.y = cy;
         if (this.bhCheck(h, cx, cy, dir, remaining)) return;
@@ -1193,6 +1202,7 @@ export class Game {
     const S = this.S;
     const cardKey = S.hands[p][idx];
     this._splits = 0; // (multiverso) agujeros negros atravesados en esta jugada
+    this._actor = p;  // (casino) quién juega: la moneda que recoja el hoyo, la decide él
     this.emit({ t: 'card', p, idx, key: cardKey });
     this.pushHistory();
     if (p === S.turn) S.playedThisTurn++; // regla: si juegas cartas, no puedes descartar este turno
@@ -1306,7 +1316,8 @@ export class Game {
       const tg = pd.targets.find(t => t.x === x && t.y === y);
       if (!tg) return false;
       this.pending = null;
-      this.consumeCard(pd.p, pd.idx);
+      if (pd.bonus) { this.pushHistory(); this._splits = 0; } // (casino: cara en una moneda, sin gastar carta)
+      else this.consumeCard(pd.p, pd.idx);
       if (pd.extract) {
         // sacar la pelota del hoyo: se anula su victoria y se golpea desde la casilla del hoyo
         const b = pd.ball;
@@ -1349,6 +1360,7 @@ export class Game {
       return true;
     }
     if (pd.kind === 'pickOwn') return this.pickOwnAt(x, y); // (multiverso) cuál de tus pelotas se mueve
+    if (pd.kind === 'holeMove') return this.holeBonusAt(x, y); // (casino) cara en la moneda del hoyo: hacia dónde
     if (pd.kind === 'pickHole') return this.pickHoleAt(x, y); // (multiverso) cuál de los hoyos se mueve
     if (pd.kind === 'gravity') { // (multiverso) la gravedad, en cualquier casilla (salvo el agujero negro)
       if (!this.gravitySpot(x, y)) return false;
@@ -1380,7 +1392,7 @@ export class Game {
       this.log('log.ballLeavesTrap', { b: playerTag(pd.ball.player), n: steps });
       this.tip('trapExit');
     }
-    this.consumeCard(pd.p, pd.idx);
+    if (pd.bonus) { this.pushHistory(); this._splits = 0; } else this.consumeCard(pd.p, pd.idx); // (casino: cara, sin gastar carta)
     if (steps <= 0) { // un dedo de 1 no basta para salir de la trampa: la carta se pierde sin movimiento
       this.log('log.cantLeaveTrap', { b: playerTag(pd.ball.player) });
       this.pending = null;
@@ -1511,7 +1523,9 @@ export class Game {
 
   cancel() {
     if (this.pending?.kind === 'serpent') return false; // la carta ya está gastada: hay que terminar el movimiento
+    const bonus = this.pending?.bonus;
     this.pending = null;
+    if (bonus) { this.log('log.coinSkip'); this.afterPlay(); } // (casino: se renuncia a la cara; siguen las monedas que queden)
     return true;
   }
 
@@ -1734,6 +1748,7 @@ export class Game {
     S.playedThisTurn = 0;
     for (const tl of S.tiles) if (isLauncher(tl)) tl.rot = ((tl.rot || 0) + 1) % 4; // (minigolf) cada turno, un cuarto de vuelta
     delete S.launched; // y las que han lanzado en este turno se reactivan
+    if (S.gamble && S.tiles.length) this.diceTurn(); // (casino) cada dado cambia de número
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();
@@ -1778,6 +1793,7 @@ export class Game {
     if (pd.kind === 'pickOwn') { const b = this.ballAt(x, y); return b && !b.decoy && ownerOf(b.player) === pd.p && CARDS[pd.card].canStart?.(this, b) !== false ? 'sel' : null; }
     if (pd.kind === 'gravity') return this.gravitySpot(x, y) ? 'sel' : null;
     if (pd.kind === 'pickHole') return this.holeCanMove(this.holeAt(x, y), CARDS[pd.card]) ? 'sel' : null;
+    if (pd.kind === 'holeMove') { const tg = pd.targets.find(q => q.x === x && q.y === y); return tg ? (tg.out ? 'out' : 'sel') : null; }
     return null;
   }
 

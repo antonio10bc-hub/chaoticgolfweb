@@ -69,13 +69,30 @@ test('suelo ajedrezado: rojo si x + y es par, negro si es impar; la dorada no es
   assert.equal(g.cellColor(3, 1), 'gold');
 });
 
-test('moneda, cara: la pelota que pasa por encima se la lleva y repite su movimiento al acabar', () => {
+test('moneda, cara: al acabar la jugada se vuelve a elegir, como si se jugara otra vez la carta (sin gastar ninguna)', () => {
   const g = level({ coins: [{ x: 2, y: 2 }], seed: seedFor('heads') });
   shoot(g, 'right', 'palo2');
-  assert.deepEqual(at(g), [5, 2], 'palo 2 dos veces: de (1,2) a (3,2) y de ahí a (5,2)');
-  assert.equal(g.S.gamble.coins.length, 0, 'la moneda ya no está');
+  assert.deepEqual(at(g), [3, 2]);
+  const pd = g.pending;
+  assert.ok(pd?.bonus && pd.kind === 'move' && pd.n === 2 && pd.p === 0, 'un palo 2 de regalo');
+  assert.deepEqual(pd.targets.map(q => q.dir).sort(), ['down', 'left', 'right', 'up']);
+  const hand = [...g.S.hands[0]];
+  const tg = pd.targets.find(q => q.dir === 'up');
+  assert.ok(g.clickCell(tg.x, tg.y));
+  assert.deepEqual(at(g), [3, 0]);
+  assert.deepEqual(g.S.hands[0], hand, 'no gasta carta');
+  assert.equal(g.S.gamble.coins.length, 1, 'la moneda sigue en el tablero…');
+  assert.notDeepEqual([g.S.gamble.coins[0].x, g.S.gamble.coins[0].y], [2, 2], '…en otra casilla');
   const ev = g.takeEvents().map(e => e.t);
-  assert.ok(ev.indexOf('coinPick') < ev.indexOf('coinFlip'), 'se la lleva al pasar y la lanza al acabar');
+  assert.ok(ev.indexOf('coinPick') < ev.indexOf('coinFlip') && ev.includes('coinDrop'));
+});
+
+test('moneda, cara: se puede renunciar (cancelar) y la jugada se da por acabada', () => {
+  const g = level({ coins: [{ x: 2, y: 2 }], seed: seedFor('heads') });
+  shoot(g, 'right', 'palo2');
+  assert.ok(g.pending?.bonus);
+  assert.ok(g.cancel());
+  assert.equal(g.pending, null); assert.deepEqual(at(g), [3, 2]);
 });
 
 test('moneda, cruz: vuelve a su salida (como si se cayera del tablero)', () => {
@@ -85,11 +102,31 @@ test('moneda, cruz: vuelve a su salida (como si se cayera del tablero)', () => {
   assert.ok(g.takeEvents().some(e => e.t === 'goHome' && e.why === 'coin'));
 });
 
-test('moneda con el dedo: con cara repite el mismo camino, paso a paso', () => {
+test('moneda con el dedo: con cara, otra vez el dedo (cuántos pasos y el camino)', () => {
   const g = level({ coins: [{ x: 2, y: 2 }], seed: seedFor('heads') });
   play(g, 'dedo'); g.chooseAmount(2); g.serpentStep('right'); g.serpentStep('up');
-  assert.deepEqual(at(g), [3, 0], 'derecha y arriba, dos veces: (1,2) → (2,1) → (3,0)');
-  assert.equal(g.pending, null);
+  assert.deepEqual(at(g), [2, 1]);
+  assert.ok(g.pending?.bonus && g.pending.kind === 'dedoAmount');
+  g.chooseAmount(1); g.serpentStep('up');
+  assert.deepEqual(at(g), [2, 0]); assert.equal(g.pending, null);
+});
+
+test('moneda del hoyo: el hoyo también las recoge; cara, quien lo movió lo mueve otra vez; cruz, a su casilla inicial', () => {
+  const pick = side => { for (let seed = 1; seed < 300; seed++) {
+    const g = level({ coins: [{ x: 6, y: 1 }], seed });
+    play(g, 'hoyoDown');
+    if (g.takeEvents().some(e => e.t === 'coinFlip' && e.p === 'hole' && e.side === side)) return seed;
+  } };
+  let g = level({ coins: [{ x: 6, y: 1 }], seed: pick('heads') });
+  play(g, 'hoyoDown');
+  assert.ok(g.pending?.bonus && g.pending.kind === 'holeMove' && g.pending.p === 0 && g.pending.dist === 2);
+  const tg = g.pending.targets.find(q => q.dir === 'left');
+  assert.ok(g.selectableAt(tg.x, tg.y));
+  g.clickCell(tg.x, tg.y);
+  assert.deepEqual([g.S.hole.x, g.S.hole.y], [4, 2]);
+  g = level({ coins: [{ x: 6, y: 1 }], seed: pick('tails') });
+  play(g, 'hoyoDown');
+  assert.deepEqual([g.S.hole.x, g.S.hole.y], [6, 0], 'cruz: a su casilla inicial');
 });
 
 test('moneda: la golpeada que pasa por encima también se la lleva; y la que acaba en el hoyo no la lanza', () => {
@@ -122,6 +159,14 @@ test('dado: rebotar más casillas de las que hay te saca del tablero; contra el 
   const d = g.S.tiles[0];
   assert.deepEqual([d.x, d.y, d.t], [6, 2, 4], 'no puede rodar: se queda y cambia de cara');
   assert.deepEqual(at(g), [4, 2], 'de (5,2) rebota 1');
+});
+
+test('dado: entre dos dados la pelota no rebota para siempre', () => {
+  const g = level({ tiles: [{ type: 'dice', id: 1, x: 0, y: 2, t: 6, n: 2, e: 3 }, { type: 'dice', id: 2, x: 6, y: 2, t: 6, n: 2, e: 3 }], ball: { x: 3, y: 2 } });
+  g.S.tiles.forEach(d => { d.x = d.id === 1 ? 0 : 6; }); // (pegados al borde: no pueden rodar fuera)
+  shoot(g, 'right', 'palo3');
+  assert.equal(g.pending, null);
+  assert.ok(g.takeEvents().filter(e => e.t === 'diceRoll').length <= 8);
 });
 
 test('dado: las caras siguen siendo las de un dado (opuestas suman 7) por mucho que ruede', () => {
@@ -192,12 +237,40 @@ test('ruleta en el JAQUE: es naranja; las pelotas que están dentro del hoyo no 
   assert.deepEqual(g.S.winners, [1]); assert.ok(g.S.goldWin && !g.S.jaque);
 });
 
-test('la carta NO deshace la ruleta (y las monedas vuelven a su sitio)', () => {
+test('la carta NO deshace la jugada (y las monedas vuelven a su sitio)', () => {
   const g = level({ coins: [{ x: 2, y: 2 }], seed: seedFor('tails') });
   shoot(g, 'right', 'palo2');
-  assert.equal(g.S.gamble.coins.length, 0);
+  assert.notDeepEqual(g.S.gamble.coins, [{ x: 2, y: 2 }]);
   play(g, 'no');
-  assert.deepEqual(at(g), [1, 2]); assert.equal(g.S.gamble.coins.length, 1);
+  assert.deepEqual(at(g), [1, 2]); assert.deepEqual(g.S.gamble.coins, [{ x: 2, y: 2 }]);
+});
+
+test('ruleta, dorado con el hoyo en la casilla dorada: gana el hoyo y pierde todo el mundo', () => {
+  const g = level({ hole: { x: 3, y: 1 }, gold: { x: 3, y: 1 } });
+  g._forceSpin = WHEEL.indexOf('gold');
+  play(g, 'ruleta');
+  assert.equal(g.S.winner, -1); assert.deepEqual(g.S.winners, []); assert.ok(g.S.holeWin && !g.S.jaque);
+  assert.ok(g.takeEvents().some(e => e.t === 'win'));
+});
+
+test('dado: al acabar cada turno cambia de número', () => {
+  const g = level({ tiles: [DICE(4, 3, 2, 3, 1)] });
+  g.S.balls.push({ player: 1, x: 2, y: 4, spawnX: 2, spawnY: 4, holed: false }); g.S.hands.push(['palo1', 'palo1']); g.S.nPlayers = 2;
+  for (let k = 0; k < 6; k++) {
+    const before = g.S.tiles[0].t;
+    g.endTurn();
+    const d = g.S.tiles[0];
+    assert.notEqual(d.t, before); assert.deepEqual([d.x, d.y], [4, 3], 'en su sitio');
+    assert.ok(g.takeEvents().some(e => e.t === 'diceTurn'));
+  }
+});
+
+test('IA: elige bien su tirada extra (cara): mete la pelota si puede', async () => {
+  const { chooseBonus } = await import('../src/ai/bot.js');
+  const g = level({ ball: { x: 6, y: 3 }, hole: { x: 6, y: 1 } });
+  g.pending = { kind: 'move', p: 0, n: 2, ball: g.S.balls[0], targets: g.straightTargets(g.S.balls[0], 2), bonus: true };
+  const b = chooseBonus(g, 0, () => .5);
+  assert.deepEqual(b.actions, [['cell', 6, 1]]);
 });
 
 test('IA: valora la ruleta por sus tres resultados; en la casilla dorada con la ruleta en la mano, la gira', () => {
@@ -218,7 +291,8 @@ test('partidas de bots con la baraja: terminan y usan sus cartas y sus monedas',
     let s = seed;
     const r = simulateGame(g, { maxTurns: 300, rand: () => (s = (s * 16807) % 2147483647) / 2147483647 });
     if (r.finished) ended++;
-    coins += 9 - g.S.gamble.coins.length; spins += r.cards.ruleta || 0; dice += r.cards.dado || 0;
+    assert.equal(g.S.gamble.coins.length, 9, 'las monedas no se gastan: cambian de casilla');
+    coins += g.S.logK.filter(k => k[0] === 'coinPick' || k[0] === 'holeCoinPick').length; spins += r.cards.ruleta || 0; dice += r.cards.dado || 0;
   }
   assert.equal(ended, 12);
   assert.ok(coins > 0 && spins > 0 && dice > 0, `monedas ${coins}, ruletas ${spins}, dados ${dice}`);

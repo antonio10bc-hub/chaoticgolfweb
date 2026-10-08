@@ -57,6 +57,9 @@ const wheelArt = (cx, cy, R) => { const n = WHEEL.length, pt = (i, r) => `${(cx 
     `<path d="M${cx} ${cy - R - 8}l-5 -8h10z" fill="${CREAM}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`; };
 // multiverso: el agujero negro (Gargantua, como en el tablero), gravedad (flechas hacia el centro en cruz) y meteoritos
 const ARTS = {
+  // la moneda dorada, con su estrella (la barra de la cara de una moneda)
+  moneda: () => `<circle cx="53" cy="56" r="30" fill="${SH}"/><circle cx="50" cy="52" r="30" fill="#F2C14E" stroke="${INK}" stroke-width="1.8"/>` +
+    `<circle cx="50" cy="52" r="22" fill="none" stroke="#B8892B" stroke-width="2"/><path d="M50 37l4.4 9.2 10 1.3-7.3 6.8 1.9 9.9-9-5-9 5 1.9-9.9-7.3-6.8 10-1.3z" fill="#FFE38A" stroke="#9C6A1E" stroke-width="1.4" stroke-linejoin="round"/>`,
   ruleta: () => `<circle cx="50" cy="52" r="42" fill="#1F6B48" opacity=".18"/>` + wheelArt(50, 54, 30),
   dado: () => `<circle cx="50" cy="52" r="40" fill="#C8243A" opacity=".12"/>` +
     `<path d="M14 70 Q24 40 36 60" fill="none" stroke="${INK}" stroke-width="1.6" stroke-dasharray="3 4" opacity=".5"/>` + ball(16, 74, 6) +

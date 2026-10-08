@@ -189,7 +189,7 @@ function evaluateHunter(g, p, W) {
 function pendingChoices(g) {
   const pd = g.pending, S = g.S, out = [];
   switch (pd.kind) {
-    case 'move': case 'snowRoll': for (const t of pd.targets) out.push(['cell', t.x, t.y]); break;
+    case 'move': case 'snowRoll': case 'holeMove': for (const t of pd.targets) out.push(['cell', t.x, t.y]); break; // (holeMove: cara en la moneda del hoyo)
     case 'serpent': for (const t of g.serpentTargets()) out.push(['cell', t.x, t.y]); break;
     case 'dedoAmount': for (const n of [1, 2, 3]) out.push(['amount', n]); break;
     case 'pickHoled': for (const b of S.balls) if (b.holed) out.push(['pickHoled', b.player]); break;
@@ -263,6 +263,24 @@ export function enumeratePlays(game, p, filter = () => true) {
 }
 
 /* ---------- decisiones ---------- */
+
+// (casino) cara en una moneda: una acción pendiente `bonus` que decide `p` (mover otra vez su pelota, o el hoyo). Devuelve
+// la mejor forma de completarla ({ actions }) o null si es mejor renunciar (cancelar)
+export function chooseBonus(game, p, rand = Math.random) {
+  const style = styleOf(game, p), base = evaluate(game, p, style);
+  let best = null, leaves = 0;
+  const walk = (g, actions, depth) => {
+    if (leaves >= MAX_LEAVES) return;
+    if (!g.pending) { leaves++; const s = evaluate(g, p, style) + rand() * .5; if (!best || s > best.score) best = { actions, score: s }; return; }
+    if (depth > 6) return;
+    for (const a of pendingChoices(g)) {
+      const g2 = g.clone({ lite: true });
+      if (applyAction(g2, a)) walk(g2, [...actions, a], depth + 1);
+    }
+  };
+  walk(game.clone({ lite: true }), [], 0);
+  return best && best.score >= base ? best : null;
+}
 
 const styleOf = (game, p) => game.S.aiStyles?.[p] || (game.S.hunters ? 'prey' : 'trick');
 

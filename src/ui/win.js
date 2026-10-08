@@ -63,9 +63,10 @@ export function showWin() {
   const solo = mode === 'story' || mode === 'test' || slot === 'rush'; // (contrarreloj: los cazadores no ganan; el hoyo es tuyo)
   // con varias personas nadie "pierde" frente a la pantalla salvo que ganen los bots
   // (el tren ha metido una pelota él solo: pierde todo el mundo, también en un nivel)
-  const lost = !!S.trainWin || (mode === 'pve' && !humansOf().some(h => S.winners.includes(h)));
+  const lost = !!S.trainWin || !!S.holeWin || (mode === 'pve' && !humansOf().some(h => S.winners.includes(h)));
   let msg;
   if (S.trainWin) msg = t('win.trainWins');
+  else if (S.holeWin) msg = t('win.holeGold'); // (casino: el hoyo estaba en la casilla dorada)
   else if (S.goldWin) msg = !multi && S.winners[0] === me && mode === 'pve' ? t('win.goldYou') : t('win.gold', { names }); // (casino: ¡bote!)
   else if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
   else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
@@ -172,7 +173,7 @@ export function showWin() {
   $('winBall').innerHTML = S.trainWin ? `<span class="wbStage trainWin">${TRAIN_WIN}</span>`
     : withBall ? `<span class="wbStage${lost ? ' lost' : ''}">${WB_FLAG}` +
     `${skinBall(equippedSkin(), { size: 68, color: pColor(me) })}</span>` : '';
-  box.style.borderColor = S.trainWin ? '#B5483B' : solo ? 'transparent' : pColor(S.winners[0]);
+  box.style.borderColor = S.trainWin ? '#B5483B' : S.holeWin ? '#C9962E' : solo ? 'transparent' : pColor(S.winners[0]);
   box.style.boxShadow = '';
 
   // resumen post-partida: estadísticas contadas durante la partida (decorativo)

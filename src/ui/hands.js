@@ -24,7 +24,7 @@ let prevHands = []; // tamaños de mano en el último render (para el robo anima
 let prevOwner = -1;
 export const resetDealAnim = () => { prevHands = []; prevOwner = -1; };
 
-const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard', 'snowRoll', 'pickOwn', 'gravity', 'pickHole'];
+const BAR_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'dedoAmount', 'pickHoled', 'discard', 'snowRoll', 'pickOwn', 'gravity', 'pickHole', 'holeMove'];
 const SEL_KINDS = ['move', 'placeTile', 'pickBall', 'serpent', 'snowRoll', 'pickOwn', 'gravity', 'pickHole'];
 
 // ¿de quién es la mano grande del dock?
@@ -71,6 +71,9 @@ function cardHTML(g, p, idx, { mini = false } = {}) {
 /* ---------- barra de acción (qué hay que hacer ahora) ---------- */
 function hintFor(g, p) {
   const pd = g.pending, S = g.S;
+  // (casino) cara en una moneda: se vuelve a elegir, sin gastar carta
+  if (pd.bonus) return pd.kind === 'holeMove' ? t('hands.hint.bonusHole', { n: pd.dist }) : pd.kind === 'dedoAmount' ? t('hands.hint.bonusDedo')
+    : pd.untilHit ? t('hands.hint.bonusIri') : t('hands.hint.bonus', { n: pd.n });
   switch (pd.kind) {
     case 'move': return t('hands.hint.move', { card: CARDS[S.hands[p][pd.idx]].name });
     case 'placeTile': { // (la carta que se está jugando: no siempre se llama como la pieza, p. ej. incendio → fuego)
@@ -112,9 +115,12 @@ function barButtons(g) {
   if (pd.kind !== 'serpent') html += `<button class="btn-ghost btn-sm" data-act="cancel">${t('common.cancel')}</button>`; // el dedo ya gastado no se puede cancelar
   return html;
 }
+// (casino) la moneda, como si fuera una carta, en la barra de la cara
+const COIN_CARD = { id: 'moneda', color: 'orange', face: { art: 'moneda' } };
 // carta que está en juego en la acción pendiente (para mostrarla en la barra)
 function pendingCard(g) {
   const pd = g.pending, S = g.S;
+  if (pd.bonus) return COIN_CARD; // (casino: la moneda que ha salido cara)
   if (pd.kind === 'serpent' || pd.kind === 'dedoAmount') return CARDS.dedo;
   if (pd.kind === 'placeTile' || pd.kind === 'snowRoll' || pd.kind === 'gravity') return CARDS[S.hands[pd.p]?.[pd.idx]] || CARDS[pd.tileType] || null;
   if (pd.kind === 'pickOwn' || pd.kind === 'pickHole') return CARDS[pd.card];

@@ -6,7 +6,7 @@ import { app } from './app.js';
 import { wait } from './dom.js';
 import { JUICE } from '../fx/juice.js';
 import { CARDS } from '../content/cards/index.js';
-import { choosePlan, discardPlan, chooseReaction, farness } from '../ai/bot.js';
+import { choosePlan, discardPlan, chooseReaction, farness, chooseBonus } from '../ai/bot.js';
 import { jaqueSaver } from '../ai/autoplay.js';
 import * as ctl from './controller.js';
 import { isBot as botSeat, humansOf } from './players.js';
@@ -55,7 +55,7 @@ export function aiStop() {
 }
 
 // ejecuta una jugada (lista de acciones del bot) con ritmo humano
-async function runPlan(plan, g) {
+async function runPlan(plan, g, depth = 0) {
   app.ai.acting = true;
   try {
     for (let i = 0; i < plan.actions.length; i++) {
@@ -77,6 +77,14 @@ async function runPlan(plan, g) {
     }
     await idle();
     if (!live(g)) return;
+    // (casino) cara en una moneda de un bot: elige su jugada extra (o renuncia)
+    if (G().pending?.bonus && isBot(G().pending.p) && depth < 6) {
+      const b = chooseBonus(G(), G().pending.p, decide('bonus', G().pending.p));
+      await pwait(AI.clickMs);
+      if (!live(g)) return;
+      if (b) { app.ai.acting = false; await runPlan(b, g, depth + 1); return; }
+      ctl.cancel();
+    }
     // blindaje: nunca dejar una acción de la máquina a medias
     if (G().pending?.kind === 'serpent') ctl.endSerpent();
     else if (G().pending && isBot(G().pending.p)) ctl.cancel();
@@ -89,6 +97,11 @@ export function aiKick() {
   if (app.mode !== 'pve' || !app.game || app.screen !== 'game' || app.paused) return; // (al reanudar se vuelve a llamar)
   const s = S(), g = gen;
   if (s.winner !== null && !s.jaque) return; // partida terminada (durante el JAQUE sí hay que actuar)
+  const pb = G().pending;
+  if (pb?.bonus && isBot(pb.p) && !app.ai.acting && !app.animating && !app.animQueue.length) { // (casino) la cara de un bot fuera de su jugada
+    timer = setTimeout(async () => { if (live(g) && G().pending === pb) await runPlan({ actions: [] }, g); if (live(g)) aiKick(); }, AI.clickMs);
+    return;
+  }
   if (app.animating || app.animQueue.length || G().pending) {
     watchdog();
     timer = setTimeout(aiKick, 350);

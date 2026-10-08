@@ -26,9 +26,9 @@
 @keyframes jackpot { 30% { box-shadow: inset 0 0 0 3px #fff, 0 0 26px 8px rgba(255,214,90,.95); transform: scale(1.08); } }
 
 /* ---------- las monedas ---------- */
-.cell .gCoin { position: absolute; left: 50%; top: 50%; width: calc(var(--cell-w) * .46); aspect-ratio: 1; transform: translate(-50%, -50%);
+.cell .gCoin { position: absolute; left: 50%; top: 50%; width: calc(var(--cell-w) * .58); aspect-ratio: 1; transform: translate(-50%, -50%);
   pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); animation: coinBob 2.6s ease-in-out infinite; }
-.cell .gCoin svg, .coinBadge svg, .gCoinFly svg { width: 100%; height: 100%; display: block; }
+.cell .gCoin svg, .coinBadge svg, .gCoinFly svg, .gCoinMove svg { width: 100%; height: 100%; display: block; }
 .gCoinShine { animation: coinShine 2.6s ease-in-out infinite; }
 @keyframes coinBob { 50% { transform: translate(-50%, -58%); } }
 @keyframes coinShine { 0%, 100% { opacity: .2; } 50% { opacity: .95; } }
@@ -39,20 +39,34 @@
 .piece .coinBadge { position: absolute; right: 6%; top: 4%; width: 34%; aspect-ratio: 1; z-index: 3; pointer-events: none;
   filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.4)); animation: badgeIn .3s var(--ease-out) both; }
 @keyframes badgeIn { from { transform: scale(0); } 70% { transform: scale(1.25); } to { transform: none; } }
-/* la moneda grande que se lanza: da vueltas encima de la pelota y cae de una cara */
-.gFlip { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 30; perspective: 400px; }
-.gFlipCoin { position: absolute; width: var(--s); height: var(--s); left: calc(var(--s) / -2); top: calc(var(--s) / -2); transform-style: preserve-3d; }
-.gFlipCoin i { position: absolute; inset: 0; backface-visibility: hidden; filter: drop-shadow(0 3px 4px rgba(0,0,0,.45)); }
+/* la moneda grande que se lanza: en medio de la pantalla (como la ruleta), da vueltas y cae de una cara */
+.gFlipOv { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none;
+  background: rgba(8,24,16,0); transition: background .22s; }
+.gFlipOv.in { background: rgba(8,24,16,.28); }
+.gFlipOv.out { background: rgba(8,24,16,0); }
+.gFlipBox { --s: min(40vmin, 180px); display: flex; flex-direction: column; align-items: center; gap: 14px; perspective: 700px;
+  transform: scale(.3); opacity: 0; transition: transform .3s var(--ease-out), opacity .22s; }
+.gFlipOv.in .gFlipBox { transform: none; opacity: 1; }
+.gFlipOv.out .gFlipBox { transform: scale(.6); opacity: 0; }
+.gFlipCoin { position: relative; width: var(--s); height: var(--s); transform-style: preserve-3d; }
+.gFlipCoin i { position: absolute; inset: 0; backface-visibility: hidden; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
 .gFlipCoin i svg { width: 100%; height: 100%; display: block; }
 .gFlipCoin .b { transform: rotateY(180deg); }
-.gFlipTxt { position: absolute; left: 0; top: calc(var(--s) / 2 + 4px); transform: translateX(-50%) scale(.4); opacity: 0; white-space: nowrap;
-  font-size: 13px; font-weight: 700; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; color: #FFF6D6; background: #2E7D4F;
-  box-shadow: 0 2px 6px rgba(0,0,0,.3); transition: transform .22s var(--ease-out), opacity .22s; }
-.gFlip.tails .gFlipTxt { background: #A3283A; }
-.gFlip.landed .gFlipTxt { transform: translateX(-50%) scale(1); opacity: 1; }
-.gFlip.landed .gFlipCoin { animation: flipLand .3s ease-out; }
-@keyframes flipLand { 40% { transform: scale(1.18); } }
-.gFlip.out { opacity: 0; transition: opacity .25s; }
+.gFlipWho { font-style: normal; font-size: 15px; font-weight: 800; color: #fff; padding: 3px 12px; border-radius: 999px; background: var(--pc);
+  box-shadow: 0 0 0 2.5px #F6F0E2, 0 4px 10px rgba(0,0,0,.3); }
+.gFlipTxt { font-size: 22px; font-weight: 800; letter-spacing: .04em; padding: 6px 18px; border-radius: 999px; color: #FFF6D6; background: #2E7D4F;
+  box-shadow: 0 0 0 3px #E2B23C, 0 6px 14px rgba(0,0,0,.35); transform: scale(.4); opacity: 0; transition: transform .25s var(--ease-out), opacity .2s; }
+.gFlipOv.tails .gFlipTxt { background: #A3283A; }
+.gFlipOv.landed .gFlipTxt { transform: none; opacity: 1; }
+.gFlipOv.landed .gFlipCoin { animation: flipLand .35s ease-out; }
+@keyframes flipLand { 40% { transform: scale(1.12) rotateY(2160deg); } }
+.gSpark { position: fixed; z-index: 61; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 2px; pointer-events: none; animation: gSpark .65s ease-out both; }
+@keyframes gSpark { from { transform: none; opacity: 1; } to { transform: translate(var(--dx), var(--dy)) rotate(200deg) scale(.4); opacity: 0; } }
+/* la moneda usada vuela a su casilla nueva */
+.gCoinMove { position: absolute; width: var(--s, 22px); height: var(--s, 22px); margin: calc(var(--s, 22px) / -2) 0 0 calc(var(--s, 22px) / -2);
+  pointer-events: none; z-index: 20; filter: drop-shadow(0 4px 4px rgba(0,0,0,.35)); animation: coinMove .58s cubic-bezier(.4,0,.3,1) both; }
+@keyframes coinMove { 0% { transform: none; } 50% { transform: translate(calc(var(--dx) / 2), calc(var(--dy) / 2 - 40px)) scale(1.35) rotateY(540deg); }
+  100% { transform: translate(var(--dx), var(--dy)) rotateY(1080deg); } }
 /* el número del dado al chocar */
 .gDiceNum { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 30;
   font-size: 18px; font-weight: 800; color: #FFF6D6; padding: 1px 8px; border-radius: 999px; background: #2A2226;
@@ -87,31 +101,18 @@
 @keyframes rlGold { 50% { transform: scale(1.12); box-shadow: 0 0 0 3px #fff, 0 0 26px 8px rgba(255,214,90,.9); } }
 
 /* ---------- escena: la mesa del casino ----------
-   Plana, como el resto: tapete verde con un rombo muy suave, la baranda de madera con filo dorado alrededor del campo,
-   montones de fichas, una mano de cartas, un par de dados y la luz de la lámpara. */
+   Plana, como el resto: tapete verde con un rombo muy suave y la baranda de madera con filo dorado alrededor del campo
+   (sin adornos alrededor: el campo ya tiene mucho que mirar). */
 #gameScreen[data-scene="casino"] #game {
   background-color: #145C3E;
   background-image: var(--grain), repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 44px), repeating-linear-gradient(-45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 44px);
 }
-#gameScreen[data-scene="casino"] #gameDecor > :not(.dCasino) { display: none; }
-#gameDecor .dCasino { display: none; }
-#gameScreen[data-scene="casino"] #gameDecor { overflow: hidden; }
-#gameScreen[data-scene="casino"] #gameDecor .dCasino { display: block; position: absolute; pointer-events: none; }
-#gameDecor .dCasino.lamp { left: 50%; top: -30vh; width: 120vmin; height: 90vh; transform: translateX(-50%); border-radius: 50%;
-  background: rgba(255,236,170,.06); }
-#gameDecor .dCasino.chips { width: 15vmin; left: 3vw; bottom: 8vh; }
-#gameDecor .dCasino.cards { width: 17vmin; right: 3vw; top: 9vh; transform: rotate(10deg); }
-#gameDecor .dCasino.dice2 { width: 11vmin; right: 5vw; bottom: 12vh; }
-#gameDecor .dCasino.chips2 { width: 9vmin; left: 6vw; top: 14vh; }
-#gameDecor .dCasino.dice2 .d1 { transform-box: fill-box; transform-origin: center; animation: diceIdle 7s ease-in-out infinite; }
-@keyframes diceIdle { 0%, 88%, 100% { transform: none; } 92% { transform: rotate(-14deg) translateY(-6%); } 96% { transform: rotate(6deg); } }
-html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.dice2, html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.chips,
-html.phone #gameScreen[data-scene="casino"] #gameDecor .dCasino.chips2 { display: none; } /* (en el móvil, la mano va ahí) */
+#gameScreen[data-scene="casino"] #gameDecor { display: none; } /* (sin adornos: solo el tapete) */
 /* la baranda: madera oscura con un filo dorado, como el borde de una mesa de casino */
 #gameScreen[data-scene="casino"] #boardWrap { background-color: #5A2E1A;
   background-image: var(--grain), repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 46px);
   box-shadow: inset 0 0 0 3px #C9962E, inset 0 0 0 5px #3A1C0E, 0 0 0 4px #2E160A, 0 8.4px 25.2px 2px rgba(0,20,10,.45); }
-html.reduceMotion .cell.gGold::before, html.reduceMotion .cell .gCoin, html.reduceMotion .gCoinShine, html.reduceMotion #gameDecor .dCasino * { animation: none !important; }
+html.reduceMotion .cell.gGold::before, html.reduceMotion .cell .gCoin, html.reduceMotion .gCoinShine { animation: none !important; }
 
 /* la carta de la baraja (Modos de juego): al pasar por encima, la ruleta gira */
 .dkArt .dkWheel { transform-box: fill-box; transform-origin: center; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }

@@ -1,17 +1,20 @@
 /* =========================================================
    Baraja del Gambling (el casino).
      suelo      ajedrezado, rojo y negro (rojo si x + y es par). Una casilla es dorada (S.gamble.gold): no es de ningún color.
-     monedas    al empezar, 3 por jugador en casillas vacías al azar (S.gamble.coins). La pelota que pasa por encima (o se
-                para en ella) se la lleva y, al terminar la jugada, la lanza: cara, repite su último movimiento (la misma
-                dirección y las mismas casillas; con el dedo, el mismo camino), desde donde está; cruz, vuelve a su salida
-                (como si se cayera del tablero). Una tirada por moneda. La pelota que acaba en el hoyo ya no la lanza.
+     monedas    al empezar, 3 por jugador en casillas vacías al azar (S.gamble.coins). La pelota (o el hoyo) que pasa por
+                encima (o se para en ella) se la lleva y, al terminar la jugada, la lanza: cara, vuelve a elegir como si
+                jugara otra vez la carta, sin gastar ninguna (acción pendiente `bonus`); cruz, vuelve a su salida (el hoyo,
+                a su casilla inicial), como si se cayera del tablero. Una tirada por moneda, y la moneda se va a otra casilla
+                vacía al azar. La pelota que acaba en el hoyo (o el hoyo que se traga una) ya no la lanza.
      dado       (loseta negra, un cubo como el bloque de madera) lo que choca contra él rebota tantas casillas como marque
                 (en vez de las que le quedaban) y el dado rueda una casilla hacia el otro lado, como un dado de verdad:
                 muestra otra cara. Si no puede rodar (borde, otra pieza, una pelota, el hoyo, una moneda o la casilla
-                dorada), da la vuelta en su sitio. Cada dado guarda su orientación: t (arriba), n (norte), e (este).
+                dorada), da la vuelta en su sitio. Al acabar cada turno, cada dado cambia de número al azar. Cada dado guarda
+                su orientación: t (arriba), n (norte), e (este).
      ruleta     (naranja) gira la ruleta: 4 franjas rojas, 4 negras y 1 dorada. Rojo o negro: las pelotas que están en
                 casillas de ese color vuelven a su salida (las que están dentro del hoyo, no). Dorado: la pelota que está
-                en la casilla dorada gana la partida directamente, sin JAQUE (S.goldWin).
+                en la casilla dorada gana la partida directamente, sin JAQUE (S.goldWin); si es el hoyo el que está en
+                ella, gana el hoyo y pierde todo el mundo (S.holeWin).
    En las simulaciones de la IA (lite) las monedas no se lanzan: se apuntan en S.coinPend y la IA valora el riesgo.
    Este módulo añade sus métodos a Game (game.js los instala); `this` es la partida.
    ========================================================= */
@@ -23,7 +26,6 @@ export const COINS_PER_PLAYER = 3;
 // la ruleta: el orden de sus franjas (la dorada, entre la última negra y la primera roja)
 export const WHEEL = ['red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'gold'];
 const MAX_FLIPS = 16; // tiradas de moneda en una misma jugada (corta las repeticiones encadenadas)
-const OUT = ['fall', 'splash', 'burn', 'eaten', 'goHome', 'vanish']; // (eventos de una pelota que sale del campo)
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 // el dado rueda una casilla hacia `dir`: la cara que queda arriba (un dado de verdad: las opuestas suman 7)
 export function rollFaces({ t, n, e }, dir) {
@@ -61,54 +63,103 @@ export const gamblingMethods = {
   gambleBlocks(x, y) { return !!this.S.gamble && (this.coinAt(x, y) || this.isGold(x, y)); },
 
   /* ---------- monedas ---------- */
-  // lo que está haciendo cada pelota ahora (moveBallRaw lo apunta al empezar): lo que repetirá si le sale cara
+  // lo que está haciendo cada pelota (moveBallRaw lo apunta al empezar) y el hoyo (moveHole): lo que vuelve a elegir con cara
   noteMove(ball, mv) { (this._mv ||= new Map()).set(ball, mv); },
-  // la pelota pasa (o se para) en (x,y): si hay moneda, se la lleva; se lanza al terminar la jugada
-  takeCoin(ball, x, y, mv = null) {
+  // una pelota o un hoyo pasa (o se para) en (x,y): si hay moneda, se la lleva; se lanza al terminar la jugada
+  takeCoin(pc, x, y, mv = null) {
     const G = this.S.gamble;
-    if (!G?.coins.length || ball.decoy || ball.holed) return;
+    if (!G?.coins.length || pc.decoy || pc.holed) return;
     const i = G.coins.findIndex(c => c.x === x && c.y === y);
     if (i < 0) return;
     G.coins.splice(i, 1);
-    this.anim({ t: 'coinPick', p: 'b' + ball.player, x, y });
-    this.log('log.coinPick', { b: playerTag(ball.player) });
+    const hole = this.isHoleObj(pc), who = this._actor ?? this.S.turn;
+    this.anim({ t: 'coinPick', p: hole ? this.holeId(pc) : 'b' + pc.player, x, y });
+    this.log(hole ? 'log.holeCoinPick' : 'log.coinPick', { b: hole ? '' : playerTag(pc.player) });
     this.tip('coin');
-    (this.S.coinQ ||= []).push({ p: ball.player, mv: this._repeating || mv || this._mv?.get(ball) || null });
+    (this.S.coinQ ||= []).push(hole ? { hole: this.holeId(pc), by: who, mv: mv || this._mv?.get(pc) || null, x, y }
+      : { p: pc.player, mv: mv || this._mv?.get(pc) || null, x, y });
   },
-  // al terminar la jugada (afterPlay): cada moneda, una tirada. Cara: repite su último movimiento; cruz: a su salida
+  holeId(h) { return h === this.S.hole ? 'hole' : h.id; },
+  // al terminar la jugada (afterPlay): cada moneda, una tirada, y la moneda se va a otra casilla vacía al azar.
+  // Cruz: a su salida (el hoyo, a su casilla inicial). Cara: se vuelve a elegir, como si se jugara otra vez la carta (una
+  // acción pendiente `bonus`: la decide el dueño de la pelota; la del hoyo, quien lo movió). Con una cara pendiente, las
+  // monedas que quedan esperan a que se juegue
   resolveCoins() {
     const S = this.S, q = S.coinQ;
-    if (!q?.length) return;
-    for (let k = 0; q.length && k < MAX_FLIPS; k++) {
-      const { p, mv } = q.shift(), ball = S.balls.find(b => b.player === p);
-      if (!ball || ball.holed) continue;
-      if (this.lite) { (S.coinPend ||= []).push(p); continue; } // (la IA: sin tirar; valora el riesgo)
-      const heads = this.rand() < .5, b = playerTag(p);
-      this.anim({ t: 'coinFlip', p: 'b' + p, x: ball.x, y: ball.y, side: heads ? 'heads' : 'tails' });
-      if (!heads) { this.log('log.coinTails', { b }); this.sendHome(ball, 'coin'); continue; }
+    for (let k = 0; q?.length && k < MAX_FLIPS && !this.pending; k++) {
+      const it = q.shift();
+      if (it.hole) { this.flipHole(it); continue; }
+      const ball = S.balls.find(b => b.player === it.p);
+      if (!ball || ball.holed) { this.dropCoin(it); continue; }
+      if (this.lite) { (S.coinPend ||= []).push(it.p); continue; } // (la IA: sin tirar; valora el riesgo)
+      const heads = this.rand() < .5, b = playerTag(it.p);
+      this.anim({ t: 'coinFlip', p: 'b' + it.p, x: ball.x, y: ball.y, side: heads ? 'heads' : 'tails' });
+      this.dropCoin(it);
+      if (!heads) { this.log('log.coinTails', { b }); this.sendHome(ball, 'coin'); this.finishMoveChecks(ball, { safe: true }); continue; }
       this.log('log.coinHeads', { b });
-      if (mv) this.repeatMove(ball, mv);
+      this.bonusFor(ball, it.mv);
     }
-    delete S.coinQ;
+    if (!q?.length) delete S.coinQ;
   },
-  // cara: el mismo movimiento otra vez, desde donde está (con el dedo, el mismo camino, paso a paso)
-  repeatMove(ball, mv) {
-    this._repeating = mv;
-    try {
-      if (mv.path) {
-        const pid = 'b' + ball.player;
-        for (const d of mv.path) {
-          if (!this.S.balls.includes(ball) || ball.holed) break;
-          const n0 = this.events.length;
-          this.moveBallRaw(ball, d, 1);
-          // (si se ha caído, ha vuelto a su salida o ha rebotado en un dado, el camino se acaba ahí)
-          if (this.events.slice(n0).some(e => e.p === pid && (OUT.includes(e.t) || (e.t === 'bump' && e.dice)))) break;
-        }
-        return;
-      }
-      const steps = mv.steps - (this.inTrap(ball) ? 1 : 0);
-      if (steps > 0 || mv.iri) this.moveBallRaw(ball, mv.dir, Math.max(1, steps), { untilHit: !!mv.iri });
-    } finally { this._repeating = null; }
+  // cara: la misma carta otra vez, sin gastar ninguna (el palo: la dirección, con las casillas de su último movimiento; el
+  // iridiscente: la dirección; el dedo: cuántos pasos y el camino)
+  bonusFor(ball, mv) {
+    const p = ownerOf(ball.player);
+    if (mv?.serp || mv?.path) { this.pending = { kind: 'dedoAmount', p, ball, bonus: true }; return; }
+    if (mv?.iri) {
+      const targets = Object.entries(DIRV).map(([dir, [dx, dy]]) => ({ x: ball.x + dx, y: ball.y + dy, dir, out: false })).filter(tg => this.inBoard(tg.x, tg.y));
+      this.pending = { kind: 'move', p, n: 1, untilHit: true, ball, targets, bonus: true };
+      return;
+    }
+    const n = Math.max(1, mv?.steps || 1);
+    this.pending = { kind: 'move', p, n, ball, targets: this.straightTargets(ball, n), bonus: true };
+  },
+  // la moneda del hoyo: cruz, a su casilla inicial (la copia del hoyo, para siempre); cara, quien lo movió elige otra vez
+  // hacia dónde, las mismas casillas. Si el hoyo se ha tragado una pelota en la jugada, no la lanza
+  flipHole(it) {
+    const S = this.S, h = it.hole === 'hole' ? S.hole : S.holeCopies?.find(c => c.id === it.hole);
+    if (!h || S.balls.some(b => b.holed && !b.decoy && b.x === h.x && b.y === h.y)) { this.dropCoin(it); return; }
+    if (this.lite) return;
+    const heads = this.rand() < .5;
+    this.anim({ t: 'coinFlip', p: it.hole, x: h.x, y: h.y, side: heads ? 'heads' : 'tails' });
+    this.dropCoin(it);
+    if (heads) {
+      const dist = Math.max(1, it.mv?.dist || 1);
+      this.log('log.holeCoinHeads');
+      this.pending = { kind: 'holeMove', p: it.by, hole: it.hole, dist, targets: this.straightTargets(h, dist), bonus: true };
+      return;
+    }
+    this.log('log.holeCoinTails');
+    this.anim({ t: 'goHome', p: it.hole, x: h.x, y: h.y, why: 'coin' });
+    if (h !== S.hole) { this.holeGone(h, 'coin'); return; }
+    const [x, y] = this.holeSpawnWater(S.hole.initX, S.hole.initY);
+    this.anim({ t: 'appear', p: 'hole', x, y });
+    this.holeLandAt(x, y);
+  },
+  // (cara del hoyo) quien lo movió elige hacia dónde; mover el hoyo en un JAQUE lo anula, como con su carta
+  holeBonusAt(x, y) {
+    const pd = this.pending, tg = pd.targets.find(q => q.x === x && q.y === y);
+    const h = pd.hole === 'hole' ? this.S.hole : this.S.holeCopies?.find(c => c.id === pd.hole);
+    if (!tg || !h) return false;
+    this.pending = null;
+    this.pushHistory();
+    if (this.S.jaque && this.S.winner !== null) this.popHoledBalls(this.S.holeCopies?.length ? h : null);
+    this.moveHole(tg.dir, pd.dist, h);
+    this.afterPlay();
+    return true;
+  },
+  // la moneda usada se va a otra casilla vacía al azar (ni salidas, ni PAR, ni la del hoyo, ni la dorada)
+  dropCoin(it) {
+    const S = this.S, G = S.gamble;
+    if (!G || this.lite) return;
+    const home = (x, y) => (x === S.hole.initX && y === S.hole.initY) || S.balls.some(b => b.spawnX === x && b.spawnY === y);
+    const free = [];
+    for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++)
+      if (this.cellFree(x, y) && !this.gambleBlocks(x, y) && !home(x, y) && !this.parAt(x, y) && !(x === it.x && y === it.y)) free.push({ x, y });
+    if (!free.length) return;
+    const c = free[Math.floor(this.rand() * free.length)];
+    G.coins.push(c);
+    this.anim({ t: 'coinDrop', x0: it.x, y0: it.y, x: c.x, y: c.y });
   },
   // vuelve a su salida, como si se hubiera caído (why: 'coin' cruz, 'roulette' su color en la ruleta)
   sendHome(ball, why) {
@@ -139,6 +190,16 @@ export const gamblingMethods = {
     this.log(moved ? 'log.diceRolls' : 'log.diceTumbles', { n: tl.t });
   },
 
+  // al acabar cada turno, cada dado cambia de número al azar (da una vuelta hacia un lado cualquiera)
+  diceTurn() {
+    for (const tl of this.S.tiles) {
+      if (tl.type !== 'dice') continue;
+      const dir = ['up', 'down', 'left', 'right'][Math.floor(this.rand() * 4)];
+      Object.assign(tl, rollFaces(tl, dir));
+      this.anim({ t: 'diceTurn', id: tl.id, x: tl.x, y: tl.y, dir, face: { t: tl.t, n: tl.n, e: tl.e } });
+    }
+  },
+
   /* ---------- la ruleta ---------- */
   spinRoulette() {
     const S = this.S, seg = this._forceSpin ?? Math.floor(this.rand() * WHEEL.length), res = WHEEL[seg];
@@ -146,7 +207,13 @@ export const gamblingMethods = {
     this.log('log.roulette', { c: t('gamble.res.' + res) });
     this.tip('roulette');
     if (res === 'gold') {
-      const g = S.gamble?.gold, b = g && this.ballAt(g.x, g.y);
+      const g = S.gamble?.gold, b = g && this.ballAt(g.x, g.y), h = g && this.holeAt(g.x, g.y);
+      if (h) { // el hoyo en la casilla dorada: gana el hoyo y pierde todo el mundo
+        S.winner = -1; S.winners = []; S.jaque = false; S.goldWin = true; S.holeWin = true;
+        this.anim({ t: 'goldWin', p: this.holeId(h), x: h.x, y: h.y });
+        this.log('log.holeGold');
+        return;
+      }
       if (!b || b.decoy || b.hunter) { this.log('log.goldEmpty'); return; }
       const pl = ownerOf(b.player);
       S.winner = pl; S.winners = [pl]; S.jaque = false; S.goldWin = true;

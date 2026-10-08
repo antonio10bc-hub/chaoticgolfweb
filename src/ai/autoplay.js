@@ -2,11 +2,17 @@
 // Lo usan tools/simulate.mjs (telemetría de balanceo) y los tests de la IA.
 // La interfaz tiene su propio orquestador con ritmo y animaciones (ui/ai-driver.js),
 // pero toma exactamente las mismas decisiones de src/ai/bot.js.
-import { choosePlan, chooseReaction, chooseJaqueSave, discardPlan, applyAction, farness } from './bot.js';
+import { choosePlan, chooseReaction, chooseJaqueSave, discardPlan, applyAction, farness, chooseBonus } from './bot.js';
 import { CARDS } from '../content/cards/index.js';
 
-export function runPlan(game, plan) {
+export function runPlan(game, plan, rand = Math.random) {
   for (const a of plan.actions) if (!applyAction(game, a)) break;
+  // (casino) cara en una moneda: quien tenga que decidir, decide (o renuncia)
+  for (let k = 0; k < 8 && game.pending?.bonus; k++) {
+    const b = chooseBonus(game, game.pending.p, rand);
+    if (!b) { game.cancel(); continue; }
+    for (const a of b.actions) if (!applyAction(game, a)) break;
+  }
   if (game.pending?.kind === 'serpent') game.endSerpent(); // blindaje: nunca dejar un dedo a medias
   else if (game.pending) game.cancel();
 }
@@ -54,7 +60,7 @@ export function simulateGame(game, { rand = Math.random, maxTurns = 400, onPlay,
       const saver = jaqueSaver(game, rand);
       if (!saver) { game.confirmWin(); return true; }
       stats.saves++; played(saver.key);
-      runPlan(game, saver);
+      runPlan(game, saver, rand);
     }
     return S().winner !== null && !S().jaque;
   };
@@ -67,10 +73,10 @@ export function simulateGame(game, { rand = Math.random, maxTurns = 400, onPlay,
       const pl = plan(p);
       if (!pl) break;
       played(pl.key);
-      runPlan(game, pl);
+      runPlan(game, pl, rand);
       if (settleJaque()) break;
       const react = maybeReact(game, p, rand);
-      if (react) { stats.reactions++; played(react.key); runPlan(game, react); if (settleJaque()) break; }
+      if (react) { stats.reactions++; played(react.key); runPlan(game, react, rand); if (settleJaque()) break; }
     }
     if (S().winner !== null) { if (!S().jaque) break; continue; }
     if (S().turn !== p) { stats.turns++; continue; } // (una jugada ya ha terminado su turno: p. ej. el dedo que se quema)

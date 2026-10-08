@@ -562,32 +562,39 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     al azar, entre la fila del hoyo y la de las salidas, sin tocar los bordes de los lados, a 2+ del hoyo y 3+ de las salidas.
     No es de ningún color (la ruleta roja o negra no la toca).
   - **Monedas**: al empezar, **3 por jugador** en casillas vacías al azar (ni salidas, ni PAR, ni la del hoyo, ni la dorada),
-    con un RNG aparte sacado de la semilla (el mazo sale igual). La pelota que pasa por una (o se para en ella; también la
-    golpeada) se la lleva (`coinPick`: se le pega una chapita) y, **al terminar la jugada** (`afterPlay` → `resolveCoins`), la
-    lanza (`coinFlip`, una moneda grande que da vueltas encima): **cara**, repite su último movimiento desde donde está (la
-    misma dirección y casillas; con el dedo, el mismo camino paso a paso); **cruz**, vuelve a su salida como si se cayera
-    (`goHome`). Una tirada por moneda (como mucho 16 por jugada). La que acaba en el hoyo ya no la lanza.
+    con un RNG aparte sacado de la semilla (el mazo sale igual). La pelota (o el **hoyo**) que pasa por una (o se para en ella;
+    también la golpeada) se la lleva (`coinPick`: se le pega una chapita) y, **al terminar la jugada** (`afterPlay` →
+    `resolveCoins`), la lanza: una moneda grande da vueltas en medio de la pantalla (`coinFlip`). **Cara**: se vuelve a
+    elegir, como si se jugara otra vez la carta y sin gastar ninguna (acción pendiente con `bonus`: el palo, hacia dónde con
+    las casillas de su último movimiento; el iridiscente, hacia dónde; el dedo, cuántos pasos y el camino; el hoyo,
+    `holeMove`, hacia dónde y las mismas casillas). Decide el dueño de la pelota; la del hoyo, quien lo movió. Se puede
+    renunciar (Cancelar). **Cruz**: vuelve a su salida como si se cayera (`goHome`; el hoyo, a su casilla inicial). Después,
+    **la moneda se va a otra casilla vacía al azar** (`coinDrop`): siempre quedan 3 por jugador. Una tirada por moneda; con
+    una cara pendiente, las demás esperan. La pelota que acaba en el hoyo (o el hoyo que se traga una) ya no la lanza.
   - **Dado** (negra, se pone en una casilla vacía y se queda; como el bloque de madera, pero de marfil y con su número): lo que
     choca contra él (pelota u hoyo) **rebota tantas casillas como marca**, en vez de las que le quedaban, y el dado **rueda una
     casilla hacia el otro lado** como un dado de verdad (`rollFaces`: cara de arriba, norte y este; las opuestas suman 7), así
     que marca otro número. Si no puede rodar (borde, pieza, pelota, hoyo, moneda o la dorada), da la vuelta en su sitio. El
-    dedo contra un dado rebota en línea recta y se acaba. Al chocar sale su número («×4»).
+    dedo contra un dado rebota en línea recta y se acaba. Al chocar sale su número («×4»). Además, **al acabar cada turno
+    cada dado cambia de número** al azar (`diceTurn`). Entre dos dados, como mucho 6 rebotes que reinician las casillas
+    (`MAX_DICE`): luego rebota como en un bloque.
   - **Ruleta** (naranja: en cualquier momento, también en el JAQUE): sale en medio de la pantalla y gira (4 franjas rojas, 4
     negras y 1 **dorada**, `WHEEL`). Rojo o negro: las pelotas en casillas de ese color vuelven a su salida (las que están
     dentro del hoyo, no). **Dorado**: la pelota que está en la casilla dorada **gana directamente**, sin JAQUE (`S.goldWin`;
-    también si había un JAQUE de otro). Sin vista previa (`random`).
+    también si había un JAQUE de otro). Si en la casilla dorada está el **hoyo**, gana el hoyo y **pierde todo el mundo**
+    (`S.holeWin`, como cuando gana el tren). Sin vista previa (`random`).
   - Encima de una moneda o de la casilla dorada no se puede poner ninguna pieza (`gambleBlocks`).
-  - En pantalla: una mesa de casino (tapete verde con un rombo muy suave, la baranda de madera con filo dorado alrededor del
-    campo, montones de fichas, una mano de cartas, un par de dados y la luz de la lámpara), las casillas rojas y negras, la
+  - En pantalla: una mesa de casino (tapete verde con un rombo muy suave y la baranda de madera con filo dorado alrededor del
+    campo, sin adornos alrededor), las casillas rojas y negras, la
     dorada con su estrella y un destello, y las monedas que flotan. Mientras se anima una jugada, el tablero enseña las monedas
     y los dados de antes y se van actualizando con sus eventos (`app.gv`). La presentación enseña el dado y la ruleta con
     escenas jugadas con el motor (con el suelo ajedrezado; la de la ruleta, con su rueda girando). Se anuncia como «¡Nueva
     baraja!» a quien ya jugaba. Logro **¡Bote!**: ganar en la casilla dorada con la ruleta.
   - La IA valora la ruleta por sus tres resultados con su probabilidad (`odds`: rojo 4/9, negro 4/9, dorado 1/9) y la gira
     si está en la dorada; en sus simulaciones no lanza monedas (`S.coinPend`): valora el riesgo de la cruz (la mitad de lo
-    avanzado) y la casilla dorada (más si tiene la ruleta). Equilibrio (`npm run simulate -- --deck gambling`): 100 %
-    terminadas, reparto justo por asiento, ~8,5-10 rondas (como agua y estaciones; la ruleta y la cruz devuelven pelotas a
-    su salida), ~3 % de partidas ganadas en la casilla dorada.
+    avanzado) y la casilla dorada (más si tiene la ruleta). Con cara, elige su tirada extra con `chooseBonus` (o renuncia si
+    no le conviene); en la interfaz, también cuando la cara le sale a un bot fuera de su turno. Equilibrio (`npm run
+    simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8,5 rondas (como agua y estaciones).
   - Estadísticas: monedas lanzadas, vueltas de dado y de ruleta (las vueltas a la salida, en «caídas fuera»).
   - Pendiente: desafíos, reto diario, puzles, piezas en el creador (ya tiene su plantilla de mazo) y su pelota de logros.
 - **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
