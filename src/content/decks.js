@@ -38,8 +38,8 @@ export const DECKS = [
   // el Gambling: el casino. El suelo es ajedrezado (rojo y negro) con una casilla dorada; al empezar hay 3 monedas por
   // jugador (cara: repites el movimiento; cruz: a tu salida), dados que te hacen rebotar lo que marcan y la ruleta, que
   // devuelve a su salida a las pelotas del color que salga (con el dorado, la de la casilla dorada gana). Sin búnkeres ni
-  // portales. Fuera de Ultimate de momento (noUltimate)
-  { id: 'gambling', color: '#B8892B', emblem: 'roulette', scene: 'casino', grow: { cols: 2, rows: 0 }, gambling: true, noUltimate: true,
+  // portales
+  { id: 'gambling', color: '#B8892B', emblem: 'roulette', scene: 'casino', grow: { cols: 2, rows: 0 }, gambling: true,
     newCards: ['dado', 'ruleta'], introLead: 'deckIntro.leads.gambling', // (la presentación cuenta lo de las monedas y la casilla dorada)
     counts: base => ({ ...base, bunker: 0, portal: 0, dado: 2, ruleta: 2 }) },
   // (las barajas nuevas van aquí, detrás de la última: Ultimate siempre al final)
@@ -67,7 +67,7 @@ export const deckSize = (dk, sz) => {
 
 /* ---------- Ultimate: combinaciones de barajas ----------
    Una combinación es una máscara de bits sobre ULT_DECKS (1 = clásica, 2 = agua, 4 = minigolf…; las 6 = 63). */
-export const ULT_DECKS = ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse'];
+export const ULT_DECKS = ['classic', 'water', 'minigolf', 'train', 'seasons', 'multiverse', 'gambling']; // (una nueva, siempre al final: los bits de las ya guardadas no cambian)
 export const ALL_COMBO = (1 << ULT_DECKS.length) - 1;
 export const comboIds = mask => ULT_DECKS.filter((_, i) => mask & (1 << i));
 export const comboMask = ids => ids.reduce((m, id) => m | (ULT_DECKS.includes(id) ? 1 << ULT_DECKS.indexOf(id) : 0), 0);
@@ -96,7 +96,7 @@ export function comboCfg(mask) {
   for (const id of ids) { const c = deckById(id).counts ? deckById(id).counts(base) : base; for (const [k, n] of Object.entries(c)) counts[k] = Math.max(counts[k] || 0, n); }
   counts.paloIri = 2; counts.palo10 = size.cols >= 13 ? 3 : 0; // (el palo de 10, solo en campos grandes)
   const dks = ids.map(deckById), startWith = [...new Set(['paloIri', ...dks.flatMap(d => d.newCards || [])])].filter(k => counts[k] > 0);
-  return { ids, size, counts, startWith, train: dks.some(d => d.train), trainLayout: dks.length === 1 && !!dks[0].trainLayout, seasons: dks.some(d => d.seasons) };
+  return { ids, size, counts, startWith, train: dks.some(d => d.train), trainLayout: dks.length === 1 && !!dks[0].trainLayout, seasons: dks.some(d => d.seasons), gambling: dks.some(d => d.gambling) };
 }
 // compartir una combinación con el mismo reparto: u1.<combinación>.<rivales>.<dificultad>.<semilla> (en base 36)
 const DIFFS = ['easy', 'normal', 'hard'];

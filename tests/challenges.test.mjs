@@ -63,7 +63,8 @@ test('reto diario: tablero pequeño (5×5, como mucho +2), una sola mecánica ca
     assert.ok(ch.board.cols >= 5 && ch.board.rows >= 5 && ch.board.cols + ch.board.rows <= 12, `${date}: ${ch.board.cols}×${ch.board.rows}`);
     const g = make({ ...ch, diff: 'normal' }, seed), S = g.S;
     const types = new Set(S.tiles.map(t => t.type));
-    if (ch.feature === 'multiverse') assert.deepEqual([...types], [{ blackhole: 'blackhole', gravity: 'meteorite', meteors: 'meteorite' }[ch.sub]], `${date}: solo lo del multiverso (${ch.sub})`);
+    if (ch.feature === 'gambling') assert.deepEqual([...types], ch.sub === 'dice' ? ['dice'] : [], `${date}: solo lo del casino (${ch.sub})`);
+    else if (ch.feature === 'multiverse') assert.deepEqual([...types], [{ blackhole: 'blackhole', gravity: 'meteorite', meteors: 'meteorite' }[ch.sub]], `${date}: solo lo del multiverso (${ch.sub})`);
     else if (ch.feature === 'season') assert.ok([...types].every(t => SEASON_TILES[ch.season.now].includes(t)) && S.season?.now === ch.season.now, `${date}: solo lo de ${ch.season.now}`);
     else if (TYPE[ch.feature]) assert.deepEqual([...types], [TYPE[ch.feature]], `${date}: solo ${ch.feature}`); else assert.equal(S.tiles.length, 0);
     for (const t of S.tiles) assert.ok(!S.balls.some(b => b.x === t.x && b.y === t.y) && !(S.hole.x === t.x && S.hole.y === t.y), `${date}: tapa`);

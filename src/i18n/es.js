@@ -265,7 +265,7 @@ export default {
     spawnMark: 'Salida de Jugador {n}: si cae del tablero, vuelve aquí',
     holeMark: 'Posición inicial del hoyo: si sale del tablero, vuelve aquí',
     outWarning: 'La pelota caería fuera del tablero y volvería al inicio',
-    pullOut: '¡Sácala!',
+    pullOut: '¡Sácala!', bonusCta: '¡Elige otra vez!',
   },
   a11y: {
     snowball: 'bola de nieve', wind: 'viento', windWarn: 'ruta del viento (aviso)',
@@ -468,6 +468,7 @@ export default {
     woodDuel: { name: 'Duelo de madera', desc: 'Duelo en difícil en el pinball.' },
     iriParty: { name: 'Fiesta iridiscente', desc: 'Tres en la mesa con palos iridiscentes.' },
     launchCrowd: { name: 'Hora punta', desc: 'La pista de despegue con cuatro rivales.' },
+    casinoNight: { name: 'Noche de casino', desc: 'Dados cargados, con tres rivales.' },
     fingerFest: { name: 'Dedos ágiles', desc: 'Dedos y túneles.' },
   },
   decks: {
@@ -531,6 +532,7 @@ export default {
     steam: { name: 'Vapor', goal: 'Victorias con la baraja del tren' },
     seasons: { name: 'Estaciones', goal: 'Victorias con la baraja de las estaciones' },
     cosmos: { name: 'Cosmos', goal: 'Victorias con la baraja del multiverso' },
+    fortune: { name: 'Fortuna', goal: 'Victorias con la baraja del Gambling' },
     prism: { name: 'Prisma', goal: 'Victorias con Ultimate' },
     bolt: { name: 'Rayo', goal: 'Series de contrarreloj completas' },
     crown: { name: 'Corona', goal: 'Desafíos superados' },
@@ -671,7 +673,7 @@ export default {
     goldWin: { name: '¡Bote!', desc: 'Gana en la casilla dorada con la ruleta.' },
   },
 
-  dailyFeat: { multiverse: 'Multiverso', mv: { blackhole: 'Agujero negro', gravity: 'Gravedad', meteors: 'Meteoritos' }, season: 'Estaciones', train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
+  dailyFeat: { gambling: 'Casino', gb: { coins: 'Monedas', dice: 'Dado', roulette: 'Ruleta' }, multiverse: 'Multiverso', mv: { blackhole: 'Agujero negro', gravity: 'Gravedad', meteors: 'Meteoritos' }, season: 'Estaciones', train: 'Tren', portal: 'Portales', launcher: 'Catapultas', bunker: 'Arenero', river: 'Río pequeño', tunnel: 'Caja con agujeros', block: 'Bloque', lake: 'Charca', corner: 'Esquina', iri: 'Palo iridiscente' },
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },
@@ -695,6 +697,9 @@ export default {
     eventHorizon: { name: 'Horizonte de sucesos', desc: 'Un agujero negro junto al camino: pasa a su lado y sal partido en cuatro.' },
     asteroids: { name: 'Campo de asteroides', desc: 'Rocas que hacen de muro: rebota en ellas… y cuidado, que caen más.' },
     gravityWell: { name: 'Pozo de gravedad', desc: 'El hoyo, en un pozo de rocas abierto por un lado. La gravedad lo saca… o te mete.' },
+    coinRain: { name: 'Lluvia de monedas', desc: 'Una alfombra de monedas hasta el hoyo: cara, otra vez; cruz, a la salida.' },
+    loadedDice: { name: 'Dados cargados', desc: 'Dados junto al hoyo que te devuelven lo que marcan (y cambian cada turno).' },
+    highRoller: { name: 'La banca', desc: 'La casilla dorada, pegada al hoyo y guardada por dados. Tres ruletas en el mazo.' },
     crossing: { name: 'Paso a nivel', desc: 'Una vía entre la salida y el hoyo: crúzala sin que te pille el tren.' },
     station: { name: 'Estación central', desc: 'El hoyo, dentro de un circuito: el tren le da vueltas con su vagón.' },
     express: { name: 'Expreso', desc: 'Vía larga entre charcas: en cada curva, el tren te tira al agua.' },

@@ -8,7 +8,7 @@ const rec = (over = {}) => ({ won: { rush: 0 }, daily: { bestStreak: 0 }, decks:
 const PUZ = [...Array(24).keys()].map(i => ({ group: ['warmup', 'mid', 'expert'][Math.floor(i / 8)] }));
 
 test('10 pelotas con 3 niveles: racha, las seis barajas, contrarreloj, desafíos y puzles', () => {
-  assert.deepEqual(SKINS.map(s => s.id), ['fire', 'classic', 'water', 'wood', 'steam', 'seasons', 'cosmos', 'prism', 'bolt', 'crown', 'puzzle']);
+  assert.deepEqual(SKINS.map(s => s.id), ['fire', 'classic', 'water', 'wood', 'steam', 'seasons', 'cosmos', 'fortune', 'prism', 'bolt', 'crown', 'puzzle']);
   for (const s of SKINS) if (s.at) assert.equal(s.at.length, 3, s.id);
   assert.deepEqual(skinById('fire').at, [7, 30, 365]);
 });
@@ -29,6 +29,7 @@ test('barajas: victorias con cada una (minigolf y Ultimate por su id) y series d
   assert.equal(skinProgress(skinById('steam'), R, PUZ).lvl, 2);
   assert.equal(skinProgress(skinById('seasons'), rec({ decks: { seasons: { w: 12 } } }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('cosmos'), rec({ decks: { multiverse: { w: 55 } } }), PUZ).lvl, 2);
+  assert.equal(skinProgress(skinById('fortune'), rec({ decks: { gambling: { w: 12 } } }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('prism'), R, PUZ).lvl, 3);
   assert.equal(skinProgress(skinById('bolt'), R, PUZ).lvl, 2);
   // antes del contador de series: ~6 victorias por serie
@@ -41,7 +42,7 @@ test('desafíos y puzles: un nivel por grupo completo, en orden (calentamiento, 
   assert.equal(skinProgress(skinById('crown'), rec({ challenges: warm }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('crown'), rec({ challenges: mid }), PUZ).lvl, 0, 'sin el calentamiento no cuenta el intermedio');
   const p = skinProgress(skinById('crown'), rec({ challenges: { ...warm, ...mid } }), PUZ);
-  assert.equal(p.lvl, 2); assert.equal(p.group, 'expert'); assert.equal(p.value, 0); assert.equal(p.target, 9); // (6 + el del tren + el de las estaciones + el del multiverso)
+  assert.equal(p.lvl, 2); assert.equal(p.group, 'expert'); assert.equal(p.value, 0); assert.equal(p.target, 10); // (6 + el del tren + el de las estaciones + el del multiverso + el del casino)
   const all = Object.fromEntries([...Array(24).keys()].map(i => [i, true]));
   assert.equal(skinProgress(skinById('puzzle'), rec({ puzzles: all }), PUZ).lvl, 3);
   assert.equal(skinProgress(skinById('puzzle'), rec({ puzzles: { 0: true, 1: true } }), PUZ).value, 2);

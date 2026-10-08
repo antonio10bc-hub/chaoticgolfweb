@@ -15,7 +15,7 @@ const N = +Narg;
 const BASES = [{ id: 'base7', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal' }, { id: 'base9', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal' }, { id: 'baseMini', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'minigolf' }];
 const VARS = variantsFile ? (await import(new URL(variantsFile, 'file://' + process.cwd() + '/').href)).default : [];
 const list = [...VARS, ...BASES, ...CHALLENGES, ...WEEKLY.map(w => ({ ...w, weekly: true }))].filter(c => which === 'all' || which.split(',').includes(c.id) || (which === 'weekly' && c.weekly) || (which === 'vars' && VARS.includes(c)) || (which === 'ch' && !c.weekly && !c.id.startsWith('base') && !VARS.includes(c)) || (which === 'base' && c.id.startsWith('base')));
-const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F', blackhole: '@', meteorite: 'R' }; // (estaciones; * bola de nieve)
+const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F', blackhole: '@', meteorite: 'R', dice: 'D' }; // (estaciones; * bola de nieve; casino: G dorada, o moneda)
 const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 function make(ch, seed) {
   const { cfg, extra } = challengeCfg(ch);
@@ -33,6 +33,8 @@ function draw(S) {
       if (S.train?.path.some(([px, py]) => px === x && py === y)) ch = S.train.stations.some(i => S.train.path[i][0] === x && S.train.path[i][1] === y) ? 'S' : '=';
       if (S.train && S.train.path[S.train.pos][0] === x && S.train.path[S.train.pos][1] === y) ch = 'T';
       if (S.season?.snow && S.season.snow.x === x && S.season.snow.y === y) ch = '*';
+      if (S.gamble?.gold && S.gamble.gold.x === x && S.gamble.gold.y === y) ch = 'G';
+      if (S.gamble?.coins.some(c => c.x === x && c.y === y)) ch = 'o';
       if (S.hole.x === x && S.hole.y === y) ch = 'H';
       if (b) ch = String(b.player + 1);
       s += ch + ' ';
@@ -42,7 +44,7 @@ function draw(S) {
   return s;
 }
 const MECH = ['train', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'teleport', 'fall', 'settle', 'iri', 'impact',
-  'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'snow', 'season', 'absorb', 'gravity', 'gstuck', 'meteor', 'meteorRock']; // (las últimas: estaciones)
+  'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'snow', 'season', 'absorb', 'gravity', 'gstuck', 'meteor', 'meteorRock', 'coinFlip', 'goHome', 'diceRoll', 'roulette', 'goldWin']; // (las últimas: estaciones, multiverso y casino)
 for (const ch of list) {
   const rand = mulberry32(4242);
   if (show === '1') { const g = make(ch, 12345); console.log(`\n== ${ch.id} ${g.S.cols}x${g.S.rows} par ${g.S.par} · ${ch.opps + 1} jug · ${ch.diff}`); console.log(draw(g.S)); }

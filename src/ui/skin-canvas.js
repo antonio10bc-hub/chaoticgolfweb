@@ -142,6 +142,18 @@ export async function drawSkinBall(c, x, y, R, color, sk) {
         c.save(); c.setLineDash([D * .04, D * .03]); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = D * .02; c.beginPath(); c.arc(ox, oy, D * .14, 0, 7); c.stroke(); c.restore(); }));
       break;
     }
+    case 'fortune': { // una ficha de casino · el aro de la ruleta · bañada en oro y monedas y un dado en órbita
+      if (lvl >= 3) surf.push(() => { c.globalAlpha = .55; glow(c, x - R * .2, y - R * .25, R * 1.3, [[0, '#FFF1B8'], [.5, '#E6B94A'], [1, '#B8862A']]); c.globalAlpha = 1; }, () => shine(c, x, y, R));
+      surf.push(() => { c.fillStyle = 'rgba(255,255,255,.88)'; // (el canto de la ficha: rayas blancas en el borde)
+        for (let i = 0; i < 12; i++) { const a = rad(i * 30); c.beginPath(); c.arc(x, y, R, a, a + rad(12)); c.arc(x, y, R * .74, a + rad(12), a, true); c.closePath(); c.fill(); }
+        c.save(); c.setLineDash([D * .05, D * .04]); c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = D * .025; c.beginPath(); c.arc(x, y, R * .55, 0, 7); c.stroke(); c.restore(); });
+      if (lvl >= 2) back.push(() => { const cols = ['#C8243A', '#24242A']; // (el aro de la ruleta: rojo y negro, con su franja dorada)
+        for (let i = 0; i < 18; i++) { const a = rad(i * 20);
+          c.fillStyle = i === 0 ? '#E2B23C' : cols[i % 2]; c.beginPath(); c.arc(x, y, R * 1.24, a, a + rad(20)); c.arc(x, y, R * 1.04, a + rad(20), a, true); c.closePath(); c.fill(); }
+        c.strokeStyle = '#E2B23C'; c.lineWidth = D * .015; c.beginPath(); c.arc(x, y, R * 1.25, 0, 7); c.stroke(); });
+      if (lvl >= 3) [[0, A.COIN_MINI], [120, A.DIE_MINI], [240, A.COIN_MINI]].forEach(([a, svg]) => front.push(() => { const [ox, oy] = orbit(x, y, D, a); return put(c, svg, ox, oy, D * .28, D * .28); }));
+      break;
+    }
     case 'prism': { // brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita
       const IRI = ['#FF8FC4', '#8FB6FF', '#7EE8C8', '#FFE38A', '#C39BFF', '#FF8FC4'];
       surf.push(() => { c.globalAlpha = lvl >= 3 ? .78 : .5; c.fillStyle = conic(c, x, y, IRI, rad(30)); c.fillRect(x - R, y - R, D, D); c.globalAlpha = 1; });

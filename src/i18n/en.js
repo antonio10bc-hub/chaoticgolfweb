@@ -262,7 +262,7 @@ export default {
     spawnMark: 'Player {n}’s tee: if the ball falls off the board, it comes back here',
     holeMark: 'Hole’s starting square: if it goes off the board, it comes back here',
     outWarning: 'The ball would fall off the board and go back to its tee',
-    pullOut: 'Knock it out!',
+    pullOut: 'Knock it out!', bonusCta: 'Pick again!',
   },
   a11y: {
     snowball: 'snowball', wind: 'wind', windWarn: 'wind route (warning)',
@@ -465,6 +465,7 @@ export default {
     woodDuel: { name: 'Wood duel', desc: 'A hard duel on the pinball course.' },
     iriParty: { name: 'Iridescent party', desc: 'Three at the table with iridescent clubs.' },
     launchCrowd: { name: 'Rush hour', desc: 'The runway with four rivals.' },
+    casinoNight: { name: 'Casino night', desc: 'Loaded dice, with three rivals.' },
     fingerFest: { name: 'Nimble fingers', desc: 'Fingers and tunnels.' },
   },
   decks: {
@@ -528,6 +529,7 @@ export default {
     steam: { name: 'Steam', goal: 'Wins with the train deck' },
     seasons: { name: 'Seasons', goal: 'Wins with the four seasons deck' },
     cosmos: { name: 'Cosmos', goal: 'Wins with the multiverse deck' },
+    fortune: { name: 'Fortune', goal: 'Wins with the Gambling deck' },
     prism: { name: 'Prism', goal: 'Wins with Ultimate' },
     bolt: { name: 'Bolt', goal: 'Complete time-attack runs' },
     crown: { name: 'Crown', goal: 'Challenges beaten' },
@@ -668,7 +670,7 @@ export default {
     goldWin: { name: 'Jackpot!', desc: 'Win on the golden square with the roulette.' },
   },
 
-  dailyFeat: { multiverse: 'Multiverse', mv: { blackhole: 'Black hole', gravity: 'Gravity', meteors: 'Meteors' }, season: 'Seasons', train: 'Train', portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
+  dailyFeat: { gambling: 'Casino', gb: { coins: 'Coins', dice: 'Die', roulette: 'Roulette' }, multiverse: 'Multiverse', mv: { blackhole: 'Black hole', gravity: 'Gravity', meteors: 'Meteors' }, season: 'Seasons', train: 'Train', portal: 'Portals', launcher: 'Catapults', bunker: 'Sandpit', river: 'Little river', tunnel: 'Box with holes', block: 'Block', lake: 'Pond', corner: 'Corner', iri: 'Iridescent club' },
   modes: {
     chStat: '{w} wins out of {p} games',
     groups: { warmup: 'Warm-up', mid: 'Intermediate', expert: 'Expert' },
@@ -692,6 +694,9 @@ export default {
     eventHorizon: { name: 'Event horizon', desc: 'A black hole by the path: pass next to it and come out split in four.' },
     asteroids: { name: 'Asteroid field', desc: 'Rocks that work as walls: bounce off them… and watch out, more keep falling.' },
     gravityWell: { name: 'Gravity well', desc: 'The hole sits in a pit of rocks open on one side. Gravity pulls it out… or pulls you in.' },
+    coinRain: { name: 'Coin rain', desc: 'A carpet of coins up to the hole: heads, again; tails, back to start.' },
+    loadedDice: { name: 'Loaded dice', desc: 'Dice next to the hole that send you back what they show (and change every turn).' },
+    highRoller: { name: 'The house', desc: 'The golden square, next to the hole and guarded by dice. Three roulettes in the deck.' },
     crossing: { name: 'Level crossing', desc: 'A track between the start and the hole: cross it before the train gets you.' },
     station: { name: 'Central station', desc: 'The hole sits inside a circuit: the train circles it with its wagon.' },
     express: { name: 'Express', desc: 'A long track between ponds: at every curve, the train throws you in.' },

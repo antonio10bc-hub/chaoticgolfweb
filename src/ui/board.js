@@ -90,7 +90,7 @@ export function renderBoard() {
     if (gv && app.gv) tile = gv.tileAt(x, y); // (casino: los dados, donde estaban hasta que ruedan)
     const par = g.parAt(x, y), ball = g.ballAt(x, y);
     if (par) { cls += ' par'; html = ASSETS.parLabelHTML(par.n); aria.push(`PAR ${par.n}`); }
-    if (gv) { // (casino) rojo, negro o la dorada; y la moneda, si la hay
+    if (gv && !(tile && /^(water|space)/.test(tileDef(tile.type).cellClass))) { // (casino) rojo, negro o la dorada; y la moneda (no en el agua ni en el agujero negro: Ultimate)
       const gold = gv.gold(x, y);
       cls += gold ? ' gGold' : (x + y) % 2 === 0 ? ' gRed' : ' gBlack';
       aria.push(t(gold ? 'a11y.goldCell' : (x + y) % 2 === 0 ? 'a11y.redCell' : 'a11y.blackCell'));
@@ -235,7 +235,9 @@ export function ensurePieces() {
   const g = app.game, S = g.S, pd = g.pending;
   ensureTrain(g); // (baraja del tren: locomotora y vagones, debajo de pelotas y hoyo)
   ensureSnow(g);  // (estaciones: la bola de nieve, también debajo)
-  ensurePiece('hole', ASSETS.holeHTML());
+  const hp = ensurePiece('hole', ASSETS.holeHTML());
+  hp.classList.toggle('bonusPick', pd?.kind === 'holeMove' && pd.hole === 'hole' && !isBot(pd.p)); // (casino: cara en la moneda del hoyo)
+  hp.dataset.cta = t('board.bonusCta');
   for (const h of S.holeCopies || []) { // (multiverso) las copias del hoyo: no aparecen hasta que salen del agujero negro
     const fresh = !pieceEl(h.id), el = ensurePiece(h.id, ASSETS.holeHTML());
     if (fresh) { el.classList.add('copyHole'); if (app.animating || app.animQueue.length) el.style.display = 'none'; }
@@ -255,6 +257,10 @@ export function ensurePieces() {
     // marcador sobre la pelota de quien juega + halo en la pelota que se está moviendo/eligiendo
     el.classList.toggle('isTurn', S.nPlayers > 1 && !b.decoy && ownerOf(b.player) === S.turn && S.winner === null);
     el.classList.toggle('isSel', !!pd?.ball && pd.ball.player === b.player);
+    // (casino) cara en una moneda: sobre la pelota, un bocadillo que recuerda que hay que elegir otra vez
+    const cta = !!pd?.bonus && pd.ball?.player === b.player && !isBot(pd.p);
+    el.classList.toggle('bonusPick', cta);
+    if (cta) el.dataset.cta = t('board.bonusCta');
     // JAQUE: la pelota embocada se ve como fantasma; si se puede sacar ahora, se señala como objetivo
     const ghost = b.holed && S.jaque && S.winner !== null;
     el.classList.toggle('ghostPick', ghost && (pd?.kind === 'pickBall' || pd?.kind === 'pickHoled'));

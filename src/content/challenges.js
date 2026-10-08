@@ -53,6 +53,12 @@ export const DECKS = {
   horizon: () => ({ ...deckOf('multiverse'), agujeroNegro: 0, gravedad: 0, oGravedad: 0, meteoritos: 2 }),
   // pozo de gravedad: el hoyo en un pozo de rocas; más gravedad que nunca
   well: () => ({ ...deckOf('multiverse'), agujeroNegro: 0, gravedad: 1, oGravedad: 1, meteoritos: 2 }),
+  // (casino) lluvia de monedas: el mazo de siempre (sin búnkeres ni portales) y una ruleta; aquí mandan las monedas
+  coins: () => ({ ...defaultCounts(), bunker: 0, portal: 0, ruleta: 1 }),
+  // dados cargados: los dados ya están en el campo; uno más en el mazo y las ruletas
+  dice: () => ({ ...deckOf('gambling'), dado: 0, ruleta: 1 }),
+  // la banca: todo al dorado (una ruleta más)
+  house: () => ({ ...deckOf('gambling'), dado: 1, ruleta: 3 }),
   // dedo: el dedo manda
   fingers: () => ({ ...zero(), ...BASE, palo1: 4, palo2: 4, palo3: 2, dedo: 8 }),
   // largos: solo tiros largos (semanal)
@@ -96,6 +102,7 @@ function sanitize(tiles, C) {
 const col = (type, x, y0, y1) => Array.from({ length: y1 - y0 + 1 }, (_, i) => ({ type, x, y: y0 + i })); // columna (ríos)
 const cells = (type, list) => list.map(([x, y]) => ({ type, x, y }));
 const rock = (x, y) => ({ type: 'meteorite', x, y }); // (multiverso) roca de meteorito: un muro
+const die = (x, y, t) => ({ type: 'dice', x, y, t }); // (casino) un dado que marca t (el resto de caras se completa al montar la partida)
 
 /* ---------- los desafíos ---------- */
 // board: tamaño del campo (y su PAR) · opps: bots · diff · deck: su mazo · scene: fondo (baraja)
@@ -149,6 +156,11 @@ export const CHALLENGES = [
   // opciones de llegar… y copias que se pierden por el borde), y el hoyo, si lo llevas hasta él, también se multiplica
   { id: 'eventHorizon', group: 'warmup', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'horizon', scene: 'space', mirror: true,
     layout: (C, v) => [{ type: 'blackhole', x: C.cx + 2, y: C.hy + v.pick([1, 2]) }, rock(C.cx - 2, C.hy + v.pick([2, 3]))] },
+  // lluvia de monedas (casino): una alfombra de monedas entre la salida y el hoyo; cada una, cara o cruz. Por el borde, sin
+  // monedas, se va más despacio pero sin sustos
+  { id: 'coinRain', group: 'warmup', icon: 'i-coin', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal', deck: 'coins', scene: 'casino', mirror: true,
+    gamble: (C, v) => ({ gold: { x: C.cx + 3, y: C.hy + v.pick([1, 2]) }, fill: false,
+      coins: [[-1, 1], [1, 2], [-2, 2], [-1, 3], [1, 3], [v.pick([-2, 2]), 1]].map(([dx, dy]) => ({ x: C.cx + dx, y: C.hy + dy })) }) },
   /* --- intermedio: la mecánica pide pensar la jugada --- */
   { id: 'portals', group: 'mid', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', mirror: true,
     layout: (C, v) => [
@@ -199,6 +211,11 @@ export const CHALLENGES = [
   // hoyo, que devuelve al hoyo el tiro que se pasa; la lluvia de meteoritos deja más
   { id: 'asteroids', group: 'mid', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'rocks', scene: 'space', mirror: true,
     layout: (C, v) => [rock(C.cx + 2, C.hy), rock(C.cx - 2, C.hy + 2 + v.pick([0, 1])), rock(C.cx + v.pick([2, 3]), C.hy + 3)] },
+  // dados cargados (casino): dados a los lados del hoyo y en la subida: chocar te devuelve lo que marquen (y cada turno
+  // cambian de número: hay que elegir el momento)
+  { id: 'loadedDice', group: 'mid', icon: 'i-dice', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'dice', scene: 'casino', mirror: true,
+    layout: (C, v) => [die(C.cx - 1, C.hy, 3), die(C.cx + 2, C.hy, 5), die(C.cx - 2, C.hy + 2, v.pick([2, 4])), die(C.cx + 1, C.hy + 3, 6)],
+    gamble: (C, v) => ({ gold: { x: C.cx - 3, y: C.hy + 1 }, count: 3 }) },
   { id: 'onlyOrange', group: 'mid', icon: 'i-bolt', board: { cols: 5, rows: 5, par: 1 }, opps: 1, diff: 'normal', deck: 'orange', rules: { onlyOrange: true } },
   /* --- experto: combinaciones y mucho que leer --- */
   { id: 'sawmill', group: 'expert', icon: 'i-block', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'mill', scene: 'lake', mirror: true,
@@ -244,6 +261,12 @@ export const CHALLENGES = [
     layout: (C, v) => { const o = v.pick([-1, 1]); // (el lado por el que se abre el pozo)
       return [rock(C.cx - 1, C.hy - 1), rock(C.cx, C.hy - 1), rock(C.cx + 1, C.hy - 1), rock(C.cx - o, C.hy), rock(C.cx - 1, C.hy + 1), rock(C.cx, C.hy + 1), rock(C.cx + 1, C.hy + 1),
         rock(C.cx + 3 * o, C.hy + 3), rock(C.cx - 2 * o, C.hy + 4), { type: 'blackhole', x: C.cx - 3 * o, y: C.hy + 2 }]; } },
+  // la banca (casino, sin PAR): la casilla dorada, pegada al hoyo y guardada por dados; tres ruletas en el mazo. Quien
+  // llegue a la dorada puede ganar con el dorado… o perderlo todo si el hoyo se planta en ella
+  { id: 'highRoller', group: 'expert', icon: 'i-roulette', board: { cols: 9, rows: 10, par: 5 }, opps: 2, diff: 'normal', deck: 'house', scene: 'casino', mirror: true, noPar: true,
+    layout: (C, v) => [die(C.cx + 1, C.hy - 1, 4), die(C.cx + 3, C.hy, 2), die(C.cx + 2, C.hy + 1, 6), die(C.cx - 1, C.hy + 2, v.pick([3, 5])), die(C.cx - 2, C.hy, 1),
+      die(C.cx + v.pick([-3, 2]), C.hy + 4, 4)],
+    gamble: (C, v) => ({ gold: { x: C.cx + 2, y: C.hy }, count: 6 }) },
   { id: 'crowd', group: 'expert', icon: 'i-users', board: { cols: 9, rows: 9, par: 4 }, opps: 6, diff: 'hard',
     layout: C => [{ type: 'bunker', x: C.cx - 2, y: C.hy }, { type: 'bunker', x: C.cx + 2, y: C.hy }] },
   { id: 'fullChaos', group: 'expert', icon: 'i-chaos', board: { cols: 11, rows: 10, par: 5 }, opps: 3, diff: 'normal', deck: 'chaos', scene: 'prism', mirror: true,
@@ -277,6 +300,10 @@ export const WEEKLY = [
   { id: 'woodDuel', icon: 'i-burst', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard', deck: 'wood', scene: 'mini', layout: layoutOf('pinball'), mirror: true },
   { id: 'iriParty', icon: 'i-prism', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'prism', scene: 'prism', layout: layoutOf('prism') },
   { id: 'launchCrowd', icon: 'i-launch', board: { cols: 9, rows: 9, par: 4 }, opps: 4, diff: 'normal', deck: 'wood', scene: 'mini', layout: layoutOf('launchpads'), mirror: true },
+  // (casino, desde la semana 42 de 2026: las semanas de antes siguen con su regla) noche de casino: los dados cargados con
+  // tres rivales
+  { id: 'casinoNight', from: '2026-W42', icon: 'i-roulette', board: { cols: 9, rows: 9, par: 4 }, opps: 3, diff: 'normal', deck: 'dice', scene: 'casino', mirror: true,
+    layout: (C, v) => CHALLENGES.find(c => c.id === 'loadedDice').layout(C, v), gamble: C => ({ gold: { x: C.cx - 3, y: C.hy + 1 } }) },
   { id: 'fingerFest', icon: 'i-hand', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'fingers', scene: 'mini', layout: layoutOf('warren'), mirror: true },
 ];
 
@@ -324,13 +351,45 @@ export function challengeSeason(ch, S, seed) {
   if (snow && mirrored) snow = { x: C.cols - 1 - snow.x, y: snow.y };
   return { now: ch.season.now, wind: null, snow: snow ? { ...snow, dir: null } : null, fireId: 0 };
 }
+// (casino) el suelo del desafío: la casilla dorada diseñada (con el mismo reflejo que sus piezas), sus monedas y, hasta 3
+// por jugador (o `count`; con fill: false, ninguna), más monedas al azar (con la semilla) en casillas vacías
+export function challengeGamble(ch, S, seed) {
+  if (!ch.gamble) return null;
+  const C = courseOf({ cols: S.cols, rows: S.rows, par: S.par }, S.nPlayers), v = variation(seed ?? 1);
+  if (ch.layout) ch.layout(C, v);
+  const mirrored = ch.mirror && v.chance(.5), spec = ch.gamble(C, v);
+  const flip = c => c && (mirrored ? { x: C.cols - 1 - c.x, y: c.y } : { x: c.x, y: c.y });
+  const busy = (x, y) => S.tiles.some(t => t.x === x && t.y === y) || S.balls.some(b => b.spawnX === x && b.spawnY === y) || (S.hole.x === x && S.hole.y === y) ||
+    S.parCells.some(p => p.x === x && p.y === y) || S.train?.path.some(([px, py]) => px === x && py === y);
+  const inside = c => c.x >= 0 && c.y >= 0 && c.x < S.cols && c.y < S.rows;
+  let gold = flip(spec.gold);
+  if (gold && (!inside(gold) || busy(gold.x, gold.y))) gold = null;
+  const coins = [];
+  for (const c of (spec.coins || []).map(flip)) if (inside(c) && !busy(c.x, c.y) && !(gold && gold.x === c.x && gold.y === c.y) && !coins.some(o => o.x === c.x && o.y === c.y)) coins.push(c);
+  const free = [];
+  for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) if (!busy(x, y) && !(gold && gold.x === x && gold.y === y) && !coins.some(o => o.x === x && o.y === y)) free.push({ x, y });
+  for (let want = spec.fill === false ? 0 : spec.count ?? 3 * S.balls.filter(b => !b.decoy && !b.hunter).length; coins.length < want && free.length;) coins.push(free.splice(Math.floor(v.r() * free.length), 1)[0]);
+  return { gold, coins };
+}
+// (casino) los dados del diseño solo dicen qué número marcan: el resto de caras (opuestas suman 7) y su número de dado
+function dressDice(S) {
+  for (const t of S.tiles) {
+    if (t.type !== 'dice' || t.id) continue;
+    const side = [1, 2, 3, 4, 5, 6].filter(f => f !== t.t && f !== 7 - t.t);
+    t.n = side[0]; t.e = side.find(f => f !== t.n && f !== 7 - t.n);
+    S.diceSeq = (S.diceSeq || 0) + 1; t.id = S.diceSeq;
+  }
+}
 export function setupChallenge(S, ch, seed, designed = t => t) {
   S.tiles.push(...designed(challengeTiles(ch, S, seed)));
+  dressDice(S);
   const tr = challengeTrain(ch, S, seed);
   if (tr) S.train = tr;
   if (ch.noPar) S.parCells = [];
   const se = challengeSeason(ch, S, seed);
   if (se) { if (se.snow) S.tiles = S.tiles.filter(t => t.x !== se.snow.x || t.y !== se.snow.y); S.season = se; }
+  const gb = challengeGamble(ch, S, seed);
+  if (gb) S.gamble = gb;
 }
 export const challengeById = id => CHALLENGES.find(c => c.id === id);
 export const weeklyById = id => WEEKLY.find(c => c.id === id);
@@ -396,6 +455,14 @@ export const DAILY_FEATURES = [
       gravity: { deck: 'dailyGravity', layout: C => [rock(C.cx - 1, C.hy + 1)] },
       meteors: { deck: 'dailyMeteors', layout: C => [rock(C.cx + 1, C.hy)] },
     } },
+  // casino: cada vez que le toca, lo siguiente, en pequeño. Monedas: cuatro en el camino (cara o cruz) · dado: uno junto al
+  // hoyo que devuelve el tiro que se pasa · ruleta: la casilla dorada a un lado y dos ruletas en el mazo
+  { id: 'gambling', scene: 'casino', icon: 'i-roulette', sizes: [S5, { cols: 5, rows: 6, par: 2 }], mirror: true,
+    variants: {
+      coins: { gamble: C => ({ coins: [[C.cx - 1, C.hy + 1], [C.cx + 1, C.hy + 2], [C.cx - 2, C.hy + 2], [C.cx + 2, C.hy]].map(([x, y]) => ({ x, y })), fill: false }) },
+      dice: { deck: 'dailyDice', layout: C => [die(C.cx + 1, C.hy, 4)], gamble: () => ({ fill: false }) },
+      roulette: { deck: 'dailyRoulette', gamble: C => ({ gold: { x: C.cols - 1, y: C.hy + 1 }, fill: false }) },
+    } },
 ];
 DECKS.daily = () => ({ ...defaultCounts(), bunker: 0, portal: 0 }); // (solo la pieza del día en el campo)
 DECKS.dailyGravity = () => ({ ...DECKS.daily(), gravedad: 2, oGravedad: 1 });
@@ -403,13 +470,16 @@ DECKS.dailyMeteors = () => ({ ...DECKS.daily(), meteoritos: 2 });
 DECKS.dailyWinter = () => ({ ...DECKS.daily(), oNieve: 2 });
 DECKS.dailyIri = () => ({ ...DECKS.daily(), paloIri: 3 });
 DECKS.dailyTrain = () => ({ ...DECKS.daily(), trenVuelta: 1, oTren1: 2, vagon: 1 });
+DECKS.dailyDice = () => ({ ...DECKS.daily(), dado: 1 });
+DECKS.dailyRoulette = () => ({ ...DECKS.daily(), ruleta: 2 });
 // el orden de las mecánicas: cada vez que entra una nueva, la rueda sigue donde iba (ese día y los de antes, lo mismo para
-// todo el mundo): el tren, el 2 de octubre de 2026; las estaciones, el 3; el multiverso, el 6
+// todo el mundo): el tren, el 2 de octubre de 2026; las estaciones, el 3; el multiverso, el 6; el casino, el 9
 const DAILY_WHEELS = [
   { from: null, order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri'] },
   { from: '2026-10-02', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train'] },
   { from: '2026-10-03', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season'] },
   { from: '2026-10-06', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season', 'multiverse'] },
+  { from: '2026-10-09', order: ['portal', 'launcher', 'bunker', 'river', 'tunnel', 'block', 'lake', 'corner', 'iri', 'train', 'season', 'multiverse', 'gambling'] },
 ];
 // número de día desde el 1 de enero de 2026 (fechas "AAAA-MM-DD" en hora local)
 const dayNumber = date => { const [y, m, d] = date.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 0, 1)) / 864e5); };
@@ -430,14 +500,14 @@ export function dailyChallenge(date, seed) {
   const f = DAILY_FEATURES.find(x => x.id === id), r = mulberry32((seed ^ 0x6a09e667) >>> 0);
   // uno de cada cuatro días (si la mecánica lo admite), el tablero crece un poco
   const board = f.sizes.length > 1 && r() < .25 ? f.sizes[1 + Math.floor(r() * (f.sizes.length - 1))] : f.sizes[0];
-  const ch = { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror, track: f.track, noPar: f.noPar };
+  const ch = { id: 'daily-' + id, feature: id, icon: f.icon, board, opps: 2, deck: f.deck || 'daily', rules: f.rules, layout: f.layout, mirror: f.mirror, track: f.track, noPar: f.noPar, gamble: f.gamble };
   if (f.seasons) { // (estaciones: le toca la siguiente cada vez que sale)
     const now = SEASONS[mod(turn, 4)], sv = f.seasons[now];
     Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, season: { now, snow: sv.snow } });
   }
-  if (f.variants) { // (multiverso: agujero negro, gravedad y meteoritos, por turnos)
+  if (f.variants) { // (multiverso: agujero negro, gravedad y meteoritos, por turnos; casino: monedas, dado y ruleta)
     const keys = Object.keys(f.variants), sub = keys[mod(turn, keys.length)], sv = f.variants[sub];
-    Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, sub });
+    Object.assign(ch, { layout: sv.layout, deck: sv.deck || ch.deck, gamble: sv.gamble, sub });
   }
   return ch;
 }

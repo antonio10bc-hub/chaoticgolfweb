@@ -3,7 +3,7 @@
 // piezas que nadie toca. Guarda los candidatos en puzzle-candidates/<tema>.json (verlos con puzzle-show).
 //   node tools/puzzle-search.mjs <tema> [intentos=3000] [semilla=1]
 // Temas: bunker river block corner launcher lake iri launchBlock lakeCorner portalLaunch iriLaunch
-//        riverLaunch chaos dance iriPortal placeLaunch fire ice iceFinger snow snowHole bhCopy rocks gravity holeSplit
+//        riverLaunch chaos dance iriPortal placeLaunch fire ice iceFinger snow snowHole bhCopy rocks gravity holeSplit dice diceRoll diceHole
 //        (añadir más en la tabla T)
 // (estaciones: season fija la estación del nivel y snow pone la bola de nieve en una casilla libre)
 import fs from 'node:fs';
@@ -45,6 +45,13 @@ const T = {
   rocks:    { band: 'warm', tiles: { meteorite: 2 }, pool: [...CLUBS, 'palo4', ...HOLE], need: ['bump'], ess: ['meteorite'] },
   gravity:  { band: 'mid', tiles: { meteorite: 1 }, pool: ['gravedad', 'oGravedad', ...CLUBS, ...HOLE], need: ['gravity'], card: /ravedad/ },
   holeSplit: { band: 'exp', tiles: { blackhole: 1 }, pool: [...CLUBS, ...HOLE, 'oGravedad'], need: ['holeSplit'], ess: ['blackhole'] },
+  // casino: rebotar en un dado para meterla · darle dos veces al mismo dado (la segunda, ya con otro número; solo de arriba
+  // abajo, para que su nueva cara se pueda saber: la de delante o la de detrás)
+  dice:     { band: 'warm', tiles: { dice: 2 }, pool: [...CLUBS, ...HOLE], need: ['diceBump'], ess: ['dice'] },
+  diceRoll: { band: 'exp', tiles: { dice: 1 }, pool: [...CLUBS, ...HOLE, 'oPalo1'], need: ['diceTwice'], ess: ['dice'] },
+  diceHole: { band: 'exp', tiles: { dice: 2 }, pool: [...CLUBS, ...HOLE, ...OHOLE], need: ['diceHole'], ess: ['dice'] },
+  diceHoleMid: { band: 'mid', tiles: { dice: 2 }, pool: [...CLUBS, ...HOLE], need: ['diceHole'], ess: ['dice'] },
+  diceRollMid: { band: 'mid', tiles: { dice: 1 }, pool: [...CLUBS, ...HOLE], need: ['diceTwice'], ess: ['dice'] },
   placeLaunch: { band: 'exp', tiles: { block: 1 }, pool: ['launcher', 'palo1', 'palo2', 'palo3'], hand: 2, need: ['tilePlaced', 'launch'], card: /launcher/, big: true },
 }[theme];
 if (!T) throw new Error('tema ' + theme);
@@ -75,6 +82,7 @@ function build() {
       const c = cell(); if (!c) return null;
       const tl = { type, ...c };
       if (type === 'corner' || type === 'launcher') { const r = ri(4); if (r) tl.rot = r; }
+      if (type === 'dice') { const t = 1 + ri(6), side = [1, 2, 3, 4, 5, 6].filter(f => f !== t && f !== 7 - t), n = pick(side); Object.assign(tl, { id: tiles.length + 1, t, n, e: side.find(f => f !== n && f !== 7 - n) }); }
       tiles.push(tl);
     }
   }
@@ -91,6 +99,9 @@ function build() {
   return L;
 }
 const has = (evs, need) => need.every(n => n === 'iri' ? evs.some(e => e.t === 'move' && e.iri) : n === 'flareBall' ? evs.some(e => e.t === 'flare' && e.p === 'b0')
+  : n === 'diceBump' ? evs.some(e => e.t === 'bump' && e.dice && e.p === 'b0')
+  : n === 'diceHole' ? evs.some(e => e.t === 'bump' && e.dice && e.p === 'hole')
+  : n === 'diceTwice' ? evs.filter(e => e.t === 'diceRoll').length >= 2 && evs.filter(e => e.t === 'diceRoll').every(e => e.dir === 'up' || e.dir === 'down')
   : n === 'copySink' ? evs.some(e => e.t === 'sink' && /^b\d{3}/.test(e.p)) : n === 'holeSplit' ? evs.some(e => e.t === 'absorb' && e.p === 'hole') : evs.some(e => e.t === n));
 const iriSink = evs => { const i = evs.findIndex(e => e.t === 'sink' && e.p === 'b0'); if (i < 0) return false; for (let j = i - 1; j >= 0; j--) if (evs[j].t === 'move' && evs[j].p === 'b0') return !!evs[j].iri; return false; };
 

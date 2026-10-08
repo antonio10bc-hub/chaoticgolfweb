@@ -193,7 +193,7 @@ export function startPveMatch({ seed = null, recv = false } = {}) {
   if (dk.ultimate) { // (Ultimate: la combinación de barajas activada; su campo crece con ella)
     if (!validCombo(cfg.combo)) cfg.combo = currentCombo();
     const c = comboCfg(cfg.combo);
-    extra = { counts: c.counts, startWith: c.startWith, ...c.size, ...(c.train ? { train: true } : {}), ...(c.trainLayout ? { trainLayout: true } : {}), ...(c.seasons ? { seasons: true } : {}) };
+    extra = { counts: c.counts, startWith: c.startWith, ...c.size, ...(c.train ? { train: true } : {}), ...(c.trainLayout ? { trainLayout: true } : {}), ...(c.seasons ? { seasons: true } : {}), ...(c.gambling ? { gambling: true } : {}) };
   } else {
     extra = dk.counts ? { counts: dk.counts(defaultCounts()) } : {};
     if (dk.newCards?.length) extra.startWith = dk.newCards; // (cada jugador empieza con una de sus cartas nuevas)

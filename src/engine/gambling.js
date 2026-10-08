@@ -44,7 +44,7 @@ export const gamblingMethods = {
     const home = (x, y) => (x === S.hole.initX && y === S.hole.initY) || S.balls.some(b => b.spawnX === x && b.spawnY === y);
     const free = [];
     for (let y = 0; y < S.rows; y++) for (let x = 0; x < S.cols; x++) {
-      if (home(x, y) || this.parAt(x, y) || this.tileAt(x, y) || this.isHole(x, y) || this.ballAt(x, y)) continue;
+      if (home(x, y) || this.parAt(x, y) || this.tileAt(x, y) || this.isHole(x, y) || this.ballAt(x, y) || (S.train && this.trackIndex(x, y) >= 0)) continue; // (Ultimate: ni en las vías)
       free.push({ x, y });
     }
     // (la dorada, en el campo de juego: entre la fila del hoyo y la de las salidas, sin tocar los bordes de los lados)

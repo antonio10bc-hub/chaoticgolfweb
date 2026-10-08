@@ -9,6 +9,8 @@
 //   vapor      victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · caldera encendida y el tren en su vía
 //   estaciones victorias con la de las estaciones: cuatro colores · pétalos, hojas y copos · colores vivos que giran y las cuatro en órbita
 //   cosmos     victorias con la del multiverso: el espacio dentro · el disco de Gargantua · más estrellas y copias en órbita
+//   fortuna    victorias con la del Gambling: una ficha de casino (el canto a rayas) · el aro de la ruleta girando detrás ·
+//              bañada en oro, con su destello, y dos monedas y un dado en órbita
 //   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
 //   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
 //   corona     desafíos superados por grupo (calentamiento · intermedio · experto): orbe real · la corona · gemas en sus bandas y en órbita
@@ -31,6 +33,7 @@ export const SKINS = [
   { id: 'steam', kind: 'deck', deck: 'train', at: [10, 50, 100], accent: '#B5483B' },
   { id: 'seasons', kind: 'deck', deck: 'seasons', at: [10, 50, 100], accent: '#C2618B' },
   { id: 'cosmos', kind: 'deck', deck: 'multiverse', at: [10, 50, 100], accent: '#5B3FB8' },
+  { id: 'fortune', kind: 'deck', deck: 'gambling', at: [10, 50, 100], accent: '#B8892B' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
@@ -112,6 +115,11 @@ const FIREBALL = '<svg viewBox="-20 -20 40 40" aria-hidden="true"><g class="fbRi
   Array.from({ length: 10 }, (_, i) => { const t = i % 2 ? 15.5 : 19.6, m = i % 2 ? 11.5 : 14;
     return `<path d="M0-${t}C3.4-${m} 6.4-10.5 6-6.6A6 6 0 0 1-6-6.6C-6.4-10.5-3.4-${m} 0-${t}Z" fill="url(#skFlame)" transform="rotate(${i * 36})"/>`; }).join('') +
   '</g><circle r="10.2" fill="#F27A2E"/><circle r="8" fill="#FFB23E"/><circle r="5.6" fill="#FFE066"/><circle cx="-1.8" cy="-2" r="2.6" fill="#FFF8DC"/></svg>';
+// (fortuna) una moneda y un dado pequeños, para la órbita
+const COIN_MINI = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="11" r="8.4" fill="#9C6A1E"/><circle cx="10" cy="10" r="8.4" fill="#F2C14E" stroke="#9C6A1E" stroke-width="1"/>' +
+  '<circle cx="10" cy="10" r="5.6" fill="none" stroke="#C8962E" stroke-width="1"/><path d="M10 6l1.2 2.5 2.7.3-2 1.9.5 2.7L10 12l-2.4 1.4.5-2.7-2-1.9 2.7-.3z" fill="#FFE38A"/></svg>';
+const DIE_MINI = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="3" width="16" height="16" rx="4" fill="#CFC3AE"/><rect x="2" y="1.5" width="16" height="15" rx="4" fill="#F6F0E2" stroke="#4A3F3A" stroke-width="1"/>' +
+  '<circle cx="6.5" cy="5.5" r="1.5" fill="#2A2226"/><circle cx="10" cy="9" r="1.5" fill="#C8243A"/><circle cx="13.5" cy="12.5" r="1.5" fill="#2A2226"/></svg>';
 const SPARK = c => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" fill="${c}"/></svg>`;
 const BOLT = '<svg viewBox="0 0 16 26" aria-hidden="true"><path d="M10 0 1 15h6l-2 11 10-16H9l1-10Z" fill="#FFD84A" stroke="#fff" stroke-width="1" stroke-linejoin="round"/></svg>';
 const PIECE = c => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4.2a2.6 2.6 0 1 1 5.2 0H18v4.4a2.6 2.6 0 1 1 0 5.2V21h-4.6a2.6 2.6 0 1 0-5.2 0H4v-4.4a2.6 2.6 0 1 0 0-5.2Z" fill="${c}" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
@@ -203,6 +211,11 @@ function parts(id, lvl) {
       if (lvl >= 2) { back += '<i class="dk"></i>'; front += '<i class="dk fr"></i>'; }
       if (l3) front += orbit('cp', ['', '', '']);
       break;
+    case 'fortune': // una ficha de casino · el aro de la ruleta detrás · bañada en oro (con destello) y monedas y un dado en órbita
+      surf += (l3 ? '<i class="gd"></i><i class="shine"></i>' : '') + '<i class="ch"></i><i class="ci"></i>';
+      if (lvl >= 2) back += '<i class="rw"></i>';
+      if (l3) front += orbit('fo', [COIN_MINI, DIE_MINI, COIN_MINI]);
+      break;
     case 'prism': // brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita
       surf += '<i class="ir"></i>' + (l3 ? '<i class="shine"></i>' : '');
       if (lvl >= 2) back += '<i class="halo"></i>';
@@ -230,6 +243,6 @@ export const skinClasses = sk => sk ? ` sk-${sk.id} sl${sk.lvl}` : '';
 export const skinParts = sk => sk ? parts(sk.id, sk.lvl) : '';
 // una pelota suelta (perfil, partida rápida, aviso del final): tamaño en px y color de bola
 // (las piezas dibujadas, también para la imagen de compartir: skin-canvas.js)
-export const SKIN_ART = { FLAME, FIREBALL, DROP, SPARK, BOLT, PIECE, CROWN, GEM, FRAME, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel };
+export const SKIN_ART = { FLAME, FIREBALL, DROP, SPARK, BOLT, PIECE, CROWN, GEM, FRAME, WAVE, JIGSAW, WINDMILL, LOCO_MINI, SEASON_SVG, laurel, COIN_MINI, DIE_MINI };
 export const skinBall = (sk, { size = 56, color = '#f26d6d', cls = '' } = {}) =>
   `<span class="skBall${cls ? ' ' + cls : ''}" style="--bs:${size}px"><span class="skCore${skinClasses(sk)}" style="--pc:${color}">${skinParts(sk)}</span></span>`;

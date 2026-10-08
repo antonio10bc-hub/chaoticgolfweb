@@ -173,6 +173,7 @@ export function levelPreviewSVG(L) {
     const fill = PREV_FILL[tp] || (par.has(k) ? '#8DB05F' : ((x + y) % 2 ? '#5C9854' : '#4F8A4B'));
     out += `<rect x="${x * (s + g)}" y="${y * (s + g)}" width="${s}" height="${s}" rx="2.5" fill="${fill}"/>`;
     if (tp === 'block' || tp === 'corner' || tp === 'tunnel' || tp === 'launcher') out += `<rect x="${x * (s + g) + 2}" y="${y * (s + g) + 2}" width="${s - 4}" height="${s - 4}" rx="1.5" fill="#C99257"/>`;
+    if (tp === 'dice') out += `<rect x="${x * (s + g) + 1.5}" y="${y * (s + g) + 1.5}" width="${s - 3}" height="${s - 3}" rx="2" fill="#F6F0E2" stroke="#4A3F3A" stroke-width=".6"/><circle cx="${x * (s + g) + s / 2}" cy="${y * (s + g) + s / 2}" r="1.3" fill="#C8243A"/>`; // (casino: el dado)
   }
   const c = (x, y) => [x * (s + g) + s / 2, y * (s + g) + s / 2];
   if (L.train?.path?.length) { // (el tren) la vuelta de las vías y la locomotora

@@ -556,7 +556,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
 - **Baraja del Gambling** (el casino; reglas en `src/engine/gambling.js`, cartas en `cards/gambling.js`, pieza en
   `tiles/dice.js`, animaciones en `src/ui/gambling-view.js` y `styles/gambling.css`; +2 columnas; sin búnkeres ni portales;
-  fuera de Ultimate: `noUltimate`). Mazo: Dado ×2 (negra) y Ruleta ×2 (naranja); cada jugador empieza con una de ellas (si
+  también en Ultimate). Mazo: Dado ×2 (negra) y Ruleta ×2 (naranja); cada jugador empieza con una de ellas (si
   en el mazo ya no quedan, `dealOneOf` se la cambia a quien empezó con dos).
   - **Suelo ajedrezado**: rojo si x + y es par, negro si es impar (`cellColor`). Una casilla es **dorada** (`S.gamble.gold`):
     al azar, entre la fila del hoyo y la de las salidas, sin tocar los bordes de los lados, a 2+ del hoyo y 3+ de las salidas.
@@ -568,7 +568,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     elegir, como si se jugara otra vez la carta y sin gastar ninguna (acción pendiente con `bonus`: el palo, hacia dónde con
     las casillas de su último movimiento; el iridiscente, hacia dónde; el dedo, cuántos pasos y el camino; el hoyo,
     `holeMove`, hacia dónde y las mismas casillas). Decide el dueño de la pelota; la del hoyo, quien lo movió. Se puede
-    renunciar (Cancelar). **Cruz**: vuelve a su salida como si se cayera (`goHome`; el hoyo, a su casilla inicial). Después,
+    renunciar (Cancelar). Mientras te toca elegir, la barra de ayuda late con un aro dorado y sobre tu pelota (o el hoyo)
+    sale el bocadillo «¡Elige otra vez!» (`bonusCta`, `bonusPick`). **Cruz**: vuelve a su salida como si se cayera (`goHome`; el hoyo, a su casilla inicial). Después,
     **la moneda se va a otra casilla vacía al azar** (`coinDrop`): siempre quedan 3 por jugador. Una tirada por moneda; con
     una cara pendiente, las demás esperan. La pelota que acaba en el hoyo (o el hoyo que se traga una) ya no la lanza.
   - **Dado** (negra, se pone en una casilla vacía y se queda; como el bloque de madera, pero de marfil y con su número): lo que
@@ -596,14 +597,34 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     no le conviene); en la interfaz, también cuando la cara le sale a un bot fuera de su turno. Equilibrio (`npm run
     simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8,5 rondas (como agua y estaciones).
   - Estadísticas: monedas lanzadas, vueltas de dado y de ruleta (las vueltas a la salida, en «caídas fuera»).
-  - Pendiente: desafíos, reto diario, puzles, piezas en el creador (ya tiene su plantilla de mazo) y su pelota de logros.
+  - **Desafíos del casino** (uno por dificultad, `scene: 'casino'`; el suelo, con `gamble(C, v)`: la casilla dorada diseñada,
+    sus monedas y, si no dice otra cosa, monedas al azar hasta 3 por jugador, `challengeGamble`): **Lluvia de monedas**
+    (calentamiento, 7×9: una alfombra de seis monedas hasta el hoyo), **Dados cargados** (intermedio: cuatro dados junto al hoyo
+    y en la subida) y **La banca** (experto, sin PAR: la dorada pegada al hoyo y guardada por dados, tres ruletas). Simulados:
+    5,2 · 7,7 · 9,7 rondas, sin ventaja por salida. Los dados del diseño solo dicen su número (`die(x, y, t)`; el resto de
+    caras, `dressDice`).
+  - **Desafío semanal** «Noche de casino» (los dados cargados con tres rivales), desde la semana 2026-W42: las reglas tienen
+    `from` y una nueva no cambia las semanas de antes (`weeklySetup` sortea entre las que ya existían esa semana).
+  - **Reto diario del casino** (en la rueda desde el 9 de octubre de 2026, sin cambiar los días anteriores; sale por primera vez
+    el 10): monedas (cuatro en el camino) · dado (uno junto al hoyo) · ruleta (la casilla dorada a un lado y dos ruletas); la
+    tarjeta dice cuál («Casino: Dado»). Simulados: ~4,3 rondas.
+  - **Contrarreloj**: el último hoyo (el que lo mezcla todo) trae también un dado.
+  - **Puzles del casino** (p33-p34, al final del índice): **Golpe y vuelta** (calentamiento: baja el hoyo y rebota en el dado
+    hasta él) y **El hoyo rebota** (experto: el hoyo choca con el dado y vuelve a la columna de tu pelota). Buscados con
+    `npm run puzzles:search -- dice|diceHole`.
+  - Pelota de logros **Fortuna** (10 · 50 · 100 victorias con la baraja): una ficha de casino (el canto a rayas y un aro
+    discontinuo) · el aro de la ruleta (rojo, negro y la franja dorada) girando detrás · bañada en oro, con su destello, y dos
+    monedas y un dado en órbita. También dibujada en la imagen de compartir.
+  - Pendiente: sus piezas en el creador (ya tiene su plantilla de mazo).
 - **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
   `styles/ultimate.css`). Su tarjeta va aparte, tras un separador pequeño, más grande que las demás (la lista se desplaza hasta
   ella), con paleta iridiscente y etérea (nácar con reflejos rosa, aguamarina, menta y oro pálido; nada de morados) y todo
   centrado: el prisma, el nombre y qué es; una fila de seis iconos grandes, uno por baraja (tocarlo la activa o la quita;
   activada: rellena, con borde de arcoíris, brillo y ✓; apagada: translúcida, en gris, con borde discontinuo y +; siempre
-  queda al menos una y se recuerda en el dispositivo); cuántas van y el campo que sale; y debajo, continuar, nueva partida,
-  historial y cartas nuevas. Se combinan las **6**, también la clásica (sin ella, ni
+  queda al menos una y se recuerda en el dispositivo; si no caben en una fila, se reparten en dos filas parejas, 4 y 3:
+  `fitUltTogs`); cuántas van y el campo que sale; y debajo, continuar, nueva partida,
+  historial y cartas nuevas. Se combinan las **7** (también el Gambling: su suelo ajedrezado, sus monedas y la casilla dorada;
+  fuera del agua y del agujero negro, que conservan su casilla), también la clásica (sin ella, ni
   búnkeres ni portales). La partida junta sus cartas y lo suyo (vías del tren, estaciones) y siempre trae el palo iridiscente
   (el de 10, en campos de 13 columnas o más). El **campo crece con la combinación** (una baraja: su campo; las 6: 19×13) y,
   cuanto más grande, **más largo el PAR** (las 6: PAR 7); la tarjeta y la configuración enseñan el campo (en Ultimate no se

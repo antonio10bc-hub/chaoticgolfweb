@@ -14,13 +14,13 @@ const DECK = {
 
 // dificultad 0..4 (los 5 hoyos del contrarreloj): cada hoyo presenta algo nuevo y el último lo mezcla todo.
 //   0 búnker · 1 río y una pelota de obstáculo · 2 portales y madera · 3 lago, esquinas y lanzadera ·
-//   4 campo grande con de todo y palos de 4
+//   4 campo grande con de todo (también un dado del casino) y palos de 4
 const TIERS = [
   { cols: 5, rows: 7, bunker: 1 },
   { cols: 6, rows: 8, bunker: 1, river: 1, decoys: 1 },
   { cols: 7, rows: 9, bunker: 1, portals: 1, block: 2 },
   { cols: 7, rows: 9, lake: 1, corner: 2, launcher: 1, decoys: 1 },
-  { cols: 8, rows: 10, bunker: 1, river: 1, lake: 1, corner: 1, launcher: 1, portals: 1, decoys: 2, long: true },
+  { cols: 8, rows: 10, bunker: 1, river: 1, lake: 1, corner: 1, launcher: 1, portals: 1, decoys: 2, long: true, dice: 1 },
 ];
 
 export function generateLevel(seed, difficulty = 2) {
@@ -68,6 +68,7 @@ export function generateLevel(seed, difficulty = 2) {
   for (let i = 0; i < (T.block || 0); i++) put('block');
   for (let i = 0; i < (T.corner || 0); i++) put('corner', { rot: ri(4) });
   for (let i = 0; i < (T.launcher || 0); i++) put('launcher', { rot: ri(4) });
+  for (let i = 0; i < (T.dice || 0); i++) put('dice', { t: 1 + ri(6) }); // (casino: el resto de caras, al montar la partida)
   // río: una columna de 2 o 3, que no desemboque en la pelota ni en el hoyo
   for (let i = 0; i < (T.river || 0); i++) {
     for (let tries = 0; tries < 60; tries++) {

@@ -196,9 +196,9 @@ it('Ultimate: se combinan las barajas tocando sus iconos, el campo crece con ell
   await fresh({ chaoticgolf_deckIntros: { ultimate: true } });
   await click('#modesBtn'); await sleep(500);
   const size = () => app(() => document.querySelector('.ultSize').textContent);
-  assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 6, 'de inicio, las 6');
+  assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 7, 'de inicio, todas');
   assert.equal(await size(), '19×13 · PAR 7');
-  for (const id of ['classic', 'minigolf', 'train', 'seasons', 'multiverse']) { await click(`.ultTog[data-ult="${id}"]`); await sleep(120); }
+  for (const id of ['classic', 'minigolf', 'train', 'seasons', 'multiverse', 'gambling']) { await click(`.ultTog[data-ult="${id}"]`); await sleep(120); }
   assert.deepEqual(await app(() => [...document.querySelectorAll('.ultTog.on')].map(b => b.dataset.ult)), ['water']);
   assert.equal(await size(), '7×9 · PAR 3', 'solo agua: su campo');
   await click('.ultTog[data-ult="water"]'); await sleep(150);
@@ -575,7 +575,7 @@ it('modos de juego: dos pestañas (una a la vez) y 8 barajas con estadísticas (
   // (Ultimate, aparte y más grande: la lista se desplaza hasta ella y se ve entera)
   await app(() => document.querySelector('.deckCard.ultimate').scrollIntoView({ block: 'end', behavior: 'instant' })); await sleep(400);
   assert.ok(await app(() => { const r = document.querySelector('.deckCard.ultimate').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; }), 'Ultimate se ve entera');
-  assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultTog').length), 6, 'Ultimate: un icono por baraja');
+  assert.equal(await app(() => document.querySelectorAll('.deckCard.ultimate .ultTog').length), 7, 'Ultimate: un icono por baraja');
   assert.ok(await page.$('.mdPanel[data-panel="quick"] .ultSep + .deckCard.ultimate'), 'aparte, tras un separador');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
@@ -980,7 +980,7 @@ it('tu pelota: el botón del menú abre la ventana; una pelota ganada se pone y 
   assert.equal(await app(() => !document.querySelector('#profileBtn .pfDot').hidden), true, 'punto: hay pelotas nuevas');
   await click('#profileBtn'); await sleep(400);
   assert.ok(await app(() => document.getElementById('profileOverlay').classList.contains('visible')));
-  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 11); // (8 + la de vapor, del tren, la de las estaciones y la del multiverso)
+  assert.equal(await app(() => document.querySelectorAll('.pfCard').length), 12); // (8 + la de vapor, del tren, la de las estaciones, la del multiverso y la del casino)
   assert.equal(await app(() => document.querySelectorAll('.pfCard .pfNew').length), 2, 'fuego y clásica, nuevas');
   // un nivel sin ganar se ve, pero no se puede poner; uno ganado, sí
   await click('[data-pfv="fire:2"]'); await sleep(200);
@@ -1026,9 +1026,9 @@ it('reto diario: fondo de su mecánica y, al acabar, tu pelota (con la puesta) e
     chaoticgolf_stats: { version: 1, daily: { days: {}, bestStreak: 8 } } });
   const scenes = await app(async () => { const m = await import('/src/content/challenges.js'), sm = await import('/src/ui/screen-modes.js');
     return Object.fromEntries(m.DAILY_FEATURES.map(f => [f.id, sm.dailyScene(f.id)])); });
-  assert.deepEqual(scenes, { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space' });
+  assert.deepEqual(scenes, { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space', gambling: 'casino' });
   await click('#dailyCard'); await sleep(900);
-  assert.equal(await app(() => document.getElementById('gameScreen').dataset.scene), await app(() => { const s = { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space' }; return s[window.chaoticGolf.app.run.feature]; }));
+  assert.equal(await app(() => document.getElementById('gameScreen').dataset.scene), await app(() => { const s = { portal: '', launcher: 'mini', bunker: '', river: 'lake', tunnel: 'mini', block: 'mini', lake: 'lake', corner: 'mini', iri: 'prism', train: 'rail', season: 'seasons', multiverse: 'space', gambling: 'casino' }; return s[window.chaoticGolf.app.run.feature]; }));
   await page.waitForFunction(() => { const { app } = window.chaoticGolf, S = app.game.S; return S.turn === S.human && !app.animating && !app.ai.acting; }, { timeout: 40000 });
   await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls.find(x => x.player === S.human);
     for (const o of S.balls) if (o !== b && o.x === S.hole.x && o.y === S.hole.y + 1) o.x = (o.x + 2) % S.cols;

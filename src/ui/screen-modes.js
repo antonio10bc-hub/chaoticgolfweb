@@ -86,7 +86,9 @@ function startVsGame({ cfg, extra = {}, ch = null, variant, run, seed, rivals = 
 // fondo del reto diario: el de la mecánica del día (también para partidas guardadas antes de existir)
 // el nombre de la mecánica del día (la de las estaciones, con la que toca: «Estaciones: Invierno»)
 // (y la del multiverso, con lo que le toca: «Multiverso: Gravedad»)
-const dailyFeatName = (feature, season, sub) => t('dailyFeat.' + feature) + (season ? ': ' + t('seasons.' + season + '.title') : sub ? ': ' + t('dailyFeat.mv.' + sub) : '');
+// (y la del casino: «Casino: Dado»)
+const SUB_KEY = { multiverse: 'mv', gambling: 'gb' };
+const dailyFeatName = (feature, season, sub) => t('dailyFeat.' + feature) + (season ? ': ' + t('seasons.' + season + '.title') : sub ? ': ' + t(`dailyFeat.${SUB_KEY[feature]}.${sub}`) : '');
 export const dailyScene = feature => DAILY_FEATURES.find(f => f.id === feature)?.scene || '';
 function startDailyGame(date = dailyDate()) {
   const d = dailySetup(date);
@@ -277,7 +279,8 @@ export { weekKey }; // (semana ISO: content/levels/generate.js)
 const weekDaysLeft = () => 8 - (new Date().getDay() || 7); // incluido hoy
 export function weeklySetup(week = weekKey()) {
   const r = mulberry32(seedOf('weeklyBots:' + week));
-  const rule = WEEKLY[seedOf('weekly:' + week) % WEEKLY.length];
+  const rules = WEEKLY.filter(w => !w.from || week >= w.from); // (una regla nueva entra desde su semana: las de antes no cambian)
+  const rule = rules[seedOf('weekly:' + week) % rules.length];
   // rivales: sin repetir y, mientras se pueda, de personalidades distintas
   const pool = [...PERSONAS], rivals = [], styles = new Set();
   while (rivals.length < rule.opps && pool.length) {
@@ -463,7 +466,17 @@ function ultCard(dk, qsave = loadSave('pve'), still = false) {
 function paintUlt() {
   const el = document.querySelector('.deckCard.ultimate');
   if (el) el.outerHTML = ultCard(deckOfId('ultimate'), undefined, true);
+  fitUltTogs();
 }
+// los iconos de las barajas de Ultimate: en una fila si caben; si no, en dos filas parejas (con 7, 4 y 3; nunca 6 y 1)
+export function fitUltTogs() {
+  const el = document.querySelector('.ultTogs'), box = el?.parentElement;
+  if (!el || !box?.clientWidth) return;
+  const cs = getComputedStyle(box), w = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const n = el.children.length, min = matchMedia('(max-width: 760px)').matches ? 66 : 108; // (lo que necesita cada icono, con su hueco, para que quepa su nombre)
+  el.style.setProperty('--cols', n * min <= w ? n : Math.ceil(n / 2));
+}
+addEventListener('resize', () => fitUltTogs());
 // un enlace con una combinación compartida: la misma partida (combinación, rivales, dificultad y semilla)
 export async function playSharedCombo(e) {
   if (!await confirmReplaceSave('pve')) return;
@@ -563,6 +576,7 @@ export function openModes(tab) {
     `</div></div>`;
   setModesTab(modesTab, { instant: true });
   showScreen('modes');
+  fitUltTogs();
 }
 
 // cambia de pestaña: el indicador se desliza; el contenido sale con un fundido corto hacia un lado
@@ -583,7 +597,7 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   const from = panels.find(p => !p.classList.contains('off') && p !== to);
   const seq = ++tabSeq;
   panels.forEach(p => { (p._anims || []).forEach(a => a.cancel()); p._anims = []; }); // (las nuestras: getAnimations() obligaría a recalcular estilos)
-  const show = () => panels.forEach(p => p.classList.toggle('off', p !== to));
+  const show = () => { panels.forEach(p => p.classList.toggle('off', p !== to)); fitUltTogs(); };
   if (instant || REDUCED || !from || !to.animate) { show(); return; }
   sfx('select');
   const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-20 * dir}px)` }],

@@ -120,3 +120,14 @@ html.reduceMotion .cell.gGold::before, html.reduceMotion .cell .gCoin, html.redu
 
 /* la presentación de la baraja: el número del dado en la escena */
 .dmDice { font: 800 12px Outfit, sans-serif; fill: #FFF6D6; }
+
+/* ---------- cara en una moneda: te toca elegir otra vez ----------
+   la barra de ayuda late con un aro dorado y, sobre la pelota (o el hoyo), un bocadillo «¡Elige otra vez!» */
+.hint.bonusCta { animation: bonusCta 1.3s ease-in-out infinite; box-shadow: 0 0 0 2px #E2B23C, 0 0 16px 3px rgba(242,193,78,.55); }
+@keyframes bonusCta { 50% { transform: scale(1.035); box-shadow: 0 0 0 3px #FFE38A, 0 0 24px 7px rgba(242,193,78,.75); } }
+.piece.bonusPick::after { content: attr(data-cta); position: absolute; left: 50%; bottom: 88%; transform: translateX(-50%); white-space: nowrap; z-index: 6;
+  font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; color: #5A2E1A; background: #FFE38A;
+  box-shadow: 0 0 0 2px #B8892B, 0 4px 10px rgba(0,0,0,.3); animation: bonusPick 1s ease-in-out infinite; pointer-events: none; }
+@keyframes bonusPick { 50% { transform: translate(-50%, -4px); } }
+.piece.bonusPick .cardOnCell { filter: drop-shadow(0 0 6px rgba(255,214,90,.95)); }
+html.reduceMotion .hint.bonusCta, html.reduceMotion .piece.bonusPick::after { animation: none; }

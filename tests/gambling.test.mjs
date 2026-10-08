@@ -32,13 +32,13 @@ function seedFor(side) {
   throw new Error('sin semilla');
 }
 
-test('la baraja: sin búnkeres ni portales, 2 dados y 2 ruletas (y fuera de Ultimate)', () => {
+test('la baraja: sin búnkeres ni portales, 2 dados y 2 ruletas (y en Ultimate)', () => {
   const dk = deckById('gambling'), c = dk.counts(defaultCounts());
   assert.equal(c.bunker, 0); assert.equal(c.portal, 0);
   assert.deepEqual([c.dado, c.ruleta], [2, 2]);
   assert.equal(CARDS.dado.color, 'black'); assert.equal(CARDS.ruleta.color, 'orange');
   for (const k of dk.newCards) assert.equal(defaultCounts()[k], 0, 'fuera de su baraja no hay ' + k);
-  assert.ok(dk.noUltimate);
+  assert.ok(!dk.noUltimate);
   assert.equal(DECKS[DECKS.length - 1].id, 'ultimate', 'Ultimate, siempre la última');
 });
 

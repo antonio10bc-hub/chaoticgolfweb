@@ -18,6 +18,7 @@ import { startReaction, endReaction } from './hotseat.js';
 import { previewCard, hidePreview } from './preview.js';
 import { botWhyHTML } from './hud.js';
 import { isPhone } from './device.js';
+import { sfx } from '../audio/sfx.js';
 import { skinSeat, equippedSkin, skinBall } from './skins.js';
 
 let prevHands = []; // tamaños de mano en el último render (para el robo animado)
@@ -150,7 +151,10 @@ function renderActionBar(g, owner) {
     const card = pendingCard(g);
     const who = pendP !== owner ? `<span class="hintWho" style="--pc:${pColor(pendP)}">${playerTag(pendP)}</span>` : '';
     kind = pd.kind === 'discard' ? 'discard' : 'act';
-    html = `<div class="hint ${kind}${interactive ? '' : ' passive'}">` +
+    // (casino) cara en una moneda y te toca elegir: la barra llama la atención (hay que volver a tocar)
+    const cta = pd.bonus && interactive && (app.mode !== 'pve' || !isBot(pendP));
+    if (cta && app.bonusCta !== pd) { app.bonusCta = pd; sfx('coinHeads'); }
+    html = `<div class="hint ${kind}${interactive ? '' : ' passive'}${cta ? ' bonusCta' : ''}">` +
       (card ? `<span class="hintCard ${card.color}">${cardArtHTML(card)}</span>` : '') +
       `${who}<span class="hintText">${esc(hintFor(g, pendP))}</span>` +
       (interactive ? `<span class="hintBtns">${barButtons(g)}</span>` : '') + `</div>`;

@@ -172,6 +172,21 @@
   background: var(--pc); opacity: .7; outline: calc(var(--bs) * .02) dashed rgba(255,255,255,.95); outline-offset: calc(var(--bs) * .015); }
 html.reduceMotion .sk-cosmos .nb, html.reduceMotion .sk-cosmos .dk { animation: none; }
 
+/* ---------- FORTUNA · Gambling: una ficha de casino · el aro de la ruleta girando detrás · bañada en oro, monedas y un dado en órbita ---------- */
+.sk-fortune .ch { inset: 0; border-radius: 50%; background: repeating-conic-gradient(rgba(255,255,255,.9) 0 12deg, transparent 12deg 30deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 73%, #000 75%); mask: radial-gradient(closest-side, transparent 73%, #000 75%); }
+.sk-fortune .ci { inset: 22%; border-radius: 50%; border: calc(var(--bs) * .025) dashed rgba(255,255,255,.75); }
+.sl3.sk-fortune .gd { inset: 0; border-radius: 50%; mix-blend-mode: multiply; background: radial-gradient(circle at 36% 30%, #FFF1B8, #E6B94A 55%, #B8862A); opacity: .8; }
+.sl3.sk-fortune .shine { inset: -10% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.75) 48%, rgba(255,245,200,.2) 54%, transparent 62%);
+  animation: skShine 3.6s ease-in-out infinite; }
+.sk-fortune .rw { inset: calc(var(--bs) * -.24); border-radius: 50%; animation: skSpin 14s linear infinite;
+  background: conic-gradient(#E2B23C 0 20deg, transparent 0), repeating-conic-gradient(#C8243A 0 20deg, #24242A 20deg 40deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 80%, #000 81%, #000 98%, transparent 99%); mask: radial-gradient(closest-side, transparent 80%, #000 81%, #000 98%, transparent 99%);
+  box-shadow: 0 0 0 calc(var(--bs) * .015) #E2B23C; }
+.sk-fortune .orb { animation-duration: 7s; }
+.sk-fortune .orb .fo { width: calc(var(--bs) * .28); height: calc(var(--bs) * .28); margin: calc(var(--bs) * -.14) 0 0 calc(var(--bs) * -.14); }
+html.reduceMotion .sk-fortune .rw, html.reduceMotion .sl3.sk-fortune .shine { animation: none; }
+
 /* ---------- PRISMA · Ultimate: brillo iridiscente · halo arcoíris · iris más vivo (y su destello) y destellos en órbita ---------- */
 .sk-prism .ir { inset: -30%; opacity: .5; animation: skSpin 9s linear infinite;
   background: conic-gradient(#FF8FC4, #8FB6FF, #7EE8C8, #FFE38A, #C39BFF, #FF8FC4); }

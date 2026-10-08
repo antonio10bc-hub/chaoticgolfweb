@@ -286,7 +286,11 @@ export class Game {
     if (L.season?.now) g.setupSeasons({ now: L.season.now, snow: L.season.snow, fresh: false }); // (estaciones: la del nivel y su campo)
     if (L.gamble) S.gamble = { gold: L.gamble.gold ? { ...L.gamble.gold } : null, coins: (L.gamble.coins || []).map(c => ({ x: c.x, y: c.y })) }; // (casino)
     else if (L.deckCounts?.ruleta > 0) S.gamble = { gold: null, coins: [] }; // (con ruletas en el mazo, el suelo tiene que tener colores)
-    for (const tl of S.tiles) if (tl.type === 'dice' && !tl.t) Object.assign(tl, g.newDice()); // (un dado sin cara: una al azar)
+    for (const tl of S.tiles) if (tl.type === 'dice' && !tl.n) { // (un dado sin caras: las que faltan; sin número, uno al azar)
+      const d = g.newDice(); Object.assign(tl, { id: d.id, n: d.n, e: d.e }, tl.t ? {} : { t: d.t });
+      if (tl.n === tl.t || tl.n === 7 - tl.t) { const side = [1, 2, 3, 4, 5, 6].filter(f => f !== tl.t && f !== 7 - tl.t); tl.n = side[0]; tl.e = side.find(f => f !== tl.n && f !== 7 - tl.n); }
+      else if ([tl.t, 7 - tl.t, tl.n, 7 - tl.n].includes(tl.e)) tl.e = [1, 2, 3, 4, 5, 6].find(f => ![tl.t, 7 - tl.t, tl.n, 7 - tl.n].includes(f));
+    }
     g.fillDeck(L.deckCounts);
     if (Array.isArray(L.hand) && L.hand.length) S.hands[0] = L.hand.filter(k => CARDS[k]); // puzles: mano fija
     else g.drawTo2(0);
@@ -1748,7 +1752,7 @@ export class Game {
     S.playedThisTurn = 0;
     for (const tl of S.tiles) if (isLauncher(tl)) tl.rot = ((tl.rot || 0) + 1) % 4; // (minigolf) cada turno, un cuarto de vuelta
     delete S.launched; // y las que han lanzado en este turno se reactivan
-    if (S.gamble && S.tiles.length) this.diceTurn(); // (casino) cada dado cambia de número
+    if (S.tiles.some(tl => tl.type === 'dice')) this.diceTurn(); // (casino) cada dado cambia de número
     this.log('log.turnOf', { p: playerTag(S.turn) });
     this.emit({ t: 'turnEnded' });
     if (S.rules?.holeDrift) this.holeDrift();
