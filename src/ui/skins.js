@@ -14,7 +14,7 @@
 //   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
 //   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
 //   corona     desafíos superados por grupo (calentamiento · intermedio · experto): orbe real · la corona · gemas en sus bandas y en órbita
-//   puzle      puzles resueltos por grupo: piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
+//   puzle      Lo básico por partes (las barajas de siempre · las nuevas · Lo no tan básico): piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
 // Lo ganado se calcula siempre desde las estadísticas (records.js): no hay nada más que guardar que la
 // pelota puesta y qué niveles se han visto (para el aviso de "¡Nueva!"), en el perfil.
 import { app } from './app.js';
@@ -22,6 +22,7 @@ import { loadRecords } from './records.js';
 import { CHALLENGES, CH_GROUPS } from '../content/challenges.js';
 import { loadProfile, saveProfile } from './profile.js';
 import { SEASON_ICON } from './season-art.js';
+import { basicTier } from '../content/levels/index.js';
 const SEASON_SVG = s => `<svg viewBox="0 0 24 24" aria-hidden="true">${SEASON_ICON[s]}</svg>`;
 
 export const GROUPS = CH_GROUPS; // (calentamiento, intermedio, experto: los tres niveles de corona y puzle)
@@ -37,7 +38,7 @@ export const SKINS = [
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
-  { id: 'puzzle', kind: 'groups', of: 'puzzles', accent: '#2E8A80' },
+  { id: 'puzzle', kind: 'groups', of: 'basics', accent: '#2E8A80' },
 ];
 export const skinById = id => SKINS.find(s => s.id === id) || null;
 export const ROMAN = ['', 'I', 'II', 'III'];
@@ -45,18 +46,18 @@ export const ROMAN = ['', 'I', 'II', 'III'];
 // series de contrarreloj completas (antes de existir el contador: ~6 victorias por serie, 5 hoyos y la serie)
 const rushDone = R => R.rush.done ?? Math.floor((R.won.rush || 0) / 6);
 // grupos (desafíos o puzles): cuántos hay de cada uno y cuántos superados
-function groupCounts(of, R, puzzles) {
+function groupCounts(of, R, basics) {
   const items = of === 'challenges'
     ? CHALLENGES.map(c => ({ g: c.group, done: !!R.challenges[c.id] }))
-    : (puzzles || []).map((L, i) => ({ g: L.group || 'warmup', done: !!R.puzzles[i] }));
+    : (basics || []).map(L => ({ g: basicTier(L), done: !!R.basics?.[L.id] }));
   return GROUPS.map(g => ({ g, n: items.filter(x => x.g === g).length, done: items.filter(x => x.g === g && x.done).length }));
 }
 
 // progreso de una pelota: nivel ganado (0-3) y lo que falta para el siguiente
 //   { lvl, value, target, pct, group? } (target null: ya tiene los 3)
-export function skinProgress(s, R = loadRecords(), puzzles = app.puzzleLevels) {
+export function skinProgress(s, R = loadRecords(), basics = app.basics) {
   if (s.kind === 'groups') {
-    const gs = groupCounts(s.of, R, puzzles);
+    const gs = groupCounts(s.of, R, basics);
     let lvl = 0;
     while (lvl < 3 && gs[lvl].n > 0 && gs[lvl].done >= gs[lvl].n) lvl++;
     const next = gs[lvl];
@@ -67,8 +68,8 @@ export function skinProgress(s, R = loadRecords(), puzzles = app.puzzleLevels) {
   const target = s.at[lvl] ?? null, prev = s.at[lvl - 1] ?? 0;
   return { lvl, value, target, pct: target ? Math.min(1, (value - prev) / (target - prev)) : 1 };
 }
-export const unlockedLevels = (R = loadRecords(), puzzles = app.puzzleLevels) =>
-  Object.fromEntries(SKINS.map(s => [s.id, skinProgress(s, R, puzzles).lvl]));
+export const unlockedLevels = (R = loadRecords(), basics = app.basics) =>
+  Object.fromEntries(SKINS.map(s => [s.id, skinProgress(s, R, basics).lvl]));
 
 /* ---------- la pelota puesta ---------- */
 // { id, lvl } o null; si ya no se tiene ese nivel (estadísticas borradas), el más alto que quede

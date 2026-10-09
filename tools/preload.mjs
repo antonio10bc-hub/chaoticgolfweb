@@ -1,5 +1,5 @@
 // Precarga del arranque: todos los módulos que importa src/main.js (directa o indirectamente) y los niveles
-// integrados (story/ y puzzles/), como <link rel="modulepreload"> / rel="preload" en index.html. Sin esto el
+// integrados (Lo básico: basics/), como <link rel="modulepreload"> / rel="preload" en index.html. Sin esto el
 // navegador los descubre por niveles (main → sus imports → los de estos…: 5 viajes de red, y luego el índice de
 // niveles y cada nivel: 2 más); con la lista, los pide todos a la vez desde el principio. Sin paso de build:
 // el bloque va entre marcadores en index.html y este script lo regenera.
@@ -23,11 +23,11 @@ function modules() {
   walk(path.join(ROOT, 'src/main.js'), 0);
   return [...depth].filter(([, d]) => d > 0).sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])).map(([f]) => path.relative(ROOT, f));
 }
-const levels = () => ['story', 'puzzles'].flatMap(dir => {
-  const base = `src/content/levels/${dir}/`;
-  const files = JSON.parse(fs.readFileSync(path.join(ROOT, base, 'index.json'), 'utf8'));
-  return [base + 'index.json', ...files.map(f => base + f)];
-});
+const levels = () => {
+  const base = 'src/content/levels/basics/';
+  const rows = JSON.parse(fs.readFileSync(path.join(ROOT, base, 'index.json'), 'utf8'));
+  return [base + 'index.json', ...rows.flatMap(r => r.levels.map(id => base + id + '.json'))];
+};
 
 export function preloadBlock() {
   const lines = [...modules().map(f => `<link rel="modulepreload" href="${f}">`),

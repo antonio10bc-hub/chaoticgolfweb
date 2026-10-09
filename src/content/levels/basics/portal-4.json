@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Caída con portal",
+  "name_en": "Falling through",
+  "teach": "Si tu salida es un portal, al caerte lo cruzas y sales por el otro.",
+  "teach_en": "If your tee is a portal, when you fall you go through it and out of the other one.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 5
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 0
+  },
+  "ball": {
+    "x": 0,
+    "y": 3
+  },
+  "spawn": {
+    "x": 4,
+    "y": 5
+  },
+  "hand": [
+    "palo1",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

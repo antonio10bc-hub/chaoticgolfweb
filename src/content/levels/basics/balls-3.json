@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dedo y choque",
+  "name_en": "Finger bump",
+  "teach": "Con el dedo, chocar gasta solo 1 paso: sigues con los que te quedan.",
+  "teach_en": "With the finger, a bump only uses 1 step: you keep the rest.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 1,
+      "y": 2
+    }
+  ],
+  "ball": {
+    "x": 0,
+    "y": 2
+  },
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "dedo"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

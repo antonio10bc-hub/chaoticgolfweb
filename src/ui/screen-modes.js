@@ -25,7 +25,7 @@ import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel,
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, placeHunters, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
-import { puzzlesSectionHTML, yoursSectionHTML, playLevelCard } from './screen-story.js';
+import { yoursSectionHTML, playLevelCard } from './screen-story.js';
 import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup, startPveMatch, applyOwnLook } from './screen-pve.js';
@@ -564,7 +564,7 @@ export function openModes(tab) {
     `<b>${esc(wname)}</b><small>${esc(wdesc)}</small></span>${chEnd(wsave, !!wbest, R.weekly.weeks[wk])}</button>`;
   const specialPanel = rushCard +
     `<section class="mdSection challenges">${sectionHead({ art: 'challenge', title: t('modes.challengesH'), done: nDone, total: CHALLENGES.length })}${weeklyCard}${chCards}</section>` +
-    puzzlesSectionHTML() + yoursSectionHTML();
+    yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
     `<svg class="i" aria-hidden="true"><use href="#${id === 'quick' ? 'i-bolt' : 'i-trophy'}"/></svg>${esc(t('modes.tabs.' + id))}</button>`;
@@ -652,7 +652,7 @@ export function bindModes() {
   $('modesGrid').addEventListener('click', e => {
     const ya = e.target.closest('[data-lvedit], [data-lvdel], [data-lvcode]'); // tus niveles: editar, eliminar, añadir código
     if (ya) { yoursAction(ya); return; }
-    const lv = e.target.closest('[data-level], [data-puzzle]'); // puzles y tus niveles
+    const lv = e.target.closest('[data-level]'); // tus niveles
     if (lv) { playLevelCard(lv); return; }
     const tb = e.target.closest('[data-mtab]');
     if (tb) { setModesTab(tb.dataset.mtab); return; }

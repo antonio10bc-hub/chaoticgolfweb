@@ -1,5 +1,5 @@
 // Prueba de humo en un navegador real (Chrome/Chromium instalado en el sistema):
-// recorre menú, historia, partida rápida contra la máquina, creador y testing tool,
+// recorre menú, Lo básico, partida rápida contra la máquina, creador y testing tool,
 // falla si hay errores de consola / excepciones / peticiones fallidas, y guarda capturas.
 //
 //   npm run smoke                          (CHROME_PATH=/ruta/a/chrome si no lo encuentra)
@@ -67,17 +67,18 @@ try {
   await page.waitForFunction(() => window.chaoticGolf?.app.game);
   console.log('menú'); await shot('01-menu');
 
-  console.log('modo historia');
+  console.log('Lo básico');
   await click('#storyBtn'); await sleep(500); await shot('02-historia');
-  await click('.lvlCard[data-level="0"]'); await confirmIfAsked(); await sleep(400); await shot('03-nivel1');
-  for (let i = 0; i < 80; i++) {
-    const s = await state();
-    if (s.winner !== null && !s.jaque) break;
-    await humanStep(); await sleep(260);
-  }
-  await sleep(1200);
+  await click('.lvlCard[data-puzzle="0"]'); await confirmIfAsked(); await sleep(400); await shot('03-nivel1');
+  // el nivel 1 se gana con su única carta: el palo 3 hacia arriba, hasta el hoyo
+  await page.evaluate(() => document.querySelector('#coach [data-coach="skip"]')?.click());
+  await click('#hands .card[data-p="0"]'); await sleep(300);
+  await page.evaluate(() => { const h = window.chaoticGolf.app.game.S.hole; document.querySelector(`#board .cell[data-x="${h.x}"][data-y="${h.y}"]`).click(); });
+  await page.waitForSelector('#winOverlay.visible', { timeout: 10000 }).catch(() => {});
+  await sleep(600);
   const won = await page.evaluate(() => document.getElementById('winOverlay').classList.contains('visible'));
-  console.log('  victoria en historia:', won);
+  console.log('  victoria en Lo básico:', won);
+  if (!won) problems.push('el nivel 1 de Lo básico no se gana con su solución');
   await shot('04-nivel1-fin');
   if (won) await click('#winBtns button[data-act="levels"]');
 
@@ -162,7 +163,7 @@ try {
 
   console.log('teclado');
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await confirmIfAsked(); await sleep(700);
+  await click('.lvlCard[data-puzzle="1"]'); await confirmIfAsked(); await sleep(700);
   await shot('11-teclado');
   // teclado: foco en el tablero y flechas
   await page.focus('#board .cell[tabindex="0"]');

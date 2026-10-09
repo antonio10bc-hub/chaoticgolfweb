@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Arena",
+  "name_en": "Sand",
+  "teach": "El búnker frena: quien entra pierde el resto del movimiento.",
+  "teach_en": "A bunker stops you: whoever rolls in loses the rest of the move.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 3,
+      "y": 2
+    }
+  ],
+  "ball": {
+    "x": 3,
+    "y": 0
+  },
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "palo3",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

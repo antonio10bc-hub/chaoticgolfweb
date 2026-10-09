@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Por los pelos",
+  "name_en": "By a whisker",
+  "teach": "Portales, hoyo y una naranja: cuenta bien las casillas.",
+  "teach_en": "Portals, the hole and an orange card: count the squares carefully.",
+  "cols": 6,
+  "rows": 7,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 0
+  },
+  "ball": {
+    "x": 4,
+    "y": 6
+  },
+  "hand": [
+    "palo3",
+    "oHoyoRight",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p17"
+}

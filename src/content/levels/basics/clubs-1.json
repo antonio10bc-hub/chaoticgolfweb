@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Al hoyo",
+  "name_en": "Into the hole",
+  "teach": "Toca la carta y luego la casilla: tu pelota avanza en línea recta.",
+  "teach_en": "Tap the card, then the square: your ball goes in a straight line.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 2,
+    "y": 0
+  },
+  "ball": {
+    "x": 2,
+    "y": 3
+  },
+  "hand": [
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dos de tres",
+  "name_en": "Two out of three",
+  "teach": "Como mucho 2 cartas negras por turno: elige bien cuáles.",
+  "teach_en": "At most 2 black cards per turn: pick the right ones.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 2,
+    "y": 1
+  },
+  "ball": {
+    "x": 0,
+    "y": 4
+  },
+  "hand": [
+    "palo1",
+    "palo2",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,5 +1,5 @@
 // Guardado automático de la partida en curso: uno por modo ("ranura"), así empezar una partida
-// de un modo no pisa la que tengas a medias en otro. Ranuras: story (Lo básico), puzzle, daily,
+// de un modo no pisa la que tengas a medias en otro. Ranuras: story (tus niveles), puzzle (Lo básico), daily,
 // rush (contrarreloj), pve (partida rápida), challenge (desafío) y weekly (desafío semanal).
 // Se guarda tras cada jugada, al salir al menú y al ocultar la página; se borra al terminar.
 // El menú ofrece "Continuar partida" con la más reciente; cada pantalla, la suya.

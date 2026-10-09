@@ -143,27 +143,29 @@ export function toast(msg, kind = '') {
   toastTimer = setTimeout(() => el.classList.remove('visible'), 2400);
 }
 
-// bocadillos de tutorial: los define cada nivel de historia en su JSON ("tips")
-// Lo básico (y tus niveles): cada situación tiene su aviso (story.tips.<clave>) la primera vez que
+// bocadillos de tutorial: Lo básico (y tus niveles): cada situación tiene su aviso (story.tips.<clave>) la primera vez que
 // pasa en la partida; el JSON de un nivel puede sustituir alguno con "tips"
 export function storyTip(key) {
-  if (app.mode !== 'story' || app.variant) return;
+  if (app.mode !== 'story' || (app.variant && app.variant !== 'puzzle')) return;
   const own = app.level?.tips?.[key], def = 'story.tips.' + key;
   const textKey = own || (t(def) !== def ? def : null);
   if (!textKey || app.tipShown[key]) return;
   app.tipShown[key] = true;
+  showTip(t(textKey), 3000);
+}
+function showTip(text, ms) {
   const el = $('storyTip');
-  el.textContent = t(textKey);
+  el.textContent = text;
   el.classList.add('visible');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('visible'), 3000);
+  el._t = setTimeout(() => el.classList.remove('visible'), ms);
 }
 export const hideStoryTip = () => $('storyTip').classList.remove('visible');
 
 export function updateMenuBtn() {
   const v = app.variant;
-  // puzles y niveles del creador viven en Modos de juego
-  const fromModes = app.mode === 'story' && (v === 'puzzle' || (!v && app.levelIndex != null && app.levelIndex >= app.storyLevels.length));
+  // los niveles del creador viven en Modos de juego (los de Lo básico, en su pantalla: "Niveles")
+  const fromModes = app.mode === 'story' && !v && app.levelIndex != null;
   $('menuBtn').textContent = app.mode === 'test' ? t('nav.toEditor')
     : ['rush', 'challenge', 'weekly'].includes(v) || (app.mode === 'pve' && !v) || fromModes ? t('nav.toModes')
     : app.mode === 'story' ? t('nav.toLevels') : t('nav.toMenu');
@@ -195,12 +197,11 @@ export const botWhyHTML = () => {
   return `<div class="hint idle botWhy" style="--pc:${pColor(w.p)}">${avatarHTML(w.p, 'xs')}<span>${esc(w.txt)}</span></div>`;
 };
 
-// en los niveles de historia, el botón de fin de turno pide atención cuando no
-// quedan cartas en la mano o llevas más de 5 s sin jugar una
+// en Lo básico, el botón de fin de turno pide atención cuando no quedan cartas en la mano
 export function updateEndTurnHint() {
   const g = app.game, S = g?.S;
-  const on = !!(S && app.mode === 'story' && app.level?.builtIn && S.winner === null && !g.pending
-    && S.hands[0] && (S.hands[0].length === 0 || Date.now() - app.lastPlayAt > 5000));
+  // (Lo básico es de un solo turno: terminarlo sin ganar es fallar; solo se pide cuando ya no quedan cartas)
+  const on = !!(S && app.mode === 'story' && app.level?.builtIn && S.winner === null && !g.pending && S.hands[0]?.length === 0);
   $('endTurnBtn').classList.toggle('ctaEndTurn', on);
   updateIdleNudge();
   // la explicación del bot caduca: se quita de la barra

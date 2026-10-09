@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Acércalo",
+  "name_en": "Bring it closer",
+  "teach": "Las cartas de hoyo lo mueven 2 casillas hacia su flecha.",
+  "teach_en": "Hole cards move it 2 squares in the arrow's direction.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "ball": {
+    "x": 1,
+    "y": 4
+  },
+  "hand": [
+    "hoyoLeft",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p01"
+}

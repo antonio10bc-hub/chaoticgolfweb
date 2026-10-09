@@ -1,5 +1,5 @@
-// Estadísticas (pestaña de Ajustes), lo que no son gráficas: cada baraja, el reto diario, tu progreso en Lo básico, los
-// puzles y los desafíos, el contrarreloj y el desafío semanal, tus pelotas y los totales de la mesa.
+// Estadísticas (pestaña de Ajustes), lo que no son gráficas: cada baraja, el reto diario, tu progreso en Lo básico (por
+// bloques) y los desafíos, el contrarreloj y el desafío semanal, tus pelotas y los totales de la mesa.
 // Todo sale de las listas del juego (DECKS, CHALLENGES y sus grupos, los niveles y puzles cargados, SKINS, TOTALS de
 // records.js): una baraja, un desafío, un puzle, una pelota o una mecánica nueva aparece aquí sola (y
 // tests/stats.test.mjs comprueba que tenga sus textos).
@@ -40,20 +40,20 @@ function daily() {
   return `<div class="stNums">${nums}</div>`;
 }
 
-// progreso: Lo básico, puzles (por grupo) y desafíos (por grupo), con su barra
+// progreso: Lo básico (por bloques: palos y hoyo, cada baraja… y Lo no tan básico) y desafíos (por grupo), con su barra
 function progress(R) {
   const bar = (label, done, total, cls = '') => `<div class="pgRow${cls}"><span class="pgLbl">${esc(label)}</span>` +
     `<span class="pgTrack"><i style="width:${total ? 100 * done / total : 0}%"></i></span><span class="pgVal"><b>${done}</b>/${total}</span></div>`;
-  const story = app.storyLevels || [], puzzles = app.puzzleLevels || [];
+  const basics = app.basics || [], blocks = [];
+  for (const L of basics) { let b = blocks.find(x => x.deck === L.deck && x.section === L.section); if (!b) blocks.push(b = { deck: L.deck, section: L.section, n: 0, done: 0 }); b.n++; if (R.basics[L.id]) b.done++; }
+  const blockName = b => b.deck === 'basic' ? t('story.blocks.basic') : b.deck.split('+').map(d => t('decks.' + d + '.name')).join(' + ');
   const groups = (items, isDone) => CH_GROUPS.map(g => { const of = items.filter(x => x.g === g); return { g, n: of.length, done: of.filter(isDone).length }; }).filter(x => x.n);
-  const pz = groups(puzzles.map((L, i) => ({ g: L.group || 'warmup', i })), x => !!R.puzzles[x.i]);
   const ch = groups(CHALLENGES.map(c => ({ g: c.group, id: c.id })), x => !!R.challenges[x.id]);
   const sub = list => list.map(x => bar(t('modes.groups.' + x.g), x.done, x.n, ' sub')).join('');
   const sum = list => list.reduce((a, x) => [a[0] + x.done, a[1] + x.n], [0, 0]);
-  const [pd, pn] = sum(pz), [cd, cn] = sum(ch);
-  const storyDone = story.filter((_, i) => R.levels[i]).length;
-  return `<div class="pgList">${bar(t('stats.mode_story'), storyDone, story.length)}${bar(t('stats.mode_puzzle'), pd, pn)}${sub(pz)}` +
-    `${bar(t('stats.mode_challenge'), cd, cn)}${sub(ch)}</div>`;
+  const [cd, cn] = sum(ch);
+  const sec = id => { const of = blocks.filter(b => b.section === id), [d, n] = sum(of); return n ? bar(t('story.sections.' + id), d, n) + of.map(b => bar(blockName(b), b.done, b.n, ' sub')).join('') : ''; };
+  return `<div class="pgList">${sec('basics')}${sec('advanced')}${bar(t('stats.mode_challenge'), cd, cn)}${sub(ch)}</div>`;
 }
 
 // contrarreloj y desafío semanal

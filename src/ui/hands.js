@@ -10,7 +10,7 @@ import { CARDS } from '../content/cards/index.js';
 import { TILES } from '../content/tiles/index.js';
 import { cardFaceHTML, cardArtHTML } from './card-art.js';
 import { fxDealFrom } from '../fx/effects.js';
-import { t } from '../i18n/index.js';
+import { t, getLang } from '../i18n/index.js';
 import * as ctl from './controller.js';
 import { refreshCardTip } from './card-tip.js';
 import { isBot, viewer, multiHuman, handRevealed, displayName, avatarHTML } from './players.js';
@@ -168,8 +168,9 @@ function renderActionBar(g, owner) {
     const left = 2 - S.blackPlayed;
     // (baraja del tren) aviso: si terminas así, el tren mete una pelota en el hoyo y gana
     const danger = !!S.train && g.trainThreat();
+    const teach = app.variant === 'puzzle' && (app.level?.['teach_' + getLang()] || app.level?.teach); // (Lo básico: lo que enseña el nivel)
     const txt = danger ? t('hint.trainDanger') : !hasPlayable(g, owner) ? t('hint.noMoves')
-      : S.blackPlayed === 0 ? t(S.nPlayers === 1 ? 'hint.startSolo' : 'hint.start') : t('hint.more', { n: left });
+      : teach || (S.blackPlayed === 0 ? t(S.nPlayers === 1 ? 'hint.startSolo' : 'hint.start') : t('hint.more', { n: left }));
     kind = 'idle';
     html = `<div class="hint idle${danger ? ' trainDanger' : ''}">${esc(txt)}</div>`;
   } else if (!pd && botWhyHTML()) {

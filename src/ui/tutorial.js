@@ -1,5 +1,6 @@
-// Tutorial interactivo del Modo Historia.
-//   · Nivel 1: presentación guiada (tu pelota, el hoyo, tus cartas, elegir destino, terminar turno)
+// Tutorial interactivo de Lo básico.
+//   · Nivel 1: presentación guiada (tu pelota, el hoyo, tus cartas, elegir destino; en un nivel de varios turnos, como
+//     los tuyos, también terminar el turno)
 //   · Cualquier nivel: la primera vez que usas cada carta, un bocadillo explica qué hace
 // Lo ya visto se recuerda en este dispositivo (Ajustes → "Repetir el tutorial" lo reinicia).
 // Nunca bloquea la partida: el bocadillo se puede cerrar y avanza solo al jugar.
@@ -26,13 +27,15 @@ let timer = null;
 
 const active = () => app.mode === 'story' && app.screen === 'game' && app.game;
 
+// devuelve true si empieza la presentación (solo en el primer nivel de Lo básico, la primera vez)
 export function tutorialStart() {
   hideCoach();
   step = null;
-  if (app.mode !== 'story' || app.levelIndex !== 0 || load().intro) return;
+  if (app.mode !== 'story' || app.variant !== 'puzzle' || app.levelIndex !== 0 || load().intro) return false;
   step = 'ball';
   clearTimeout(timer);
   timer = setTimeout(() => { if (active() && step === 'ball') showStep(); }, 900);
+  return true;
 }
 export function tutorialStop() { step = null; clearTimeout(timer); hideCoach(); }
 
@@ -62,9 +65,9 @@ export function tutorialEvent(kind, data = {}) {
   const firstCard = data.key && firstTime(data.key);
   if (step === 'hand' && (kind === 'selected' || kind === 'played')) {
     if (kind === 'selected') { step = 'target'; showStep(firstCard ? data.key : null); return; }
-    step = 'end'; showStep(firstCard ? data.key : null); return; // carta de efecto inmediato (hoyo…)
+    toEnd(firstCard ? data.key : null); return; // carta de efecto inmediato (hoyo…)
   }
-  if (step === 'target' && kind === 'resolved') { step = 'end'; showStep(); return; }
+  if (step === 'target' && kind === 'resolved') { toEnd(); return; }
   if (step === 'end' && kind === 'turnEnded') { finishIntro(); hideCoach(); return; }
   if (step) return;
   // fuera de la presentación: explicación de cada carta la primera vez que se usa
@@ -72,6 +75,13 @@ export function tutorialEvent(kind, data = {}) {
     // señala la carta elegida (o, si ya se ha jugado, la última jugada)
     showCoach({ target: kind === 'selected' ? '#hands .card.cardSel' : (window.innerWidth > 760 && !isPhone() ? '#lastPlay' : null), card: data.key, btn: 'ok' });
   }
+}
+
+// tras la primera jugada: en Lo básico (un solo turno) la presentación acaba aquí; en un nivel de varios turnos, falta
+// terminar el turno
+function toEnd(card) {
+  if (app.variant === 'puzzle') { finishIntro(); if (card) showCoach({ target: null, card, btn: 'ok' }); else hideCoach(); return; }
+  step = 'end'; showStep(card);
 }
 
 // ¿primera vez que se usa esta carta? (y la marca como vista)

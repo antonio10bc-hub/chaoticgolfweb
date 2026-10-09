@@ -20,20 +20,20 @@ import { $ } from './ui/dom.js';
 import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
 import { bindSave } from './ui/save.js';
 import { loadArt } from './art.js';
-import { loadStoryLevels, loadPuzzleLevels } from './content/levels/index.js';
+import { loadBasics } from './content/levels/index.js';
 import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
 import { bindScreens, bindFabAutoHide, showScreen, newFreeGame, applyArtExtras, suspendGame } from './ui/screens.js';
-import { bindStory, openStory, storyLevelAt, startLevel } from './ui/screen-story.js';
+import { bindStory, openStory, userLevelAt, startLevel } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
 import { bindModes, openModes, startDaily, DAILY_HASHES, playSharedCombo } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
 import { bindZoom } from './ui/board-zoom.js';
 import { bindEditor, fitEditorBoard, edRender, ED, openEditor } from './ui/editor.js';
 import { bindLab } from './ui/lab.js';
-import { resetLevelProgressOnce } from './ui/records.js';
+import { migrateLevelsOnce } from './ui/records.js';
 import { offerLinkedLevel } from './ui/my-levels.js';
 import { takeLinkedCode, handOffLink, bindLinkInbox } from './ui/link-tabs.js';
 import { toast } from './ui/hud.js';
@@ -79,7 +79,6 @@ bindPve();
 bindModes();
 bindAssist();
 bindZoom();
-resetLevelProgressOnce(); // (niveles rediseñados: su progreso, de cero)
 bindEditor();
 bindLab();
 bindSoundPanel();
@@ -176,7 +175,7 @@ paintLangBtns();
 fxAmbientStart();
 
 
-// arranque: niveles de historia + partida libre de fondo + arte
+// arranque: niveles de Lo básico + partida libre de fondo + arte
 // (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía; con tope:
 // pase lo que pase, se quita)
 (async () => {
@@ -185,8 +184,9 @@ fxAmbientStart();
   // nivel va a esa y esta se cierra; si no, se ofrece aquí guardarlo en Tus niveles (y jugarlo)
   let linked = takeLinkedCode();
   const handOff = linked ? handOffLink(linked) : null;
-  try { [app.storyLevels, app.puzzleLevels] = await Promise.all([loadStoryLevels(), loadPuzzleLevels()]); }
+  try { app.basics = await loadBasics(); }
   catch (e) { console.error('No se pudieron cargar los niveles', e); }
+  migrateLevelsOnce(app.basics); // (niveles integrados rediseñados: su progreso, una vez)
   if (handOff && await handOff) {
     window.close();
     await new Promise(r => setTimeout(r, 400));
@@ -207,7 +207,7 @@ fxAmbientStart();
   ld.classList.add('done');
   document.body.classList.remove('loading'); // ahora sí: la entrada animada del menú
   setTimeout(() => ld.remove(), 500);
-  const playLinked = idx => { const gi = app.storyLevels.length + idx; startLevel(storyLevelAt(gi), 'story', gi); };
+  const playLinked = idx => startLevel(userLevelAt(idx), 'story', idx);
   const offer = code => offerLinkedLevel(code, playLinked);
   offer(linked);
   bindLinkInbox(offer); // (enlaces que otras pestañas o la app instalada pasan a esta)

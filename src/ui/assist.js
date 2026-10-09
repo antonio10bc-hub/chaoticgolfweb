@@ -74,12 +74,12 @@ export function redrawCaddie() {
 export const clearCaddie = () => { app.caddie = null; };
 
 /* ---------- deshacer ---------- */
-// en Lo básico y en partidas fáciles (una persona), tus jugadas del turno en curso
+// en Lo básico, tus niveles y partidas fáciles (una persona), tus jugadas del turno en curso
 export function undoAllowed() {
   const g = app.game, S = g?.S;
   if (!S || !app.undo?.count || g.pending || app.animating || app.paused || (S.winner !== null && !S.jaque)) return false;
   if (app.mode === 'test') return false; // (al probar un nivel, las trampas tienen su propio deshacer)
-  if (app.mode === 'story') return !app.variant;
+  if (app.mode === 'story') return !app.variant || app.variant === 'puzzle'; // (Lo básico y tus niveles; no el contrarreloj)
   return app.mode === 'pve' && !app.variant && S.aiLevel === 'easy' && !multiHuman(); // no en el reto diario ni en desafíos
 }
 export function undoLast() {

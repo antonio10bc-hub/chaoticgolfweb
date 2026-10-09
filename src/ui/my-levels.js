@@ -2,7 +2,6 @@
 // deshacer: no hay diálogo de confirmación), compartir por código o enlace y recibir un nivel
 // (pegando el código o abriendo un enlace …#nivel=CÓDIGO; ver también link-tabs.js). La usan el creador y "Tus niveles".
 import { track } from './analytics.js';
-import { app } from './app.js';
 import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
 import { loadLevels, saveLevels, loadProgress, saveProgress } from '../storage.js';
@@ -36,7 +35,7 @@ export function deleteLevelAt(j) {
   if (!levels[j]) return () => {};
   levels.splice(j, 1);
   saveLevels(levels);
-  const gi = app.storyLevels.length + j; // índice global (los integrados van delante)
+  const gi = j; // (su índice: el progreso y los récords de tus niveles van por él)
   const shift = obj => { const out = {}; for (const [k, v] of Object.entries(obj || {})) { const i = +k; if (i < gi) out[i] = v; else if (i > gi) out[i - 1] = v; } return out; };
   saveProgress(shift(loadProgress()));
   updateRecords(d => { d.levels = shift(d.levels); });

@@ -1,11 +1,12 @@
 // Estadísticas globales del jugador (todas sus partidas en este dispositivo):
 // partidas empezadas y ganadas por modo, totales de la mesa, el mejor resultado de cada nivel,
 // la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj,
-// los desafíos y puzles superados, el desafío semanal (récord de cada semana), el historial contra
+// los desafíos y los niveles de Lo básico superados, el desafío semanal (récord de cada semana), el historial contra
 // cada rival (y quién te gana más: tu némesis), partidas por día (evolución) y cartas más usadas.
 import { t } from '../i18n/index.js';
 import { dateKey } from '../content/levels/generate.js';
 import { trackStart, trackEnd } from './analytics.js';
+import { loadProgress, saveProgress } from '../storage.js';
 
 const KEY = 'chaoticgolf_stats';
 const VERSION = 1;
@@ -49,8 +50,9 @@ const blank = () => ({
   version: VERSION,
   played: zeros(), won: zeros(),
   totals: zeroTotals(),
-  levels: {},   // índice de Lo básico -> { turns, strokes, at }
-  puzzles: {},  // índice de puzle -> true
+  levels: {},   // índice de tus niveles -> { turns, strokes, at }
+  basics: {},   // id de nivel de Lo básico -> true (superado)
+  puzzles: {},  // (antiguo: índice de puzle -> true; solo para pasarlo a Lo básico)
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
   daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
     played: 0, won: 0, dist: {} }, // días jugados y ganados, y en cuántos turnos (tu mejor de cada día): turnos -> días (sin límite de fechas)
@@ -84,21 +86,40 @@ export function loadRecords() {
         weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
         decks: d.decks ? { ...d.decks } : seedDecks(d),
         chStats: d.chStats ? { ...d.chStats } : seedChStats(d),
-        puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
+        basics: { ...d.basics }, puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }
   return blank();
 }
 const saveRecords = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* sin storage */ } };
 export const resetRecords = () => saveRecords(blank());
-// los puzles y los desafíos se rediseñaron (versión 2 de los niveles): su progreso empieza de cero una vez
-const LEVELS_EPOCH = '2', EPOCH_KEY = 'chaoticgolf_levelsEpoch';
-export function resetLevelProgressOnce() {
+// cambios de los niveles integrados (época guardada en este dispositivo), una sola vez cada uno:
+//   2  puzles y desafíos rediseñados: su progreso empieza de cero
+//   3  Lo básico pasa a ser los niveles de un turno (por id): los puzles antiguos que siguen (`from: pNN`) cuentan como
+//      superados, y tus niveles dejan de ir detrás de los 8 de antes (su progreso, récords y partida guardada se corren)
+const LEVELS_EPOCH = 3, EPOCH_KEY = 'chaoticgolf_levelsEpoch', OLD_STORY = 8;
+export function migrateLevelsOnce(basics = []) {
   try {
-    if (localStorage.getItem(EPOCH_KEY) === LEVELS_EPOCH) return;
-    updateRecords(d => { d.puzzles = {}; d.challenges = {}; d.chStats = {}; });
-    for (const slot of ['puzzle', 'challenge']) localStorage.removeItem('chaoticgolf_save_' + slot);
-    localStorage.setItem(EPOCH_KEY, LEVELS_EPOCH);
+    const was = +(localStorage.getItem(EPOCH_KEY) || 0);
+    if (was >= LEVELS_EPOCH) return;
+    if (was < 2) {
+      updateRecords(d => { d.puzzles = {}; d.challenges = {}; d.chStats = {}; });
+      for (const slot of ['puzzle', 'challenge']) localStorage.removeItem('chaoticgolf_save_' + slot);
+    }
+    if (was < 3) {
+      const shift = m => Object.fromEntries(Object.entries(m || {}).filter(([k]) => +k >= OLD_STORY).map(([k, v]) => [+k - OLD_STORY, v]));
+      updateRecords(d => {
+        for (const L of basics) { const m = /^p(\d+)$/.exec(L.from || ''); if (m && d.puzzles[+m[1] - 1]) d.basics[L.id] = true; }
+        d.puzzles = {};
+        d.levels = shift(d.levels);
+      });
+      saveProgress(shift(loadProgress()));
+      localStorage.removeItem('chaoticgolf_save_puzzle'); // (un puzle antiguo a medias)
+      const sv = JSON.parse(localStorage.getItem('chaoticgolf_save_story') || 'null');
+      if (sv && (sv.levelIndex ?? -1) >= OLD_STORY) { sv.levelIndex -= OLD_STORY; localStorage.setItem('chaoticgolf_save_story', JSON.stringify(sv)); }
+      else if (sv) localStorage.removeItem('chaoticgolf_save_story'); // (un nivel de los de antes, que ya no está)
+    }
+    localStorage.setItem(EPOCH_KEY, String(LEVELS_EPOCH));
   } catch (e) { /* sin storage */ }
 }
 export const updateRecords = fn => { const d = loadRecords(); fn(d); saveRecords(d); return d; };
@@ -184,7 +205,7 @@ export function claimStreakGoal(date) {
 // fin de partida: suma los totales, la victoria y los récords del modo.
 // Devuelve lo necesario para anunciarlo en el resumen final.
 // rivals: [{ id, winner }] — los personajes de la mesa (con una persona contra la máquina)
-export function recordEnd(kind, { won, stats, levelIndex = null, date = null, week = null, rivals = [], deck = null, challenge = null }) {
+export function recordEnd(kind, { won, stats, levelIndex = null, levelId = null, date = null, week = null, rivals = [], deck = null, challenge = null }) {
   if (!REC_MODES.includes(kind)) return {};
   const d = loadRecords();
   if (won) d.won[kind]++;
@@ -215,7 +236,7 @@ export function recordEnd(kind, { won, stats, levelIndex = null, date = null, we
     if (!prev || newBest) d.levels[levelIndex] = { turns, strokes, at: Date.now() };
     best = d.levels[levelIndex];
   }
-  if (kind === 'puzzle' && won && levelIndex != null) d.puzzles[levelIndex] = true;
+  if (kind === 'puzzle' && won && levelId) d.basics[levelId] = true; // (Lo básico: por el id del nivel)
   if (kind === 'daily' && won && date) {
     const day = d.daily.days[date] = d.daily.days[date] || { best: null, strokes: null };
     newBest = day.best != null && (turns < day.best || (turns === day.best && strokes < day.strokes));

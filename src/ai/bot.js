@@ -188,7 +188,7 @@ function evaluateHunter(g, p, W) {
 /* ---------- enumeración de jugadas ---------- */
 
 // elecciones posibles de la acción pendiente actual → [acción, …]
-function pendingChoices(g) {
+export function pendingChoices(g) {
   const pd = g.pending, S = g.S, out = [];
   switch (pd.kind) {
     case 'move': case 'snowRoll': case 'holeMove': for (const t of pd.targets) out.push(['cell', t.x, t.y]); break; // (holeMove: cara en la moneda del hoyo)

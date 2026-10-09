@@ -3,9 +3,9 @@
 export const app = {
   game: null,            // Game en curso (src/engine/game.js)
   mode: 'free',          // 'free' (partida del panel de debug) | 'test' (probar desde editor) | 'story' (en solitario) | 'pve' (con bots)
-  variant: null,         // subtipo: en solitario 'puzzle' | 'rush'; con bots 'daily' | 'challenge'; null = el normal
+  variant: null,         // subtipo: en solitario 'puzzle' (Lo básico) | 'rush'; con bots 'daily' | 'challenge'; null = el normal
   run: null,             // datos del subtipo en curso (hoyo del torneo, puntos del contrarreloj, fecha del reto…)
-  levelIndex: null,      // índice del nivel en juego (modo historia)
+  levelIndex: null,      // índice del nivel en juego (Lo básico, o el de tus niveles)
   level: null,           // nivel en juego (historia / prueba)
   screen: 'menu',
   animating: false,      // true mientras se reproducen las animaciones de una jugada
@@ -16,8 +16,7 @@ export const app = {
   lastActor: null,       // jugador de la última carta consumida
   placeAt: null,         // pieza que gira puesta de prueba antes de confirmarla ({ x, y })
   tipShown: {},          // bocadillos de tutorial ya mostrados en la partida actual
-  storyLevels: [],       // niveles integrados de Lo básico (cargados de JSON)
-  puzzleLevels: [],      // puzles de "gana en 1 turno"
+  basics: [],            // niveles de Lo básico (de un turno, cargados de JSON; content/levels/index.js)
   pveShowHands: false,   // ver las cartas de los contrincantes (siempre tapadas)
   pveCfg: { color: 0, size: 'm', opps: 2, humans: 1, diff: 'normal' },
   lastPveCfg: null,      // configuración de la partida PVE en curso (para Reiniciar)

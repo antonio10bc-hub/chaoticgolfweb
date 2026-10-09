@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Naranja",
+  "name_en": "Orange",
+  "teach": "Las cartas naranjas no cuentan para el límite de 2 negras.",
+  "teach_en": "Orange cards don't count towards the 2 black card limit.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 0
+  },
+  "ball": {
+    "x": 4,
+    "y": 4
+  },
+  "hand": [
+    "palo1",
+    "oHoyoRight",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

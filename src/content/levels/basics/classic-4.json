@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Choque en el portal",
+  "name_en": "Portal bump",
+  "teach": "Si al salir de un portal hay una pelota, chocas y te quedas en la entrada.",
+  "teach_en": "If there's a ball where you come out of a portal, you hit it and stay at the entrance.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 4
+    }
+  ],
+  "extraBalls": [
+    {
+      "x": 2,
+      "y": 0
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 3
+  },
+  "hole": {
+    "x": 3,
+    "y": 4
+  },
+  "hand": [
+    "palo3",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

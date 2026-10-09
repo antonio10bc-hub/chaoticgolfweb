@@ -1,0 +1,68 @@
+[
+  {
+    "section": "basics",
+    "deck": "basic",
+    "levels": [
+      "clubs-1",
+      "clubs-2",
+      "clubs-3",
+      "clubs-4",
+      "clubs-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "basic",
+    "levels": [
+      "hole-1",
+      "hole-2",
+      "hole-3",
+      "hole-4",
+      "hole-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "basic",
+    "levels": [
+      "balls-1",
+      "balls-2",
+      "balls-3",
+      "balls-4",
+      "balls-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "classic",
+    "levels": [
+      "bunker-1",
+      "bunker-2",
+      "bunker-3",
+      "bunker-4",
+      "bunker-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "classic",
+    "levels": [
+      "portal-1",
+      "portal-2",
+      "portal-3",
+      "portal-4",
+      "portal-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "classic",
+    "levels": [
+      "classic-1",
+      "classic-2",
+      "classic-3",
+      "classic-4",
+      "classic-5"
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Salir cuesta 1",
+  "name_en": "Getting out costs 1",
+  "teach": "Salir del búnker cuesta 1: el palo avanza una casilla menos (y el palo 1 no te saca).",
+  "teach_en": "Getting out of a bunker costs 1: the club goes one square less (club 1 can't get you out).",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 1,
+      "y": 4
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 1
+  },
+  "ball": {
+    "x": 1,
+    "y": 4
+  },
+  "hand": [
+    "palo1",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -224,7 +224,7 @@ it('Ultimate: se combinan las barajas tocando sus iconos, el campo crece con ell
 it('logros: ganar un nivel a la primera desbloquea "Primera victoria" y "Hoyo en uno"', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
   await app(() => { const { app, ctl } = window.chaoticGolf; const S = app.game.S, b = S.balls[0]; S.hole.x = b.x; S.hole.y = b.y - 2; S.hands[0] = ['palo2']; ctl.render(); });
   await app(() => { const { app, ctl } = window.chaoticGolf; ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.dir === 'up'); ctl.clickCell(t.x, t.y); });
   await page.waitForSelector('#winOverlay.visible', { timeout: 10000 });
@@ -235,7 +235,7 @@ it('logros: ganar un nivel a la primera desbloquea "Primera victoria" y "Hoyo en
 it('deshacer: en Lo básico devuelve la pelota a donde estaba', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="1"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="1"]'); await sleep(900);
   const b0 = await app(() => JSON.stringify(window.chaoticGolf.app.game.S.balls[0]));
   await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets[0]; ctl.clickCell(t.x, t.y); });
   await page.waitForFunction(() => !document.getElementById('undoBtn').hidden, { timeout: 8000 });
@@ -360,7 +360,7 @@ it('menú vivo: con el reto de hoy completado, la bola rueda al hoyo una sola ve
 it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
   await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => !t.out); ctl.clickCell(t.x, t.y); });
   await sleep(200);
   assert.ok(await app(() => document.getElementById('saveTick').classList.contains('show')));
@@ -369,7 +369,7 @@ it('guardado: tras una jugada aparece el aviso "Guardado"', async () => {
 it('cartas naranjas: la primera vez que tienes una, un aviso naranja dice que se juegan en cualquier momento (una sola vez)', async () => {
   await fresh({ chaoticgolf_tutorial: { intro: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no'].map(k => [k, 1])) } });
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
   await app(() => { const { app, ctl } = window.chaoticGolf; app.game.S.hands[0] = ['palo1', 'no']; ctl.render(); });
   await sleep(1100);
   const tip = await app(() => { const c = document.getElementById('coach'); return { on: c.classList.contains('visible') && c.classList.contains('orange'), txt: c.textContent, target: c.dataset.target }; });
@@ -509,7 +509,7 @@ it('estadísticas del reto diario: la etiqueta junto a la racha abre la ventana 
   assert.ok(!await page.$('#dialog[open]'));
 });
 
-it('estadísticas: salen todas las barajas, todas las pelotas y el total real de desafíos y puzles (lo nuevo aparece solo)', async () => {
+it('estadísticas: salen todas las barajas, todas las pelotas y el total real de desafíos y de Lo básico (lo nuevo aparece solo)', async () => {
   await fresh();
   await app(async () => (await import('/src/ui/settings.js')).openSettings('stats')); await sleep(400);
   const d = await app(async () => {
@@ -518,7 +518,7 @@ it('estadísticas: salen todas las barajas, todas las pelotas y el total real de
     return { decks: box.querySelectorAll('.hbars.decks .hbRow').length, decksWant: DECKS.filter(dk => !dk.locked).length,
       balls: box.querySelectorAll('.sbItem').length, ballsWant: SKINS.length,
       totals: [...box.querySelectorAll('.pgRow:not(.sub) .pgVal')].map(e => e.textContent),
-      totalsWant: ['0/' + app.storyLevels.length, '0/' + app.puzzleLevels.length, '0/' + CHALLENGES.length],
+      totalsWant: ['basics', 'advanced'].map(sec => app.basics.filter(L => L.section === sec).length).filter(Boolean).map(n => '0/' + n).concat('0/' + CHALLENGES.length),
       chips: box.querySelectorAll('.stTotals .st').length >= TOTALS.filter(x => !x.hidden).length };
   });
   assert.equal(d.decks, d.decksWant); assert.equal(d.balls, d.ballsWant); assert.deepEqual(d.totals, d.totalsWant); assert.ok(d.chips);
@@ -595,7 +595,7 @@ it('modos de juego: dos pestañas (una a la vez) y 8 barajas con estadísticas (
 it('final de partida: "Compartir" genera la imagen de la jugada final', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
   await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls[0];
     b.x = S.hole.x; b.y = S.hole.y + 1; S.hands[0] = ['palo1', 'palo1']; ctl.render();
     ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.dir === 'up'); ctl.clickCell(t.x, t.y); });
@@ -637,16 +637,35 @@ it('idioma: dos banderas en el menú (abajo a la derecha) cambian el idioma en v
 });
 
 it('menú: el botón de Lo básico dice cuántos llevas y, con todos, un tic', async () => {
-  await fresh({ chaoticgolf_progress: { 0: true, 1: true, 2: true } });
-  assert.equal(await app(() => document.getElementById('storyProg').textContent), '3/8');
-  await fresh({ chaoticgolf_progress: Object.fromEntries([0, 1, 2, 3, 4, 5, 6, 7].map(i => [i, true])) });
+  await fresh({ chaoticgolf_stats: { version: 1, basics: { 'clubs-1': true, 'clubs-2': true, 'clubs-3': true } } });
+  const n = await app(() => window.chaoticGolf.app.basics.length);
+  assert.equal(await app(() => document.getElementById('storyProg').textContent), '3/' + n);
+  const ids = await app(() => window.chaoticGolf.app.basics.map(L => L.id));
+  await fresh({ chaoticgolf_stats: { version: 1, basics: Object.fromEntries(ids.map(id => [id, true])) } });
   assert.ok(await app(() => document.getElementById('storyProg').classList.contains('all')));
+});
+
+it('Lo básico: los puzles de un turno, por bloques con filas de 5; superar uno se guarda por su id', async () => {
+  await fresh({ chaoticgolf_levelsEpoch: 2, chaoticgolf_stats: { version: 1, puzzles: { 0: true, 1: true } } }); // (antes: p01 y p02 resueltos)
+  await click('#storyBtn'); await sleep(400);
+  const d = await app(() => ({ rows: [...document.querySelectorAll('#lvlGrid .bkRow')].map(r => r.children.length),
+    blocks: document.querySelectorAll('#lvlGrid .bkBlock').length, done: [...document.querySelectorAll('#lvlGrid .lvlCard.done')].map(c => +c.dataset.puzzle) }));
+  assert.ok(d.rows.length >= 5 && d.rows.every(n => n === 5), JSON.stringify(d.rows));
+  assert.ok(d.blocks >= 2);
+  const from = await app(() => window.chaoticGolf.app.basics.flatMap((L, i) => ['p01', 'p02'].includes(L.from) ? [i] : []));
+  assert.deepEqual(d.done, from, 'los puzles antiguos que siguen cuentan como superados');
+  assert.equal(await app(() => document.querySelectorAll('#modesGrid [data-puzzle]').length), 0, 'ya no están en Modos de juego');
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
+  await app(() => { const { ctl, app } = window.chaoticGolf; ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.dir === 'up'); ctl.clickCell(t.x, t.y); });
+  await page.waitForSelector('#winOverlay.visible', { timeout: 10000 });
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_stats')).basics['clubs-1']), true);
+  assert.match(await app(() => document.getElementById('winMsg').textContent), /superado/i);
 });
 
 it('Lo básico: salirse del tablero tiene su aviso en cualquier nivel', async () => {
   await fresh();
   await click('#storyBtn'); await sleep(300);
-  await click('.lvlCard[data-level="0"]'); await sleep(900);
+  await click('.lvlCard[data-puzzle="0"]'); await sleep(900);
   await app(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S, b = S.balls[0];
     S.hands[0] = ['palo3', 'palo1']; ctl.render(); ctl.clickCard(0, 0); const t = app.game.pending.targets.find(t => t.out); ctl.clickCell(t.x, t.y); });
   await sleep(300);
@@ -691,11 +710,10 @@ it('Ultimate: reúne las cartas de todas las barajas', async () => {
   for (const k of ['bunker', 'portal', 'river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'palo10', 'paloIri']) assert.ok(kinds.includes(k), k);
 });
 
-it('puzles: terminar el turno sin embocar muestra "otra vez"', async () => {
+it('Lo básico: terminar el turno sin embocar muestra "otra vez"', async () => {
   await fresh();
-  await click('#modesBtn'); await sleep(300); // los puzles viven en Modos de juego
-  assert.equal(await app(() => document.querySelectorAll('#lvlGrid [data-puzzle]').length), 0);
-  await click('#modesGrid [data-puzzle="0"]'); await sleep(900);
+  await click('#storyBtn'); await sleep(300);
+  await click('#lvlGrid [data-puzzle="1"]'); await sleep(900);
   assert.equal(await app(() => window.chaoticGolf.app.variant), 'puzzle');
   await click('#endTurnBtn');
   await page.waitForSelector('#winOverlay.visible', { timeout: 5000 });
@@ -753,7 +771,7 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
 
 it('enlace con el juego ya abierto: el nivel sale en esa pestaña y la nueva se cierra', async () => {
   await fresh();
-  const code = await app(async () => { const m = await import('/src/content/levels/share.js'); return m.encodeLevel(window.chaoticGolf.app.storyLevels[1]); });
+  const code = await app(async () => { const m = await import('/src/content/levels/share.js'); return m.encodeLevel(window.chaoticGolf.app.basics[1]); });
   // la pestaña nueva, abierta desde fuera (como un enlace pulsado en otra app)
   const cdp = await browser.target().createCDPSession();
   const { targetId } = await cdp.send('Target.createTarget', { url: URL + '#nivel=' + code });
@@ -1015,7 +1033,7 @@ it('móvil: con el menú desplazado, la partida empieza arriba (Safari: 100vh m�
   // lo que hace Safari con 100vh cuando la barra del navegador se esconde al desplazar: la página, más alta que la pantalla
   await p.addStyleTag({ content: 'body { min-height: 757px; } #game { height: 757px; height: 100dvh; }' });
   await p.evaluate(() => window.scrollTo(0, 90)); await sleep(150);
-  await p.evaluate(() => { document.getElementById('storyBtn').click(); document.querySelector('.lvlCard[data-level="0"]').click(); }); await sleep(1200);
+  await p.evaluate(() => { document.getElementById('storyBtn').click(); document.querySelector('.lvlCard[data-puzzle="0"]').click(); }); await sleep(1200);
   const m = await p.evaluate(() => ({ y: window.scrollY, doc: document.scrollingElement.scrollHeight, top: document.getElementById('gameBar').getBoundingClientRect().top }));
   assert.equal(m.y, 0, 'sin desplazar'); assert.ok(m.doc <= 668, 'la partida mide lo visible'); assert.ok(m.top >= 0, 'la barra de arriba se ve');
   await p.close();

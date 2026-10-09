@@ -259,9 +259,9 @@ export class Game {
       cols: L.cols, rows: L.rows,
       par: L.parCells.length ? Math.max(...L.parCells.map(p => p.n)) : 0,
       nPlayers: 1,
-      hole: { x: L.hole.x, y: L.hole.y, initX: L.hole.x, initY: L.hole.y },
+      hole: { x: L.hole.x, y: L.hole.y, initX: (L.home || L.hole).x, initY: (L.home || L.hole).y }, // (home: su casilla inicial, si no es donde empieza)
       parCells: L.parCells, tiles: Game.designed(L.tiles),
-      balls: [{ player: 0, x: L.ball.x, y: L.ball.y, spawnX: L.ball.x, spawnY: L.ball.y, holed: false }],
+      balls: [{ player: 0, x: L.ball.x, y: L.ball.y, spawnX: (L.spawn || L.ball).x, spawnY: (L.spawn || L.ball).y, holed: false }], // (spawn: su salida)
       hands: [[]],
     }), opts);
     const S = g.S;
@@ -282,6 +282,7 @@ export class Game {
       S.balls.push({ player: S.balls.length, x: eb.x, y: eb.y, spawnX: eb.x, spawnY: eb.y, holed: false, decoy: true });
     }
     g.initMarks = g.marksFromBalls();
+    if (L.spawn) g.initMarks[0] = { x: L.spawn.x, y: L.spawn.y, player: 0 }; // (la marca de la salida, donde está)
     if (L.train?.path?.length) S.train = { path: L.train.path, stations: L.train.stations, pos: L.train.pos ?? L.train.stations[0], cars: L.train.cars || 0 };
     if (L.season?.now) g.setupSeasons({ now: L.season.now, snow: L.season.snow, fresh: false }); // (estaciones: la del nivel y su campo)
     if (L.gamble) S.gamble = { gold: L.gamble.gold ? { ...L.gamble.gold } : null, coins: (L.gamble.coins || []).map(c => ({ x: c.x, y: c.y })) }; // (casino)

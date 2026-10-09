@@ -36,7 +36,7 @@ export function flushQueue() {
 // cada pantalla, como una página (showScreen, solo al cambiar: la del arranque ya la cuenta el script de Umami)
 const PAGE = { menu: '/', story: '/lo-basico', modes: '/modos', pve: '/partida-rapida', editor: '/creador' };
 const SLUG = { pve: 'partida-rapida', local: 'multijugador-local', daily: 'reto-diario', rush: 'contrarreloj', challenge: 'desafio',
-  weekly: 'desafio-semanal', story: 'lo-basico', puzzle: 'puzle', own: 'tus-niveles', test: 'prueba-creador' };
+  weekly: 'desafio-semanal', story: 'tus-niveles', puzzle: 'lo-basico', own: 'tus-niveles', test: 'prueba-creador' };
 export function trackScreen(screen) {
   if (typeof window === 'undefined') return;
   const k = screen === 'game' ? currentKind() : null;
@@ -46,16 +46,15 @@ export function trackScreen(screen) {
 
 // nombre legible de cada modo (las claves son las de records.js)
 const MODE = { pve: 'partida rápida', local: 'multijugador local', daily: 'reto diario', rush: 'contrarreloj',
-  challenge: 'desafío', weekly: 'desafío semanal', story: 'lo básico', puzzle: 'puzle' };
-const ownLevel = () => app.levelIndex != null && app.levelIndex >= app.storyLevels.length;
+  challenge: 'desafío', weekly: 'desafío semanal', story: 'tus niveles', puzzle: 'lo básico' }; // (story: los niveles del creador; puzzle: Lo básico, de un turno)
+const ownLevel = () => app.mode === 'story' && !app.variant && app.levelIndex != null;
 export function modeData(kind) {
   const d = { modo: kind === 'story' && ownLevel() ? 'tus niveles' : MODE[kind] || kind };
   if (kind === 'pve' || kind === 'local') {
     const c = app.lastPveCfg || {};
     Object.assign(d, { baraja: c.deck || 'classic', dificultad: c.diff, tablero: c.size, bots: c.opps, personas: c.humans });
   }
-  if (kind === 'story' && !ownLevel() && app.levelIndex != null) d.nivel = app.levelIndex + 1;
-  if (kind === 'puzzle' && app.levelIndex != null) d.nivel = app.levelIndex + 1;
+  if (kind === 'puzzle' && app.level?.id) d.nivel = app.level.id; // (Lo básico: el id del nivel, que no cambia al añadir filas)
   if (kind === 'challenge') d.desafio = app.run?.id;
   if (kind === 'weekly') d.regla = app.run?.id;
   if (kind === 'daily') d.dificultad = app.game?.S?.aiLevel;

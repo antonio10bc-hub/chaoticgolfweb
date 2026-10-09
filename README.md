@@ -16,7 +16,7 @@ script solo en la web publicada (en local y en los tests no se envía nada), sin
 dirección. Cada pantalla cuenta como una **página** (`/`, `/modos`, `/lo-basico`, `/partida-rapida`, `/creador` y
 `/partida/<modo>`: recorridos y tiempo en cada una) y hay estos **eventos**:
 - **partida** (una nueva): `modo` (partida rápida, multijugador local, reto diario, contrarreloj, desafío, desafío
-  semanal, lo básico, puzle, tus niveles), lo que la define (`baraja`, `dificultad`, `tablero`, `bots`, `personas`,
+  semanal, lo básico, tus niveles), lo que la define (`baraja`, `dificultad`, `tablero`, `bots`, `personas`,
   `nivel`, `desafio`, `regla`, `hoyo`) y `app` (instalada / navegador).
 - **final**: lo mismo más `resultado` (victoria / derrota: el % de victorias por modo), `turnos`, `segundos` y
   `motivo` (contrarreloj sin tiempo). **abandona**: salir o reiniciar a medias (`como`, `turnos`, `segundos`).
@@ -55,8 +55,8 @@ src/
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
     tiles/                 losetas (búnker, portal) con sus rasgos: trap / portal
-    levels/story/          niveles de Lo básico en JSON (+ index.json)
-    levels/puzzles/        puzles de "gana en 1 turno" (mano fija)
+    levels/basics/         Lo básico: niveles de "gana en 1 turno" (mano fija) en JSON; index.json, filas de 5
+                           (los genera tools/basics-design.mjs)
     levels/generate.js     generador determinista (contrarreloj) y salida de sus cazadores
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
@@ -64,7 +64,7 @@ src/
   ui/                      pantallas, tablero, manos, HUD, editor, orquestador de la IA
     controller.js          une motor e interfaz: acción → eventos → efectos → render
     screens.js             navegación, salir / reiniciar, modo libre
-    screen-story.js        Lo básico y puzles · screen-pve.js  Partida rápida (y rivales)
+    screen-story.js        Lo básico (y tus niveles en Modos) · screen-pve.js  Partida rápida (y rivales)
     screen-modes.js        reto diario, contrarreloj y desafíos · resume.js  continuar
     assist.js / why-lost.js  consejo del caddie, deshacer y "¿por qué he perdido?"
     board-zoom.js          pellizcar y desplazar el tablero; en táctil, la cámara se acerca sola a los destinos
@@ -132,10 +132,9 @@ Si usa los tipos de acción pendiente existentes (`move`, `pickBall`, `dedoAmoun
 aspecto (`cellClass`, `emoji`, `tileArt`…); regístrala en `tiles/index.js` y crea la carta que la coloca con
 `placeTile('tipo')` (ver `cards/place-tile.js`).
 
-**Un nivel de historia:** diséñalo en el Creador de Niveles, compártelo y decodifica el código
-(`decodeLevel` en `src/content/levels/share.js`, o el borrador en `localStorage.chaoticgolf_editor`), guarda el objeto del nivel como
-`src/content/levels/story/05.json` y añádelo a `story/index.json`. Campos opcionales: `name`,
-`extraBalls` (pelotas de obstáculo) y `tips` (bocadillos: `{ "hit" | "bunker" | "portal": "clave.i18n" }`).
+**Un nivel de Lo básico:** se escribe en `tools/basics-design.mjs` (el tablero en ASCII, su nombre, lo que enseña en una
+línea, la mano y `need`: lo que tiene que pasar en todas sus soluciones) y `node tools/basics-design.mjs` lo comprueba con
+el solucionador y genera `src/content/levels/basics/<id>.json` y su `index.json` (filas de 5; ver **Lo básico** más abajo).
 Tras añadir un módulo nuevo (carta, loseta…) o un nivel, `npm run preload` lo suma a la precarga de index.html
 (si se olvida, `npm test` lo recuerda).
 
@@ -289,10 +288,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   (duración, uso de cada mecánica, ventaja por posición) y `tests/challenges.test.mjs` comprueba sus campos y que se
   juegan hasta el final.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
-  Modos de juego: los 24 puzles de "gana en 1 turno" en tres grupos por dificultad (campo `group` de su JSON): cada
-  carta de la mano hace falta (salvo alguna pista falsa a propósito en los difíciles), cada pieza cambia la jugada o es
-  una trampa para quien juega mal, y la solución no depende del azar (el test la repite con varias semillas); y **Tus niveles** (los del creador, que también está aquí:
-  cada uno se edita o se elimina —con "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido).
+  Modos de juego, **Tus niveles** (los del creador, que también está aquí: cada uno se edita o se elimina —con
+  "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido). Los puzles de "gana en 1 turno" ya no están
+  aquí: son Lo básico.
 - **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las
   herramientas por baraja con el dibujo real de cada pieza (pelota, hoyo, PAR, obstáculo, borrar; búnker, portal con
@@ -322,7 +320,6 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   copia; antes, un arranque con la red lenta se quedaba en la pantalla de carga. La ventana de compartir pone el enlace por delante (un botón grande "Copiar enlace": al abrirlo,
   el nivel está listo para jugar; si el portapapeles falla, aparece el enlace para copiarlo a mano) y, debajo y en
   pequeño, el código con su botón de copiar. Sin botón de compartir del sistema; la confirmación sale en el botón.
-  Lo básico tiene 8 niveles.
 - **Final de partida:** mini-mapa con el recorrido de tu pelota (saltos de portal, choques, caídas y embocada). Cabe
   siempre sin desplazarse (ordenador, móvil pequeño y en horizontal): cabecera (cómo se ha ganado, mensaje, fichas),
   las cinco cifras en una fila y, debajo, el recorrido y el resumen lado a lado (en el móvil estrecho, uno bajo otro;
@@ -333,8 +330,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las 10 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días), **Clásica**, **Agua**, **Madera**, **Vapor**, **Estaciones**,
   **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (series de contrarreloj completas: 1 · 5 · 15),
-  **Corona** (desafíos) y **Puzle** (puzles): un nivel por grupo
-  completo (calentamiento · intermedio · experto). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
+  **Corona** (desafíos: un nivel por grupo completo, calentamiento · intermedio · experto) y **Puzle** (Lo básico por
+  partes: palos, clásica, agua y minigolf · tren, estaciones, multiverso y Gambling · Lo no tan básico). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
   **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
   fuego dentro · llamas pequeñas alrededor de toda la bola · más lava, llamas más altas y grandes bolas de fuego en órbita (redondas, con lenguas en todas direcciones que giran y una estela que queda siempre detrás); bañada en oro (hoyuelos dorados y aro) · laurel ·
   destello y destellos en órbita; agua dentro · ondas · más agua, burbujas y gotas en órbita; vetas · marco de madera ·
@@ -665,9 +662,25 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el
   botón "Cartas nuevas" de la tarjeta de la baraja. Sirve para cualquier baraja futura.
-- **Lo básico:** el botón del menú muestra tu progreso ("3/8") o un tic gris con todo completado. Cada situación
-  del tablero tiene su aviso la primera vez que pasa (choque, carambola, búnker, salir del búnker, portal,
-  salirse del tablero, mover el hoyo, el hoyo que se sale o se traga una pelota, pelotas de obstáculo…).
+- **Lo básico** (`src/ui/screen-story.js`, niveles en `src/content/levels/basics/`): todos los niveles son de "gana en
+  un turno" con mano fija, en el orden en que se aprende el juego. Dos secciones: **Lo básico** (palos y hoyo, y luego
+  cada baraja: clásica, agua, minigolf, tren, estaciones, multiverso y Gambling) y **Lo no tan básico** (combinaciones
+  entre barajas). Cada bloque con su cabecera (icono de la baraja, nombre, barra y x/y) y sus **filas de 5** (en el móvil
+  también 5 por fila: número y miniatura). Cada nivel enseña una cosa: su línea (`teach`) sale en la pista bajo el
+  tablero mientras no hay nada en curso, y el primero lleva la presentación guiada (tu pelota, el hoyo, tus cartas, el
+  destino). Terminar el turno sin embocar = "Casi… ¡otra vez!"; ganar = "¡Nivel superado!" y el siguiente.
+  El progreso va por el **id** del nivel (`records.basics`), nunca por su posición: se pueden añadir filas en medio. Los
+  puzles antiguos que siguen (`from: 'pNN'`) cuentan como superados para quien ya los tenía (`migrateLevelsOnce`, en
+  `records.js`, que también corre el progreso de tus niveles: antes iban detrás de los 8 de Lo básico).
+  Campos propios de estos niveles: `spawn` (la salida de la pelota, si no es donde empieza: para enseñar las caídas),
+  `home` (la casilla inicial del hoyo, ídem) y `seed` (con azar —monedas, ruleta, túnel, meteoritos, el dado recién
+  puesto—, la misma jugada da siempre el mismo resultado). Cada situación del tablero tiene además su aviso la primera
+  vez que pasa (choque, búnker, portal, salirse, el hoyo que se traga una pelota…). El botón del menú muestra el progreso
+  ("3/30") o un tic gris con todo. El logro "Lo básico, dominado" pide la primera sección entera.
+  **Diseño:** `tools/basics-design.mjs` es la fuente (tableros en ASCII, leyenda en `tools/lib/basics-ascii.mjs`);
+  `tools/lib/basics-solver.mjs` recorre todas las jugadas de un turno con el motor de verdad (las monedas se lanzan, la
+  dorada gira) y comprueba que haya solución sin depender del azar, que cada carta haga falta, que ninguna pieza sobre y
+  que **todas** las soluciones pasen por lo que el nivel enseña. `tools/basics-search.mjs <lección>` genera candidatos.
 - **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
   como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.
@@ -681,13 +694,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   victorias por modo, balance contra cada rival y tus cartas más usadas; victorias en azul, derrotas en naranja) y
   secciones (`src/ui/stats-sections.js`): victorias **por baraja** (todas, Ultimate incluida, y cuántas combinaciones
   has jugado), **partida rápida**, **reto diario** (jugados, % ganados, racha actual y máxima; "Ver y compartir" abre su
-  ventana), **progreso** (Lo básico, puzles y desafíos, cada uno con su barra y la de cada grupo), **contrarreloj y
+  ventana), **progreso** (Lo básico por bloques —palos y hoyo, cada baraja— y Lo no tan básico, y los desafíos por grupo), **contrarreloj y
   desafío semanal** (récord, series completas y jugadas, semanas jugadas y ganadas, mejor semanal), **tus pelotas**
   (cada una con su nivel), logros, **totales** de la mesa (golpes, embocadas, choques, portales, caídas y lo de cada
   mecánica: casillas por el río, lanzamientos, túneles, casillas del tren y de la bola de nieve, tragadas por agujeros
-  negros, meteoritos) y los mejores resultados de Lo básico.
-  **Siempre al día:** todo sale de las listas del juego (`DECKS`, `CHALLENGES` y sus grupos, los niveles y puzles,
-  `SKINS`, `ACHIEVEMENTS`, `REC_MODES`), así que una baraja, un desafío, un puzle, una pelota o un logro nuevo aparece
+  negros, meteoritos) y los mejores resultados de tus niveles.
+  **Siempre al día:** todo sale de las listas del juego (`DECKS`, `CHALLENGES` y sus grupos, los niveles de Lo básico,
+  `SKINS`, `ACHIEVEMENTS`, `REC_MODES`), así que una baraja, un desafío, un nivel, una pelota o un logro nuevo aparece
   solo. Los totales salen de `TOTALS` en `records.js` (cada uno, de qué eventos del motor sale); `tests/stats.test.mjs`
   falla si un evento animado nuevo del controlador no está decidido (un total nuevo, con su texto `stats.tot.*` e icono,
   o en `NOT_COUNTED`) o si falta algún texto.
@@ -714,9 +727,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     el aviso de acción (si ocupa más, crece por encima del tablero sin moverlo) y la mano con los botones de turno a la
     derecha (a la izquierda en modo zurdo). El JAQUE sale arriba, sobre los rivales, y deja el tablero libre.
   - **Horizontal:** a la izquierda la barra y la lista de rivales, en el centro el tablero a todo el alto y a la derecha
-    el aviso, la mano y los botones. El menú principal y Lo básico caben sin desplazarse.
+    el aviso, la mano y los botones. El menú principal cabe sin desplazarse.
   - **Menús en vertical:** el menú principal mide la pantalla y acaba por encima de los botones redondos (la ilustración
-    encoge si falta alto); Lo básico va en una sola columna, una fila por nivel (número, miniatura, nombre y estado).
+    encoge si falta alto); Lo básico se desplaza, con sus filas de 5 (número y miniatura).
   - **Lo que no importa ahora pierde opacidad:** los rivales que no juegan (quien juega, quien puede reaccionar al JAQUE
     y quien ha embocado se ven enteros y con anillo), y tu mano se aparta mientras juega otro.
   - **Entrada:** tocar = ver, tocar otra vez = hacer. Los destinos ya iban así; ahora también las cartas de efecto
@@ -768,8 +781,8 @@ la partida quieta. Reglas que hay que mantener:
 ## Tests y herramientas
 
 ```bash
-npm test                          # oráculo de reglas + reglas concretas + IA + niveles y puzles (~3 s)
-npm run test:ui                   # interfaz en Chrome real: guardado, pausa, multijugador, logros, deshacer, reto, puzles
+npm test                          # oráculo de reglas + reglas concretas + IA + niveles de Lo básico (~3 s)
+npm run test:ui                   # interfaz en Chrome real: guardado, pausa, multijugador, logros, deshacer, reto, Lo básico
                                   # (la presentación de la mesa se pulsa sola salvo en sus tests: window.keepLineup)
 npm run simulate                  # telemetría: 500 partidas bot-contra-bot, victorias y uso de cartas
 npm run simulate -- --random 0 --players 4 --size l --games 2000
@@ -788,14 +801,18 @@ npm run sim:challenges -- pinball,prism 60      # desafíos: campo en ASCII + ro
 npm run sim:challenges -- ch 60 0               # todos los desafíos (weekly: las semanales · base: partidas normales)
 npm run sim:challenges -- vars 80 1 mis-variantes.mjs   # probar variantes de un campo (export default [{ id, board, layout, … }])
 npm run sim:rush -- 200 2                        # contrarreloj: tus turnos por hoyo con 2 cazadores, golpes recibidos, sin terminar
-npm run puzzles:audit                            # puzles: soluciones, % de jugadas que ganan, cartas o piezas que sobran
-npm run puzzles:search -- lakeCorner 20000 5     # buscar puzles nuevos de un tema (candidatos en puzzle-candidates/)
+npm run basics:design                            # Lo básico: comprueba cada nivel y genera sus JSON (-- --check: solo comprobar)
+npm run basics:design -- hole-4 bunker-5 --check # solo esos niveles, con su tablero
+npm run basics:search -- swallow 4000 1          # candidatos para una lección (tabla LESSONS; en puzzle-candidates/)
+npm run puzzles:audit                            # Lo básico: soluciones, % de jugadas que ganan, cartas o piezas que sobran
+npm run puzzles:search -- lakeCorner 20000 5     # el buscador de temas de antes (candidatos en puzzle-candidates/)
 npm run puzzles:show -- lakeCorner 0             # ver un candidato: tablero y solución paso a paso
 ```
 
 Objetivos usados: una partida normal de 7×9 dura ~6 rondas; desafíos de calentamiento ~4-6, intermedios ~6-8 y
-expertos ~7-10, sin colas largas ni una salida que gane de más. Puzles: cada carta hace falta (salvo alguna pista
-falsa a propósito en los difíciles), cada pieza cambia la solución o es una trampa, la solución no depende del azar;
+expertos ~7-10, sin colas largas ni una salida que gane de más. Lo básico: cada carta hace falta (salvo alguna pista
+falsa a propósito, `spare`), cada pieza cambia la solución o es una trampa, la solución no depende del azar (o va con su
+`seed`) y todas las soluciones pasan por lo que el nivel enseña (`need`);
 dificultad por el % de jugadas que ganan (calentamiento ~14 %, intermedio 2-6 %, experto <4 %).
 
 **El oráculo** (`tests/fixtures/golden.json.gz`) son ~44.000 acciones aleatorias grabadas en el juego

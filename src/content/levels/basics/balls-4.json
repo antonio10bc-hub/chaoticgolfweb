@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Aparta",
+  "name_en": "Out of the way",
+  "teach": "El palo 1 reactivo (naranja) mueve 1 casilla cualquier pelota.",
+  "teach_en": "The reactive club 1 (orange) moves any ball 1 square.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 2,
+      "y": 4
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 4
+  },
+  "ball": {
+    "x": 3,
+    "y": 4
+  },
+  "hand": [
+    "palo2",
+    "oPalo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

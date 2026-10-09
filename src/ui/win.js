@@ -17,7 +17,7 @@ import { t, joinAnd } from '../i18n/index.js';
 import { stats } from './controller.js';
 import { clearSave, slotOf } from './save.js';
 import { humansOf, multiHuman, displayName, isBot } from './players.js';
-import { recordEnd, turnsLabel, claimStreakGoal, nextStreakGoal } from './records.js';
+import { recordEnd, turnsLabel, claimStreakGoal, nextStreakGoal, loadRecords } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
 import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
@@ -81,7 +81,7 @@ export function showWin() {
     .map(p => ({ id: S.personas[p], winner: S.winners.includes(p) })) : [];
   const deck = slot === 'pve' ? app.lastPveCfg?.deck || 'classic' : null; // partida rápida: estadísticas de su baraja
   if (deck === 'ultimate' && !lost) comboWon(app.lastPveCfg?.combo); // (Ultimate: el balance de esa combinación)
-  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, date: app.run?.date, week: app.run?.week, rivals, deck, challenge: slot === 'challenge' ? app.run?.id : null });
+  const rec = recordEnd(kind, { won: !lost, stats, levelIndex: app.levelIndex, levelId: slot === 'puzzle' ? app.level?.id : null, date: app.run?.date, week: app.run?.week, rivals, deck, challenge: slot === 'challenge' ? app.run?.id : null });
   $('winIcon').innerHTML = `<svg class="i"><use href="#${lost ? 'i-flag' : 'i-trophy'}"/></svg>`;
   $('winOverlay').classList.toggle('lost', lost);
 
@@ -100,20 +100,22 @@ export function showWin() {
     case 'story': {
       chips = recChip((rec.newBest ? t('stats.newBest') + ' · ' : '') + turnsLabel(turns) +
         (rec.best && !rec.newBest && rec.best.turns !== turns ? ` · ${t('stats.bestN', { n: rec.best.turns })}` : ''), rec.newBest);
-      if (app.levelIndex !== null && !lost) {
+      if (app.levelIndex !== null && !lost) { // (tus niveles)
         const prog = loadProgress();
         prog[app.levelIndex] = true;
         saveProgress(prog);
-        if (app.storyLevels.length && app.storyLevels.every((_, i) => prog[i])) unlock('basicsAll');
       }
       btns = (hasNextLevel() ? btn('next', t('win.next'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) +
         (levelFromModes() ? btn('modes', t('win.modes')) : btn('levels', t('win.levels')));
       break;
     }
-    case 'puzzle':
+    case 'puzzle': { // Lo básico: superado (y, con todos los de la primera sección, el logro)
       chips = recChip(t('win.puzzleChip'), true);
-      btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('modes', t('win.modes'));
+      const R = loadRecords(), firstPart = app.basics.filter(L => L.section === 'basics');
+      if (firstPart.length && firstPart.every(L => R.basics[L.id])) unlock('basicsAll');
+      btns = (hasNextLevel() ? btn('next', t('win.nextPuzzle'), true) + btn('replay', t('win.replay')) : btn('replay', t('win.replay'), true)) + btn('levels', t('win.levels'));
       break;
+    }
     case 'daily': {
       // la racha, con su llama: al llegar a una meta (3, 7, 15, 30…) se celebra una vez ese día; si no, la próxima meta
       const n = rec.dailyStreak || 1;
@@ -195,7 +197,7 @@ export function showWin() {
 
   // logros de fin de partida
   if (mode !== 'free' && mode !== 'test' && !lost) unlock('firstWin');
-  if (slot === 'story' && !lost && (stats?.turnos || 0) === 0) unlock('holeInOne');
+  if ((slot === 'story' || slot === 'puzzle') && !lost && (stats?.turnos || 0) === 0) unlock('holeInOne'); // (Lo básico o tus niveles)
   if (['pve', 'challenge', 'daily', 'weekly'].includes(kind) && !lost && S.aiLevel === 'hard') unlock('winHard');
   if (kind === 'pve' && rec.streak >= 3) unlock('streak3');
   if (kind === 'local') unlock('localGame');
@@ -348,7 +350,7 @@ function burst(x, y, R, r, n = 8) {
 
 // línea de contexto de la imagen: modo y turnos
 function shareMeta(slot, turns, lost) {
-  const modeName = { story: t('story.title'), puzzle: t('story.puzzlesH'), daily: t('modes.daily.title'), rush: t('modes.rush.title'),
+  const modeName = { story: t('story.yours'), puzzle: t('story.title'), daily: t('modes.daily.title'), rush: t('modes.rush.title'),
     challenge: app.run?.id ? t('challenges.' + app.run.id + '.name') : t('modes.challenge.title'), weekly: t('modes.weekly.title'),
     pve: multiHuman() ? t('pve.localTitle') : t('decks.' + (app.lastPveCfg?.deck || 'classic') + '.name'), test: t('menu.editorTitle') }[slot] || '';
   return [modeName, lost ? '' : turnsLabel(turns)].filter(Boolean).join(' · ');

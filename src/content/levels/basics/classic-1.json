@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Golpe a la arena",
+  "name_en": "Into the sand",
+  "teach": "Una pelota en el búnker también paga 1 al salir: si le llega solo 1, no se mueve.",
+  "teach_en": "A ball in a bunker also pays 1 to get out: if only 1 step reaches it, it doesn't move.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 5,
+      "y": 4
+    }
+  ],
+  "extraBalls": [
+    {
+      "x": 5,
+      "y": 4
+    }
+  ],
+  "ball": {
+    "x": 5,
+    "y": 1
+  },
+  "hole": {
+    "x": 3,
+    "y": 3
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

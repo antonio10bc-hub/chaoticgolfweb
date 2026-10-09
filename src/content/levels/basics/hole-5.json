@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "El hoyo vuelve",
+  "name_en": "The hole comes back",
+  "teach": "Si el hoyo se cae del tablero, vuelve a su casilla inicial (la bandera).",
+  "teach_en": "If the hole falls off the board, it goes back to its starting square (the flag).",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "home": {
+    "x": 0,
+    "y": 3
+  },
+  "ball": {
+    "x": 0,
+    "y": 5
+  },
+  "hand": [
+    "palo2",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

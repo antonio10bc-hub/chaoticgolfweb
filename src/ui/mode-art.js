@@ -3,6 +3,7 @@
 //   rush       el cronómetro del contrarreloj (la aguja gira al pasar por la tarjeta)
 //   challenge  el trofeo de los desafíos · weekly  el calendario del desafío semanal
 //   puzzle     dos piezas que encajan · yours  el taller del creador (alfombrilla, lápiz y un tablero)
+//   basics     (Lo básico: palos y hoyo) el palo, la pelota y el hoyo con su bandera, en una carta clara (la de la clásica es verde)
 import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
 
@@ -38,6 +39,12 @@ const ART = {
     `<path d="M16 17 h7 a3.2 3.2 0 1 1 6 0 h7 v7 a3.2 3.2 0 1 0 0 6 v7 h-7 a3.2 3.2 0 1 1-6 0 h-7z" fill="#F1F1DC" stroke="rgba(30,107,99,.4)" stroke-width="1"/>` +
     `<g class="mdPiece"><path d="M33 27 h5 a3 3 0 1 1 5.6 0 h2.4 v12 h-2.4 a3 3 0 1 0-5.6 0 h-5 v-4 a3 3 0 1 1 0-5.6z" fill="#E8873A" stroke="#fff" stroke-width="1" transform="translate(-5 5)"/></g>` +
     `<circle cx="22" cy="23" r="1.6" fill="#1E6B63"/><path d="M20 30 h7" stroke="rgba(30,107,99,.35)" stroke-width="1.4" stroke-linecap="round"/>` + frame,
+  basics: () => base('bs', '#F6F1DE', '#CFC6A3') +
+    `<g clip-path="url(#md-bs-c)"><g stroke="rgba(120,100,50,.08)" stroke-width="5">${[0, 10, 20, 30, 40].map(i => `<path d="M${i - 10} 60 L${i + 22} 0"/>`).join('')}</g></g>` +
+    `<ellipse cx="37" cy="43" rx="4.2" ry="2.2" fill="#242424"/><path d="M37 43V27" stroke="#4A4A4A" stroke-width="1.4" stroke-linecap="round"/><path d="M37.4 27 L44 29.4 L37.4 31.8Z" fill="#E8873A"/>` +
+    `<g class="mdPiece"><path d="M18 12 L24.2 37" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round"/><path d="M22.4 36.6 h6.2 a1.7 1.7 0 0 1 0 3.4 h-6.6z" fill="#9AA3AA" stroke="#3A3A3A" stroke-width=".8"/></g>` +
+    `<circle cx="28" cy="45" r="2.8" fill="#fff" stroke="rgba(20,40,20,.35)" stroke-width=".7"/>` +
+    '<rect x="14" y="8" width="32" height="44" rx="5" fill="none" stroke="rgba(120,100,50,.35)" stroke-width="1.2"/>',
   yours: () => base('yo', '#5B6E7C', '#2F3B44') +
     `<g clip-path="url(#md-yo-c)" stroke="rgba(226,236,240,.16)" stroke-width=".8">${[15, 21, 27, 33, 39, 45].map(v => `<path d="M${v} 0V60M0 ${v}H60"/>`).join('')}</g>` +
     `<rect x="17" y="18" width="18" height="22" rx="2.5" fill="#4F8A4B" stroke="#F1F1DC" stroke-width="1.4"/>` +

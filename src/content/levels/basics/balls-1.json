@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Choque",
+  "name_en": "Bump",
+  "teach": "Si chocas con otra pelota, se lleva los pasos que te quedaban y tú te paras.",
+  "teach_en": "Hit another ball and it takes your remaining steps; you stop.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 3,
+      "y": 2
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 3
+  },
+  "ball": {
+    "x": 3,
+    "y": 4
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Vuelta a la salida",
+  "name_en": "Back to the tee",
+  "teach": "Si te caes del tablero, vuelves a tu salida (la marca de tu color).",
+  "teach_en": "Fall off the board and you go back to your tee (the mark in your colour).",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [],
+  "ball": {
+    "x": 4,
+    "y": 1
+  },
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "spawn": {
+    "x": 2,
+    "y": 5
+  },
+  "hand": [
+    "palo2",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

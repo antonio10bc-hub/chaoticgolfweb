@@ -373,16 +373,14 @@ test('semilla: misma semilla ⇒ mismo reparto', () => {
   assert.deepEqual(a.S.hands, b.S.hands);
 });
 
-test('niveles de historia: JSON válido y jugable', () => {
-  const dir = new URL('../src/content/levels/story/', import.meta.url);
-  const files = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
-  assert.equal(files.length, 8);
-  for (const f of files) {
-    const L = JSON.parse(fs.readFileSync(new URL(f, dir)));
+test('niveles de Lo básico: JSON válido, cartas y piezas conocidas', async () => {
+  const { TILES } = await import('../src/content/tiles/index.js');
+  const dir = new URL('../src/content/levels/basics/', import.meta.url);
+  for (const id of JSON.parse(fs.readFileSync(new URL('index.json', dir))).flatMap(r => r.levels)) {
+    const L = JSON.parse(fs.readFileSync(new URL(id + '.json', dir)));
     assert.equal(L.version, 1);
-    for (const k of Object.keys(L.deckCounts)) assert.ok(CARD_KEYS.includes(k), `${f}: carta desconocida ${k}`);
-    const g = Game.fromLevel(L, { seed: 1 });
-    assert.equal(g.S.hands[0].length, 2);
+    for (const k of [...Object.keys(L.deckCounts), ...L.hand]) assert.ok(CARD_KEYS.includes(k), `${id}: carta desconocida ${k}`);
+    for (const tl of L.tiles) assert.ok(TILES[tl.type], `${id}: pieza desconocida ${tl.type}`);
   }
 });
 
@@ -414,26 +412,26 @@ test('tope anti-bucle: la cadena de choques entre portales avisa con un evento',
   assert.match(S.log.join('\n'), /bucle/);
 });
 
-test('puzles: cada uno se resuelve en un solo turno con su mano fija', async () => {
-  const { enumeratePlays } = await import('../src/ai/bot.js');
-  const dir = new URL('../src/content/levels/puzzles/', import.meta.url);
-  const files = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
-  assert.ok(files.length >= 20);
-  const solvable = g => g.S.winner !== null || enumeratePlays(g, 0).some(pl => solvable(pl.result));
-  const { applyAction } = await import('../src/ai/bot.js');
-  // una solución (lista de acciones) o null
-  const solve = g => { if (g.S.winner !== null) return []; for (const pl of enumeratePlays(g, 0)) { const r = solve(pl.result); if (r) return [...pl.actions, ...r]; } return null; };
-  for (const f of files) {
-    const L = JSON.parse(fs.readFileSync(new URL(f, dir)));
-    const g = Game.fromLevel(L, { seed: 1 });
-    assert.deepEqual(g.S.hands[0], L.hand, `${f}: la mano debe ser la del puzle`);
-    assert.ok(solvable(g), `${f}: sin solución en un turno`);
-    const sol = solve(g);
-    for (const seed of [2, 3, 4, 5]) { // la solución no depende del azar (túneles, rebotes…)
-      const h = Game.fromLevel(L, { seed });
-      for (const a of sol) applyAction(h, a);
-      assert.notEqual(h.S.winner, null, `${f}: la solución falla con la semilla ${seed}`);
-    }
+test('Lo básico: filas de 5, y cada nivel se gana en un solo turno con su mano fija (sin depender del azar)', async () => {
+  const { plays, replay } = await import('../tools/lib/basics-solver.mjs');
+  const dir = new URL('../src/content/levels/basics/', import.meta.url);
+  const rows = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
+  const ids = rows.flatMap(r => r.levels);
+  assert.ok(ids.length >= 25);
+  assert.equal(new Set(ids).size, ids.length, 'ids repetidos');
+  for (const r of rows) {
+    assert.equal(r.levels.length, 5, `fila de ${r.deck}: 5 niveles`);
+    assert.ok(['basics', 'advanced'].includes(r.section), r.section);
+  }
+  for (const id of ids) {
+    const L = JSON.parse(fs.readFileSync(new URL(id + '.json', dir)));
+    assert.ok(L.name && L.name_en && L.teach && L.teach_en, `${id}: nombre y lo que enseña, en los dos idiomas`);
+    const g = Game.fromLevel(L, { seed: L.seed ?? 1 });
+    assert.deepEqual(g.S.hands[0], L.hand, `${id}: la mano debe ser la del nivel`);
+    const win = plays(L).find(s => s.win);
+    assert.ok(win, `${id}: sin solución en un turno`);
+    // sin semilla propia, la solución no depende del azar (túneles, rebotes…); con ella, sale siempre igual
+    for (const seed of L.seed != null ? [L.seed] : [2, 3, 4, 5]) assert.ok(replay(L, win.seq, seed)?.won, `${id}: la solución falla con la semilla ${seed}`);
   }
 });
 

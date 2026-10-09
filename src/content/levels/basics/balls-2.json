@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Fuera de juego",
+  "name_en": "Out of play",
+  "teach": "Una pelota de obstáculo que entra en el hoyo desaparece: no gana.",
+  "teach_en": "An obstacle ball that drops in the hole vanishes: it doesn't win.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 2,
+      "y": 1
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 0
+  },
+  "ball": {
+    "x": 2,
+    "y": 4
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

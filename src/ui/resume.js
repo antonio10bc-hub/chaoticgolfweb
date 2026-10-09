@@ -11,12 +11,12 @@ import { loadSave, latestSave, applySaveExtras, VS_SLOTS } from './save.js';
 import { humansOf } from './players.js';
 import { showScreen, levelName } from './screens.js';
 
-// subtítulo de un guardado: "Lo básico · Nivel 3" / "Partida rápida · 2 bots" / "Contrarreloj · hoyo 2 de 5"…
+// subtítulo de un guardado: "Lo básico · Pasarse" / "Partida rápida · 2 bots" / "Contrarreloj · hoyo 2 de 5"…
 export function saveSub(d) {
   const slot = d.slot || d.mode, r = d.run || {};
   switch (slot) {
-    case 'story': return `${t('story.title')} · ${t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`;
-    case 'puzzle': return `${t('story.puzzlesH')} · ${levelName(d.level) || t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`;
+    case 'story': return `${t('story.yours')} · ${levelName(d.level) || t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`; // (tus niveles)
+    case 'puzzle': return `${t('story.title')} · ${levelName(d.level) || t('story.level', { n: (d.levelIndex ?? 0) + 1 })}`; // (Lo básico)
     case 'daily': return t('modes.daily.title');
     case 'rush': return `${t('modes.rush.title')} · ${t('modes.holeN', { n: (r.hole ?? 0) + 1, total: r.total || 5 })}`;
     case 'challenge': return `${t('modes.challenge.title')} · ${t('challenges.' + r.id + '.name')}`;

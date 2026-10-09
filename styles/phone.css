@@ -300,24 +300,6 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone body:not([data-screen="game"]) #sndCfgBtn { right: calc(58px + env(safe-area-inset-right, 0px)); }
   html.phone body:not([data-screen="game"]) #profileBtn { top: 12px; bottom: auto; left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); }
   html.phone #langBtns { top: 15px; bottom: auto; right: calc(146px + env(safe-area-inset-right, 0px)); } /* (banderas: a la izquierda del sonido) */
-  /* Lo básico: cabecera compacta y tarjetas en horizontal (miniatura a la izquierda), 4 × 2 sin desplazarse */
-  html.phone #storyScreen { padding-top: 14px; padding-bottom: 12px; }
-  html.phone #storyScreen .sTitle { font-size: clamp(30px, 10vh, 46px); }
-  html.phone #storyScreen .sSub { display: none; }
-  html.phone #storyScreen #storyProgress { margin: 6px 0 8px; width: min(360px, 50vw); }
-  html.phone #storyScreen .spText { margin-bottom: 4px; font-size: 12.5px; }
-  html.phone #storyScreen .lvlSection { padding: 10px 12px 12px; }
-  html.phone #storyScreen .lvlSection h3 { margin-bottom: 6px; }
-  html.phone #storyScreen .lvlRow { gap: 8px; }
-  html.phone #storyScreen .lvlCard { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 1fr auto; column-gap: 8px; row-gap: 4px;
-    align-items: center; padding: 6px; }
-  html.phone #storyScreen .lvlPreview { grid-row: 1 / 3; height: 100%; max-height: none; min-height: 0; aspect-ratio: 3 / 4; width: auto; padding: 4px; }
-  html.phone #storyScreen .lvlName { align-self: end; padding: 0; font-size: 13px; }
-  html.phone #storyScreen .lvlFoot { align-self: start; margin: 0; }
-  html.phone #storyScreen .lvlNum { top: 9px; left: 9px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; }
-  html.phone #storyScreen .lvlState { font-size: 10.5px; padding: 2px 8px; }
-  html.phone #storyScreen .lvlCard.done .lsTxt { display: none; }
-  html.phone #storyScreen #storyContinue { margin: 0 0 8px; }
 }
 
 /* =========================================================
@@ -338,28 +320,19 @@ html.phone #labPanel.open .labCards { grid-template-columns: repeat(5, 1fr); }
   html.phone .mTag { display: none; }
   html.phone .mDaily { padding-block: 9px; }
 }
+/* Lo básico: cabecera compacta (la pantalla se desplaza: filas de 5 por baraja) */
 @media (orientation: portrait) {
-  /* Lo básico: una sola columna, una fila por nivel (número · miniatura · nombre · estado), todos a la vista */
-  html.phone #storyScreen .lvlSection { max-height: none; }
-  html.phone #storyScreen .lvlRow { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-rows: minmax(44px, 1fr); gap: 7px; overflow-y: auto; }
-  html.phone #storyScreen .lvlCard { grid-template-columns: 22px auto minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr); column-gap: 10px;
-    align-items: center; padding: 5px 10px 5px 8px; border-radius: 14px; }
-  html.phone #storyScreen .lvlNum { position: static; grid-column: 1; min-width: 22px; height: 22px; padding: 0; font-size: 11px; background: rgba(36,36,36,.07); }
-  html.phone #storyScreen .lvlCard.done .lvlNum { background: var(--grass-dark); color: var(--cream); }
-  html.phone #storyScreen .lvlPreview { grid-column: 2; grid-row: 1; height: 100%; max-height: 64px; aspect-ratio: 1; width: auto; padding: 3px; border-radius: 8px; }
-  html.phone #storyScreen .lvlName { grid-column: 3; align-self: center; font-size: 14.5px; min-height: 0; }
-  html.phone #storyScreen .lvlFoot { grid-column: 4; grid-row: 1; align-self: center; }
-  html.phone #storyScreen .lvlSaved { top: 50%; bottom: auto; right: auto; left: 50%; transform: translateY(-50%); }
+  html.phone #storyScreen { padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px); }
+  html.phone #storyScreen .sTitle { font-size: 40px; }
+  html.phone #storyScreen .sSub { margin: 6px 0 14px; font-size: 13.5px; }
+  html.phone #storyScreen #storyProgress { margin: 0 0 12px; }
 }
-/* poca altura (móviles bajos, o con las barras del navegador): cabecera compacta para que quepan todos */
-@media (orientation: portrait) and (max-height: 760px) {
-  html.phone #storyScreen { padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 62px); }
-  html.phone #storyScreen .sTitle { font-size: 36px; }
+@media (orientation: landscape) and (max-height: 540px) {
+  html.phone #storyScreen { padding-top: 14px; padding-bottom: 14px; }
+  html.phone #storyScreen .sTitle { font-size: clamp(30px, 10vh, 46px); }
   html.phone #storyScreen .sSub { display: none; }
-  html.phone #storyScreen #storyProgress { margin: 6px 0 10px; }
-  html.phone #storyScreen .lvlSection { padding: 10px; }
-  html.phone #storyScreen .lvlSection h3 { display: none; }
-  html.phone #storyScreen .lvlRow { grid-auto-rows: minmax(40px, 1fr); gap: 6px; }
+  html.phone #storyScreen #storyProgress { margin: 6px 0 8px; width: min(360px, 50vw); }
+  html.phone #storyScreen .spText { margin-bottom: 4px; font-size: 12.5px; }
 }
 
 /* ---------- creador de niveles: sonido y ajustes arriba a la derecha, en la barra (las reglas de los menús

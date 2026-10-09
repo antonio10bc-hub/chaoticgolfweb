@@ -15,7 +15,7 @@ import { loadRecords, resetRecords, turnsLabel } from './records.js';
 import { resetTutorial } from './tutorial.js';
 import { confirmDialog } from './dialog.js';
 import { levelName } from './screens.js';
-import { storyLevelAt } from './screen-story.js';
+import { userLevelAt } from './screen-story.js';
 import * as ctl from './controller.js';
 import { pauseGame, resumePlay } from './pause.js';
 import { ensureGuard } from './back.js';
@@ -71,7 +71,7 @@ function settingsHTML() {
 function statsHTML() {
   const r = loadRecords(), C = chartSections, S = statsSections;
   const lv = Object.entries(r.levels).sort((a, b) => a[0] - b[0]).map(([i, b]) => {
-    const L = storyLevelAt(+i);
+    const L = userLevelAt(+i);
     return `<tr><td class="n">${+i + 1}</td><td>${esc(levelName(L) || t('story.untitled'))}</td><td>${esc(turnsLabel(b.turns))}</td><td>${esc(t('stats.strokesShort', { n: b.strokes }))}</td></tr>`;
   }).join('');
   const pv = r.pve;

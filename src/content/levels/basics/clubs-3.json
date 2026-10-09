@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "En L",
+  "name_en": "L-shaped",
+  "teach": "Cada carta, una dirección: combina dos para doblar la esquina.",
+  "teach_en": "Each card, one direction: combine two to turn the corner.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 2
+  },
+  "ball": {
+    "x": 0,
+    "y": 4
+  },
+  "hand": [
+    "palo2",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

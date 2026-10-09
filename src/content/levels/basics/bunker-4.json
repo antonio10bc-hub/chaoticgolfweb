@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Hoyo atascado",
+  "name_en": "Stuck hole",
+  "teach": "El hoyo en un búnker también paga 1 al salir: el +2 lo mueve solo 1.",
+  "teach_en": "A hole in a bunker also pays 1 to get out: the +2 only moves it 1.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 0,
+      "y": 3
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 0
+  },
+  "hole": {
+    "x": 0,
+    "y": 3
+  },
+  "hand": [
+    "hoyoRight",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

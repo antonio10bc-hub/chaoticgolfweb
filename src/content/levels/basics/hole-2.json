@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Trágatela",
+  "name_en": "Swallow it",
+  "teach": "El hoyo se mueve como una pelota: si cae sobre la tuya, se la traga.",
+  "teach_en": "The hole moves like a ball: if it lands on yours, it swallows it.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "ball": {
+    "x": 2,
+    "y": 3
+  },
+  "hand": [
+    "hoyoDown",
+    "oHoyoLeft"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

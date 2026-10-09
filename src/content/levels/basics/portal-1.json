@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Atajo",
+  "name_en": "Shortcut",
+  "teach": "El portal no cuenta como casilla: sales por el otro, en la misma dirección.",
+  "teach_en": "A portal isn't a square: you come out of the other one, same direction.",
+  "cols": 6,
+  "rows": 7,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 2
+    },
+    {
+      "type": "portal",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "type": "bunker",
+      "x": 2,
+      "y": 6
+    }
+  ],
+  "hole": {
+    "x": 4,
+    "y": 0
+  },
+  "ball": {
+    "x": 0,
+    "y": 6
+  },
+  "hand": [
+    "palo1",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p03"
+}
