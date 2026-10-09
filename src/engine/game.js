@@ -285,6 +285,7 @@ export class Game {
     if (L.spawn) g.initMarks[0] = { x: L.spawn.x, y: L.spawn.y, player: 0 }; // (la marca de la salida, donde está)
     if (L.train?.path?.length) S.train = { path: L.train.path, stations: L.train.stations, pos: L.train.pos ?? L.train.stations[0], cars: L.train.cars || 0 };
     if (L.season?.now) g.setupSeasons({ now: L.season.now, snow: L.season.snow, fresh: false }); // (estaciones: la del nivel y su campo)
+    if (L.season?.wind?.path?.length) S.season.wind = { path: L.season.wind.path.map(p => [...p]), on: L.season.wind.on !== false }; // (Lo básico: el viento ya soplando, o avisando)
     if (L.gamble) S.gamble = { gold: L.gamble.gold ? { ...L.gamble.gold } : null, coins: (L.gamble.coins || []).map(c => ({ x: c.x, y: c.y })) }; // (casino)
     else if (L.deckCounts?.ruleta > 0) S.gamble = { gold: null, coins: [] }; // (con ruletas en el mazo, el suelo tiene que tener colores)
     for (const tl of S.tiles) if (tl.type === 'dice' && !tl.n) { // (un dado sin caras: las que faltan; sin número, uno al azar)
@@ -858,8 +859,10 @@ export class Game {
     };
     const seen = untilHit ? new Map() : null; // iridiscente: (casilla, dirección) ya recorridas
     if (this.S.gamble) this.noteMove(ball, { dir: dirKey, steps, iri: untilHit || undefined }); // (casino: lo que vuelve a elegir con cara)
-    let diceHits = 0;
+    let diceHits = 0, guard = 0;
     while (remaining > 0) {
+      // (tope de pasos: un bucle de portales que cruza fuego suma +2 en cada vuelta y no acabaría nunca)
+      if (++guard > MAX_RUN * 2) { this.log('log.iriLoop', { b }); this.anim({ t: 'chainStop', p: pid, msg: 'notice.stepLoop' }); break; }
       if (seen) {
         const k = cx + ',' + cy + ',' + dir, n = (seen.get(k) || 0) + 1;
         seen.set(k, n);
@@ -1067,8 +1070,9 @@ export class Game {
     let diceHits = 0;
     const { dx, dy } = DIRS[dirKey];
     let cx = h.x, cy = h.y, dir = dirKey;
-    let remaining = dist;
+    let remaining = dist, guard = 0;
     while (remaining > 0) {
+      if (++guard > MAX_RUN * 2) { this.anim({ t: 'chainStop', p: pid, msg: 'notice.stepLoop' }); break; } // (bucle de portales con fuego: ver moveBallRaw)
       const nc = this.nextCell(cx, cy, dir, pid, (px, py, other) => {
         this.log('log.holePortal');
         this.anim({ t: 'move', p: pid, x: px, y: py });

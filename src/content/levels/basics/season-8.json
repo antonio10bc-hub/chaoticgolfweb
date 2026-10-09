@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Charco",
+  "name_en": "Puddle",
+  "teach": "El charco también quita 1, pero no se rompe.",
+  "teach_en": "A puddle also costs 1, but it stays.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "puddle",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "type": "puddle",
+      "x": 1,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 1
+  },
+  "ball": {
+    "x": 0,
+    "y": 3
+  },
+  "hand": [
+    "palo1",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "autumn"
+  }
+}

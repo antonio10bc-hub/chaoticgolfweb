@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Incendio",
+  "name_en": "Wildfire",
+  "teach": "El incendio (naranja) prende fuego a una casilla vacía.",
+  "teach_en": "Wildfire (orange) sets an empty square on fire.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [],
+  "hole": {
+    "x": 0,
+    "y": 0
+  },
+  "ball": {
+    "x": 4,
+    "y": 0
+  },
+  "hand": [
+    "incendio",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "summer"
+  }
+}

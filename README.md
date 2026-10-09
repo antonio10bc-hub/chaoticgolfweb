@@ -663,9 +663,12 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el
   botón "Cartas nuevas" de la tarjeta de la baraja. Sirve para cualquier baraja futura.
 - **Lo básico** (`src/ui/screen-story.js`, niveles en `src/content/levels/basics/`): todos los niveles son de "gana en
-  un turno" con mano fija, en el orden en que se aprende el juego. Dos secciones: **Lo básico** (palos y hoyo, y luego
-  cada baraja: clásica, agua, minigolf, tren, estaciones, multiverso y Gambling) y **Lo no tan básico** (combinaciones
-  entre barajas). Cada bloque con su cabecera (icono de la baraja, nombre, barra y x/y) y sus **filas de 5** (en el móvil
+  un turno" con mano fija, en el orden en que se aprende el juego: **145 niveles en 29 filas de 5**. Dos secciones:
+  **Lo básico** (105: palos y hoyo ×15, clásica ×15, agua ×10, minigolf ×15, tren ×10, estaciones ×15, multiverso ×15 y
+  Gambling ×10) y **Lo no tan básico** (40: iridiscente y palo 10, agua y minigolf, y cada baraja con las demás, hasta
+  "Todo junto"). Cada nivel se juega con el fondo de su baraja (en las combinaciones, el de la primera; "Todo junto", el
+  de Ultimate). Quedan fuera, a propósito, lo que necesita rivales (JAQUE, NO, reaccionar con naranjas) y lo que pasa al
+  acabar el turno (se enseña con el estado inicial: el viento ya soplando, el fuego ya puesto…). Cada bloque con su cabecera (icono de la baraja, nombre, barra y x/y) y sus **filas de 5** (en el móvil
   también 5 por fila: número y miniatura). Cada nivel enseña una cosa: su línea (`teach`) sale en la pista bajo el
   tablero mientras no hay nada en curso, y el primero lleva la presentación guiada (tu pelota, el hoyo, tus cartas, el
   destino). Terminar el turno sin embocar = "Casi… ¡otra vez!"; ganar = "¡Nivel superado!" y el siguiente.
@@ -673,14 +676,16 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   puzles antiguos que siguen (`from: 'pNN'`) cuentan como superados para quien ya los tenía (`migrateLevelsOnce`, en
   `records.js`, que también corre el progreso de tus niveles: antes iban detrás de los 8 de Lo básico).
   Campos propios de estos niveles: `spawn` (la salida de la pelota, si no es donde empieza: para enseñar las caídas),
-  `home` (la casilla inicial del hoyo, ídem) y `seed` (con azar —monedas, ruleta, túnel, meteoritos, el dado recién
+  `home` (la casilla inicial del hoyo, ídem), `season.wind` (la ruta del viento, soplando) y `seed` (con azar —monedas, ruleta, túnel, meteoritos, el dado recién
   puesto—, la misma jugada da siempre el mismo resultado). Cada situación del tablero tiene además su aviso la primera
   vez que pasa (choque, búnker, portal, salirse, el hoyo que se traga una pelota…). El botón del menú muestra el progreso
   ("3/30") o un tic gris con todo. El logro "Lo básico, dominado" pide la primera sección entera.
   **Diseño:** `tools/basics-design.mjs` es la fuente (tableros en ASCII, leyenda en `tools/lib/basics-ascii.mjs`);
   `tools/lib/basics-solver.mjs` recorre todas las jugadas de un turno con el motor de verdad (las monedas se lanzan, la
   dorada gira) y comprueba que haya solución sin depender del azar, que cada carta haga falta, que ninguna pieza sobre y
-  que **todas** las soluciones pasen por lo que el nivel enseña. `tools/basics-search.mjs <lección>` genera candidatos.
+  que **todas** las soluciones pasen por lo que el nivel enseña (`tools/lib/basics-needs.mjs`: qué evento del motor prueba
+  cada lección). `tools/basics-search.mjs <lección>` genera candidatos de cualquier baraja (río, lago, portales, dados,
+  monedas y dorada, estaciones con viento y bola de nieve, vías del tren, semilla).
 - **Compartir la jugada final** (todos los modos, `src/ui/share-play.js`): imagen 1080×1350 con el tablero tal
   como acabó y el recorrido de la última jugada (salida, saltos de portal, choques, caídas y el hoyo), la carta,
   quién la jugó y el resultado. En el móvil, hoja de compartir del sistema; en el ordenador, copiar o descargar.
@@ -826,6 +831,8 @@ obtenido. Si se cambia una regla **a propósito**, hay que cambiarla también en
 
 ## Cambios de comportamiento respecto al original
 
+- **Tope de pasos en un movimiento:** un bucle de portales que cruza fuego sumaba +2 en cada vuelta y la pelota (o el
+  hoyo) no paraba nunca (posible en Ultimate con estaciones y clásica). Ahora se corta y se avisa ("Bucle sin fin").
 - **Bug corregido:** con dos portales y dos pelotas alineadas (`P2 · A · B · P1`) un golpe creaba un
   bucle de choques infinito y la página reventaba ("Maximum call stack size exceeded"), perdiendo la carta.
   Ahora la cadena se corta tras 12 choques y se avisa en el tablero ("¡Bucle cortado!") y en el historial.

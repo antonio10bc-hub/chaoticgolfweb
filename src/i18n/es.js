@@ -177,6 +177,7 @@ export default {
   god: { ball: 'pelota', hole: 'hoyo' },
   notice: {
     chainStop: 'Choques en bucle entre portales: la cadena se corta aquí',
+    stepLoop: 'Bucle sin fin: se para aquí',
     iriLoop: 'Bucle sin fin: la pelota iridiscente se para aquí',
     holeTrapped: 'El hoyo está en el búnker: [{card}] no basta para sacarlo',
     cantDiscard: 'Ya has jugado cartas este turno: no puedes descartar',
@@ -304,7 +305,7 @@ export default {
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',
     inProgress: 'A medias',
     puzzleChip: 'Lo básico · gana en 1 turno',
-    sections: { basics: 'Lo básico', advanced: 'Lo no tan básico' }, blocks: { basic: 'Palos y hoyo' },
+    sections: { basics: 'Lo básico', advanced: 'Lo no tan básico' }, blocks: { basic: 'Palos y hoyo', ultimate: 'Iridiscente y palo 10', water_minigolf: 'Agua y minigolf', classic_mix: 'La clásica con las demás', train_mix: 'El tren con las demás', seasons_mix: 'Las estaciones con las demás', multiverse_mix: 'El multiverso con las demás', gambling_mix: 'El Gambling con las demás', all: 'Todo junto' },
     tiers: { warmup: 'Palos, clásica, agua y minigolf', mid: 'Tren, estaciones, multiverso y Gambling', expert: 'Lo no tan básico' },
     progress: '{n} de {total} completados', allDone: '¡Todo completado!',
     tips: {

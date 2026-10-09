@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Cara",
+  "name_en": "Heads",
+  "teach": "Pasa por una moneda y te la llevas: al acabar se lanza; con cara, vuelves a tirar.",
+  "teach_en": "Roll over a coin to grab it; it's tossed after the move: heads, you go again.",
+  "cols": 4,
+  "rows": 4,
+  "tiles": [],
+  "hole": {
+    "x": 0,
+    "y": 0
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "gamble": {
+    "gold": null,
+    "coins": [
+      {
+        "x": 2,
+        "y": 1
+      }
+    ]
+  },
+  "hand": [
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "seed": 84290
+}

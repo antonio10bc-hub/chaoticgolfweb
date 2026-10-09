@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Palo 10",
+  "name_en": "10 club",
+  "teach": "En los campos grandes de Ultimate hay palo de 10.",
+  "teach_en": "Big Ultimate courses have a 10 club.",
+  "cols": 11,
+  "rows": 5,
+  "tiles": [],
+  "ball": {
+    "x": 0,
+    "y": 4
+  },
+  "hole": {
+    "x": 9,
+    "y": 4
+  },
+  "hand": [
+    "palo1",
+    "palo10"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Río al portal",
+  "name_en": "River to portal",
+  "teach": "Si el río desemboca en un portal, la corriente te lleva a través.",
+  "teach_en": "If the river flows into a portal, the current takes you through.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "river",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "type": "river",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "type": "portal",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "type": "river",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "type": "portal",
+      "x": 1,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 3
+  },
+  "ball": {
+    "x": 1,
+    "y": 4
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

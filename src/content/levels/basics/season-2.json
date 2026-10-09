@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Planta carnívora",
+  "name_en": "Carnivorous plant",
+  "teach": "La planta se come la pelota que se para a su lado: vuelves a tu salida.",
+  "teach_en": "The plant eats a ball that stops next to it: back to your tee.",
+  "cols": 6,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "plant",
+      "x": 1,
+      "y": 0
+    }
+  ],
+  "hole": {
+    "x": 3,
+    "y": 0
+  },
+  "spawn": {
+    "x": 5,
+    "y": 0
+  },
+  "ball": {
+    "x": 1,
+    "y": 2
+  },
+  "hand": [
+    "palo1",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "spring"
+  }
+}

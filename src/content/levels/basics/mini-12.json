@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Pon un bloque",
+  "name_en": "Place a block",
+  "teach": "La carta de bloque pone uno: rebota en él para volver al hoyo.",
+  "teach_en": "The block card places one: bounce off it back to the hole.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [],
+  "ball": {
+    "x": 0,
+    "y": 0
+  },
+  "hole": {
+    "x": 2,
+    "y": 0
+  },
+  "hand": [
+    "block",
+    "palo4"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Golpe y vuelta",
+  "name_en": "Hit and back",
+  "teach": "Casino: chocar con el dado te hace rebotar tantas casillas como marca.",
+  "teach_en": "Casino: hit the die and you bounce as many squares as it shows.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "dice",
+      "x": 0,
+      "y": 3,
+      "t": 1,
+      "n": 3,
+      "e": 2
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 1
+  },
+  "ball": {
+    "x": 1,
+    "y": 3
+  },
+  "hand": [
+    "hoyoDown",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p33"
+}

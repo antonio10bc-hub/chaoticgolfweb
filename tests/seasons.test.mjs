@@ -291,3 +291,14 @@ test('nivel con estación: se comparte por enlace (estación, bola de nieve y pi
   assert.deepEqual(back.season.snow, { x: 0, y: 0 });
   assert.equal(back.tiles.length, 3);
 });
+
+test('bucle de portales que cruza fuego: el tiro se corta (cada vuelta sumaría +2 para siempre)', () => {
+  // P · fuego · P: a la izquierda, sale por el de la derecha y vuelve a cruzar el fuego (−1 +2 por vuelta)
+  const L = { version: 1, cols: 5, rows: 3, hole: { x: 4, y: 2 }, ball: { x: 1, y: 0 }, parCells: [], deckCounts: { palo1: 3 }, hand: ['palo2'],
+    tiles: [{ type: 'portal', x: 0, y: 0 }, { type: 'fire', x: 1, y: 0 }, { type: 'portal', x: 2, y: 0 }], season: { now: 'summer' } };
+  const g = Game.fromLevel(L, { seed: 1 });
+  g.clickCard(0, 0);
+  const t = g.pending.targets.find(q => q.dir === 'left');
+  g.clickCell(t.x, t.y); // (antes: no volvía nunca)
+  assert.ok(g.takeEvents().some(e => e.t === 'chainStop'));
+});

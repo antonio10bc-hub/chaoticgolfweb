@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Resbalón",
+  "name_en": "Slip",
+  "teach": "Con el dedo, el hielo te hace resbalar una casilla más sin gastar paso.",
+  "teach_en": "With the finger, ice slides you one more square for free.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "ice",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "type": "ice",
+      "x": 2,
+      "y": 2
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 0
+  },
+  "ball": {
+    "x": 4,
+    "y": 2
+  },
+  "hand": [
+    "dedo",
+    "hoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "winter"
+  }
+}

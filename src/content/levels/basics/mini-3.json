@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Esquinazo",
+  "name_en": "Round the corner",
+  "teach": "Por su cara inclinada, la esquina te desvía 90°.",
+  "teach_en": "On its slanted side, a corner turns you 90°.",
+  "cols": 6,
+  "rows": 8,
+  "tiles": [
+    {
+      "type": "corner",
+      "x": 3,
+      "y": 6,
+      "rot": 3
+    }
+  ],
+  "hole": {
+    "x": 3,
+    "y": 2
+  },
+  "ball": {
+    "x": 5,
+    "y": 6
+  },
+  "hand": [
+    "palo3",
+    "hoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p07"
+}

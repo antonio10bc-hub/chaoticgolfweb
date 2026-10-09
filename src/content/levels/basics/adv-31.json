@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Iridiscente y dado",
+  "name_en": "Iridescent and die",
+  "teach": "El iridiscente rebota en el dado, pero no cuenta su número: sigue sin parar.",
+  "teach_en": "The iridescent club bounces off the die but ignores its number: it keeps going.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "dice",
+      "x": 5,
+      "y": 4,
+      "t": 1,
+      "n": 3,
+      "e": 2
+    }
+  ],
+  "hole": {
+    "x": 5,
+    "y": 0
+  },
+  "ball": {
+    "x": 5,
+    "y": 3
+  },
+  "hand": [
+    "palo1",
+    "paloIri"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

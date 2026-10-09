@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Vuelo fuera",
+  "name_en": "Flying off",
+  "teach": "Si la lanzadera te saca del tablero, vuelves a tu salida.",
+  "teach_en": "If a launcher flies you off the board, you go back to your tee.",
+  "cols": 4,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "launcher",
+      "x": 3,
+      "y": 2,
+      "rot": 2
+    }
+  ],
+  "spawn": {
+    "x": 0,
+    "y": 0
+  },
+  "hole": {
+    "x": 0,
+    "y": 2
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "palo1",
+    "hoyoUp"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

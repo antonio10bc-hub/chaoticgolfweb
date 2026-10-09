@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Pon un agujero",
+  "name_en": "Place a black hole",
+  "teach": "La carta de agujero negro pone uno en una casilla vacía.",
+  "teach_en": "The black hole card puts one on an empty square.",
+  "cols": 4,
+  "rows": 4,
+  "tiles": [],
+  "hole": {
+    "x": 2,
+    "y": 1
+  },
+  "ball": {
+    "x": 0,
+    "y": 3
+  },
+  "hand": [
+    "palo2",
+    "agujeroNegro"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

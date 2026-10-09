@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dos lanzaderas",
+  "name_en": "Two launchers",
+  "teach": "Aterrizar en otra lanzadera te vuelve a lanzar.",
+  "teach_en": "Landing on another launcher launches you again.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "launcher",
+      "x": 3,
+      "y": 0,
+      "rot": 2
+    },
+    {
+      "type": "launcher",
+      "x": 3,
+      "y": 3,
+      "rot": 3
+    }
+  ],
+  "ball": {
+    "x": 4,
+    "y": 0
+  },
+  "hole": {
+    "x": 0,
+    "y": 1
+  },
+  "hand": [
+    "hoyoDown",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

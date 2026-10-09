@@ -174,6 +174,7 @@ export default {
   god: { ball: 'ball', hole: 'hole' },
   notice: {
     chainStop: 'Collisions looping through portals: the chain stops here',
+    stepLoop: 'Endless loop: it stops here',
     iriLoop: 'Endless loop: the iridescent ball stops here',
     holeTrapped: 'The hole is in a bunker: [{card}] isn’t enough to get it out',
     cantDiscard: 'You have already played cards this turn: you can’t discard',
@@ -301,7 +302,7 @@ export default {
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',
     inProgress: 'In progress',
     puzzleChip: 'The basics · win in 1 turn',
-    sections: { basics: 'The basics', advanced: 'Not so basic' }, blocks: { basic: 'Clubs and hole' },
+    sections: { basics: 'The basics', advanced: 'Not so basic' }, blocks: { basic: 'Clubs and hole', ultimate: 'Iridescent and 10 club', water_minigolf: 'Water and mini golf', classic_mix: 'Classic with the rest', train_mix: 'Train with the rest', seasons_mix: 'Seasons with the rest', multiverse_mix: 'Multiverse with the rest', gambling_mix: 'Gambling with the rest', all: 'All together' },
     tiers: { warmup: 'Clubs, classic, water and mini golf', mid: 'Train, seasons, multiverse and Gambling', expert: 'Not so basic' },
     progress: '{n} of {total} completed', allDone: 'All done!',
     tips: {

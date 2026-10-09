@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dedo al agua",
+  "name_en": "Finger in the water",
+  "teach": "Entrar en el río acaba el dedo, aunque te queden pasos.",
+  "teach_en": "Stepping into the river ends the finger move, even with steps left.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "river",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "type": "river",
+      "x": 0,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 1
+  },
+  "ball": {
+    "x": 3,
+    "y": 2
+  },
+  "hand": [
+    "dedo",
+    "hoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

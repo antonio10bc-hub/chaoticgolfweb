@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dedo y agujero",
+  "name_en": "Finger and black hole",
+  "teach": "El dedo también: las 4 salen con los pasos que te quedaban (al menos 1).",
+  "teach_en": "The finger too: all 4 come out with your remaining steps (at least 1).",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "blackhole",
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "ball": {
+    "x": 4,
+    "y": 0
+  },
+  "hole": {
+    "x": 1,
+    "y": 1
+  },
+  "hand": [
+    "dedo",
+    "hoyoLeft"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

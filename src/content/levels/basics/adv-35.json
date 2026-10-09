@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Hielo y dado",
+  "name_en": "Ice and die",
+  "teach": "Hielo, dado y búnker en el mismo campo.",
+  "teach_en": "Ice, die and bunker on one course.",
+  "cols": 6,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "ice",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "type": "bunker",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "dice",
+      "x": 1,
+      "y": 4,
+      "t": 2,
+      "n": 4,
+      "e": 1
+    }
+  ],
+  "hole": {
+    "x": 1,
+    "y": 0
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "oPalo1",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "winter"
+  }
+}

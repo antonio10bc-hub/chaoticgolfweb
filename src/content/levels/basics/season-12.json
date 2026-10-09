@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Todo en la bola",
+  "name_en": "All in the ball",
+  "teach": "Si la bola lleva tu pelota y pilla el hoyo, entras.",
+  "teach_en": "If the snowball carries your ball and catches the hole, you're in.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "ball": {
+    "x": 0,
+    "y": 1
+  },
+  "hole": {
+    "x": 2,
+    "y": 4
+  },
+  "hand": [
+    "palo3",
+    "oNieve"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "winter",
+    "snow": {
+      "x": 0,
+      "y": 4
+    }
+  }
+}

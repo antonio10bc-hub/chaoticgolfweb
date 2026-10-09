@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Tren a la arena",
+  "name_en": "Train to the sand",
+  "teach": "El tren te deja en el búnker: salir cuesta 1.",
+  "teach_en": "The train drops you in the bunker: getting out costs 1.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "bunker",
+      "x": 1,
+      "y": 2
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 2
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "trenVuelta",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "train": {
+    "path": [
+      [
+        2,
+        0
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "stations": [
+      1,
+      3,
+      5,
+      7
+    ],
+    "pos": 5,
+    "cars": 0
+  }
+}

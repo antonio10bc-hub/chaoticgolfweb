@@ -13,6 +13,7 @@ import { SKINS, skinProgress, skinBall, ROMAN } from './skins.js';
 import { myColor } from './my-ball.js';
 import { comboHistory } from './ultimate.js';
 import { deckArt } from './screen-modes.js';
+import { blockName } from './screen-story.js';
 import { dateKey } from '../content/levels/generate.js';
 
 const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
@@ -46,13 +47,12 @@ function progress(R) {
     `<span class="pgTrack"><i style="width:${total ? 100 * done / total : 0}%"></i></span><span class="pgVal"><b>${done}</b>/${total}</span></div>`;
   const basics = app.basics || [], blocks = [];
   for (const L of basics) { let b = blocks.find(x => x.deck === L.deck && x.section === L.section); if (!b) blocks.push(b = { deck: L.deck, section: L.section, n: 0, done: 0 }); b.n++; if (R.basics[L.id]) b.done++; }
-  const blockName = b => b.deck === 'basic' ? t('story.blocks.basic') : b.deck.split('+').map(d => t('decks.' + d + '.name')).join(' + ');
   const groups = (items, isDone) => CH_GROUPS.map(g => { const of = items.filter(x => x.g === g); return { g, n: of.length, done: of.filter(isDone).length }; }).filter(x => x.n);
   const ch = groups(CHALLENGES.map(c => ({ g: c.group, id: c.id })), x => !!R.challenges[x.id]);
   const sub = list => list.map(x => bar(t('modes.groups.' + x.g), x.done, x.n, ' sub')).join('');
   const sum = list => list.reduce((a, x) => [a[0] + x.done, a[1] + x.n], [0, 0]);
   const [cd, cn] = sum(ch);
-  const sec = id => { const of = blocks.filter(b => b.section === id), [d, n] = sum(of); return n ? bar(t('story.sections.' + id), d, n) + of.map(b => bar(blockName(b), b.done, b.n, ' sub')).join('') : ''; };
+  const sec = id => { const of = blocks.filter(b => b.section === id), [d, n] = sum(of); return n ? bar(t('story.sections.' + id), d, n) + of.map(b => bar(blockName(b.deck), b.done, b.n, ' sub')).join('') : ''; };
   return `<div class="pgList">${sec('basics')}${sec('advanced')}${bar(t('stats.mode_challenge'), cd, cn)}${sub(ch)}</div>`;
 }
 

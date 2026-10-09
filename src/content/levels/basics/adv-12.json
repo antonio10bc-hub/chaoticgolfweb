@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Correo aéreo",
+  "name_en": "Air mail",
+  "teach": "Por el portal hasta la lanzadera, y a volar.",
+  "teach_en": "Through the portal onto the launcher, and fly.",
+  "cols": 5,
+  "rows": 8,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "type": "portal",
+      "x": 3,
+      "y": 4
+    },
+    {
+      "type": "launcher",
+      "x": 4,
+      "y": 4,
+      "rot": 2
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 1
+  },
+  "hole": {
+    "x": 2,
+    "y": 7
+  },
+  "hand": [
+    "oPalo1",
+    "palo2",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p19"
+}

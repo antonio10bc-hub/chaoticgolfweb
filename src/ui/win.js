@@ -67,7 +67,7 @@ export function showWin() {
   let msg;
   if (S.trainWin) msg = t('win.trainWins');
   else if (S.holeWin) msg = t('win.holeGold'); // (casino: el hoyo estaba en la casilla dorada)
-  else if (S.goldWin) msg = !multi && S.winners[0] === me && mode === 'pve' ? t('win.goldYou') : t('win.gold', { names }); // (casino: ¡bote!)
+  else if (S.goldWin) msg = solo || (!multi && S.winners[0] === me && mode === 'pve') ? t('win.goldYou') : t('win.gold', { names }); // (casino: ¡bote!; en solitario, es tuyo)
   else if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
   else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });

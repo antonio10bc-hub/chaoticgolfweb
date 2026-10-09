@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Orilla",
+  "name_en": "Lakeshore",
+  "teach": "El lago está en medio: rodéalo.",
+  "teach_en": "The lake is in the way: go around it.",
+  "cols": 6,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "lake",
+      "x": 4,
+      "y": 4
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 2
+  },
+  "hole": {
+    "x": 5,
+    "y": 4
+  },
+  "hand": [
+    "oHoyoLeft",
+    "hoyoUp",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p09"
+}

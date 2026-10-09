@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Carambola de madera",
+  "name_en": "Wooden bank shot",
+  "teach": "El iridiscente rebota en bloques y esquinas y sigue.",
+  "teach_en": "The iridescent club bounces off blocks and corners and keeps going.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "block",
+      "x": 4,
+      "y": 0
+    },
+    {
+      "type": "corner",
+      "x": 0,
+      "y": 3,
+      "rot": 3
+    }
+  ],
+  "extraBalls": [
+    {
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 1
+  },
+  "ball": {
+    "x": 4,
+    "y": 2
+  },
+  "hand": [
+    "paloIri",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

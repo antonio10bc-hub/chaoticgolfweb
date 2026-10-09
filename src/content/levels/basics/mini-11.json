@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Túnel",
+  "name_en": "Tunnel",
+  "teach": "El túnel te saca por uno de sus cuatro lados, al azar.",
+  "teach_en": "A tunnel sends you out of one of its four sides, at random.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "tunnel",
+      "x": 3,
+      "y": 2
+    }
+  ],
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "ball": {
+    "x": 0,
+    "y": 3
+  },
+  "hand": [
+    "palo1",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "seed": 7324
+}

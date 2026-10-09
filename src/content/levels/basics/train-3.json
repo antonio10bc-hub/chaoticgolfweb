@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Hoyo en marcha",
+  "name_en": "Moving hole",
+  "teach": "La vuelta entera recorre todo el circuito.",
+  "teach_en": "The full loop runs the whole circuit.",
+  "cols": 7,
+  "rows": 7,
+  "tiles": [],
+  "hole": {
+    "x": 4,
+    "y": 3
+  },
+  "ball": {
+    "x": 5,
+    "y": 6
+  },
+  "hand": [
+    "oHoyoRight",
+    "trenVuelta"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p27",
+  "train": {
+    "path": [
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        5
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "stations": [
+      2,
+      6,
+      10,
+      14
+    ],
+    "pos": 1,
+    "cars": 0
+  }
+}

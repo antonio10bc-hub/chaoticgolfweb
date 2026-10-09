@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Arcoíris en vuelo",
+  "name_en": "Rainbow in flight",
+  "teach": "El iridiscente vuela en las lanzaderas y, al aterrizar, sigue.",
+  "teach_en": "The iridescent club flies off launchers and keeps rolling after landing.",
+  "cols": 6,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "launcher",
+      "x": 3,
+      "y": 1,
+      "rot": 2
+    }
+  ],
+  "ball": {
+    "x": 5,
+    "y": 0
+  },
+  "hole": {
+    "x": 3,
+    "y": 2
+  },
+  "hand": [
+    "paloIri",
+    "hoyoDown",
+    "oPalo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p20"
+}

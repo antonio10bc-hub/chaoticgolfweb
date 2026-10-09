@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "El hoyo rebota",
+  "name_en": "The hole bounces",
+  "teach": "El hoyo también rebota en el dado.",
+  "teach_en": "The hole bounces off the die too.",
+  "cols": 6,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "dice",
+      "x": 5,
+      "y": 4,
+      "t": 1,
+      "n": 4,
+      "e": 2
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 1
+  },
+  "hole": {
+    "x": 4,
+    "y": 4
+  },
+  "hand": [
+    "palo2",
+    "oHoyoRight",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p34"
+}

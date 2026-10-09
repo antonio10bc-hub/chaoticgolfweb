@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Hojarasca",
+  "name_en": "Dry leaves",
+  "teach": "Otoño: la hoja seca te quita 1 casilla y se rompe.",
+  "teach_en": "Autumn: a dry leaf costs you 1 square and breaks.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "leaf",
+      "x": 3,
+      "y": 2
+    },
+    {
+      "type": "leaf",
+      "x": 2,
+      "y": 4
+    }
+  ],
+  "hole": {
+    "x": 3,
+    "y": 0
+  },
+  "ball": {
+    "x": 2,
+    "y": 2
+  },
+  "hand": [
+    "palo2",
+    "hoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "autumn"
+  }
+}

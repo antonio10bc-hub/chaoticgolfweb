@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Cuatro hoyos",
+  "name_en": "Four holes",
+  "teach": "Las copias del hoyo son hoyos de verdad.",
+  "teach_en": "Hole copies are real holes.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "blackhole",
+      "x": 1,
+      "y": 1
+    }
+  ],
+  "hole": {
+    "x": 0,
+    "y": 0
+  },
+  "ball": {
+    "x": 3,
+    "y": 0
+  },
+  "hand": [
+    "oHoyoRight",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

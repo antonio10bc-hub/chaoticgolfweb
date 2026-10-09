@@ -64,5 +64,258 @@
       "classic-4",
       "classic-5"
     ]
+  },
+  {
+    "section": "basics",
+    "deck": "water",
+    "levels": [
+      "water-1",
+      "water-2",
+      "water-3",
+      "water-4",
+      "water-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "water",
+    "levels": [
+      "water-6",
+      "water-7",
+      "water-8",
+      "water-9",
+      "water-10"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "minigolf",
+    "levels": [
+      "mini-1",
+      "mini-2",
+      "mini-3",
+      "mini-4",
+      "mini-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "minigolf",
+    "levels": [
+      "mini-6",
+      "mini-7",
+      "mini-8",
+      "mini-9",
+      "mini-10"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "minigolf",
+    "levels": [
+      "mini-11",
+      "mini-12",
+      "mini-13",
+      "mini-14",
+      "mini-15"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "train",
+    "levels": [
+      "train-1",
+      "train-2",
+      "train-3",
+      "train-4",
+      "train-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "train",
+    "levels": [
+      "train-6",
+      "train-7",
+      "train-8",
+      "train-9",
+      "train-10"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "seasons",
+    "levels": [
+      "season-1",
+      "season-2",
+      "season-3",
+      "season-4",
+      "season-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "seasons",
+    "levels": [
+      "season-6",
+      "season-7",
+      "season-8",
+      "season-9",
+      "season-10"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "seasons",
+    "levels": [
+      "season-11",
+      "season-12",
+      "season-13",
+      "season-14",
+      "season-15"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "multiverse",
+    "levels": [
+      "multi-1",
+      "multi-2",
+      "multi-3",
+      "multi-4",
+      "multi-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "multiverse",
+    "levels": [
+      "multi-6",
+      "multi-7",
+      "multi-8",
+      "multi-9",
+      "multi-10"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "multiverse",
+    "levels": [
+      "multi-11",
+      "multi-12",
+      "multi-13",
+      "multi-14",
+      "multi-15"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "gambling",
+    "levels": [
+      "gamb-1",
+      "gamb-2",
+      "gamb-3",
+      "gamb-4",
+      "gamb-5"
+    ]
+  },
+  {
+    "section": "basics",
+    "deck": "gambling",
+    "levels": [
+      "gamb-6",
+      "gamb-7",
+      "gamb-8",
+      "gamb-9",
+      "gamb-10"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "ultimate",
+    "levels": [
+      "adv-1",
+      "adv-2",
+      "adv-3",
+      "adv-4",
+      "adv-5"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "water+minigolf",
+    "levels": [
+      "adv-6",
+      "adv-7",
+      "adv-8",
+      "adv-9",
+      "adv-10"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "classic+mix",
+    "levels": [
+      "adv-11",
+      "adv-12",
+      "adv-13",
+      "adv-14",
+      "adv-15"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "train+mix",
+    "levels": [
+      "adv-16",
+      "adv-17",
+      "adv-18",
+      "adv-19",
+      "adv-20"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "seasons+mix",
+    "levels": [
+      "adv-21",
+      "adv-22",
+      "adv-23",
+      "adv-24",
+      "adv-25"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "multiverse+mix",
+    "levels": [
+      "adv-26",
+      "adv-27",
+      "adv-28",
+      "adv-29",
+      "adv-30"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "gambling+mix",
+    "levels": [
+      "adv-31",
+      "adv-32",
+      "adv-33",
+      "adv-34",
+      "adv-35"
+    ]
+  },
+  {
+    "section": "advanced",
+    "deck": "all",
+    "levels": [
+      "adv-36",
+      "adv-37",
+      "adv-38",
+      "adv-39",
+      "adv-40"
+    ]
   }
 ]

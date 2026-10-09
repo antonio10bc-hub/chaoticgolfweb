@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Iridiscente",
+  "name_en": "Iridescent",
+  "teach": "El palo iridiscente no para hasta chocar con una pelota (que sale disparada igual) o caerse.",
+  "teach_en": "The iridescent club doesn't stop until it hits a ball (which flies off the same way) or falls off.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "extraBalls": [
+    {
+      "x": 0,
+      "y": 2
+    }
+  ],
+  "ball": {
+    "x": 0,
+    "y": 0
+  },
+  "hole": {
+    "x": 2,
+    "y": 1
+  },
+  "hand": [
+    "paloIri",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

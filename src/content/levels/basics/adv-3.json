@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Tope",
+  "name_en": "Stopper",
+  "teach": "Con el iridiscente, una pelota de obstáculo es tu tope.",
+  "teach_en": "With the iridescent club, an obstacle ball is your stopper.",
+  "cols": 6,
+  "rows": 7,
+  "tiles": [
+    {
+      "type": "block",
+      "x": 4,
+      "y": 1
+    }
+  ],
+  "extraBalls": [
+    {
+      "x": 4,
+      "y": 6
+    }
+  ],
+  "ball": {
+    "x": 2,
+    "y": 3
+  },
+  "hole": {
+    "x": 4,
+    "y": 5
+  },
+  "hand": [
+    "paloIri",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p11"
+}

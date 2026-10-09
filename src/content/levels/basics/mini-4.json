@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "La espalda",
+  "name_en": "The back side",
+  "teach": "Por la espalda, la esquina es como un bloque: rebotas.",
+  "teach_en": "From behind, a corner is like a block: you bounce.",
+  "cols": 6,
+  "rows": 7,
+  "tiles": [
+    {
+      "type": "corner",
+      "x": 5,
+      "y": 3,
+      "rot": 1
+    }
+  ],
+  "ball": {
+    "x": 5,
+    "y": 0
+  },
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

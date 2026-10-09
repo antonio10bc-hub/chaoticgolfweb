@@ -60,9 +60,11 @@ function levelCard(i, L, { done, next, best, saved, attr, compact = false, num =
 }
 
 // cabecera de un bloque: el icono de su baraja (palos y hoyo: el suyo), el nombre, x/y y su barra
-const blockArt = id => id === 'basic' ? modeArt('basics', 'dkArt') : deckArt(deckById(id.split('+')[0]));
-const blockName = id => id === 'basic' ? t('story.blocks.basic') : id.split('+').map(d => t('decks.' + d + '.name')).join(' + ');
-const blockColor = id => id === 'basic' ? '#5E9A4E' : deckById(id.split('+')[0]).color;
+// (Lo no tan básico: 'ultimate', 'water+minigolf', 'train+mix'… — el icono y el color, los de la primera baraja; 'all', Ultimate)
+const blockDeck = id => deckById(id === 'all' ? 'ultimate' : id.split('+')[0]);
+const blockArt = id => id === 'basic' ? modeArt('basics', 'dkArt') : deckArt(blockDeck(id));
+export const blockName = id => { const k = 'story.blocks.' + id.replace('+', '_'), v = t(k); return v !== k ? v : id.split('+').map(d => t('decks.' + d + '.name')).join(' + '); };
+const blockColor = id => id === 'basic' ? '#5E9A4E' : blockDeck(id).color;
 function blockHTML(b, done) {
   const n = b.items.length, d = b.items.filter(i => done[app.basics[i].id]).length, pct = Math.round(100 * d / n);
   return `<div class="bkBlock" style="--dk:${blockColor(b.deck)}">` +

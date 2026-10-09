@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "La moneda del hoyo",
+  "name_en": "The hole's coin",
+  "teach": "El hoyo también recoge monedas; con cara, lo vuelves a mover.",
+  "teach_en": "The hole picks up coins too; heads, you move it again.",
+  "cols": 4,
+  "rows": 4,
+  "tiles": [],
+  "ball": {
+    "x": 3,
+    "y": 2
+  },
+  "hole": {
+    "x": 2,
+    "y": 3
+  },
+  "gamble": {
+    "gold": null,
+    "coins": [
+      {
+        "x": 3,
+        "y": 3
+      }
+    ]
+  },
+  "hand": [
+    "oHoyoRight",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "seed": 36357
+}

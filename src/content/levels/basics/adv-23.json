@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Nieve contra madera",
+  "name_en": "Snow against wood",
+  "teach": "La bola de nieve se para contra la madera.",
+  "teach_en": "The snowball stops against wood.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "block",
+      "x": 2,
+      "y": 3
+    }
+  ],
+  "ball": {
+    "x": 2,
+    "y": 0
+  },
+  "hole": {
+    "x": 0,
+    "y": 1
+  },
+  "hand": [
+    "palo3",
+    "oNieve"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "winter",
+    "snow": {
+      "x": 3,
+      "y": 1
+    }
+  }
+}

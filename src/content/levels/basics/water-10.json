@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Pon un lago",
+  "name_en": "Place a lake",
+  "teach": "La carta de lago pone uno: si el hoyo cae dentro, vuelve a su casilla inicial.",
+  "teach_en": "The lake card places one: if the hole falls in, it goes back to its starting square.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 1,
+    "y": 1
+  },
+  "ball": {
+    "x": 3,
+    "y": 4
+  },
+  "home": {
+    "x": 3,
+    "y": 4
+  },
+  "hand": [
+    "lake",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

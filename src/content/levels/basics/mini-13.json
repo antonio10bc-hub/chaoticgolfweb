@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Pon la esquina",
+  "name_en": "Place the corner",
+  "teach": "Al poner una esquina eliges hacia dónde mira (gírala).",
+  "teach_en": "When placing a corner you choose where it faces (rotate it).",
+  "cols": 6,
+  "rows": 7,
+  "tiles": [],
+  "hole": {
+    "x": 3,
+    "y": 5
+  },
+  "ball": {
+    "x": 5,
+    "y": 6
+  },
+  "hand": [
+    "corner",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p16"
+}

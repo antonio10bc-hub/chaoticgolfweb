@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "El hoyo al río",
+  "name_en": "Hole in the river",
+  "teach": "El hoyo también cae al río y la corriente lo baja.",
+  "teach_en": "The hole falls in the river too, and the current carries it down.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "river",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "type": "river",
+      "x": 1,
+      "y": 2
+    }
+  ],
+  "ball": {
+    "x": 0,
+    "y": 1
+  },
+  "hole": {
+    "x": 3,
+    "y": 1
+  },
+  "hand": [
+    "hoyoLeft",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

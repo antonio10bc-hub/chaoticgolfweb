@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Roca",
+  "name_en": "Rock",
+  "teach": "La roca de meteorito es un muro: rebotas, como en un bloque.",
+  "teach_en": "A meteor rock is a wall: you bounce, like off a block.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "meteorite",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "type": "meteorite",
+      "x": 0,
+      "y": 4
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "ball": {
+    "x": 0,
+    "y": 3
+  },
+  "hand": [
+    "palo3",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

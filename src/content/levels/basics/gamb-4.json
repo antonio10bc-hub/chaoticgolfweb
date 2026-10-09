@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Dedo y dado",
+  "name_en": "Finger and die",
+  "teach": "Con el dedo, chocar con el dado te hace rebotar en recta y se acaba el dedo.",
+  "teach_en": "With the finger, hitting the die bounces you straight and ends the move.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "dice",
+      "x": 2,
+      "y": 3,
+      "t": 6,
+      "n": 2,
+      "e": 4
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "ball": {
+    "x": 2,
+    "y": 4
+  },
+  "hand": [
+    "dedo",
+    "hoyoDown"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

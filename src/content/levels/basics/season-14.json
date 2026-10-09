@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Del hielo, plantas",
+  "name_en": "From ice, plants",
+  "teach": "La carta de estación cambia el campo: en primavera, el hielo se vuelve planta.",
+  "teach_en": "The season card changes the course: in spring, ice turns into plants.",
+  "cols": 5,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "ice",
+      "x": 2,
+      "y": 1
+    }
+  ],
+  "ball": {
+    "x": 1,
+    "y": 2
+  },
+  "spawn": {
+    "x": 1,
+    "y": 4
+  },
+  "hole": {
+    "x": 3,
+    "y": 4
+  },
+  "hand": [
+    "estacion",
+    "oPalo1",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "season": {
+    "now": "winter"
+  }
+}

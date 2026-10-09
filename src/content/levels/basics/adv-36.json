@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Caos controlado",
+  "name_en": "Controlled chaos",
+  "teach": "Río, esquina, lanzadera e iridiscente: un solo tiro.",
+  "teach_en": "River, corner, launcher and iridescent: one shot.",
+  "cols": 7,
+  "rows": 8,
+  "tiles": [
+    {
+      "type": "corner",
+      "x": 0,
+      "y": 5,
+      "rot": 3
+    },
+    {
+      "type": "river",
+      "x": 3,
+      "y": 5
+    },
+    {
+      "type": "river",
+      "x": 3,
+      "y": 6
+    },
+    {
+      "type": "launcher",
+      "x": 3,
+      "y": 7,
+      "rot": 1
+    }
+  ],
+  "ball": {
+    "x": 0,
+    "y": 2
+  },
+  "hole": {
+    "x": 4,
+    "y": 7
+  },
+  "hand": [
+    "hoyoRight",
+    "paloIri"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p24"
+}

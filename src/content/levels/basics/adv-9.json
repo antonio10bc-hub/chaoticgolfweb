@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Desembocadura de madera",
+  "name_en": "Wooden river mouth",
+  "teach": "Si una esquina tapa la desembocadura, la corriente te pasa a través y te desvía.",
+  "teach_en": "If a corner blocks the river's mouth, the current takes you through and turns you.",
+  "cols": 4,
+  "rows": 5,
+  "tiles": [
+    {
+      "type": "river",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "type": "river",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "corner",
+      "x": 2,
+      "y": 4,
+      "rot": 3
+    }
+  ],
+  "ball": {
+    "x": 0,
+    "y": 0
+  },
+  "hole": {
+    "x": 3,
+    "y": 3
+  },
+  "hand": [
+    "palo1",
+    "palo2"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

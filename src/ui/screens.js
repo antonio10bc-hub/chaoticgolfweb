@@ -32,8 +32,11 @@ import { deckById } from '../content/decks.js';
 // (los desafíos con piezas de otra baraja llevan su escena en app.run.scene)
 // (probar un nivel del creador: la alfombrilla de corte del taller)
 // (reto diario: el de su mecánica; los guardados antes de existir, por su mecánica)
+// (Lo básico: el de la baraja de su bloque; en Lo no tan básico, el de la primera de la combinación, y "Todo junto", Ultimate)
+const basicScene = L => !L?.deck ? '' : deckById(L.deck === 'all' ? 'ultimate' : String(L.deck).split('+')[0]).scene || '';
 const sceneOfGame = () => app.mode === 'test' ? 'mat' : app.run?.scene ||
-  (app.variant === 'daily' ? dailyScene(app.run?.feature) : app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
+  (app.variant === 'daily' ? dailyScene(app.run?.feature) : app.variant === 'puzzle' ? basicScene(app.level)
+    : app.mode === 'pve' && !app.variant ? deckById(app.lastPveCfg?.deck).scene || '' : '');
 import { renderDailyCard, paintRushTimer, dailyScene } from './screen-modes.js';
 import { paintStoryBtn } from './screen-story.js';
 import { maybeShowGift, hideGift } from './gift.js';

@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Último tren",
+  "name_en": "Last train",
+  "teach": "El tren 1 parada (naranja) mueve la locomotora y empuja lo que hay en la vía.",
+  "teach_en": "Train 1 stop (orange) moves the engine, pushing whatever is on the track.",
+  "cols": 6,
+  "rows": 5,
+  "tiles": [],
+  "hole": {
+    "x": 4,
+    "y": 0
+  },
+  "ball": {
+    "x": 3,
+    "y": 2
+  },
+  "hand": [
+    "palo2",
+    "oTren1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p25",
+  "train": {
+    "path": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "stations": [
+      2,
+      7,
+      12,
+      16
+    ],
+    "pos": 2,
+    "cars": 0
+  }
+}

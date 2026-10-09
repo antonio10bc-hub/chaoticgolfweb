@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Copia perdida",
+  "name_en": "Lost copy",
+  "teach": "Una copia que se sale del tablero desaparece para siempre.",
+  "teach_en": "A copy that falls off the board is gone for good.",
+  "cols": 5,
+  "rows": 4,
+  "tiles": [
+    {
+      "type": "blackhole",
+      "x": 0,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "ball": {
+    "x": 4,
+    "y": 3
+  },
+  "hand": [
+    "palo2",
+    "palo3"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Hoyos gemelos",
+  "name_en": "Twin holes",
+  "teach": "Con varios hoyos, cada carta de hoyo pregunta cuál mueves.",
+  "teach_en": "With several holes, each hole card asks which one moves.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "blackhole",
+      "x": 1,
+      "y": 3
+    }
+  ],
+  "hole": {
+    "x": 3,
+    "y": 2
+  },
+  "ball": {
+    "x": 4,
+    "y": 5
+  },
+  "hand": [
+    "oGravedad",
+    "hoyoLeft",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p32"
+}

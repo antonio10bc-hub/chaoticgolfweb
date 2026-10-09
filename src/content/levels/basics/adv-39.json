@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Río, dado y portal",
+  "name_en": "River, die and portal",
+  "teach": "Río, dado y portal.",
+  "teach_en": "River, die and portal.",
+  "cols": 7,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "portal",
+      "x": 5,
+      "y": 1
+    },
+    {
+      "type": "river",
+      "x": 4,
+      "y": 2
+    },
+    {
+      "type": "dice",
+      "x": 6,
+      "y": 2,
+      "t": 1,
+      "n": 5,
+      "e": 4
+    },
+    {
+      "type": "river",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "type": "portal",
+      "x": 6,
+      "y": 3
+    },
+    {
+      "type": "river",
+      "x": 4,
+      "y": 4
+    }
+  ],
+  "ball": {
+    "x": 5,
+    "y": 3
+  },
+  "hole": {
+    "x": 6,
+    "y": 5
+  },
+  "hand": [
+    "palo3",
+    "oPalo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  }
+}

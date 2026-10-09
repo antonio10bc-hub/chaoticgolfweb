@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Atracción fatal",
+  "name_en": "Fatal attraction",
+  "teach": "La gravedad 2 atrae hacia su casilla lo que hay en su cruz (2 casillas).",
+  "teach_en": "Gravity 2 pulls whatever is in its cross (2 squares) toward its square.",
+  "cols": 5,
+  "rows": 6,
+  "tiles": [
+    {
+      "type": "meteorite",
+      "x": 4,
+      "y": 2
+    }
+  ],
+  "ball": {
+    "x": 3,
+    "y": 2
+  },
+  "hole": {
+    "x": 2,
+    "y": 5
+  },
+  "hand": [
+    "gravedad",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p31"
+}

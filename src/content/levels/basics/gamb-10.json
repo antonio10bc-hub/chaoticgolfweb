@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "Ruleta",
+  "name_en": "Roulette",
+  "teach": "La ruleta manda a su salida a las pelotas del color que sale.",
+  "teach_en": "The roulette sends balls on the colour that comes up back to their tee.",
+  "cols": 4,
+  "rows": 4,
+  "tiles": [],
+  "ball": {
+    "x": 1,
+    "y": 0
+  },
+  "hole": {
+    "x": 2,
+    "y": 1
+  },
+  "spawn": {
+    "x": 3,
+    "y": 1
+  },
+  "gamble": {
+    "gold": {
+      "x": 1,
+      "y": 2
+    },
+    "coins": []
+  },
+  "hand": [
+    "ruleta",
+    "palo1"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3,
+    "ruleta": 0
+  },
+  "seed": 41960
+}

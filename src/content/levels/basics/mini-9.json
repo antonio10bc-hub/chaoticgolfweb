@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "puzzle": true,
+  "name": "El hoyo vuela",
+  "name_en": "Flying hole",
+  "teach": "El hoyo también vuela si pasa por una lanzadera.",
+  "teach_en": "The hole flies too if it crosses a launcher.",
+  "cols": 7,
+  "rows": 7,
+  "tiles": [
+    {
+      "type": "launcher",
+      "x": 4,
+      "y": 2,
+      "rot": 2
+    }
+  ],
+  "hole": {
+    "x": 2,
+    "y": 2
+  },
+  "ball": {
+    "x": 1,
+    "y": 5
+  },
+  "hand": [
+    "palo3",
+    "hoyoRight"
+  ],
+  "parCells": [],
+  "deckCounts": {
+    "palo1": 3,
+    "palo2": 3,
+    "palo3": 3
+  },
+  "from": "p08"
+}
