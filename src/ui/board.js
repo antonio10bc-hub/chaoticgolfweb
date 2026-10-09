@@ -248,6 +248,7 @@ export function ensurePieces() {
     const fresh = !pieceEl('b' + b.player);
     const el = ensurePiece('b' + b.player, ASSETS.ballHTML(b.player) + '<div class="turnMark" aria-hidden="true"></div>');
     // (multiverso) la copia de una pelota: se ve distinta y no aparece hasta que sale del agujero negro (su animación)
+    if (fresh && b.decoy) el.classList.add('decoyBall'); // (pelota de obstáculo: blanca, sin etiqueta de jugador)
     if (fresh && b.copy) { el.classList.add('copyBall'); if (app.animating || app.animQueue.length) el.style.display = 'none'; }
     if (!el._skin) { // tu pelota lleva la que te has puesto (una vez por partida: las piezas se crean al empezar)
       el._skin = true;

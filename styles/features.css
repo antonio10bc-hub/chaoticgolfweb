@@ -1079,6 +1079,10 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 #storyScreen .lvlName { font-size: 12.5px; min-height: 0; padding: 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 #storyScreen .lvlNum { top: 10px; left: 10px; min-width: 20px; height: 20px; font-size: 10.5px; padding: 0 5px; }
 #storyScreen .lvlCard.done .lvlNum { background: var(--grass-dark); color: var(--cream); }
+/* completado: la miniatura apagada (al pasar por encima vuelve) y el nombre más suave; la siguiente destaca sola */
+#storyScreen .lvlCard.done .lvlPreview { opacity: .42; filter: saturate(.6); transition: opacity .2s, filter .2s; }
+#storyScreen .lvlCard.done:hover .lvlPreview, #storyScreen .lvlCard.done:focus-visible .lvlPreview { opacity: .85; filter: none; }
+#storyScreen .lvlCard.done .lvlName { color: var(--ink-soft); }
 #storyScreen .lvlFoot { margin: 0 2px; }
 #storyScreen .lvlState { font-size: 10.5px; padding: 2px 8px; margin: 0; }
 #storyScreen .lvlCard.done .lsTxt { display: none; } /* completado: solo el tic */
