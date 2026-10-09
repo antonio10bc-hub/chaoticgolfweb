@@ -1831,24 +1831,20 @@ html.reduceMotion .dsBarV { animation: none; }
 .crTotal { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
 .crTotal b { font-size: 62px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px rgba(255,210,120,.35); }
 .crTotal small { font-size: 18px; font-weight: 500; opacity: .9; }
-/* el reloj: tres casillas grandes (la que cambia da un salto) y, debajo, las 5 coronas de la semana */
-.crClock { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-left: auto; }
-.crClockLbl { font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
-.crTimer { display: flex; align-items: flex-start; gap: 5px; }
-.crT { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 62px; padding: 8px 8px 6px; border-radius: 14px;
+/* el reloj: tres casillas grandes (la que cambia da un salto), con la etiqueta encima, alineada con la primera; los dos
+   puntos, quietos y a media altura de las cifras */
+.crClock { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-left: auto; }
+.crClockLbl { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; padding-left: 2px; }
+.crTimer { display: flex; align-items: flex-start; gap: 7px; }
+.crT { --pt: 11px; --fs: 42px; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 78px; padding: var(--pt) 10px 8px; border-radius: 16px;
   background: linear-gradient(180deg, rgba(40,6,4,.38), rgba(40,6,4,.2)); border: 1px solid rgba(255,230,190,.22); }
-.crT b { font-size: 32px; font-weight: 700; line-height: 1; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255,210,120,.4); }
-.crT small { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.crT b { font-size: var(--fs); font-weight: 700; line-height: 1; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255,210,120,.4); }
+.crT small { font-size: 10.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .crT.flip b { animation: crFlip .45s cubic-bezier(.3,1.5,.5,1); }
 @keyframes crFlip { from { transform: translateY(-40%) scale(.85); opacity: .2; } }
-.crColon { font-style: normal; font-size: 26px; font-weight: 700; line-height: 40px; color: rgba(255,231,166,.75); animation: crBlink 1s steps(1) infinite; }
-@keyframes crBlink { 50% { opacity: .25; } }
-.crMinis { display: inline-flex; gap: 7px; }
-.crMinis i { display: grid; color: rgba(255,240,220,.5); }
-.crMini { width: 32px; height: 26px; }
-.crMinis i.on .crMini { animation: crPop .5s cubic-bezier(.3,1.6,.5,1) both; }
-.crMinis i:nth-child(2) .crMini { animation-delay: .06s; } .crMinis i:nth-child(3) .crMini { animation-delay: .12s; }
-.crMinis i:nth-child(4) .crMini { animation-delay: .18s; } .crMinis i:nth-child(5) .crMini { animation-delay: .24s; }
+.crColon { --pt: 11px; --fs: 42px; flex: 0 0 auto; width: 6px; height: calc(var(--fs) * .5); margin-top: calc(var(--pt) + 1px + var(--fs) * .27);
+  background: radial-gradient(circle 3px at 50% 3px, rgba(255,231,166,.8) 98%, transparent) top / 6px 6px no-repeat,
+              radial-gradient(circle 3px at 50% 3px, rgba(255,231,166,.8) 98%, transparent) bottom / 6px 6px no-repeat; }
 @keyframes crPop { from { transform: scale(.3); opacity: 0; } }
 .crShare { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; padding: 0; display: grid; place-items: center; border-radius: 50%;
   --b-bg: rgba(255,244,214,.14); --b-fg: #FFF4D6; --b-line: rgba(255,244,214,.38); box-shadow: none; }
@@ -1907,10 +1903,9 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
   .crRays { left: 54px; top: 56px; }
   .crTotal b { font-size: 48px; }
   .crTotal small { font-size: 15px; }
-  .crClock { margin: 0; padding: 12px 10px 10px; border-radius: 16px; background: rgba(40,6,4,.16); }
-  .crT { min-width: 56px; padding: 7px 6px 5px; }
-  .crT b { font-size: 27px; }
-  .crMini { width: 28px; height: 23px; }
+  .crClock { margin: 0; align-self: center; }
+  .crT, .crColon { --pt: 8px; --fs: 34px; }
+  .crT { min-width: 64px; padding-left: 6px; padding-right: 6px; }
   .crShare { top: 14px; right: 14px; }
   .crPic .crDk { width: 42px; height: 42px; }
   .crChIco { left: 26px; width: 22px; height: 22px; }
@@ -1941,6 +1936,6 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
 .winRec.new.crownChip { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
 .winRec.crownChip .i { width: 16px; height: 16px; }
 @media (prefers-reduced-motion: reduce) {
-  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crMinis i.on .crMini, .crSlot.won .crSlotIc, .crT.flip b, .crColon { animation: none !important; }
+  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crSlot.won .crSlotIc, .crT.flip b { animation: none !important; }
   .crSpark { opacity: .6; }
 }

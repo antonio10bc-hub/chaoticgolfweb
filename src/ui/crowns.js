@@ -68,22 +68,20 @@ export function timeParts(ms) {
     : [[two(h), 'crowns.hours'], [two(m), 'crowns.mins'], [two(s % 60), 'crowns.secs']];
 }
 const clockHTML = () => timeParts(weekEndsAt() - Date.now()).map(([v, k], i) =>
-  (i ? '<i class="crColon" aria-hidden="true">:</i>' : '') + `<span class="crT"><b>${v}</b><small>${esc(t(k))}</small></span>`).join('');
+  (i ? '<i class="crColon" aria-hidden="true"></i>' : '') + `<span class="crT"><b>${v}</b><small>${esc(t(k))}</small></span>`).join('');
 
 /* ---------- la sección ---------- */
 const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
 const PIPS = { warmup: 1, mid: 2, expert: 3 };
 export function crownsSectionHTML(R = loadRecords(), csave = null) {
   const { wk, list } = thisWeek(), won = crownsOf(wk, R), n = R.crowns?.n || 0;
-  const minis = list.map(c => `<i class="${won.includes(c.id) ? 'on' : ''}">${crownSVG(won.includes(c.id), 'crMini')}</i>`).join('');
   const sparks = Array.from({ length: 7 }, (_, i) => `<span class="crSpark" style="--i:${i}"></span>`).join('');
   const head = `<header class="crHead">` +
     `<span class="crRays" aria-hidden="true"></span>${sparks}` +
     `<div class="crMain"><div class="crBadge">${crownSVG(true, 'crBig')}</div>` +
     `<div class="crInfo"><span class="crTitle">${esc(t('crowns.title'))}</span>` +
     `<span class="crTotal"><b>${n}</b><small>${esc(t(n === 1 ? 'crowns.total1' : 'crowns.total'))}</small></span></div></div>` +
-    `<div class="crClock"><span class="crClockLbl">${esc(t('crowns.newIn'))}</span><span class="crTimer" data-crclock>${clockHTML()}</span>` +
-    `<span class="crMinis" title="${esc(t('crowns.weekAria', { n: won.length }))}">${minis}</span></div>` +
+    `<div class="crClock"><span class="crClockLbl">${esc(t('crowns.newIn'))}</span><span class="crTimer" data-crclock>${clockHTML()}</span></div>` +
     `<button type="button" class="crShare" data-mode="crShare" aria-label="${esc(t('crowns.share'))}" title="${esc(t('crowns.share'))}">${icon('i-share')}</button>` +
     `</header>`;
   const cards = list.map((ch, i) => crownCard(ch, i, wk, won.includes(ch.id), csave?.run?.id === ch.id && csave?.run?.week === wk, R.chStats[ch.id])).join('');
@@ -215,7 +213,7 @@ export async function shareCrowns() {
   sfx('select');
   const R = loadRecords(), n = R.crowns?.n || 0;
   const text = t('crowns.shareText', { n }) + ' ' + location.origin + location.pathname;
-  shareImageDialog(await buildCrownImage(), { text, what: 'coronas', name: 'chaotic-golf-coronas.png' });
+  shareImageDialog(await buildCrownImage(), { text, what: 'coronas', name: 'chaotic-golf-coronas.png', title: t('crowns.shareTitle'), alt: t('crowns.shareTitle'), simple: true });
 }
 
 /* ---------- el aviso del cambio (una vez) ---------- */

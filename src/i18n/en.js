@@ -742,7 +742,7 @@ export default {
   },
   crowns: {
     title: 'Challenges of the week', total: 'crowns', total1: 'crown', weekAria: '{n} of 5 this week', newIn: 'New challenges in', day: 'day', days: 'days', hours: 'hours', mins: 'min', secs: 'sec',
-    share: 'Share your crowns', won: 'Earned', shareWeek: 'This week: {n} of 5', shareYou: 'Me', shareBall: 'Ball: {ball}',
+    share: 'Share your crowns', won: 'Earned', shareWeek: 'This week: {n} of 5', shareYou: 'Me', shareTitle: 'Your crowns', shareBall: 'Ball: {ball}',
     shareText: '👑 I have {n} crowns in the Chaotic Golf challenges. How many can you get?',
     introTitle: 'Challenges are now weekly', intro1: 'Every Monday, 5 new challenges from different decks.',
     intro2: 'Every challenge you win gives you a crown.', introGift: 'Here are {n} crowns for the challenges you had already beaten.',

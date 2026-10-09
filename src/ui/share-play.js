@@ -290,8 +290,9 @@ export async function openShareDialog({ title, meta, text = null }) {
   const blob = await buildShareImage({ title, meta });
   shareImageDialog(blob, { text, what: 'jugada' });
 }
-// el diálogo con una imagen ya hecha (la jugada final, tus coronas…): compartir, copiar, descargar y, si lo hay, el texto
-export function shareImageDialog(blob, { text = null, what = 'jugada', name = 'chaotic-golf.png' } = {}) {
+// el diálogo con una imagen ya hecha (la jugada final, tus coronas…): compartir, copiar, descargar y, si lo hay, el texto.
+// simple: solo dos botones, compartir (la hoja del sistema o, si no la hay, copiar la imagen con el texto a la vez) y descargar
+export function shareImageDialog(blob, { text = null, what = 'jugada', name = 'chaotic-golf.png', title = null, alt = null, simple = false } = {}) {
   if (!blob) { toast(t('share.failed'), 'warn'); return; }
   const file = new File([blob], name, { type: 'image/png' });
   const url = URL.createObjectURL(blob);
@@ -301,10 +302,12 @@ export function shareImageDialog(blob, { text = null, what = 'jugada', name = 'c
   const dlg = $('dialog');
   const btn = (v, label, main = false) => `<button type="button" data-share="${v}" class="${main ? 'btn-primary' : 'btn-light'}">${esc(label)}</button>`;
   dlg.innerHTML = `<form method="dialog" class="dlgBox shareBox">
-    <h3>${esc(t('share.title'))}</h3>
-    <img class="sharePreview" src="${url}" alt="${esc(t('share.previewAlt'))}">
-    <div class="shareBtns">${canShareFile ? btn('native', t('share.image'), true) : ''}${canCopyImg ? btn('copy', t('share.copyImg'), !canShareFile) : ''}` +
-    `${btn('download', t('share.download'), !canShareFile && !canCopyImg)}${text ? btn('text', t('share.copyText')) : ''}</div>
+    <h3>${esc(title || t('share.title'))}</h3>
+    <img class="sharePreview" src="${url}" alt="${esc(alt || t('share.previewAlt'))}">
+    <div class="shareBtns">${simple
+    ? (canShareFile ? btn('native', t('share.button'), true) : canCopyImg ? btn('copyAll', t('share.copyImg'), true) : '') + btn('download', t('share.download'), !canShareFile && !canCopyImg)
+    : `${canShareFile ? btn('native', t('share.image'), true) : ''}${canCopyImg ? btn('copy', t('share.copyImg'), !canShareFile) : ''}` +
+      `${btn('download', t('share.download'), !canShareFile && !canCopyImg)}${text ? btn('text', t('share.copyText')) : ''}`}</div>
     <div class="dlgBtns"><button value="close">${esc(t('common.close'))}</button></div></form>`;
   const onClick = async e => {
     const b = e.target.closest('[data-share]');
@@ -312,7 +315,11 @@ export function shareImageDialog(blob, { text = null, what = 'jugada', name = 'c
     sfx('select');
     track('compartir', { que: what, como: b.dataset.share });
     try {
-      if (b.dataset.share === 'native') await navigator.share({ files: [file], text: caption });
+      if (b.dataset.share === 'native') await navigator.share({ files: [file], text: text || caption });
+      if (b.dataset.share === 'copyAll') { // (la imagen y el texto de una vez; si no se puede, solo la imagen)
+        try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob, 'text/plain': new Blob([text || caption], { type: 'text/plain' }) })]); toast(t('share.copiedAll')); }
+        catch (e2) { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast(t('share.imgCopied')); }
+      }
       if (b.dataset.share === 'copy') { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast(t('share.imgCopied')); }
       if (b.dataset.share === 'text') { await navigator.clipboard.writeText(text); toast(t('share.copied')); }
       if (b.dataset.share === 'download') {

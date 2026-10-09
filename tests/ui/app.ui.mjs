@@ -324,7 +324,6 @@ it('desafíos de la semana: 5 tarjetas con los rivales de la semana; ganar uno d
   await click('#modesBtn'); await sleep(1400);
   assert.equal(await page.evaluate(i => document.querySelector(`.crCard[data-mode="ch:${i}"]`)?.classList.contains('won'), id), true, 'la tarjeta, ganada');
   assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '1');
-  assert.equal(await app(() => document.querySelectorAll('.crMinis i.on').length), 1);
   // compartir: la imagen con tus coronas
   await click('[data-mode="crShare"]'); await sleep(900);
   assert.ok(await app(() => document.querySelector('#dialog[open] .sharePreview')), 'la imagen para compartir');

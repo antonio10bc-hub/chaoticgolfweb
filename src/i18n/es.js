@@ -745,7 +745,7 @@ export default {
   },
   crowns: {
     title: 'Desafíos de la semana', total: 'coronas', total1: 'corona', weekAria: '{n} de 5 esta semana', newIn: 'Nuevos desafíos en', day: 'día', days: 'días', hours: 'horas', mins: 'min', secs: 'seg',
-    share: 'Compartir tus coronas', won: 'Conseguida', shareWeek: 'Esta semana: {n} de 5', shareYou: 'Yo', shareBall: 'Pelota: {ball}',
+    share: 'Compartir tus coronas', won: 'Conseguida', shareWeek: 'Esta semana: {n} de 5', shareYou: 'Yo', shareTitle: 'Tus coronas', shareBall: 'Pelota: {ball}',
     shareText: '👑 Llevo {n} coronas en los desafíos de Chaotic Golf. ¿Cuántas sacas tú?',
     introTitle: 'Los desafíos, ahora cada semana', intro1: 'Cada lunes, 5 desafíos nuevos de barajas distintas.',
     intro2: 'Cada desafío que ganes te da una corona.', introGift: 'Te damos {n} coronas por los desafíos que ya habías superado.',
