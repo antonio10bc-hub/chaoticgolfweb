@@ -216,7 +216,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
   El reto diario y los desafíos caducan: la partida guardada de ayer (o un desafío de la semana pasada) se borra y sale el reto nuevo.
-- **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; pestañas Ajustes y Estadísticas):
+- **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; las estadísticas tienen su propio botón):
   sonido y pista de música (con fundido menú ↔ partida),
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
@@ -721,8 +721,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   que acaba con el enlace `…/#reto` (quien lo abre entra directamente en el reto de ese día; `DAILY_HASHES`). La imagen se
   prepara al terminar y el portapapeles se pide en el mismo toque (Safari solo lo permite así); si no admite imagen y
   texto juntos, se copia el texto con el enlace. El botón pasa a "¡Copiado!".
-- **Estadísticas** (Ajustes › Estadísticas): gráficas (`src/ui/stats-charts.js`: evolución de los últimos 14 días,
-  victorias por modo, balance contra cada rival y tus cartas más usadas; victorias en azul, derrotas en naranja) y
+- **Estadísticas** (su botón redondo, a la derecha del de tu pelota, en el menú y en Modos; ya no son una pestaña de
+  Ajustes): gráficas (`src/ui/stats-charts.js`: evolución de los últimos 14 días, balance contra cada rival y tus cartas más usadas; victorias en azul, derrotas en naranja) y
   secciones (`src/ui/stats-sections.js`): victorias **por baraja** (todas, Ultimate incluida, y cuántas combinaciones
   has jugado), **partida rápida**, **reto diario** (jugados, % ganados, racha actual y máxima; "Ver y compartir" abre su
   ventana), **progreso** (Lo básico por bloques —palos y hoyo, cada baraja— y Lo no tan básico, y los desafíos por grupo), **contrarreloj y

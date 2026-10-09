@@ -66,7 +66,7 @@ function settingsHTML() {
   <section><div class="setRow"><span class="muted">${esc(t('settings.resetSub'))}</span><button class="btn-sm danger" data-set-act="resetPrefs">${esc(t('settings.reset'))}</button></div></section>`;
 }
 
-// la pestaña de Estadísticas: gráficas (stats-charts.js) y secciones (stats-sections.js), que salen de las listas del
+// las Estadísticas (su botón redondo, junto a tu pelota): gráficas (stats-charts.js) y secciones (stats-sections.js), que salen de las listas del
 // juego: lo que se añade (barajas, desafíos, puzles, pelotas, mecánicas) aparece aquí solo
 function statsHTML() {
   const r = loadRecords(), C = chartSections, S = statsSections;
@@ -79,7 +79,7 @@ function statsHTML() {
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>${esc(t('stats.streak'))} <b>${pv.streak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(t('stats.bestStreak'))} <b>${pv.bestStreak}</b></div>` +
     `<div class="st"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg>${esc(t('stats.fastest'))} <b>${esc(pv.fastest != null ? turnsLabel(pv.fastest) : t('stats.none'))}</b></div></div>`;
-  return C.evolution(r) + C.byMode(r) + S.decks(r) +
+  return C.evolution(r) + S.decks(r) +
     `<section><h4>${esc(t('stats.quickH'))}</h4>${quick}</section>` +
     S.daily(r) + S.progress(r) + S.special(r) + C.byRival(r) + C.byCard(r) + S.balls(r) +
     `<section><h4>${esc(t('ach.title'))}</h4>${achievementsHTML()}</section>` + S.totals(r) +
@@ -94,7 +94,7 @@ export function openSettings(which = 'settings') {
   lastFocus = document.activeElement;
   paint();
   $('settingsOverlay').classList.add('visible');
-  $('setBox').querySelector('.setTabs button[aria-selected="true"]')?.focus({ preventScroll: true });
+  $('setBox').querySelector('.setClose')?.focus({ preventScroll: true });
   if (app.screen === 'game') pauseGame('settings'); // en partida, mientras se ajusta, la máquina espera
   ensureGuard();
 }
@@ -108,9 +108,6 @@ export const settingsOpen = () => $('settingsOverlay').classList.contains('visib
 function paint() {
   $('setBox').innerHTML = `<header><h2 id="setTitle">${esc(t(tab === 'stats' ? 'stats.title' : 'settings.title'))}</h2>` +
     `<button class="btn-ghost btn-sm btn-icon setClose" data-set-act="close" aria-label="${esc(t('common.close'))}"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></header>` +
-    `<nav class="setTabs" role="tablist">` +
-    `<button role="tab" data-tab="settings" aria-selected="${tab === 'settings'}"><svg class="i" aria-hidden="true"><use href="#i-gear"/></svg>${esc(t('settings.title'))}</button>` +
-    `<button role="tab" data-tab="stats" aria-selected="${tab === 'stats'}"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg>${esc(t('stats.title'))}</button></nav>` +
     `<div class="setBody">${tab === 'stats' ? statsHTML() : settingsHTML()}</div>`;
 }
 // refresca el contenido si está abierta (p. ej. al cambiar de idioma)
@@ -125,8 +122,6 @@ export function bindSettings() {
   const ov = $('settingsOverlay');
   ov.addEventListener('click', async e => {
     if (e.target === ov) { closeSettings(); return; }
-    const tb = e.target.closest('[data-tab]');
-    if (tb) { tab = tb.dataset.tab; paint(); return; }
     const th = e.target.closest('[data-course-opt]');
     if (th) { setTheme(th.dataset.courseOpt); musicRefresh(); paint(); if (app.game) ctl.render(); return; }
     const ui = e.target.closest('[data-ui]');

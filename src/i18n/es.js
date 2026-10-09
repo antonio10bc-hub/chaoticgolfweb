@@ -567,7 +567,7 @@ export default {
       meteoritos: 'meteoritos', monedas: 'monedas lanzadas', dados: 'vueltas de dado', ruletas: 'vueltas de ruleta' },
     none: 'Aún no',
     mode_weekly: 'Desafío semanal',
-    ch: { won: 'Ganadas', lost: 'Perdidas', evolution: 'Tu evolución · últimos 14 días', byMode: 'Victorias por modo',
+    ch: { won: 'Ganadas', lost: 'Perdidas', evolution: 'Tu evolución · últimos 14 días',
       byRival: 'Contra cada rival', byCard: 'Tus cartas más usadas', dayTip: '{day}: {p} partidas, {w} ganadas',
       evolutionAria: 'Partidas ganadas y perdidas en los últimos 14 días', modeTip: '{w} de {p}',
       noHistory: 'Juega unas partidas y aquí verás tu evolución.', noGames: 'Aún no has terminado ninguna partida.',

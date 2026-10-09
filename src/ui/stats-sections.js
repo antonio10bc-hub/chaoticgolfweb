@@ -21,7 +21,7 @@ const chip = (ic, label, value) => `<div class="st">${icon(ic)}${esc(label)} <b>
 const pct = (w, p) => p ? Math.round(100 * Math.min(w, p) / p) : 0;
 const sec = (h, body, extra = '') => `<section><h4>${esc(h)}${extra}</h4>${body}</section>`;
 
-// cada baraja de Partida rápida: % de victorias (como "Victorias por modo") y, en Ultimate, las combinaciones jugadas
+// cada baraja de Partida rápida: % de victorias y, en Ultimate, las combinaciones jugadas
 function byDeck(R) {
   const rows = DECKS.filter(dk => !dk.locked).map(dk => {
     const s = R.decks[dk.id] || { p: 0, w: 0 }, p = s.p || 0, w = Math.min(s.w || 0, p), v = pct(w, p);

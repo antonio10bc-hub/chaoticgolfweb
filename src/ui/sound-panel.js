@@ -27,5 +27,6 @@ export function bindSoundPanel() {
     sndSave();
   };
   $('sfxBtn').addEventListener('click', toggleMute);
-  $('sndCfgBtn').addEventListener('click', () => openSettings('settings')); // ajustes y estadísticas, en pestañas
+  $('sndCfgBtn').addEventListener('click', () => openSettings('settings'));
+  $('statsBtn').addEventListener('click', () => openSettings('stats')); // (las estadísticas, con su botón)
 }

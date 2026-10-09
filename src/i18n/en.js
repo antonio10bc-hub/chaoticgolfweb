@@ -564,7 +564,7 @@ export default {
       meteoritos: 'meteorites', monedas: 'coins tossed', dados: 'die rolls', ruletas: 'roulette spins' },
     none: 'Not yet',
     mode_weekly: 'Weekly challenge',
-    ch: { won: 'Won', lost: 'Lost', evolution: 'Your progress · last 14 days', byMode: 'Wins by mode',
+    ch: { won: 'Won', lost: 'Lost', evolution: 'Your progress · last 14 days',
       byRival: 'Against each rival', byCard: 'Your most played cards', dayTip: '{day}: {p} games, {w} won',
       evolutionAria: 'Games won and lost over the last 14 days', modeTip: '{w} of {p}',
       noHistory: 'Play a few games and your progress will show up here.', noGames: 'You haven’t finished any game yet.',

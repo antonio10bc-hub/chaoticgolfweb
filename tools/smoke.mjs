@@ -115,10 +115,12 @@ try {
   await page.evaluate(() => document.getElementById('modesBack').click()); await sleep(200);
 
   console.log('ajustes y estadísticas');
-  await click('#sndCfgBtn'); await sleep(300); // el botón redondo: ajustes y estadísticas en pestañas
+  await click('#sndCfgBtn'); await sleep(300); // el botón redondo del engranaje
   await click('#setBox [data-speed="fast"]'); await click('#setBox [data-course-opt="night"]'); await sleep(200);
   await shot('07c-ajustes');
-  await click('[data-tab="stats"]'); await sleep(200); await shot('07d-estadisticas');
+  await click('[data-set-act="close"]'); await sleep(200);
+  await click('#statsBtn'); await sleep(300); await shot('07d-estadisticas'); // (las estadísticas, con su botón)
+  if (!await page.$('#setBox .hbars.decks')) problems.push('el botón de estadísticas no las abre');
   await click('[data-set-act="close"]'); await sleep(200);
   if (await page.evaluate(() => document.documentElement.dataset.course !== 'night')) problems.push('el tema del campo no se aplica');
 

@@ -250,6 +250,10 @@ html.reduceMotion .skBall *, html.reduceMotion .circ[class*="sk-"] * { animation
 #profileBtn { display: none; position: fixed; bottom: 14px; left: 98px; z-index: 65; width: 36px; height: 36px; padding: 0;
   --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
 body[data-screen="menu"] #profileBtn, body[data-screen="modes"] #profileBtn { display: inline-flex; }
+/* estadísticas: el mismo botón, a la derecha de tu pelota */
+#statsBtn { display: none; position: fixed; bottom: 14px; left: 140px; z-index: 65; width: 36px; height: 36px; padding: 0;
+  --b-bg: rgba(241,241,220,.92); --b-fg: var(--ink); --b-line: var(--cream-line); backdrop-filter: blur(4px); }
+body[data-screen="menu"] #statsBtn, body[data-screen="modes"] #statsBtn { display: inline-flex; }
 /* idioma: dos banderas redondas y pequeñas, abajo a la derecha del menú principal (la elegida, entera y con aro) */
 #langBtns { display: none; position: fixed; right: 14px; bottom: 17px; z-index: 65; gap: 6px; }
 body[data-screen="menu"] #langBtns { display: flex; }
@@ -268,6 +272,7 @@ html.phone #langBtns { right: calc(14px + env(safe-area-inset-right, 0px)); bott
 @keyframes pfPing { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
 html.reduceMotion #profileBtn.cta .i, html.reduceMotion #profileBtn.cta .pfDot::after { animation: none; }
 html.phone #profileBtn { left: calc(98px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+html.phone #statsBtn { left: calc(140px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 /* (móvil en horizontal: la fila de botones redondos va arriba a la derecha, en styles/phone.css) */
 
 #profileOverlay { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 16px;

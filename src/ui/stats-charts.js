@@ -1,13 +1,12 @@
-// Gráficas de la pestaña de estadísticas (HTML + CSS, sin librerías):
+// Gráficas de las estadísticas (HTML + CSS, sin librerías):
 //   · evolución — partidas de los últimos 14 días, ganadas y perdidas apiladas
-//   · % de victorias por modo — una barra por modo jugado
 //   · contra cada rival — tu balance (ganadas / perdidas) y tu némesis
 //   · cartas más usadas
 // Color por significado, igual en todas: victorias azul, derrotas naranja (par validado para
 // daltonismo; las cifras van siempre escritas junto a las barras).
 import { esc } from './dom.js';
 import { t, getLang } from '../i18n/index.js';
-import { REC_MODES, nemesisId } from './records.js';
+import { nemesisId } from './records.js';
 import { dateKey } from '../content/levels/generate.js';
 import { personaById, faceSVG } from './persona.js';
 import { STYLE_COLOR } from './screen-pve.js';
@@ -36,17 +35,6 @@ function evolution(R) {
       `<span class="evDay">${r.d.getDate()}</span></div>`;
   }).join('');
   return legend() + `<div class="evChart" role="img" aria-label="${esc(t('stats.ch.evolutionAria'))}">${cols}</div>`;
-}
-
-// % de victorias (o de completados) por modo jugado
-function byMode(R) {
-  const rows = REC_MODES.filter(m => R.played[m] > 0).map(m => ({ m, p: R.played[m], w: Math.min(R.won[m], R.played[m]) }));
-  if (!rows.length) return empty('stats.ch.noGames');
-  return `<div class="hbars">` + rows.map(r => {
-    const pct = Math.round(100 * r.w / r.p);
-    return `<div class="hbRow" title="${esc(t('stats.ch.modeTip', { w: r.w, p: r.p }))}"><span class="hbLbl">${esc(t('stats.mode_' + r.m))}</span>` +
-      `<span class="hbTrack"><i class="win" style="width:${pct}%"></i></span><span class="hbVal">${pct}% <small>${r.w}/${r.p}</small></span></div>`;
-  }).join('') + `</div>`;
 }
 
 // balance contra cada personaje: barra de ganadas + perdidas, escalada a quien más partidas tiene
@@ -79,7 +67,6 @@ function byCard(R) {
 const sec = (key, body) => `<section><h4>${esc(t(key))}</h4>${body}</section>`;
 export const chartSections = {
   evolution: R => sec('stats.ch.evolution', evolution(R)),
-  byMode: R => sec('stats.ch.byMode', byMode(R)),
   byRival: R => sec('stats.ch.byRival', byRival(R)),
   byCard: R => sec('stats.ch.byCard', byCard(R)),
 };
