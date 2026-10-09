@@ -747,11 +747,27 @@ it('Lo básico: terminar el turno sin embocar muestra "otra vez"', async () => {
   assert.match(await app(() => document.getElementById('winMsg').textContent), /otra vez/i);
 });
 
+it('El taller: tus niveles y, en el sitio del siguiente, un + que abre el creador con un nivel nuevo (que va detrás)', async () => {
+  const lvl = name => ({ version: 1, name, cols: 5, rows: 6, hole: { x: 2, y: 0 }, ball: { x: 2, y: 4 }, parCells: [], tiles: [], deckCounts: { palo1: 2, palo2: 2 } });
+  await fresh({ chaoticgolf_levels: { version: 1, levels: [lvl('Uno'), lvl('Dos')] } });
+  await click('#modesBtn'); await sleep(300); await click('[data-mtab="special"]'); await sleep(500);
+  assert.match(await app(() => document.querySelector('.lvlSection.workshop .wsHead').textContent), /El taller/);
+  assert.equal(await app(() => document.querySelectorAll('.lvlSection.workshop [data-level]').length), 2);
+  assert.ok(await app(() => document.querySelector('.lvlSection.workshop .lvlRow > :last-child').matches('[data-mode="editorNew"]')), 'el +, el último');
+  assert.match(await app(() => document.querySelector('[data-mode="editorNew"]').textContent), /Nivel 3/);
+  await click('[data-mode="editorNew"]'); await sleep(600);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'editor');
+  assert.equal(await app(() => document.getElementById('edName').value), '', 'un nivel nuevo, sin nombre');
+  await page.focus('#edName'); await page.keyboard.type('Tres'); await page.keyboard.press('Enter');
+  await click('#edSave'); await sleep(300);
+  assert.deepEqual(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.map(L => L.name)), ['Uno', 'Dos', 'Tres'], 'guardado detrás');
+});
+
 it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien lo recibe lo guarda', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(300);
   await click('[data-mtab="special"]'); await sleep(500);
-  await click('.lvlSection.yours [data-mode="editor"]'); await sleep(500);
+  await click('.lvlSection.workshop [data-mode="editorNew"]'); await sleep(500);
   const at = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
   await click('#edTools [data-tool="lake"]');
   const [a, b] = await at(0, 0), [c, d] = await at(2, 0);

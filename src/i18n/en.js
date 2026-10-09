@@ -296,7 +296,7 @@ export default {
     backToEditor: 'Back to editor', newGame: 'New game', menu: 'Menu',
   },
   story: {
-    title: 'The basics', sub: 'Every level in a single turn', builtIn: 'Levels', yours: 'Your levels', yoursSub: 'Levels you make and ones you receive',
+    title: 'The basics', sub: 'Every level in a single turn', builtIn: 'Levels', yours: 'Your levels', workshop: 'The workshop', newLevel: 'Create level {n}', yoursSub: 'Levels you make and ones you receive',
     play: 'Play', completed: 'Completed', next: 'Next!', untitled: 'Untitled',
     none: 'No levels yet: make one in the editor or add a code someone sent you.', openEditor: 'Open the level editor', create: 'Create level',
     level: 'Level {n}', levelAria: 'Level {n} {name}', done: 'completed',

@@ -163,7 +163,7 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 De vez en cuando cruza el tablero una ráfaga de viento (`shape: 'wind'` en `src/fx/particles.js`): una estela que
 se traza, avanza ondulando y acaba en un remolino pequeño; a veces va acompañada de otra más fina.
 
-**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para los desafíos de la semana (su cabecera de coronas), el contrarreloj de la semana (su cabecera de medallas), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
+**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para los desafíos de la semana (su cabecera de coronas), el contrarreloj de la semana (su cabecera de medallas), los puzles (piezas que encajan) y El taller (su cabecera de alfombrilla de corte). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
 
 **Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
 
@@ -222,7 +222,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
   contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
   modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa. El nombre y el color se eligen
-  en Partida rápida. El Creador de Niveles se abre con «Crear nivel» (Juegos especiales → Tus niveles).
+  en Partida rápida. El Creador de Niveles se abre con el + de El taller (Juegos especiales).
 - **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
@@ -322,8 +322,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   (duración, uso de cada mecánica, ventaja por posición) y `tests/challenges.test.mjs` comprueba sus campos y que se
   juegan hasta el final.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
-  Modos de juego, **Tus niveles** (los del creador, que también está aquí: cada uno se edita o se elimina —con
-  "Deshacer", sin diálogo— y se puede añadir el código de un nivel recibido). Los puzles de "gana en 1 turno" ya no están
+  Modos de juego, **El taller** (tus niveles: los del creador y los recibidos; cada uno se edita o se elimina —con
+  "Deshacer", sin diálogo—). Su cabecera es la alfombrilla de corte del creador, sin contador; al final de la lista, en
+  el sitio del siguiente nivel, una casilla vacía con un + («Nivel 10» si hay 9) abre el creador con un nivel nuevo, que
+  al guardarse va detrás (`openEditor({ fresh: true })`). El código de un nivel recibido se añade desde la biblioteca del creador. Los puzles de "gana en 1 turno" ya no están
   aquí: son Lo básico.
 - **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las

@@ -2004,3 +2004,39 @@ button.rwPlay:hover { background-color: #2D4F7C; transform: scale(1.04); }
 .winRec.new.medalChip.m-silver { background: linear-gradient(160deg, #F4F6F8, #C5CDD3); border-color: #A7B0B7; color: #2F3940; }
 .winRec.new.medalChip.m-bronze { background: linear-gradient(160deg, #F3C49C, #CF8550); border-color: #B26B3A; color: #3E2210; }
 @media (prefers-reduced-motion: reduce) { .rwBig, .rwMark.got .rwMedal { animation: none !important; } }
+
+/* =========================================================
+   El taller (screen-story.js: yoursSectionHTML): la cabecera es la alfombrilla de corte del creador (gris azulada, su
+   cuadrícula y la regla del borde) con el taller ilustrado y el título; debajo, tus niveles y, en el sitio del siguiente,
+   una casilla vacía con un + que abre el creador con un nivel nuevo
+   ========================================================= */
+#modesGrid .lvlSection.workshop { padding: 0 !important; overflow: hidden; }
+.wsHead { --mat: #3C4A55; --mat-line: rgba(226,236,240,.075); --mat-line2: rgba(226,236,240,.15); --mat-ink: rgba(226,236,240,.66);
+  position: relative; display: flex; align-items: center; gap: 14px; padding: 16px 20px 14px 24px; color: var(--cream);
+  background-color: var(--mat);
+  background-image: linear-gradient(var(--mat-line2) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line2) 1px, transparent 1px),
+    linear-gradient(var(--mat-line) 1px, transparent 1px), linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px; background-position: -1px -1px; }
+.wsHead::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 9px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--mat-ink) 0 1px, transparent 1px 50px) 0 0 / 100% 9px no-repeat,
+    repeating-linear-gradient(90deg, var(--mat-line2) 0 1px, transparent 1px 10px) 0 0 / 100% 5px no-repeat; }
+.wsHead::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 9px; pointer-events: none;
+  background: repeating-linear-gradient(var(--mat-ink) 0 1px, transparent 1px 50px) 0 0 / 9px 100% no-repeat,
+    repeating-linear-gradient(var(--mat-line2) 0 1px, transparent 1px 10px) 0 0 / 5px 100% no-repeat; }
+.wsArt { display: grid; width: 54px; height: 54px; flex: 0 0 auto; transition: transform .3s cubic-bezier(.3,1.5,.5,1); }
+.wsArt .mdArt { width: 100%; height: 100%; }
+.lvlSection.workshop:hover .wsArt { transform: rotate(-5deg) scale(1.07); }
+#modesGrid .wsHead h3 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; text-transform: none; color: var(--cream); }
+.wsBody { padding: 14px 16px 16px; }
+/* la casilla del siguiente nivel: del tamaño de una tarjeta, con borde discontinuo y un + */
+button.lvlNew { --b-bg: transparent; --b-line: transparent; display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px 6px 8px;
+  border-radius: 13px; min-width: 0; color: var(--ink-soft); }
+.lvlNewBox { flex: 1 1 auto; min-height: 40px; display: grid; place-items: center; border-radius: 10px;
+  border: 2px dashed rgba(78,94,106,.45); background: rgba(78,94,106,.06); transition: background-color .2s, border-color .2s, transform .2s; }
+.lvlNewBox .i { width: 34px; height: 34px; color: #4E5E6A; }
+button.lvlNew small { font-size: 11.5px; font-weight: 600; text-align: center; }
+.lvlRow > .lvlNew:only-child .lvlNewBox { min-height: 110px; } /* (sin niveles: la casilla, con su tamaño) */
+.lvlRow > .lvlNew:only-child { width: 150px; }
+button.lvlNew:hover { background-color: transparent; color: var(--ink); }
+button.lvlNew:hover .lvlNewBox { background: rgba(78,94,106,.14); border-color: #4E5E6A; transform: scale(1.03); }
+@media (max-width: 560px) { .wsHead { padding: 13px 16px 11px 20px; } .wsArt { width: 44px; height: 44px; } #modesGrid .wsHead h3 { font-size: 19px; } }

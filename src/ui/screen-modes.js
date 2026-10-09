@@ -631,6 +631,7 @@ export function bindModes() {
       case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
       case 'ultHist': openComboHistory({ deckArt, onPick: m => { setCombo(m); paintUlt(); } }); break;
       case 'editor': openEditor(); break;
+      case 'editorNew': openEditor({ fresh: true }); break; // (el + de El taller: un nivel nuevo)
     }
   });
   MODE_NAV.daily = { back: () => showScreen('menu'), restart: () => { clearSave('daily'); startDailyGame(); } };

@@ -702,10 +702,12 @@ function openLib() { renderLib(); $('edLib').hidden = false; ($('edLibGrid').que
 const closeLib = () => { $('edLib').hidden = true; $('edLibBtn').focus(); };
 
 /* ---------- entrada ---------- */
-export async function openEditor({ idx = null } = {}) {
-  if (app.screen !== 'editor') track('creador', { accion: 'abrir' }); // (analíticas)
-  if (idx != null && idx !== ED.idx && ED.level && app.screen !== 'editor' && !await leaveChanges()) return;
-  if (idx != null && listLevels()[idx]) { if (idx !== ED.idx || !ED.level) setLevel(listLevels()[idx], idx); }
+// fresh: un nivel nuevo (el + de El taller): la plantilla de siempre, que al guardarse va detrás de los que ya hay
+export async function openEditor({ idx = null, fresh = false } = {}) {
+  if (app.screen !== 'editor') track('creador', { accion: fresh ? 'nuevo' : 'abrir' }); // (analíticas)
+  if ((fresh || (idx != null && idx !== ED.idx)) && ED.level && app.screen !== 'editor' && !await leaveChanges()) return;
+  if (fresh) setLevel(defaultLevel());
+  else if (idx != null && listLevels()[idx]) { if (idx !== ED.idx || !ED.level) setLevel(listLevels()[idx], idx); }
   else if (!ED.level && !loadDraft()) setLevel(defaultLevel());
   $('edLib').hidden = true;
   showScreen('editor');

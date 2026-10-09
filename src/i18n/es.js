@@ -299,7 +299,7 @@ export default {
     backToEditor: 'Volver al editor', newGame: 'Nueva partida', menu: 'Menú',
   },
   story: {
-    title: 'Lo básico', sub: 'Cada nivel, en un solo turno', builtIn: 'Niveles', yours: 'Tus niveles', yoursSub: 'Los que creas y los que te pasan',
+    title: 'Lo básico', sub: 'Cada nivel, en un solo turno', builtIn: 'Niveles', yours: 'Tus niveles', yoursSub: 'Los que creas y los que te pasan', workshop: 'El taller', newLevel: 'Crear el nivel {n}',
     play: 'Jugar', completed: 'Completado', next: '¡Siguiente!', untitled: 'Sin título',
     none: 'Aún no tienes niveles: créalos en el creador o añade el código que te hayan pasado.', openEditor: 'Abrir el creador', create: 'Crear nivel',
     level: 'Nivel {n}', levelAria: 'Nivel {n} {name}', done: 'completado',

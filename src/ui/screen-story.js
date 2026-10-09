@@ -2,7 +2,7 @@
 // cada baraja (palos y hoyo, clásica, agua…) y luego "Lo no tan básico" (combinaciones entre barajas). Cada bloque
 // con su cabecera (la baraja, x/y) y sus filas de 5. Los niveles del creador ("Tus niveles") se muestran en Modos de
 // juego, con las mismas tarjetas (sección de aquí). También arranca cualquier nivel en solitario (y el "probar" del editor).
-import { sectionHead, modeArt } from './mode-art.js';
+import { modeArt } from './mode-art.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
 import { Game } from '../engine/game.js';
@@ -133,19 +133,21 @@ function scrollToNext() {
 
 /* ---------- sección de Modos de juego: tus niveles ---------- */
 // tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
+// El taller (Juegos especiales): tus niveles, bajo una cabecera de alfombrilla de corte como la del creador, y al final una
+// casilla vacía con un + en el sitio del siguiente: abre el creador con un nivel nuevo (el que vendría después en la lista)
 export function yoursSectionHTML() {
   const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story');
   const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
-  const acts = `<span class="lvlHeadActs"><button class="btn-sm btn-icon lvlCreate" data-mode="editor" title="${esc(t('menu.editorTitle'))}">${icon('i-plus')}${esc(t('story.create'))}</button>` +
-    `<button class="btn-light btn-sm btn-icon" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></span>`;
-  return `<section class="lvlSection yours">${sectionHead({ art: 'yours', title: t('story.yours'), done: levels.length || null, extra: acts, sub: t('story.yoursSub') })}<div class="lvlRow">` + (levels.length
-    ? levels.map((L, j) => { const name = L.name || t('story.untitled');
-      return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[j], best: levelBest(j), saved: sv && sv.levelIndex === j, attr: `data-level="${j}"`, compact: true }) +
-        (L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : '') + `<span class="lvlActs">` +
-        `<button class="btn-light btn-sm btn-icon" data-lvedit="${j}" title="${esc(t('lib.edit'))}" aria-label="${esc(t('lib.editAria', { name }))}">${icon('i-wrench')}</button>` +
-        `<button class="btn-light btn-sm btn-icon danger" data-lvdel="${j}" title="${esc(t('lib.delete'))}" aria-label="${esc(t('lib.deleteAria', { name }))}">${icon('i-trash')}</button></span></div>`; }).join('')
-    : `<div class="noLevels">${esc(t('story.none'))}</div>`) +
-    `</div></section>`;
+  const cards = levels.map((L, j) => { const name = L.name || t('story.untitled');
+    return `<div class="lvlWrap">` + levelCard(j, L, { done: prog[j], best: levelBest(j), saved: sv && sv.levelIndex === j, attr: `data-level="${j}"`, compact: true }) +
+      (L.origin === 'received' ? `<span class="lvlTag">${esc(t('lib.received'))}</span>` : '') + `<span class="lvlActs">` +
+      `<button class="btn-light btn-sm btn-icon" data-lvedit="${j}" title="${esc(t('lib.edit'))}" aria-label="${esc(t('lib.editAria', { name }))}">${icon('i-wrench')}</button>` +
+      `<button class="btn-light btn-sm btn-icon danger" data-lvdel="${j}" title="${esc(t('lib.delete'))}" aria-label="${esc(t('lib.deleteAria', { name }))}">${icon('i-trash')}</button></span></div>`; }).join('');
+  const next = levels.length + 1;
+  const add = `<button class="lvlNew" data-mode="editorNew" title="${esc(t('story.newLevel', { n: next }))}" aria-label="${esc(t('story.newLevel', { n: next }))}">` +
+    `<span class="lvlNewBox">${icon('i-plus')}</span><small>${esc(t('story.level', { n: next }))}</small></button>`;
+  return `<section class="lvlSection yours workshop"><header class="wsHead"><span class="wsArt">${modeArt('yours')}</span><h3>${esc(t('story.workshop'))}</h3></header>` +
+    `<div class="wsBody"><div class="lvlRow">${cards}${add}</div></div></section>`;
 }
 // tarjeta de nivel pulsada (Lo básico o tus niveles): continúa el nivel a medias o lo empieza
 export async function playLevelCard(b) {
