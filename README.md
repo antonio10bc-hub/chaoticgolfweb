@@ -27,6 +27,12 @@ Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Partidas y finales sal
 (`src/ui/records.js`), el mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
 Un evento nuevo: `track('nombre', { dato: valor })` (valores cortos y con pocas variantes, nunca datos personales).
 
+**TEMPORAL — niveles vitrina (vídeos de cada baraja):** `src/content/levels/vitrina.js` trae 8 niveles (uno por baraja y
+Ultimate) que en un solo tiro enseñan lo más vistoso, con todos sus elementos a la vista. Abrir el juego con `#vitrina` los
+guarda en Tus niveles. Solo para ellos: la semilla (el bote sale siempre igual), el viento ya soplando, el fondo de su
+baraja y sin bocadillos (campo `v` del código de compartir, `share.js`). Borrar el archivo, `vitrinaFromLink` en `main.js`,
+el campo `v` de `share.js` y las líneas `vitrina` de `hud.js`, `tutorial.js` y `screens.js` cuando estén grabados.
+
 ## Arrancar
 
 ```bash

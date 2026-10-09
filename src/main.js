@@ -224,6 +224,17 @@ fxAmbientStart();
     startDaily();
   };
   dailyFromLink();
+  // TEMPORAL (vídeos de cada baraja): …/#vitrina guarda en Tus niveles los niveles vitrina (los que ya estén, no se repiten).
+  // Borrar con src/content/levels/vitrina.js
+  const vitrinaFromLink = async () => {
+    if (location.hash !== '#vitrina') return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin history */ }
+    const [{ VITRINA }, { receiveLevel }, { openModes }] = await Promise.all([import('./content/levels/vitrina.js'), import('./ui/my-levels.js'), import('./ui/screen-modes.js')]);
+    const added = VITRINA.filter(L => !receiveLevel({ ...L, origin: 'own' }).dup).length;
+    toast(added ? `${added} niveles vitrina guardados en Tus niveles` : 'Los niveles vitrina ya estaban en Tus niveles');
+    openModes('special');
+  };
+  vitrinaFromLink();
   // enlace con una combinación de Ultimate compartida (…#ultimate=CÓDIGO): la misma partida
   const comboFromLink = () => { const e = takeComboLink(); if (!e) return; if (app.screen === 'game' && app.game) suspendGame(); track('ultimate', { desde: 'enlace' }); playSharedCombo(e); };
   comboFromLink();
@@ -235,7 +246,7 @@ fxAmbientStart();
     if (maybeAnnounceDeck()) $('dialog').addEventListener('close', () => setTimeout(maybeShowGift, 500), { once: true });
     else maybeShowGift();
   }, 1100);
-  window.addEventListener('hashchange', () => { dailyFromLink(); comboFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
+  window.addEventListener('hashchange', () => { dailyFromLink(); comboFromLink(); vitrinaFromLink(); offer(takeLinkedCode()); }); // (enlace pegado en esta pestaña)
 })();
 
 // PWA: jugar sin conexión (solo en http/https)

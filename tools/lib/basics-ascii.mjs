@@ -3,7 +3,7 @@
 // (`bO`: tu pelota en un búnker).
 //   .  césped        H hoyo        O tu pelota       o pelota de obstáculo
 //   S  la salida de tu pelota (si no es donde empieza)   K la casilla inicial del hoyo (ídem)
-//   b  búnker        P portal      ~ río             L lago
+//   b  búnker        P portal (P2: de la pareja 2)   ~ río   L lago
 //   #  bloque        ◤ ◥ ◢ ◣ esquinas (rot 0-3: dónde está el ángulo recto)    ^ > v < lanzaderas     T túnel
 //   h  hoja seca     c charco      i hielo           Y planta          F fuego           * bola de nieve
 //   X  agujero negro R roca de meteorito
@@ -28,6 +28,7 @@ export function parseBoard(text) {
         else if (ch === 'o') L.extraBalls.push({ x, y });
         else if (ch === 'S') L.spawn = { x, y };
         else if (ch === 'K') L.home = { x, y };
+        else if (ch === 'P') { const m = /^\d/.exec(w.slice(i + 1)); L.tiles.push({ type: 'portal', x, y, ...(m ? { pair: +m[0] } : {}) }); if (m) i++; }
         else if (SIMPLE[ch]) L.tiles.push({ type: SIMPLE[ch], x, y });
         else if (CORNERS.includes(ch)) L.tiles.push({ type: 'corner', x, y, ...(CORNERS.indexOf(ch) ? { rot: CORNERS.indexOf(ch) } : {}) });
         else if (LAUNCH.includes(ch)) L.tiles.push({ type: 'launcher', x, y, ...(LAUNCH.indexOf(ch) ? { rot: LAUNCH.indexOf(ch) } : {}) });
@@ -50,7 +51,7 @@ export function drawLevel(L) {
   const at = {};
   const put = (x, y, s) => { const k = x + ',' + y; at[k] = (at[k] || '') + s; };
   for (const tl of L.tiles || []) put(tl.x, tl.y, tl.type === 'corner' ? CORNERS[tl.rot || 0] : tl.type === 'launcher' ? LAUNCH[tl.rot || 0]
-    : tl.type === 'dice' ? 'D' + (tl.t || '') + (tl.n ? '' + tl.n + tl.e : '') : Object.keys(SIMPLE).find(k => SIMPLE[k] === tl.type) || '?');
+    : tl.type === 'dice' ? 'D' + (tl.t || '') + (tl.n ? '' + tl.n + tl.e : '') : tl.type === 'portal' && tl.pair ? 'P' + tl.pair : Object.keys(SIMPLE).find(k => SIMPLE[k] === tl.type) || '?');
   for (const c of L.gamble?.coins || []) put(c.x, c.y, '$');
   if (L.gamble?.gold) put(L.gamble.gold.x, L.gamble.gold.y, 'G');
   if (L.season?.snow) put(L.season.snow.x, L.season.snow.y, '*');

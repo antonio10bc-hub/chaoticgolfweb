@@ -71,7 +71,7 @@ export function tutorialEvent(kind, data = {}) {
   if (step === 'end' && kind === 'turnEnded') { finishIntro(); hideCoach(); return; }
   if (step) return;
   // fuera de la presentación: explicación de cada carta la primera vez que se usa
-  if ((kind === 'selected' || kind === 'played') && firstCard && data.p === 0 && S.winner === null) {
+  if ((kind === 'selected' || kind === 'played') && firstCard && data.p === 0 && S.winner === null && !app.level?.vitrina) { // (TEMPORAL vitrina: sin bocadillos)
     // señala la carta elegida (o, si ya se ha jugado, la última jugada)
     showCoach({ target: kind === 'selected' ? '#hands .card.cardSel' : (window.innerWidth > 760 && !isPhone() ? '#lastPlay' : null), card: data.key, btn: 'ok' });
   }

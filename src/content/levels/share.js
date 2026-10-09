@@ -37,6 +37,8 @@ export function packLevel(L) {
   if (L.train?.path?.length) o.tr = { p: L.train.path.flat(), s: L.train.stations, i: L.train.pos, c: L.train.cars || 0 }; // (el circuito, casilla a casilla)
   if (L.gamble && (L.gamble.gold || L.gamble.coins?.length)) o.g = [L.gamble.gold ? [L.gamble.gold.x, L.gamble.gold.y] : 0, (L.gamble.coins || []).flatMap(c => [c.x, c.y])]; // (casino: la dorada y las monedas)
   if (L.season?.now) o.s = L.season.snow ? [L.season.now, L.season.snow.x, L.season.snow.y] : [L.season.now]; // (la estación y la bola de nieve)
+  // TEMPORAL (niveles vitrina para los vídeos, src/content/levels/vitrina.js): su semilla y la ruta del viento. Borrar con ellos
+  if (L.vitrina || L.seed != null || L.season?.wind) o.v = { ...(L.vitrina ? { x: L.vitrina } : {}), ...(L.seed != null ? { s: L.seed } : {}), ...(L.season?.wind ? { w: L.season.wind.path.flat() } : {}) };
   return o;
 }
 
@@ -95,6 +97,13 @@ export function unpackLevel(o) {
     L.season = { now: o.s[0] };
     const sn = o.s[0] === 'winter' && pt([o.s[1], o.s[2]]);
     if (sn && !used.has(sn.x + ',' + sn.y) && !(sn.x === hole.x && sn.y === hole.y) && !(sn.x === ball.x && sn.y === ball.y)) L.season.snow = sn;
+  }
+  // TEMPORAL (niveles vitrina): la semilla y la ruta del viento (soplando). Borrar con ellos
+  if (o.v && typeof o.v === 'object') {
+    if (typeof o.v.x === 'string' && /^[a-z]{3,12}$/.test(o.v.x)) L.vitrina = o.v.x; // (su baraja: el fondo; y sin bocadillos, el vídeo limpio)
+    if (Number.isInteger(o.v.s) && o.v.s > 0) L.seed = o.v.s;
+    const w = Array.isArray(o.v.w) ? o.v.w : [];
+    if (L.season && w.length >= 4 && w.length % 2 === 0) { const path = []; for (let i = 0; i < w.length; i += 2) path.push([w[i], w[i + 1]]); if (path.every(([x, y]) => inB(x, y))) L.season.wind = { path, on: true }; }
   }
   return L;
 }
