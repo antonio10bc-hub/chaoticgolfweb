@@ -379,6 +379,7 @@ function renderPieces() {
   if (app.animating) return;              // la reproducción en curso controla las piezas
   if (app.animQueue.length) {
     playQueue(() => {
+      turnCheck();     // el cartel del turno, después de lo que pasa solo en el tablero (dados, tren, viento…)
       renderJaque();   // el JAQUE se anuncia al terminar la jugada
       maybeSoloWin();  // en solitario la victoria se confirma sin ventana de reacción
       paintAssist();   // consejo y deshacer dependen de que no haya animación en curso
@@ -411,11 +412,13 @@ export function renderJaque() {
   if (el._html !== html || !jt) { el.innerHTML = html; el._html = html; }
 }
 
-// cambio de turno: banner breve + pulso del panel activo (decorativo)
+// cambio de turno: banner breve + pulso del panel activo (decorativo). Si al cambiar de turno pasa algo solo en el tablero
+// (los dados cambian de número, el tren avanza, sopla el viento…), primero se ve eso y después sale el cartel
 let prevTurn = -1;
 function turnCheck() {
   const S = app.game.S;
   if (S.turn === prevTurn) return;
+  if (prevTurn !== -1 && (app.animating || app.animQueue.length)) return; // (lo vuelve a mirar playQueue al acabar)
   const first = prevTurn === -1;
   prevTurn = S.turn;
   if (first) return; // sin banner en el primer render de la partida

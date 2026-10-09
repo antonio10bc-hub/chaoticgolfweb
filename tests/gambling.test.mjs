@@ -297,3 +297,19 @@ test('partidas de bots con la baraja: terminan y usan sus cartas y sus monedas',
   assert.equal(ended, 12);
   assert.ok(coins > 0 && spins > 0 && dice > 0, `monedas ${coins}, ruletas ${spins}, dados ${dice}`);
 });
+
+test('casilla dorada: pararse en ella gira la ruleta al acabar la jugada (pasar por encima, no)', () => {
+  let g = level({ gold: { x: 3, y: 2 } });
+  shoot(g, 'right', 'palo2'); // (de (1,2) a (3,2): se para en la dorada)
+  let ev = g.takeEvents().map(e => e.t);
+  assert.ok(ev.includes('roulette'), 'gira');
+  assert.ok(ev.lastIndexOf('move') < ev.indexOf('roulette'), 'después de moverse');
+  g = level({ gold: { x: 2, y: 2 } });
+  shoot(g, 'right', 'palo3'); // (pasa por (2,2) y sigue)
+  assert.ok(!g.takeEvents().some(e => e.t === 'roulette'));
+  // con el dorado, gana quien se ha parado en ella
+  g = level({ gold: { x: 3, y: 2 } });
+  g._forceSpin = WHEEL.indexOf('gold');
+  shoot(g, 'right', 'palo2');
+  assert.equal(g.S.winner, 0); assert.ok(g.S.goldWin);
+});

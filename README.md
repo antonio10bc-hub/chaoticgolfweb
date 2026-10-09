@@ -560,7 +560,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   en el mazo ya no quedan, `dealOneOf` se la cambia a quien empezó con dos).
   - **Suelo ajedrezado**: rojo si x + y es par, negro si es impar (`cellColor`). Una casilla es **dorada** (`S.gamble.gold`):
     al azar, entre la fila del hoyo y la de las salidas, sin tocar los bordes de los lados, a 2+ del hoyo y 3+ de las salidas.
-    No es de ningún color (la ruleta roja o negra no la toca).
+    No es de ningún color (la ruleta roja o negra no la toca). Lleva dibujada una ruleta pequeña que gira despacio
+    (`GOLD_ICON`): la pelota que **se para** en ella (no la que pasa) gira la ruleta al acabar la jugada, sin carta
+    (`S.goldSpin` → `goldSpin`); con el dorado, gana. La IA lo valora como 1 de cada 9 victorias (`S.goldSpinPend`).
   - **Monedas**: al empezar, **3 por jugador** en casillas vacías al azar (ni salidas, ni PAR, ni la del hoyo, ni la dorada),
     con un RNG aparte sacado de la semilla (el mazo sale igual). La pelota (o el **hoyo**) que pasa por una (o se para en ella;
     también la golpeada) se la lleva (`coinPick`: se le pega una chapita) y, **al terminar la jugada** (`afterPlay` →
@@ -576,7 +578,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     choca contra él (pelota u hoyo) **rebota tantas casillas como marca**, en vez de las que le quedaban, y el dado **rueda una
     casilla hacia el otro lado** como un dado de verdad (`rollFaces`: cara de arriba, norte y este; las opuestas suman 7), así
     que marca otro número. Si no puede rodar (borde, pieza, pelota, hoyo, moneda o la dorada), da la vuelta en su sitio. El
-    dedo contra un dado rebota en línea recta y se acaba. Al chocar sale su número («×4»). Además, **al acabar cada turno
+    dedo contra un dado rebota en línea recta y se acaba. Al chocar sale su número («×4») y el dado rueda a la vez que la
+    pelota rebota (sin esperar uno al otro). Además, **al acabar cada turno
     cada dado cambia de número** al azar (`diceTurn`). Entre dos dados, como mucho 6 rebotes que reinician las casillas
     (`MAX_DICE`): luego rebota como en un bloque.
   - **Ruleta** (naranja: en cualquier momento, también en el JAQUE): sale en medio de la pantalla y gira (4 franjas rojas, 4
@@ -595,7 +598,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     si está en la dorada; en sus simulaciones no lanza monedas (`S.coinPend`): valora el riesgo de la cruz (la mitad de lo
     avanzado) y la casilla dorada (más si tiene la ruleta). Con cara, elige su tirada extra con `chooseBonus` (o renuncia si
     no le conviene); en la interfaz, también cuando la cara le sale a un bot fuera de su turno. Equilibrio (`npm run
-    simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8,5 rondas (como agua y estaciones).
+    simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8 rondas; ~13 % de las partidas se ganan en la
+    casilla dorada (los bots van a por ella para girar la ruleta).
   - Estadísticas: monedas lanzadas, vueltas de dado y de ruleta (las vueltas a la salida, en «caídas fuera»).
   - **Desafíos del casino** (uno por dificultad, `scene: 'casino'`; el suelo, con `gamble(C, v)`: la casilla dorada diseñada,
     sus monedas y, si no dice otra cosa, monedas al azar hasta 3 por jugador, `challengeGamble`): **Lluvia de monedas**
@@ -639,6 +643,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   viento, fuego, planta, lanzadera, tren…) hace desaparecer la copia (`resetBallToSpawn`); el tren y la bola de nieve solo
   arrastran el hoyo de siempre (una copia del hoyo en la vía hace esperar al tren). Simuladas las 63 combinaciones sin errores;
   las 6 juntas, ~16 rondas (como el Ultimate de antes).
+- **El cartel del turno** sale después de lo que pasa solo en el tablero al cambiar de turno (los dados que cambian de número,
+  el tren, el viento, el hoyo que se mueve solo…): `turnCheck` espera a que acabe la animación.
 - **Tamaños de la partida rápida** (`PVE_SIZES`): pequeño 5×5 PAR 2, mediano 7×9 PAR 3 y grande 9×11 **PAR 5**.
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.

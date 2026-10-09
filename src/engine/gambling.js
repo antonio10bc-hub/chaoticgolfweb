@@ -14,7 +14,8 @@
      ruleta     (naranja) gira la ruleta: 4 franjas rojas, 4 negras y 1 dorada. Rojo o negro: las pelotas que están en
                 casillas de ese color vuelven a su salida (las que están dentro del hoyo, no). Dorado: la pelota que está
                 en la casilla dorada gana la partida directamente, sin JAQUE (S.goldWin); si es el hoyo el que está en
-                ella, gana el hoyo y pierde todo el mundo (S.holeWin).
+                ella, gana el hoyo y pierde todo el mundo (S.holeWin). Además, la pelota que se para en la casilla dorada
+                gira la ruleta al acabar la jugada (sin carta).
    En las simulaciones de la IA (lite) las monedas no se lanzan: se apuntan en S.coinPend y la IA valora el riesgo.
    Este módulo añade sus métodos a Game (game.js los instala); `this` es la partida.
    ========================================================= */
@@ -201,6 +202,16 @@ export const gamblingMethods = {
   },
 
   /* ---------- la ruleta ---------- */
+  // caer en la casilla dorada gira la ruleta (sin carta), si sigue ahí alguien al acabar la jugada. En las simulaciones de la
+  // IA no se gira: se apunta quién está en ella (S.goldSpinPend) y la IA lo valora
+  goldSpin() {
+    const S = this.S, g = S.gamble?.gold, b = g && this.ballAt(g.x, g.y);
+    delete S.goldSpin;
+    if (!b || b.decoy) return;
+    if (this.lite) { S.goldSpinPend = ownerOf(b.player); return; }
+    this.log('log.goldSpin', { b: playerTag(b.player) });
+    this.spinRoulette();
+  },
   spinRoulette() {
     const S = this.S, seg = this._forceSpin ?? Math.floor(this.rand() * WHEEL.length), res = WHEEL[seg];
     this.anim({ t: 'roulette', seg, res });

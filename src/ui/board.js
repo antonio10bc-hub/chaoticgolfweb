@@ -17,7 +17,7 @@ import { isBot } from './players.js';
 import { ownerOf } from '../engine/game.js';
 import { renderTrack, ensureTrain, syncTrain } from './train-view.js';
 import { renderSeason, ensureSnow, syncSnow, shownTile } from './seasons-view.js';
-import { shownGamble, COIN_SVG } from './gambling-view.js';
+import { shownGamble, COIN_SVG, GOLD_ICON } from './gambling-view.js';
 
 let cells = [], dims = '';
 // polvo al colocar cada loseta (según su `dust`)
@@ -94,6 +94,7 @@ export function renderBoard() {
       const gold = gv.gold(x, y);
       cls += gold ? ' gGold' : (x + y) % 2 === 0 ? ' gRed' : ' gBlack';
       aria.push(t(gold ? 'a11y.goldCell' : (x + y) % 2 === 0 ? 'a11y.redCell' : 'a11y.blackCell'));
+      if (gold) html += `<span class="gGoldIco">${GOLD_ICON}</span>`; // (la ruleta: caer aquí la hace girar)
       if (gv.coin(x, y)) { html += `<span class="gCoin">${COIN_SVG}</span>`; aria.push(t('a11y.coin')); }
     }
     if (tile) cls += ' ' + tileDef(tile.type).cellClass;

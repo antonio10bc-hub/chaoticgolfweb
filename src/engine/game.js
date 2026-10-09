@@ -991,6 +991,8 @@ export class Game {
       this.registerWin(ball.player);
     } else if (!safe && this.plantBites(ball)) this.finishMoveChecks(ball, { safe: true }); // (estaciones) se la come la planta: a su salida
     else if (!safe && this.S.tiles.length) this.bhCheck(ball, ball.x, ball.y, 'up', 0); // (multiverso) se ha parado junto a un agujero negro
+    // (casino) se ha parado en la casilla dorada: al acabar la jugada gira la ruleta
+    if (!safe && this.S.gamble && !ball.holed && this.S.balls.includes(ball) && this.isGold(ball.x, ball.y)) this.S.goldSpin = true;
   }
 
   // movimiento transferido por colisión: también sufre la penalización de trampa
@@ -1223,6 +1225,7 @@ export class Game {
   afterPlay() {
     const S = this.S;
     if (S.coinQ) this.resolveCoins(); // (casino) las monedas que se han llevado las pelotas: cara o cruz
+    if (S.goldSpin && !this.pending) this.goldSpin(); // (casino) alguien se ha parado en la casilla dorada: gira la ruleta
     if (S.goldWin) { this.emit({ t: 'resolved' }); this.emit({ t: 'win' }); return; } // (casino) dorado: gana sin JAQUE
     // regla general: si al resolver una carta una pelota y el hoyo comparten casilla,
     // sea cual sea el motivo, la pelota entra y hace JAQUE

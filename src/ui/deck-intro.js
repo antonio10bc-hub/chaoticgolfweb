@@ -15,7 +15,7 @@ import { trackSVG, LOCO, WAGON } from './train-view.js';
 import { stepDir } from '../engine/train.js';
 import { SNOWBALL } from './season-art.js';
 import { WHEEL } from '../engine/gambling.js';
-import { wheelSVG } from './gambling-view.js';
+import { wheelSVG, GOLD_ICON } from './gambling-view.js';
 
 const KEY = 'chaoticgolf_deckIntros';
 const seen = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
@@ -92,7 +92,7 @@ function demoSVG(demo) {
   const cellsOf = col => { let out = ''; for (let y = 0; y < demo.rows; y++) for (let x = 0; x < demo.cols; x++)
     out += `<rect x="${x * CW + G / 2}" y="${y * CH + G / 2}" width="${CW - G}" height="${CH - G}" rx="5" fill="${col(x, y)}"/>`; return out; };
   let cells = cellsOf(d.gamble ? felt(d.gamble.gold) : grass(d.season));
-  if (d.gamble?.gold) cells += `<text x="${d.gamble.gold.x * CW + CW / 2}" y="${d.gamble.gold.y * CH + CH / 2}" text-anchor="middle" dominant-baseline="central" font-size="18" fill="rgba(255,246,214,.6)">★</text>`;
+  if (d.gamble?.gold) cells += GOLD_ICON.replace('<svg class="gGoldSvg" viewBox="-12 -12 24 24" aria-hidden="true">', `<svg x="${d.gamble.gold.x * CW + CW / 2 - 13}" y="${d.gamble.gold.y * CH + CH / 2 - 13}" width="26" height="26" viewBox="-12 -12 24 24">`);
   const has = (type, x, y) => d.tiles.some(tl => tl.type === type && tl.x === x && tl.y === y);
   const tiles = d.tiles.map(tl => {
     const x0 = tl.x * CW, y0 = tl.y * CH;

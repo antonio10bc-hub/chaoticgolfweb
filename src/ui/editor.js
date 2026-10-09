@@ -31,7 +31,7 @@ import { confirmDialog } from './dialog.js';
 import { sfx } from '../audio/sfx.js';
 import { t } from '../i18n/index.js';
 import { LEVEL_SIZE } from '../content/levels/share.js';
-import { COIN_SVG } from './gambling-view.js';
+import { COIN_SVG, GOLD_ICON } from './gambling-view.js';
 import { dicePic } from '../content/tiles/dice.js';
 import { listLevels, storeLevel, deleteWithUndo, shareLevelDialog, addCodeDialog, sizeLabel } from './my-levels.js';
 
@@ -445,7 +445,7 @@ function toolPic(tool) {
       `<path d="M20 4V44" stroke="#8A5A33" stroke-width="13" stroke-dasharray="2.6 4"/><path d="M15 4V44M25 4V44" stroke="#4B5057" stroke-width="2.2"/><path d="M8 12V36M32 12V36" stroke="#E8B23A" stroke-width="2.2" stroke-linecap="round"/></svg>`;
     case 'loco': return `<svg viewBox="0 0 40 48" aria-hidden="true">${LOCO.replace(/<svg class="trainSvg" viewBox="0 0 70 100" preserveAspectRatio="none"/, '<svg x="6" y="2" width="28" height="44" viewBox="0 0 70 100"')}</svg>`;
     case 'coin': return COIN_SVG;
-    case 'gold': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="3" y="6" width="34" height="36" rx="6" fill="#C9962E" stroke="#FFE38A" stroke-width="2"/><path d="M20 14l3.2 6.6 7.2 1-5.2 5 1.3 7.2L20 30.4l-6.5 3.4 1.3-7.2-5.2-5 7.2-1z" fill="rgba(255,246,214,.75)"/></svg>`;
+    case 'gold': return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="3" y="6" width="34" height="36" rx="6" fill="#C9962E" stroke="#FFE38A" stroke-width="2"/>${GOLD_ICON.replace('<svg class="gGoldSvg" viewBox="-12 -12 24 24" aria-hidden="true">', '<svg x="7" y="11" width="26" height="26" viewBox="-12 -12 24 24">')}</svg>`;
     case 'dice': return dicePic({ t: ED.diceN, n: ED.diceN === 2 || ED.diceN === 5 ? 1 : 2, e: 3 });
     case 'snowball': return SNOWBALL.replace('<svg class="snowSvg" viewBox="0 0 100 100" aria-hidden="true">', '<svg viewBox="-8 -8 116 116" aria-hidden="true">');
     default: return tilePic({ type: tool, rot: ED.rots[tool] || 0 });
@@ -516,7 +516,7 @@ export function edRender() {
     if (par) { cls += ' par'; inner = ASSETS.parLabelHTML(par.n); aria.push('PAR ' + par.n); }
     if (casino && !(tile && /^(water|space)/.test(TILES[tile.type].cellClass))) cls += goldAt(x, y) ? ' gGold' : (x + y) % 2 === 0 ? ' gRed' : ' gBlack';
     if (coinAt(x, y) >= 0) { inner += `<span class="gCoin">${COIN_SVG}</span>`; aria.push(toolName('coin')); }
-    if (goldAt(x, y)) aria.push(toolName('gold'));
+    if (goldAt(x, y)) { inner += `<span class="gGoldIco">${GOLD_ICON}</span>`; aria.push(toolName('gold')); }
     if (tile) {
       cls += ' ' + TILES[tile.type].cellClass + waterJoins((ox, oy) => tAt(x + ox, y + oy), x, y, tile);
       inner += ASSETS.tileHTML(tile.type, '', tile);

@@ -120,6 +120,7 @@ async function playEvent(ev) {
       if (ev.dice) diceNumber(ev.x, ev.y, ev.dice); // (casino: el dado dice cuántas casillas rebota)
       sfx(ev.dice ? 'diceHit' : 'wood');
       inner.style.transform = '';
+      if (ev.dice) { setTimeout(() => { inner.style.transition = ''; }, 110); break; } // (el dado: rueda y la pelota rebota ya, a la vez)
       await wait(110);
       inner.style.transition = '';
       break;

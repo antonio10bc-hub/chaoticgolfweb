@@ -58,12 +58,19 @@ export const COIN_SVG = '<svg class="gCoinSvg" viewBox="0 0 40 40" aria-hidden="
   '<circle cx="20" cy="20" r="15" fill="#F2C14E" stroke="#9C6A1E" stroke-width="1.6"/><circle cx="20" cy="20" r="11" fill="none" stroke="#C8962E" stroke-width="1.4"/>' +
   '<path d="M20 12.5l2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5-3.7-3.4 5-.6z" fill="#FFE38A" stroke="#B8892B" stroke-width=".8" stroke-linejoin="round"/>' +
   '<path class="gCoinShine" d="M10 14a11 11 0 0 1 8-6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg>';
+// la casilla dorada: una ruleta pequeña (sus franjas, rojas y negras, en tonos de oro, y la dorada brillando) — caer en ella
+// la hace girar
+export const GOLD_ICON = '<svg class="gGoldSvg" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="11.4" fill="#8A5E18"/><g class="gGoldRot">' +
+  WHEEL.map((c, i) => { const a0 = (i / WHEEL.length) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / WHEEL.length) * Math.PI * 2 - Math.PI / 2, P = (a, r) => `${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`;
+    return `<path d="M0 0L${P(a0, 10)}A10 10 0 0 1 ${P(a1, 10)}Z" fill="${{ red: '#B5373F', black: '#3A2A1E', gold: '#FFF1B0' }[c]}" stroke="#F2C14E" stroke-width=".6"/>`; }).join('') +
+  '<circle r="4" fill="#C9962E" stroke="#FFE38A" stroke-width=".9"/><path d="M-2.6 0H2.6M0 -2.6V2.6" stroke="#FFF1B0" stroke-width="1.1" stroke-linecap="round"/></g>' +
+  '<path d="M0 -13.6L-1.8 -10.8H1.8Z" fill="#FFF6D6"/></svg>';
 // las dos caras de la moneda grande: cara (una carita) y cruz (una cruz)
 const FACE = side => `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="27" fill="${side === 'heads' ? '#F2C14E' : '#E2B23C'}" stroke="#9C6A1E" stroke-width="2.4"/>` +
   `<circle cx="30" cy="30" r="21" fill="none" stroke="#C8962E" stroke-width="1.6"/>` +
   (side === 'heads'
     ? '<circle cx="23" cy="26" r="2.6" fill="#7A4E14"/><circle cx="37" cy="26" r="2.6" fill="#7A4E14"/><path d="M21 34q9 8 18 0" fill="none" stroke="#7A4E14" stroke-width="2.8" stroke-linecap="round"/>'
-    : '<path d="M30 17v26M19 30h22" stroke="#7A4E14" stroke-width="5" stroke-linecap="round"/>') + '</svg>';
+    : '<path d="M22 22l16 16M38 22L22 38" stroke="#7A4E14" stroke-width="5" stroke-linecap="round"/>') + '</svg>'; // (cruz: en aspa, ✕)
 // la ruleta: 9 franjas (4 rojas, 4 negras y la dorada) con sus números, el centro de madera y la flecha arriba
 export function wheelSVG(size = 200) {
   const c = 100, R = 92, r = 60, n = WHEEL.length, a = i => (i / n) * Math.PI * 2 - Math.PI / 2;
@@ -163,8 +170,9 @@ async function goHome(ev) {
   await wait(60);
 }
 
-// el dado rueda: se dibuja ya en su casilla nueva (con su cara nueva) y vuelca desde la de antes
-async function diceRoll(ev) {
+// el dado rueda: se dibuja ya en su casilla nueva (con su cara nueva) y vuelca desde la de antes. Sin esperar: a la vez
+// que la pelota (o el hoyo) rebota, para que se vea que el choque mueve a los dos
+function diceRoll(ev) {
   const d = app.gv?.dice.find(q => q.id === ev.id);
   if (d) Object.assign(d, { x: ev.x, y: ev.y }, ev.face);
   renderBoard();
@@ -174,12 +182,11 @@ async function diceRoll(ev) {
     const { dx, dy } = DIRS[ev.dir];
     cell.style.zIndex = 3;
     const from = ev.moved ? `translate(${-dx * 100}%, ${-dy * 100}%) rotate(${dx ? dx * -90 : 0}deg) scale(${dy ? .7 : 1}, ${dy ? 1.2 : 1})` : `rotate(${dx ? dx * -60 : 0}deg) scale(${dy ? .6 : 1.1}, 1)`;
-    await pic.animate([{ transform: from }, { transform: 'translateY(-8%) scale(1.06)', offset: .7 }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.3,.7,.4,1)' }).finished;
-    cell.style.zIndex = '';
+    pic.animate([{ transform: from }, { transform: 'translateY(-8%) scale(1.06)', offset: .7 }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.3,.7,.4,1)' })
+      .finished.then(() => { cell.style.zIndex = ''; }, () => { cell.style.zIndex = ''; });
   }
   const { px, py } = cellCenterPx(ev.x, ev.y);
-  fxSpawn(px, py, { n: 6, colors: ['#F6F0E2', '#CFC3AE', '#1F6B48'], size: 4, dist: 18, dur: 320, gravity: 10 });
-  await wait(REDUCED ? 40 : 80);
+  setTimeout(() => fxSpawn(px, py, { n: 6, colors: ['#F6F0E2', '#CFC3AE', '#1F6B48'], size: 4, dist: 18, dur: 320, gravity: 10 }), REDUCED ? 0 : 220);
 }
 // el número del dado al chocar: sale de él y sube
 export function diceNumber(x, y, n) {

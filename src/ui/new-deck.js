@@ -14,7 +14,7 @@ import { track } from './analytics.js';
 import { REDUCED } from '../fx/juice.js';
 import { tilePic } from '../content/tiles/index.js';
 import { SEASON_ICON, SNOWBALL } from './season-art.js';
-import { wheelSVG, COIN_SVG } from './gambling-view.js';
+import { wheelSVG, COIN_SVG, GOLD_ICON } from './gambling-view.js';
 import { dicePic } from '../content/tiles/dice.js';
 
 const ANNOUNCE = 'gambling';
@@ -97,7 +97,7 @@ function gamblingArt() {
   const C = 7, R = 4, CW = 38, CH = 44, W = C * CW, H = R * CH, gold = [5, 2];
   let cells = '';
   for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) cells += `<rect x="${x * CW + 2}" y="${y * CH + 2}" width="${CW - 4}" height="${CH - 4}" rx="5" fill="${x === gold[0] && y === gold[1] ? '#C9962E' : (x + y) % 2 === 0 ? '#8E1F2E' : '#26262D'}"/>`;
-  cells += `<text x="${gold[0] * CW + CW / 2}" y="${gold[1] * CH + CH / 2}" text-anchor="middle" dominant-baseline="central" font-size="20" fill="rgba(255,246,214,.6)">★</text>`;
+  cells += GOLD_ICON.replace('<svg class="gGoldSvg" viewBox="-12 -12 24 24" aria-hidden="true">', `<svg x="${gold[0] * CW + CW / 2 - 13}" y="${gold[1] * CH + CH / 2 - 13}" width="26" height="26" viewBox="-12 -12 24 24">`);
   const S = 150, wheel = wheelSVG(200).replace(/<svg[^>]*>/, `<svg x="${(W - S) / 2 - 40}" y="${(H - S) / 2}" width="${S}" height="${S}" viewBox="0 0 200 200">`)
     .replace('<g class="rlRot">', `<g>${REDUCED ? '' : '<animateTransform attributeName="transform" type="rotate" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.7;1" keySplines=".1 .6 .2 1;0 0 1 1" values="0 100 100;1060 100 100;1060 100 100"/>'}`);
   const coin = COIN_SVG.replace('<svg class="gCoinSvg" viewBox="0 0 40 40" aria-hidden="true">', `<svg x="${6 * CW + 6}" y="${0 * CH + 8}" width="${CW - 12}" height="${CW - 12}" viewBox="0 0 40 40">`);
