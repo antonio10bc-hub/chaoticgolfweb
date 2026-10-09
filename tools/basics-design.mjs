@@ -1,10 +1,10 @@
 // Lo básico, la fuente: cada fila de 5 niveles con sus tableros en ASCII (leyenda en lib/basics-ascii.mjs), su nombre,
-// lo que enseña (una línea, sale al empezar el nivel) y su mano. Genera src/content/levels/basics/<id>.json y el índice,
+// lo que enseña (una línea, sale en la pista bajo el tablero) y su mano. Genera src/content/levels/basics.json (todos, en filas),
 // y comprueba cada nivel con el solucionador (una solución que no dependa del azar, cada carta hace falta, ninguna pieza
 // sobra y, con `need`, que TODAS las soluciones pasen por lo que enseña).
 //   node tools/basics-design.mjs            comprueba y escribe
 //   node tools/basics-design.mjs --check    solo comprueba (y enseña los tableros con su solución)
-//   node tools/basics-design.mjs <id…>      solo esos niveles (comprobar; con --write, también escribe)
+//   node tools/basics-design.mjs <id…>      comprueba solo esos niveles (y escribe el archivo entero; con --check, no)
 // Un nivel: { id, name: [es, en], teach: [es, en], hand: [...], board: `...`, need?: [eventos], spare?: n (cartas que
 // sobran a propósito), from?: 'pNN' (el puzle antiguo del que viene: su progreso se conserva), seed?, …lo demás del JSON }
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ import { quality, describe } from './lib/basics-solver.mjs';
 import { NEED } from './lib/basics-needs.mjs';
 import { ring } from './lib/basics-ascii.mjs';
 
-const ROOT = path.resolve(new URL('..', import.meta.url).pathname), OUT = path.join(ROOT, 'src/content/levels/basics');
+const ROOT = path.resolve(new URL('..', import.meta.url).pathname), OUT = path.join(ROOT, 'src/content/levels/basics.json');
 const ROWS = [
   /* ---------- Lo básico ---------- */
   { section: 'basics', deck: 'basic', levels: [
@@ -1298,7 +1298,7 @@ b H . . . .
 ];
 
 /* ---------- comprobar y escribir ---------- */
-const args = process.argv.slice(2), check = args.includes('--check'), write = !check && (args.includes('--write') || !args.some(a => !a.startsWith('--')));
+const args = process.argv.slice(2), check = args.includes('--check'), write = !check; // (siempre el archivo entero: con <id…> solo se comprueban esos)
 const only = args.filter(a => !a.startsWith('--'));
 const KEYS = new Set(['id', 'name', 'teach', 'hand', 'board', 'need', 'spare']);
 function build(spec) {
@@ -1311,13 +1311,15 @@ function build(spec) {
   return L;
 }
 let bad = 0, n = 0;
-const index = [];
+const out = [];
 for (const row of ROWS) {
-  index.push({ section: row.section, deck: row.deck, levels: row.levels.map(s => s.id) });
+  const levels = [];
+  out.push({ section: row.section, deck: row.deck, levels });
   for (const spec of row.levels) {
     n++;
     const L = build(spec);
-    if (only.length && !only.includes(spec.id)) { if (write) fs.writeFileSync(path.join(OUT, spec.id + '.json'), JSON.stringify(L, null, 2) + '\n'); continue; }
+    levels.push({ id: spec.id, ...L });
+    if (only.length && !only.includes(spec.id)) continue;
     const need = (spec.need || []).map(k => { if (!NEED[k]) throw new Error('need ' + k); return NEED[k]; });
     const q = quality(L, { need: need.length ? evs => need.every(f => f(evs)) : null });
     const spare = q.spareCards?.length || 0, ok = q.wins > 0 && q.robust && q.needOk && spare === (spec.spare || 0) && !q.idleTiles?.length && !q.idleDecoys?.length;
@@ -1327,12 +1329,10 @@ for (const row of ROWS) {
       (q.idleTiles?.length ? ' piezas-inútiles:' + q.idleTiles : '') + (q.idleDecoys?.length ? ' obst-inútiles:' + q.idleDecoys : '') +
       (q.sol ? '   ' + describe(L, q.sol) : ''));
     if (check && (only.length || !ok)) console.log(drawLevel(L));
-    if (write) fs.writeFileSync(path.join(OUT, spec.id + '.json'), JSON.stringify(L, null, 2) + '\n');
   }
 }
-if (write && !only.length) {
-  fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify(index, null, 2) + '\n');
-  for (const f of fs.readdirSync(OUT)) if (f !== 'index.json' && !ROWS.some(r => r.levels.some(s => s.id + '.json' === f))) fs.unlinkSync(path.join(OUT, f)); // (los que ya no están)
-}
+// un nivel por línea (los diffs se leen bien) y las filas, con su sección y su bloque
+if (write) fs.writeFileSync(OUT, '[\n' + out.map(r => `  { "section": ${JSON.stringify(r.section)}, "deck": ${JSON.stringify(r.deck)}, "levels": [\n` +
+  r.levels.map(L => '    ' + JSON.stringify(L)).join(',\n') + '\n  ] }').join(',\n') + '\n]\n');
 console.log(`${n} niveles, ${bad} con problemas`);
 process.exit(bad ? 1 : 0);

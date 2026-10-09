@@ -26,7 +26,7 @@ import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
 import { bindScreens, bindFabAutoHide, showScreen, newFreeGame, applyArtExtras, suspendGame } from './ui/screens.js';
-import { bindStory, openStory, userLevelAt, startLevel } from './ui/screen-story.js';
+import { bindStory, openStory, userLevelAt, startLevel, warmBasics } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
 import { bindModes, openModes, startDaily, DAILY_HASHES, playSharedCombo } from './ui/screen-modes.js';
 import { bindAssist } from './ui/assist.js';
@@ -41,7 +41,7 @@ import { bindSoundPanel } from './ui/sound-panel.js';
 import * as ctl from './ui/controller.js';
 import { updateEndTurnHint, updateMenuBtn } from './ui/hud.js';
 import { fxArmIdle, fxAmbientStart } from './fx/effects.js';
-import { sfx } from './audio/sfx.js';
+import { sfx, sfxEnsure, SFX } from './audio/sfx.js';
 import { clearPieces } from './ui/board.js';
 import { loadPrefs } from './ui/prefs.js';
 import { bindSettings, repaintSettings } from './ui/settings.js';
@@ -111,6 +111,8 @@ window.addEventListener('keydown', e => {
 });
 // sonido sutil en cualquier botón de interfaz
 document.addEventListener('click', e => { if (e.target.closest('button:not(:disabled)')) sfx('click'); }, true);
+// el audio se prepara al presionar (ya es un gesto del jugador): crearlo en el clic retrasaba la pantalla que se abre
+window.addEventListener('pointerdown', () => { if (!SFX.ctx) sfxEnsure(); }, true);
 window.addEventListener('pointerdown', fxArmIdle);
 window.addEventListener('keydown', fxArmIdle);
 // último gesto del jugador: el aviso de "puedes jugar…" espera a que lleve un rato quieto
@@ -187,6 +189,7 @@ fxAmbientStart();
   try { app.basics = await loadBasics(); }
   catch (e) { console.error('No se pudieron cargar los niveles', e); }
   migrateLevelsOnce(app.basics); // (niveles integrados rediseñados: su progreso, una vez)
+  warmBasics(); // (sus miniaturas, en ratos libres: Lo básico se abre al momento)
   if (handOff && await handOff) {
     window.close();
     await new Promise(r => setTimeout(r, 400));

@@ -10,7 +10,7 @@ import { loadLevels, loadProgress } from '../storage.js';
 import { startGame } from './controller.js';
 import { hideWin } from './win.js';
 import { aiStop } from './ai-driver.js';
-import { t } from '../i18n/index.js';
+import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave } from './save.js';
 import { recordStart, levelBest, turnsLabel, loadRecords } from './records.js';
 import { musicScene } from '../audio/sfx.js';
@@ -52,10 +52,11 @@ export function startLevel(level, mode, idx = null, { variant = null, run = null
 function levelCard(i, L, { done, next, best, saved, attr, compact = false, num = i + 1 }) {
   const state = done ? 'done' : next ? 'next' : '';
   const label = compact && !done && !next ? '' : done ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span class="lsTxt">${t('story.completed')}</span>` : next ? t('story.next') : t('story.play');
-  return `<button class="lvlCard ${state}${saved ? ' saved' : ''}" style="animation-delay:${Math.min(i, 8) * 45}ms" ${attr}` +
+  // (solo las primeras entran animadas: con 145 a la vez, la entrada costaba más que pintarlas)
+  return `<button class="lvlCard ${state}${saved ? ' saved' : ''}${num > 10 ? ' still' : ''}"${num <= 10 ? ` style="animation-delay:${(num - 1) * 45}ms"` : ''} ${attr}` +
     ` aria-label="${esc(t('story.levelAria', { n: num, name: levelName(L) }))}${done ? ` · ${esc(t('story.done'))}` : ''}">` +
     `<span class="lvlNum">${num}</span>` +
-    `<span class="lvlPreview">${levelPreviewSVG(L)}</span>` +
+    `<span class="lvlPreview">${levelPreviewCached(L)}</span>` +
     `<span class="lvlName">${esc(levelName(L) || t('story.untitled'))}</span>` +
     (label || best ? `<span class="lvlFoot">${label ? `<span class="lvlState">${label}</span>` : ''}` +
       (best ? `<span class="lvlBest" title="${esc(t('stats.bestTitle'))}"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg>${esc(turnsLabel(best.turns))}</span>` : '') + `</span>` : '') +
@@ -76,10 +77,22 @@ function blockHTML(b, done) {
     b.rows.map(r => `<div class="lvlRow bkRow">${r}</div>`).join('') + `</div>`;
 }
 
+// las miniaturas de Lo básico, preparadas en ratos libres tras el arranque (la primera vez que se abre la pantalla ya están)
+export function warmBasics() {
+  const idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 60));
+  let i = 0;
+  const step = dl => { while (i < app.basics.length && dl.timeRemaining() > 2) levelPreviewCached(app.basics[i++]); if (i < app.basics.length) idle(step); };
+  idle(step);
+}
+
+let lastKey = null; // (si nada ha cambiado —progreso, guardado, idioma—, la pantalla no se vuelve a montar)
 export function openStory() {
   hideWin();
   aiStop();
   const R = loadRecords(), done = R.basics, sv = loadSave('puzzle');
+  const key = JSON.stringify([getLang(), app.basics.length, Object.keys(done).sort(), sv ? [sv.levelIndex, sv.savedAt] : null]);
+  if (key === lastKey && $('lvlGrid').childElementCount) { showScreen('story'); scrollToNext(); return; }
+  lastKey = key;
   const next = app.basics.findIndex(L => !done[L.id]);
   // progreso: "3 de 15 completados" (lo más básico: palos y hoyo) + barra
   const nb = firstBlock().length, nd = firstDone(R);
@@ -108,9 +121,14 @@ export function openStory() {
   }).join('');
   $('lvlGrid').innerHTML = html;
   showScreen('story');
-  // el siguiente, a la vista (si queda más abajo)
-  const nx = next >= 0 && $('lvlGrid').querySelector(`[data-puzzle="${next}"]`);
-  if (nx && nx.getBoundingClientRect().bottom > innerHeight - 40) nx.scrollIntoView({ block: 'center' });
+  scrollToNext();
+}
+// el siguiente, a la vista si queda más abajo (los de las dos primeras filas ya se ven: no se mide nada; y se mide en el
+// fotograma siguiente, para no obligar a maquetar la pantalla en mitad del clic)
+function scrollToNext() {
+  const nx = $('lvlGrid').querySelector('.lvlCard.next');
+  if (!nx || +nx.dataset.puzzle < 10) return;
+  requestAnimationFrame(() => { if (app.screen === 'story' && nx.getBoundingClientRect().bottom > innerHeight - 40) nx.scrollIntoView({ block: 'center' }); });
 }
 
 /* ---------- sección de Modos de juego: tus niveles ---------- */
@@ -179,12 +197,15 @@ export function levelPreviewSVG(L) {
   const par = new Set((L.parCells || []).map(p => p.x + ',' + p.y));
   const tile = Object.fromEntries((L.tiles || []).map(tl => [tl.x + ',' + tl.y, tl.type]));
   const gold = L.gamble?.gold, casino = !!L.gamble;
+  // las casillas, un solo trazo por color (con 145 niveles en pantalla, una <rect> por casilla eran miles de nodos)
+  const cells = new Map(), rr = 2.5, side = s - 2 * rr;
+  const cellPath = (x, y) => `M${x + rr} ${y}h${side}a${rr} ${rr} 0 0 1 ${rr} ${rr}v${side}a${rr} ${rr} 0 0 1-${rr} ${rr}h-${side}a${rr} ${rr} 0 0 1-${rr}-${rr}v-${side}a${rr} ${rr} 0 0 1 ${rr}-${rr}z`;
   let out = '';
   for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) {
     const k = x + ',' + y, tp = tile[k];
     const base = casino ? ((x + y) % 2 ? '#2B2B30' : '#9E2B32') : ((x + y) % 2 ? '#5C9854' : '#4F8A4B'); // (casino: el suelo ajedrezado)
     const fill = gold && gold.x === x && gold.y === y ? '#E2B640' : PREV_FILL[tp] || (par.has(k) ? '#8DB05F' : base);
-    out += `<rect x="${x * (s + g)}" y="${y * (s + g)}" width="${s}" height="${s}" rx="2.5" fill="${fill}"/>`;
+    cells.set(fill, (cells.get(fill) || '') + cellPath(x * (s + g), y * (s + g)));
     if (tp === 'block' || tp === 'corner' || tp === 'tunnel' || tp === 'launcher') out += `<rect x="${x * (s + g) + 2}" y="${y * (s + g) + 2}" width="${s - 4}" height="${s - 4}" rx="1.5" fill="#C99257"/>`;
     if (tp === 'dice') out += `<rect x="${x * (s + g) + 1.5}" y="${y * (s + g) + 1.5}" width="${s - 3}" height="${s - 3}" rx="2" fill="#F6F0E2" stroke="#4A3F3A" stroke-width=".6"/><circle cx="${x * (s + g) + s / 2}" cy="${y * (s + g) + s / 2}" r="1.3" fill="#C8243A"/>`; // (casino: el dado)
     if (tp === 'plant') out += `<circle cx="${x * (s + g) + s / 2}" cy="${y * (s + g) + s / 2}" r="2" fill="#D94A5A"/>`;
@@ -203,7 +224,15 @@ export function levelPreviewSVG(L) {
   for (const eb of L.extraBalls || []) { const [cx, cy] = c(eb.x, eb.y); out += `<circle cx="${cx}" cy="${cy}" r="3.4" fill="#F1F1DC"/>`; }
   const [hx, hy] = c(L.hole.x, L.hole.y); out += `<circle cx="${hx}" cy="${hy}" r="4.2" fill="#242424"/><path d="M${hx} ${hy} v-7 l4.5 1.6 -4.5 1.6" fill="#E8873A" stroke="#F1F1DC" stroke-width=".8"/>`;
   const [bx, by] = c(L.ball.x, L.ball.y); out += `<circle cx="${bx + 1.2}" cy="${by + 1.2}" r="3.8" fill="rgba(20,40,20,.35)"/><circle cx="${bx}" cy="${by}" r="3.8" fill="#fff"/>`;
-  return `<svg viewBox="-3 -3 ${W + 6} ${H + 6}" aria-hidden="true">${out}</svg>`;
+  const grid = [...cells].map(([fill, d]) => `<path d="${d}" fill="${fill}"/>`).join('');
+  return `<svg viewBox="-3 -3 ${W + 6} ${H + 6}" aria-hidden="true">${grid}${out}</svg>`;
+}
+// en caché por nivel (los de Lo básico no cambian)
+const PREV_CACHE = new WeakMap();
+export function levelPreviewCached(L) {
+  let svg = PREV_CACHE.get(L);
+  if (!svg) PREV_CACHE.set(L, svg = levelPreviewSVG(L));
+  return svg;
 }
 
 export function bindStory() {

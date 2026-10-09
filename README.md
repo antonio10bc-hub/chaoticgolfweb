@@ -55,8 +55,8 @@ src/
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
     tiles/                 losetas (búnker, portal) con sus rasgos: trap / portal
-    levels/basics/         Lo básico: niveles de "gana en 1 turno" (mano fija) en JSON; index.json, filas de 5
-                           (los genera tools/basics-design.mjs)
+    levels/basics.json     Lo básico: los 145 niveles de "gana en 1 turno" (mano fija), en filas de 5, en un solo archivo
+                           (una petición al arrancar; lo genera tools/basics-design.mjs)
     levels/generate.js     generador determinista (contrarreloj) y salida de sus cazadores
   ai/
     bot.js                 decisiones de los bots: simulan cada jugada con el motor y la puntúan
@@ -134,7 +134,7 @@ aspecto (`cellClass`, `emoji`, `tileArt`…); regístrala en `tiles/index.js` y 
 
 **Un nivel de Lo básico:** se escribe en `tools/basics-design.mjs` (el tablero en ASCII, su nombre, lo que enseña en una
 línea, la mano y `need`: lo que tiene que pasar en todas sus soluciones) y `node tools/basics-design.mjs` lo comprueba con
-el solucionador y genera `src/content/levels/basics/<id>.json` y su `index.json` (filas de 5; ver **Lo básico** más abajo).
+el solucionador y genera `src/content/levels/basics.json` (todos, en filas de 5; ver **Lo básico** más abajo).
 Tras añadir un módulo nuevo (carta, loseta…) o un nivel, `npm run preload` lo suma a la precarga de index.html
 (si se olvida, `npm test` lo recuerda).
 
@@ -663,7 +663,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   especiales (`newCards` en `decks.js`), un diálogo las presenta con un tablero de ejemplo animado; la escena
   de cada carta (`demo`) se juega con el motor real, así que siempre coincide con las reglas. También con el
   botón "Cartas nuevas" de la tarjeta de la baraja. Sirve para cualquier baraja futura.
-- **Lo básico** (`src/ui/screen-story.js`, niveles en `src/content/levels/basics/`): todos los niveles son de "gana en
+- **Lo básico** (`src/ui/screen-story.js`, niveles en `src/content/levels/basics.json`): todos los niveles son de "gana en
   un turno" con mano fija, en el orden en que se aprende el juego: **145 niveles en 29 filas de 5**. Dos secciones:
   **Lo básico** (105: palos y hoyo ×15, clásica ×15, agua ×10, minigolf ×15, tren ×10, estaciones ×15, multiverso ×15 y
   Gambling ×10) y **Lo no tan básico** (40: iridiscente y palo 10, agua y minigolf, y cada baraja con las demás, hasta
@@ -757,6 +757,15 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   (jugada más larga, quién te golpeó más, tu carta más usada).
 
 ## Rendimiento
+
+**Lo básico con 145 niveles** (medido en un móvil simulado, CPU ×4): la pantalla se abría en ~150 ms la primera vez y
+~90 ms las demás, con 6.254 nodos; ahora ~85 ms y ~30 ms, con 2.571. Cómo: las miniaturas pintan las casillas de cada
+color en un solo trazo SVG (no una `<rect>` por casilla) y se guardan en caché por nivel, preparadas en ratos libres tras
+el arranque (`warmBasics`); la pantalla no se vuelve a montar si no ha cambiado nada (progreso, partida guardada,
+idioma); los bloques que no se ven no se maquetan ni se pintan (`content-visibility: auto`); solo las 10 primeras tarjetas
+entran animadas; el desplazamiento al siguiente nivel solo se mide cuando hace falta y fuera del clic; y el audio se
+prepara al presionar (`pointerdown`), no en el clic (crear el `AudioContext` costaba ~80 ms y retrasaba la pantalla que
+se abría). Los niveles van en un solo archivo (`basics.json`): el arranque pasa de 253 peticiones a 141.
 
 Medido navegando deprisa por los menús con un móvil emulado (pantalla ×3, CPU ×4) y pintado por software, y con
 la partida quieta. Reglas que hay que mantener:

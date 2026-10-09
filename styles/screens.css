@@ -157,6 +157,7 @@ body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after {
   background-image: var(--grain); background-color: var(--grass-dark); border-radius: 10px; padding: 10px;
 }
 .lvlPreview svg { max-width: 100%; max-height: 100%; filter: drop-shadow(0 2px 4px rgba(20,40,20,.25)); }
+.lvlCard.still { animation: none; } /* (más allá de las 10 primeras, sin animación de entrada) */
 .lvlName { font-size: 15px; font-weight: 500; line-height: 1.15; letter-spacing: -.01em; padding: 0 4px; min-height: 2.3em; display: flex; align-items: center; }
 .lvlState {
   align-self: flex-start; margin: 0 4px; display: inline-flex; align-items: center; gap: 5px;

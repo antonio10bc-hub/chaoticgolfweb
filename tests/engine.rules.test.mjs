@@ -375,9 +375,8 @@ test('semilla: misma semilla ⇒ mismo reparto', () => {
 
 test('niveles de Lo básico: JSON válido, cartas y piezas conocidas', async () => {
   const { TILES } = await import('../src/content/tiles/index.js');
-  const dir = new URL('../src/content/levels/basics/', import.meta.url);
-  for (const id of JSON.parse(fs.readFileSync(new URL('index.json', dir))).flatMap(r => r.levels)) {
-    const L = JSON.parse(fs.readFileSync(new URL(id + '.json', dir)));
+  for (const L of JSON.parse(fs.readFileSync(new URL('../src/content/levels/basics.json', import.meta.url))).flatMap(r => r.levels)) {
+    const id = L.id;
     assert.equal(L.version, 1);
     for (const k of [...Object.keys(L.deckCounts), ...L.hand]) assert.ok(CARD_KEYS.includes(k), `${id}: carta desconocida ${k}`);
     for (const tl of L.tiles) assert.ok(TILES[tl.type], `${id}: pieza desconocida ${tl.type}`);
@@ -414,9 +413,8 @@ test('tope anti-bucle: la cadena de choques entre portales avisa con un evento',
 
 test('Lo básico: filas de 5, y cada nivel se gana en un solo turno con su mano fija (sin depender del azar)', async () => {
   const { plays, replay } = await import('../tools/lib/basics-solver.mjs');
-  const dir = new URL('../src/content/levels/basics/', import.meta.url);
-  const rows = JSON.parse(fs.readFileSync(new URL('index.json', dir)));
-  const ids = rows.flatMap(r => r.levels);
+  const rows = JSON.parse(fs.readFileSync(new URL('../src/content/levels/basics.json', import.meta.url)));
+  const ids = rows.flatMap(r => r.levels.map(L => L.id)), byId = Object.fromEntries(rows.flatMap(r => r.levels).map(L => [L.id, L]));
   assert.ok(ids.length >= 25);
   assert.equal(new Set(ids).size, ids.length, 'ids repetidos');
   for (const r of rows) {
@@ -424,7 +422,7 @@ test('Lo básico: filas de 5, y cada nivel se gana en un solo turno con su mano 
     assert.ok(['basics', 'advanced'].includes(r.section), r.section);
   }
   for (const id of ids) {
-    const L = JSON.parse(fs.readFileSync(new URL(id + '.json', dir)));
+    const L = byId[id];
     assert.ok(L.name && L.name_en && L.teach && L.teach_en, `${id}: nombre y lo que enseña, en los dos idiomas`);
     const g = Game.fromLevel(L, { seed: L.seed ?? 1 });
     assert.deepEqual(g.S.hands[0], L.hand, `${id}: la mano debe ser la del nivel`);

@@ -1062,7 +1062,7 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 #storyScreen #lvlGrid { width: min(980px, 94vw); gap: 18px; }
 #storyScreen .lvlSection { padding: 16px 18px 20px; }
 #storyScreen .lvlSection > h3 { margin: 0 0 2px; }
-.bkBlock { --dk: var(--grass-dark); margin-top: 14px; }
+.bkBlock { --dk: var(--grass-dark); margin-top: 14px; content-visibility: auto; contain-intrinsic-size: auto 330px; } /* (los bloques que no se ven no se pintan) */
 .bkHead { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
 .bkArt { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: rgba(36,36,36,.05); }
 .bkArt svg { width: 34px; height: 34px; overflow: visible; filter: drop-shadow(0 2px 4px rgba(20,40,20,.2)); transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
