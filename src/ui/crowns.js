@@ -24,23 +24,29 @@ import { track } from './analytics.js';
 import { REDUCED } from '../fx/juice.js';
 
 /* ---------- la corona ---------- */
-// gold: ganada (oro, con sus gemas) · si no, su silueta vacía (discontinua)
+// gold: ganada (oro, con una pelota de golf en el centro y bolitas de oro en las puntas) · si no, su silueta vacía
+// (discontinua). El cuerpo y la banda van pegados
 let crownSeq = 0;
+const BODY = 'M9 41 L5 15 L20 27 L32 7 L44 27 L59 15 L55 41 Z';
+const DIMPLES = [[-2.6, -2.2], [.4, -3.4], [3, -1.2], [-3.4, .8], [-.6, .2], [2.4, 2.2], [-1.6, 3.2], [1, 4.2]]; // (los hoyuelos de la pelota, desde su centro)
 export function crownSVG(gold = true, cls = 'crIcon') {
   const id = 'crg' + (++crownSeq);
-  const body = 'M9 39 L5 15 L20 27 L32 7 L44 27 L59 15 L55 39 Z';
-  if (!gold) return `<svg class="${cls} empty" viewBox="0 0 64 52" aria-hidden="true"><path d="${body}" fill="rgba(36,36,36,.04)" stroke="currentColor" stroke-width="2.4" stroke-dasharray="4 3.2" stroke-linejoin="round"/>` +
-    `<rect x="9" y="41" width="46" height="7" rx="3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="4 3.2"/></svg>`;
+  if (!gold) return `<svg class="${cls} empty" viewBox="0 0 64 52" aria-hidden="true"><path d="${BODY} M9 41 H55 V45.5 A2.5 2.5 0 0 1 52.5 48 H11.5 A2.5 2.5 0 0 1 9 45.5 Z" fill="rgba(36,36,36,.04)" ` +
+    `stroke="currentColor" stroke-width="2.4" stroke-dasharray="4 3.2" stroke-linejoin="round"/></svg>`;
+  const tip = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${id}t)" stroke="#8C5E17" stroke-width="1.1"/>`;
   return `<svg class="${cls}" viewBox="0 0 64 52" aria-hidden="true"><defs>` +
     `<linearGradient id="${id}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".45" stop-color="#F2C24E"/><stop offset="1" stop-color="#B9822A"/></linearGradient>` +
-    `<clipPath id="${id}c"><path d="${body}"/><rect x="9" y="41" width="46" height="7" rx="3"/></clipPath></defs>` +
-    `<path d="${body}" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4" stroke-linejoin="round"/>` +
-    `<path d="M12 35 L52 35" stroke="rgba(140,94,23,.35)" stroke-width="1.4"/>` +
-    `<rect x="9" y="41" width="46" height="7" rx="3" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4"/>` +
-    `<circle cx="5" cy="15" r="3.6" fill="#E25A6E" stroke="#8C5E17" stroke-width="1.1"/><circle cx="32" cy="7" r="4" fill="#4FB3E8" stroke="#8C5E17" stroke-width="1.1"/>` +
-    `<circle cx="59" cy="15" r="3.6" fill="#E25A6E" stroke="#8C5E17" stroke-width="1.1"/>` +
-    `<circle cx="22" cy="44.5" r="2" fill="#4FB3E8"/><circle cx="32" cy="44.5" r="2.2" fill="#E25A6E"/><circle cx="42" cy="44.5" r="2" fill="#4FB3E8"/>` +
-    `<g clip-path="url(#${id}c)"><path class="crSheen" d="M-14 52 L4 0 L14 0 L-4 52Z" fill="rgba(255,255,255,.6)"/></g></svg>`;
+    `<radialGradient id="${id}t" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFF6CF"/><stop offset=".55" stop-color="#F2C24E"/><stop offset="1" stop-color="#B9822A"/></radialGradient>` +
+    `<radialGradient id="${id}b" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#F3F1E6"/><stop offset="1" stop-color="#CFCBB8"/></radialGradient>` +
+    `<clipPath id="${id}c"><path d="${BODY}"/><rect x="9" y="40" width="46" height="8" rx="2.5"/></clipPath></defs>` +
+    `<path d="${BODY}" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4" stroke-linejoin="round"/>` +
+    `<rect x="9" y="40" width="46" height="8" rx="2.5" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4"/>` +
+    `<path d="M11 44 H53" stroke="rgba(140,94,23,.3)" stroke-width="1" stroke-dasharray="1.2 2.4"/>` +
+    tip(5, 15, 3.6) + tip(32, 7, 4) + tip(59, 15, 3.6) +
+    `<g clip-path="url(#${id}c)"><path class="crSheen" d="M-14 52 L4 0 L14 0 L-4 52Z" fill="rgba(255,255,255,.6)"/></g>` +
+    `<circle cx="32" cy="31" r="7" fill="url(#${id}b)" stroke="#8C5E17" stroke-width="1.2"/>` +
+    `<g fill="rgba(120,110,80,.22)">${DIMPLES.map(([x, y]) => `<circle cx="${32 + x}" cy="${31 + y}" r=".9"/>`).join('')}</g>` +
+    `<ellipse cx="29.6" cy="28.4" rx="2" ry="1.3" fill="rgba(255,255,255,.9)" transform="rotate(-30 29.6 28.4)"/></svg>`;
 }
 
 /* ---------- la semana ---------- */
@@ -54,16 +60,18 @@ export function weekRivals(wk, ch) {
   return rivals;
 }
 export const thisWeek = () => { const wk = weekKey(); return { wk, list: weekChallenges(wk) }; };
-// "2d 14h" · "14h 05m" · "42m"
-export function timeLeft(ms) {
-  const m = Math.max(1, Math.ceil(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60;
-  return d ? `${d}d ${h}h` : h ? `${h}h ${String(mm).padStart(2, '0')}m` : `${mm}m`;
+// lo que queda, en tres casillas: días, horas y minutos (el último día, horas, minutos y segundos)
+export function timeParts(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  const two = n => String(n).padStart(2, '0');
+  return d ? [[String(d), d === 1 ? 'crowns.day' : 'crowns.days'], [two(h), 'crowns.hours'], [two(m), 'crowns.mins']]
+    : [[two(h), 'crowns.hours'], [two(m), 'crowns.mins'], [two(s % 60), 'crowns.secs']];
 }
-const left = () => timeLeft(weekEndsAt() - Date.now());
+const clockHTML = () => timeParts(weekEndsAt() - Date.now()).map(([v, k], i) =>
+  (i ? '<i class="crColon" aria-hidden="true">:</i>' : '') + `<span class="crT"><b>${v}</b><small>${esc(t(k))}</small></span>`).join('');
 
 /* ---------- la sección ---------- */
 const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
-const deckName = id => id === 'ultimate' ? 'Ultimate' : t('ult.short.' + id);
 const PIPS = { warmup: 1, mid: 2, expert: 3 };
 export function crownsSectionHTML(R = loadRecords(), csave = null) {
   const { wk, list } = thisWeek(), won = crownsOf(wk, R), n = R.crowns?.n || 0;
@@ -71,11 +79,11 @@ export function crownsSectionHTML(R = loadRecords(), csave = null) {
   const sparks = Array.from({ length: 7 }, (_, i) => `<span class="crSpark" style="--i:${i}"></span>`).join('');
   const head = `<header class="crHead">` +
     `<span class="crRays" aria-hidden="true"></span>${sparks}` +
-    `<div class="crBadge">${crownSVG(true, 'crBig')}</div>` +
+    `<div class="crMain"><div class="crBadge">${crownSVG(true, 'crBig')}</div>` +
     `<div class="crInfo"><span class="crTitle">${esc(t('crowns.title'))}</span>` +
-    `<span class="crTotal"><b>${n}</b><small>${esc(t(n === 1 ? 'crowns.total1' : 'crowns.total'))}</small></span>` +
-    `<span class="crWeek"><span class="crMinis" title="${esc(t('crowns.weekAria', { n: won.length }))}">${minis}</span>` +
-    `<span class="crTime">${icon('i-timer')}<span>${esc(t('crowns.newIn'))} <b data-crleft>${esc(left())}</b></span></span></span></div>` +
+    `<span class="crTotal"><b>${n}</b><small>${esc(t(n === 1 ? 'crowns.total1' : 'crowns.total'))}</small></span></div></div>` +
+    `<div class="crClock"><span class="crClockLbl">${esc(t('crowns.newIn'))}</span><span class="crTimer" data-crclock>${clockHTML()}</span>` +
+    `<span class="crMinis" title="${esc(t('crowns.weekAria', { n: won.length }))}">${minis}</span></div>` +
     `<button type="button" class="crShare" data-mode="crShare" aria-label="${esc(t('crowns.share'))}" title="${esc(t('crowns.share'))}">${icon('i-share')}</button>` +
     `</header>`;
   const cards = list.map((ch, i) => crownCard(ch, i, wk, won.includes(ch.id), csave?.run?.id === ch.id && csave?.run?.week === wk, R.chStats[ch.id])).join('');
@@ -91,11 +99,10 @@ function crownCard(ch, i, wk, done, saved, st) {
   const end = saved ? `<span class="crSlot"><span class="chCont">${esc(t('menu.continue'))}</span></span>`
     : done ? `<span class="crSlot won">${crownSVG(true, 'crSlotIc')}<small>${esc(t('crowns.won'))}</small></span>`
     : `<span class="crSlot">${crownSVG(false, 'crSlotIc')}<span class="crPlay">${icon('i-play')}${esc(t('modes.play'))}</span></span>`;
-  const dk = decks[0] === 'ultimate' ? '#5E8FA0' : deckById(decks[0]).color; // (el nácar de Ultimate, más oscuro: se lee sobre crema)
-  return `<button class="crCard g-${g}${done ? ' won' : ''}${saved ? ' saved' : ''}" style="--dk:${dk};--n:${i}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" ` +
+  return `<button class="crCard g-${g}${done ? ' won' : ''}${saved ? ' saved' : ''}" style="--n:${i}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" ` +
     `aria-label="${esc(`${name}. ${desc} ${done ? t('crowns.won') : ''}`)}">` +
     `<span class="crPic${decks.length > 1 ? ' two' : ''}">${art}<span class="crChIco">${icon(ch.icon)}</span></span>` +
-    `<span class="crBody"><span class="crTag">${pips}<span>${esc(t('modes.groups.' + g))}</span><em>${esc(decks.map(deckName).join(' + '))}</em></span>` +
+    `<span class="crBody"><span class="crTag">${pips}<span>${esc(t('modes.groups.' + g))}</span></span>` +
     `<b class="crName">${esc(name)}</b><small class="crDesc">${esc(desc)}</small>` +
     `<span class="crMeta"><span class="crM">${icon('i-grid')}${esc(size)}</span>` +
     `<span class="crM crVs"><span class="crFaces">${faces}</span>${esc(diff)}</span>` +
@@ -114,7 +121,8 @@ export function animateCrownTotal() {
   el.textContent = from; requestAnimationFrame(step);
 }
 
-// la cuenta atrás de la cabecera (cada 20 s, mientras se ve); al cambiar de semana, la sección se vuelve a pintar
+// la cuenta atrás de la cabecera (cada segundo, mientras se ve): la casilla que cambia da un salto; al cambiar de semana,
+// la sección se vuelve a pintar
 let tick = null;
 export function startCrownClock(repaint) {
   clearInterval(tick);
@@ -122,9 +130,11 @@ export function startCrownClock(repaint) {
     const sec = document.querySelector('.mdSection.crowns');
     if (!sec || app.screen !== 'modes') { clearInterval(tick); return; }
     if (sec.dataset.week !== weekKey()) { repaint(); return; }
-    const el = sec.querySelector('[data-crleft]');
-    if (el) el.textContent = left();
-  }, 20000);
+    const el = sec.querySelector('[data-crclock]'), parts = timeParts(weekEndsAt() - Date.now()), boxes = el ? [...el.querySelectorAll('.crT')] : [];
+    if (!el || boxes.length !== parts.length || parts.some(([, k], i) => boxes[i].querySelector('small').textContent !== t(k))) { if (el) el.innerHTML = clockHTML(); return; }
+    parts.forEach(([v], i) => { const b = boxes[i].querySelector('b'); if (b.textContent === v) return;
+      b.textContent = v; boxes[i].classList.remove('flip'); void boxes[i].offsetWidth; boxes[i].classList.add('flip'); });
+  }, 1000);
 }
 
 /* ---------- compartir: tus coronas, las de esta semana y tu pelota ---------- */
@@ -139,15 +149,24 @@ function drawCrown(c, x, y, s, gold = true) {
   const g = c.createLinearGradient(x - 30 * s, y - 24 * s, x + 20 * s, y + 24 * s);
   g.addColorStop(0, '#FFF0B0'); g.addColorStop(.45, '#F2C24E'); g.addColorStop(1, '#B9822A');
   const p = crownPath(c, x, y, s);
+  const band = () => { c.beginPath(); c.roundRect(...p(9, 40), 46 * s, 8 * s, 2.5 * s); };
   if (!gold) {
     c.setLineDash([6 * s / 1.6, 5 * s / 1.6]); c.lineWidth = 2.4 * s; c.strokeStyle = 'rgba(255,240,220,.55)'; c.stroke();
-    c.beginPath(); c.roundRect(...p(9, 41), 46 * s, 7 * s, 3 * s); c.stroke(); c.setLineDash([]); return;
+    band(); c.stroke(); c.setLineDash([]); return;
   }
   c.fillStyle = g; c.fill(); c.lineWidth = 1.4 * s; c.strokeStyle = '#8C5E17'; c.lineJoin = 'round'; c.stroke();
-  c.beginPath(); c.roundRect(...p(9, 41), 46 * s, 7 * s, 3 * s); c.fill(); c.stroke();
-  const gem = (px, py, r, col) => { c.beginPath(); c.arc(...p(px, py), r * s, 0, 7); c.fillStyle = col; c.fill(); c.lineWidth = 1.1 * s; c.strokeStyle = '#8C5E17'; c.stroke(); };
-  gem(5, 15, 3.6, '#E25A6E'); gem(32, 7, 4, '#4FB3E8'); gem(59, 15, 3.6, '#E25A6E');
-  for (const [px, col] of [[22, '#4FB3E8'], [32, '#E25A6E'], [42, '#4FB3E8']]) { c.beginPath(); c.arc(...p(px, 44.5), 2.1 * s, 0, 7); c.fillStyle = col; c.fill(); }
+  band(); c.fill(); c.stroke();
+  for (const [px, py, r] of [[5, 15, 3.6], [32, 7, 4], [59, 15, 3.6]]) { // (bolitas de oro)
+    const [cx, cy] = p(px, py), tg = c.createRadialGradient(cx - r * s * .3, cy - r * s * .4, 0, cx, cy, r * s);
+    tg.addColorStop(0, '#FFF6CF'); tg.addColorStop(.55, '#F2C24E'); tg.addColorStop(1, '#B9822A');
+    c.beginPath(); c.arc(cx, cy, r * s, 0, 7); c.fillStyle = tg; c.fill(); c.lineWidth = 1.1 * s; c.strokeStyle = '#8C5E17'; c.stroke();
+  }
+  // la pelota de golf, en el centro
+  const [bx, by] = p(32, 31), bg = c.createRadialGradient(bx - 2.4 * s, by - 2.6 * s, 0, bx, by, 7 * s);
+  bg.addColorStop(0, '#fff'); bg.addColorStop(.7, '#F3F1E6'); bg.addColorStop(1, '#CFCBB8');
+  c.beginPath(); c.arc(bx, by, 7 * s, 0, 7); c.fillStyle = bg; c.fill(); c.lineWidth = 1.2 * s; c.strokeStyle = '#8C5E17'; c.stroke();
+  c.fillStyle = 'rgba(120,110,80,.22)';
+  for (const [dx, dy] of DIMPLES) { c.beginPath(); c.arc(bx + dx * s, by + dy * s, .9 * s, 0, 7); c.fill(); }
 }
 export async function buildCrownImage() {
   await document.fonts?.ready;

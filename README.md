@@ -297,12 +297,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   (`CH_EPOCH`, 2026-W41); uno nuevo entra con `from` sin cambiar las semanas de antes. Cada desafío ganado da **una
   corona** (una por desafío y semana: `records.crowns`); al estrenarlo, cada jugador recibe una corona por cada desafío que
   ya había superado y por cada semana ganada del antiguo semanal (`legacy`), y un aviso breve se lo cuenta la primera vez
-  que entra en Juegos especiales (solo a quien ya jugaba). La sección tiene una cabecera animada (rayos que giran,
-  destellos, la corona que flota con su brillo, el total que sube, las 5 coronas de la semana y la cuenta atrás hasta los
-  nuevos) con el botón de **compartir** arriba a la derecha (una imagen 1080×1350 con tus coronas, las de la semana y tu
-  pelota con la que llevas puesta) y 5 tarjetas detalladas: baraja (o barajas), dificultad, nombre y regla, campo y PAR,
+  que entra en Juegos especiales (solo a quien ya jugaba). Es la primera sección de Juegos especiales (antes que el
+  contrarreloj). Su cabecera es animada: a la izquierda, la corona (de oro, con una pelota de golf en el centro y bolitas
+  de oro en las puntas) que flota con su brillo entre rayos que giran y destellos, y el total, que sube; a la derecha, la
+  cuenta atrás hasta los nuevos en tres casillas grandes (días, horas y minutos; el último día, horas, minutos y
+  segundos), que saltan al cambiar, y debajo las 5 coronas de la semana. El botón de **compartir**, pequeño, arriba a la derecha (una imagen 1080×1350 con tus coronas, las de la semana y tu
+  pelota con la que llevas puesta) y 5 tarjetas detalladas: la ilustración de su baraja (o barajas), dificultad, nombre y regla, campo y PAR,
   los rivales de la semana (los mismos para todos) y su dificultad, tus victorias y, a la derecha, su corona: en silueta
-  con "Jugar" o, ganada, dorada y "Conseguida" (la tarjeta entera pasa a oro). Al ganar, el final dice "+1 corona" y
+  con "Jugar" o, ganada, dorada y "Conseguida" (la tarjeta entera pasa a oro). Al pasar por encima, rojo claro. Al ganar, el final dice "+1 corona" y
   ofrece el siguiente desafío por ganar. Los 10 nuevos: Cochera (las salidas dentro de la vuelta del tren), Ola de calor
   (verano fijo), El bote (casino), Río arcoíris (Ultimate + agua), Lluvia de estrellas (multiverso), Monzón (estaciones +
   agua), Casino en la nieve (estaciones + casino), Casino cósmico (multiverso + casino), Mercancías (tren + agua) y

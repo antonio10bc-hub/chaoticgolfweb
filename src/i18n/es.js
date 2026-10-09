@@ -744,7 +744,7 @@ export default {
     portal: '{name} abre un portal', river: '{name} alarga el río', block: '{name} pone un bloque', corner: '{name} coloca una esquina', tunnel: '{name} pone un túnel', launcher: '{name} coloca una lanzadera', lake: '{name} hace crecer el lago', closer: '{name} se acerca al hoyo', generic: '{name} mueve ficha',
   },
   crowns: {
-    title: 'Desafíos de la semana', total: 'coronas', total1: 'corona', weekAria: '{n} de 5 esta semana', newIn: 'Nuevos en',
+    title: 'Desafíos de la semana', total: 'coronas', total1: 'corona', weekAria: '{n} de 5 esta semana', newIn: 'Nuevos desafíos en', day: 'día', days: 'días', hours: 'horas', mins: 'min', secs: 'seg',
     share: 'Compartir tus coronas', won: 'Conseguida', shareWeek: 'Esta semana: {n} de 5', shareYou: 'Yo', shareBall: 'Pelota: {ball}',
     shareText: '👑 Llevo {n} coronas en los desafíos de Chaotic Golf. ¿Cuántas sacas tú?',
     introTitle: 'Los desafíos, ahora cada semana', intro1: 'Cada lunes, 5 desafíos nuevos de barajas distintas.',

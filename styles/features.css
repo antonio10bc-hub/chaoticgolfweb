@@ -1024,6 +1024,7 @@ html.reduceMotion .dFlame.risk, html.reduceMotion .dFlame.ignite, html.reduceMot
 .setRow.seg .segBtns button { --b-bg: transparent; --b-line: transparent; border-radius: 9px; padding: 8px 6px; font-size: 13px; }
 .setRow.seg .segBtns button:hover { background-color: rgba(255,255,255,.6); }
 .setRow.seg .segBtns button[aria-pressed="true"] { --b-bg: var(--ink); --b-fg: var(--cream); --b-line: var(--ink); }
+.segBtns button[aria-pressed="true"]:hover, .setRow.seg .segBtns button[aria-pressed="true"]:hover, #sndPanel .speedBtns button[aria-pressed="true"]:hover { background-color: #3a3a3a; } /* (marcada: no se aclara al pasar) */
 
 /* ---------- aviso de guardado (barra de la partida) ---------- */
 #gameBar > .barSide:first-child { position: relative; }
@@ -1803,46 +1804,56 @@ html.reduceMotion .dsBarV { animation: none; }
    compacto (container query)
    ========================================================= */
 .mdSection.crowns { padding: 0 !important; overflow: hidden; container-type: inline-size; }
-.crHead { position: relative; display: flex; align-items: center; gap: 18px; padding: 20px 70px 20px 22px; overflow: hidden; isolation: isolate;
+.crHead { position: relative; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px 24px;
+  padding: 20px 64px 20px 22px; overflow: hidden; isolation: isolate;
   color: #FFF4D6; background: radial-gradient(120% 160% at 10% 50%, #D8695C 0%, #B5473F 40%, #6C1F1A 100%); }
-.crRays { position: absolute; z-index: -1; left: 69px; top: 50%; width: 620px; height: 620px; margin: -310px 0 0 -310px; border-radius: 50%;
+.crRays { position: absolute; z-index: -1; left: 70px; top: 50%; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%;
   background: repeating-conic-gradient(rgba(255,226,170,.15) 0 9deg, transparent 9deg 24deg);
   -webkit-mask: radial-gradient(closest-side, #000 25%, transparent 100%); mask: radial-gradient(closest-side, #000 25%, transparent 100%);
   animation: crSpin 48s linear infinite; }
 @keyframes crSpin { to { transform: rotate(1turn); } }
 .crSpark { position: absolute; z-index: -1; width: 9px; height: 9px; background: #FFE9A8; opacity: 0;
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: crTwinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -.47s); }
-.crSpark:nth-of-type(1) { left: 22px; top: 18px; } .crSpark:nth-of-type(2) { left: 118px; top: 12px; transform: scale(.7); }
-.crSpark:nth-of-type(3) { left: 132px; bottom: 16px; } .crSpark:nth-of-type(4) { left: 14px; bottom: 22px; transform: scale(.6); }
-.crSpark:nth-of-type(5) { left: 46%; top: 14px; transform: scale(.6); } .crSpark:nth-of-type(6) { right: 18%; bottom: 14px; }
-.crSpark:nth-of-type(7) { right: 30%; top: 20px; transform: scale(.8); }
+.crSpark:nth-of-type(1) { left: 22px; top: 18px; } .crSpark:nth-of-type(2) { left: 128px; top: 12px; transform: scale(.7); }
+.crSpark:nth-of-type(3) { left: 140px; bottom: 16px; } .crSpark:nth-of-type(4) { left: 14px; bottom: 22px; transform: scale(.6); }
+.crSpark:nth-of-type(5) { left: 44%; top: 14px; transform: scale(.6); } .crSpark:nth-of-type(6) { right: 40%; bottom: 12px; }
+.crSpark:nth-of-type(7) { right: 6%; bottom: 18px; transform: scale(.8); }
 @keyframes crTwinkle { 0%, 100% { opacity: 0; scale: .4; } 45% { opacity: .95; scale: 1.15; } 60% { opacity: .6; scale: .9; } }
-.crBadge { flex: 0 0 auto; width: 96px; height: 96px; display: grid; place-items: center; border-radius: 50%;
+.crMain { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.crBadge { flex: 0 0 auto; width: 104px; height: 104px; display: grid; place-items: center; border-radius: 50%;
   background: radial-gradient(closest-side, rgba(255,220,140,.42), rgba(255,220,140,0)); }
-.crBig { width: 80px; height: 65px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(60,10,5,.35)); animation: crBob 3.4s ease-in-out infinite; }
+.crBig { width: 90px; height: 73px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(60,10,5,.35)); animation: crBob 3.4s ease-in-out infinite; }
 @keyframes crBob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-5px) rotate(3deg); } }
 .crSheen { transform-box: view-box; animation: crSheen 3.6s ease-in-out infinite; }
 @keyframes crSheen { 0%, 55% { transform: translateX(0); } 100% { transform: translateX(96px); } }
-.crInfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.crInfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .crTitle { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
 .crTotal { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
-.crTotal b { font-size: 50px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; }
-.crTotal small { font-size: 16px; font-weight: 500; opacity: .9; }
-.crWeek { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 4px; }
-.crMinis { display: inline-flex; gap: 5px; }
+.crTotal b { font-size: 62px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px rgba(255,210,120,.35); }
+.crTotal small { font-size: 18px; font-weight: 500; opacity: .9; }
+/* el reloj: tres casillas grandes (la que cambia da un salto) y, debajo, las 5 coronas de la semana */
+.crClock { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-left: auto; }
+.crClockLbl { font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
+.crTimer { display: flex; align-items: flex-start; gap: 5px; }
+.crT { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 62px; padding: 8px 8px 6px; border-radius: 14px;
+  background: linear-gradient(180deg, rgba(40,6,4,.38), rgba(40,6,4,.2)); border: 1px solid rgba(255,230,190,.22); }
+.crT b { font-size: 32px; font-weight: 700; line-height: 1; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255,210,120,.4); }
+.crT small { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.crT.flip b { animation: crFlip .45s cubic-bezier(.3,1.5,.5,1); }
+@keyframes crFlip { from { transform: translateY(-40%) scale(.85); opacity: .2; } }
+.crColon { font-style: normal; font-size: 26px; font-weight: 700; line-height: 40px; color: rgba(255,231,166,.75); animation: crBlink 1s steps(1) infinite; }
+@keyframes crBlink { 50% { opacity: .25; } }
+.crMinis { display: inline-flex; gap: 7px; }
 .crMinis i { display: grid; color: rgba(255,240,220,.5); }
-.crMini { width: 24px; height: 20px; }
+.crMini { width: 32px; height: 26px; }
 .crMinis i.on .crMini { animation: crPop .5s cubic-bezier(.3,1.6,.5,1) both; }
 .crMinis i:nth-child(2) .crMini { animation-delay: .06s; } .crMinis i:nth-child(3) .crMini { animation-delay: .12s; }
 .crMinis i:nth-child(4) .crMini { animation-delay: .18s; } .crMinis i:nth-child(5) .crMini { animation-delay: .24s; }
 @keyframes crPop { from { transform: scale(.3); opacity: 0; } }
-.crTime { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 11px 4px 9px; border-radius: 999px; background: rgba(40,6,4,.24); white-space: nowrap; }
-.crTime .i { width: 14px; height: 14px; }
-.crTime b { font-weight: 700; font-variant-numeric: tabular-nums; }
-.crShare { position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; padding: 0; display: grid; place-items: center; border-radius: 50%;
+.crShare { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; padding: 0; display: grid; place-items: center; border-radius: 50%;
   --b-bg: rgba(255,244,214,.14); --b-fg: #FFF4D6; --b-line: rgba(255,244,214,.38); box-shadow: none; }
-.crShare:hover { --b-bg: rgba(255,244,214,.26); transform: scale(1.06); }
-.crShare .i { width: 19px; height: 19px; }
+.crShare:hover { background-color: rgba(255,244,214,.26); transform: scale(1.06); }
+.crShare .i { width: 15px; height: 15px; }
 
 .crList { display: grid; gap: 8px; padding: 12px; }
 button.crCard { --b-bg: rgba(255,255,255,.42); --b-line: var(--cream-line); --gc: var(--mode-challenge);
@@ -1850,7 +1861,7 @@ button.crCard { --b-bg: rgba(255,255,255,.42); --b-line: var(--cream-line); --gc
   border-radius: 16px; position: relative; overflow: hidden; color: var(--ink); white-space: normal; font-weight: 400;
   animation: crIn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--n) * 55ms); transition: transform .2s, border-color .2s, background-color .2s; }
 @keyframes crIn { from { opacity: 0; transform: translateY(10px); } }
-button.crCard:hover { transform: translateY(-2px); border-color: rgba(181,71,63,.45); }
+button.crCard:hover { transform: translateY(-2px); background-color: #FBE3DE; border-color: #E9A398; } /* (el rojo claro de la ilustración del desafío) */
 .crPic { position: relative; flex: 0 0 auto; display: flex; align-items: center; }
 .crPic .crDk { display: grid; width: 50px; height: 50px; }
 .crPic .crDk .dkArt { width: 100%; height: 100%; }
@@ -1863,7 +1874,6 @@ button.crCard:hover { transform: translateY(-2px); border-color: rgba(181,71,63,
 .crCard.g-warmup { --c1: #EE8C80; --c2: #CC5A4E; } .crCard.g-mid { --c1: #D2574B; --c2: #A13A31; } .crCard.g-expert { --c1: #A83830; --c2: #6C1F1A; }
 .crBody { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .crTag { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
-.crTag em { font-style: normal; color: var(--dk); letter-spacing: .02em; text-transform: none; font-size: 11.5px; }
 .crName { font-size: 16px; font-weight: 600; line-height: 1.15; letter-spacing: -.01em; }
 .crDesc { font-size: 12.5px; line-height: 1.3; color: var(--ink-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .crMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; margin-top: 2px; }
@@ -1881,7 +1891,7 @@ button.crCard:hover { transform: translateY(-2px); border-color: rgba(181,71,63,
 button.crCard:hover .crPlay { transform: scale(1.06); }
 /* ganada: dorada, con la corona de oro (aparece con un salto y brilla) */
 button.crCard.won { --b-bg: linear-gradient(160deg, #FFF7DC 0%, #F8E4A4 100%); background: var(--b-bg); --b-line: #D9A93C; }
-button.crCard.won:hover { border-color: #B9822A; }
+button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8C 100%); border-color: #B9822A; }
 .crCard.won::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.55) 50%, transparent 60%);
   transform: translateX(-100%); animation: crCardSheen 5s ease-in-out infinite; animation-delay: calc(var(--n) * .4s); }
 @keyframes crCardSheen { 0%, 70% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
@@ -1889,15 +1899,19 @@ button.crCard.won:hover { border-color: #B9822A; }
 .crSlot.won small { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8C5E17; }
 .crCard.won .crTag, .crCard.won .crDesc { color: #7A6534; }
 .crCard.saved { --b-line: var(--accent); }
-@container (max-width: 560px) {
-  .crHead { gap: 12px; padding: 16px 58px 16px 14px; }
-  .crBadge { width: 70px; height: 70px; }
-  .crBig { width: 60px; height: 49px; }
-  .crRays { left: 49px; }
-  .crTotal b { font-size: 38px; }
-  .crTotal small { font-size: 14px; }
-  .crShare { width: 38px; height: 38px; top: 12px; right: 12px; }
-  .crMini { width: 20px; height: 17px; }
+@container (max-width: 640px) {
+  .crHead { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px 14px 16px; }
+  .crMain { padding-right: 40px; }
+  .crBadge { width: 80px; height: 80px; }
+  .crBig { width: 70px; height: 57px; }
+  .crRays { left: 54px; top: 56px; }
+  .crTotal b { font-size: 48px; }
+  .crTotal small { font-size: 15px; }
+  .crClock { margin: 0; padding: 12px 10px 10px; border-radius: 16px; background: rgba(40,6,4,.16); }
+  .crT { min-width: 56px; padding: 7px 6px 5px; }
+  .crT b { font-size: 27px; }
+  .crMini { width: 28px; height: 23px; }
+  .crShare { top: 14px; right: 14px; }
   .crPic .crDk { width: 42px; height: 42px; }
   .crChIco { left: 26px; width: 22px; height: 22px; }
   .crPic.two .crChIco { left: 50px; }
@@ -1909,6 +1923,7 @@ button.crCard.won:hover { border-color: #B9822A; }
   .crPlay { padding: 6px 10px; font-size: 12px; }
   .crPlay .i { display: none; }
   .crSlot.won small { font-size: 10.5px; }
+}
 }
 /* el aviso del cambio */
 #dialog:has(.crIntro) { width: min(420px, 92vw); }
@@ -1926,6 +1941,6 @@ button.crCard.won:hover { border-color: #B9822A; }
 .winRec.new.crownChip { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
 .winRec.crownChip .i { width: 16px; height: 16px; }
 @media (prefers-reduced-motion: reduce) {
-  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crMinis i.on .crMini, .crSlot.won .crSlotIc { animation: none !important; }
+  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crMinis i.on .crMini, .crSlot.won .crSlotIc, .crT.flip b, .crColon { animation: none !important; }
   .crSpark { opacity: .6; }
 }

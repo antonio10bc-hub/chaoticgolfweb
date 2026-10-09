@@ -741,7 +741,7 @@ export default {
     portal: '{name} opens a portal', river: '{name} extends the river', block: '{name} places a block', corner: '{name} places a corner', tunnel: '{name} places a tunnel', launcher: '{name} places a launcher', lake: '{name} grows the lake', closer: '{name} gets closer to the hole', generic: '{name} makes a move',
   },
   crowns: {
-    title: 'Challenges of the week', total: 'crowns', total1: 'crown', weekAria: '{n} of 5 this week', newIn: 'New in',
+    title: 'Challenges of the week', total: 'crowns', total1: 'crown', weekAria: '{n} of 5 this week', newIn: 'New challenges in', day: 'day', days: 'days', hours: 'hours', mins: 'min', secs: 'sec',
     share: 'Share your crowns', won: 'Earned', shareWeek: 'This week: {n} of 5', shareYou: 'Me', shareBall: 'Ball: {ball}',
     shareText: '👑 I have {n} crowns in the Chaotic Golf challenges. How many can you get?',
     introTitle: 'Challenges are now weekly', intro1: 'Every Monday, 5 new challenges from different decks.',

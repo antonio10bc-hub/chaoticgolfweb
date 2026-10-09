@@ -518,8 +518,7 @@ export function openModes(tab) {
     `<div><dt>${esc(t('modes.rush.statDone'))}</dt><dd>${R.rush.done ?? Math.floor((R.won.rush || 0) / 6)}</dd></div>` +
     `<div><dt>${esc(t('decks.played'))}</dt><dd>${R.rush.runs || 0}</dd></div></dl>` +
     `<div class="dkBtns">${rushBtns}</div></article>`;
-  const specialPanel = rushCard +
-    crownsSectionHTML(R, csave) +
+  const specialPanel = crownsSectionHTML(R, csave) + rushCard + // (primero los desafíos de la semana)
     yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +

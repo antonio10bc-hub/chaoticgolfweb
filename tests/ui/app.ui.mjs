@@ -308,7 +308,7 @@ it('desafíos de la semana: 5 tarjetas con los rivales de la semana; ganar uno d
   assert.equal(await app(() => document.querySelectorAll('.crCard').length), 5);
   assert.equal(await app(() => document.querySelectorAll('.crCard.won').length), 0);
   assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '0');
-  assert.match(await app(() => document.querySelector('[data-crleft]').textContent), /^\d+[dhm]/);
+  assert.equal(await app(() => document.querySelectorAll('[data-crclock] .crT').length), 3, 'la cuenta atrás, en tres casillas');
   const id = await app(() => document.querySelector('.crCard').dataset.mode.split(':')[1]);
   await click('.crCard'); await confirmIfAsked(); await sleep(600);
   const run = await app(async () => { const { app } = window.chaoticGolf, cr = await import('/src/ui/crowns.js'), ch = await import('/src/content/challenges.js');
