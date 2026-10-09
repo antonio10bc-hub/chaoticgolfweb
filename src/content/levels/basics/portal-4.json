@@ -3,37 +3,36 @@
   "puzzle": true,
   "name": "Caída con portal",
   "name_en": "Falling through",
-  "teach": "Si tu salida es un portal, al caerte lo cruzas y sales por el otro.",
-  "teach_en": "If your tee is a portal, when you fall you go through it and out of the other one.",
+  "teach": "Tu salida es un portal: si te caes, lo cruzas y sales por el otro, hacia donde caías.",
+  "teach_en": "Your tee is a portal: fall off and you go through it and out of the other one, in the direction you fell.",
   "cols": 5,
   "rows": 6,
   "tiles": [
     {
       "type": "portal",
-      "x": 2,
-      "y": 1
+      "x": 3,
+      "y": 3
     },
     {
       "type": "portal",
-      "x": 4,
+      "x": 0,
       "y": 5
     }
   ],
-  "hole": {
-    "x": 2,
-    "y": 0
-  },
   "ball": {
-    "x": 0,
-    "y": 3
+    "x": 1,
+    "y": 1
+  },
+  "hole": {
+    "x": 3,
+    "y": 2
   },
   "spawn": {
-    "x": 4,
+    "x": 0,
     "y": 5
   },
   "hand": [
-    "palo1",
-    "palo3"
+    "palo2"
   ],
   "parCells": [],
   "deckCounts": {

@@ -227,15 +227,15 @@ O P . . .
 . . . . .
 . . H . .
 . . . . .` },
-    { id: 'portal-4', name: ['Caída con portal', 'Falling through'], hand: ['palo1', 'palo3'], need: ['fall'],
-      teach: ['Si tu salida es un portal, al caerte lo cruzas y sales por el otro.', 'If your tee is a portal, when you fall you go through it and out of the other one.'],
+    { id: 'portal-4', name: ['Caída con portal', 'Falling through'], hand: ['palo2'], need: ['fall', 'portal'],
+      teach: ['Tu salida es un portal: si te caes, lo cruzas y sales por el otro, hacia donde caías.', 'Your tee is a portal: fall off and you go through it and out of the other one, in the direction you fell.'],
       board: `
-. . H . .
-. . P . .
 . . . . .
-O . . . .
+. O . . .
+. . . H .
+. . . P .
 . . . . .
-. . . . SP` },
+SP . . . .` },
     { id: 'portal-5', from: 'p17', name: ['Por los pelos', 'By a whisker'], hand: ['palo3', 'oHoyoRight', 'palo1'],
       teach: ['Portales, hoyo y una naranja: cuenta bien las casillas.', 'Portals, the hole and an orange card: count the squares carefully.'],
       board: `
@@ -274,15 +274,15 @@ O . . . .` },
 . . . . .
 . b O b .
 . . . . .` },
-    { id: 'classic-4', name: ['Choque en el portal', 'Portal bump'], hand: ['palo3', 'palo1'], need: ['hit', 'portal'],
-      teach: ['Si al salir de un portal hay una pelota, chocas y te quedas en la entrada.', 'If there\'s a ball where you come out of a portal, you hit it and stay at the entrance.'],
+    { id: 'classic-4', name: ['Choque en el portal', 'Portal bump'], hand: ['palo3', 'palo3'], need: ['hit', 'decoy'],
+      teach: ['Si al salir del portal hay una pelota, chocas: se lleva tus pasos y tú te quedas en la entrada.', 'If there\'s a ball where you come out of a portal, you hit it: it takes your steps and you stay at the entrance.'],
       board: `
-. P o . .
+. . . . .
+P o . H .
 . . . . .
 . . . . .
-. O . . .
-. . . H P
-. . . . .` },
+. . . . .
+. . O . P` },
     { id: 'classic-5', name: ['El hoyo en portal', 'Hole through the portal'], hand: ['palo2', 'hoyoRight'], need: ['holeFell', 'holePortal'],
       teach: ['Si la casilla inicial del hoyo es un portal, al caerse lo cruza y sale por el otro.', 'If the hole\'s starting square is a portal, when it falls it goes through and out of the other one.'],
       board: `
