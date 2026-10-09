@@ -148,7 +148,7 @@ function gambleScore(g, p, W, dist) {
     const lost = Math.max(0, home(b) - dist(b)) * .5; // (lo que perdería de media)
     score += ownerOf(id) === p ? -lost * W.self : Math.min(lost, 4) * W.opp;
   }
-  // (caer en la dorada gira la ruleta: 1 de cada 9, gana quien está en ella)
+  // (caer en la dorada gira la ruleta: 1 de cada 9, gana quien está en ella; si es el hoyo, pierde todo el mundo)
   if (S.goldSpinPend != null) score += (S.goldSpinPend === p ? 1 : -1) * WIN / 9;
   const gd = S.gamble.gold, gb = gd && g.ballAt(gd.x, gd.y);
   if (gb && !gb.decoy) {

@@ -8,20 +8,21 @@
                 vacía al azar. La pelota que acaba en el hoyo (o el hoyo que se traga una) ya no la lanza.
      dado       (loseta negra, un cubo como el bloque de madera) lo que choca contra él rebota tantas casillas como marque
                 (en vez de las que le quedaban) y el dado rueda una casilla hacia el otro lado, como un dado de verdad:
-                muestra otra cara. Si no puede rodar (borde, otra pieza, una pelota, el hoyo, una moneda o la casilla
+                muestra otra cara (si rueda hacia un portal, lo cruza como una pelota). Si no puede rodar (borde, otra pieza, una pelota, el hoyo, una moneda o la casilla
                 dorada), da la vuelta en su sitio. Al acabar cada turno, cada dado cambia de número al azar. Cada dado guarda
                 su orientación: t (arriba), n (norte), e (este).
      ruleta     (naranja) gira la ruleta: 4 franjas rojas, 4 negras y 1 dorada. Rojo o negro: las pelotas que están en
                 casillas de ese color vuelven a su salida (las que están dentro del hoyo, no). Dorado: la pelota que está
                 en la casilla dorada gana la partida directamente, sin JAQUE (S.goldWin); si es el hoyo el que está en
-                ella, gana el hoyo y pierde todo el mundo (S.holeWin). Además, la pelota que se para en la casilla dorada
-                gira la ruleta al acabar la jugada (sin carta).
+                ella, gana el hoyo y pierde todo el mundo (S.holeWin). Además, la pelota (o el hoyo) que se para en la
+                casilla dorada gira la ruleta al acabar la jugada (sin carta).
    En las simulaciones de la IA (lite) las monedas no se lanzan: se apuntan en S.coinPend y la IA valora el riesgo.
    Este módulo añade sus métodos a Game (game.js los instala); `this` es la partida.
    ========================================================= */
 import { t } from '../i18n/index.js';
 import { mulberry32, shuffle } from './rng.js';
 import { playerTag, ownerOf } from './multiverse.js';
+import { isPortal } from '../content/tiles/index.js';
 
 export const COINS_PER_PLAYER = 3;
 // la ruleta: el orden de sus franjas (la dorada, entre la última negra y la primera roja)
@@ -181,13 +182,16 @@ export const gamblingMethods = {
     this.S.diceSeq = (this.S.diceSeq || 0) + 1;
     return { id: this.S.diceSeq, t, n, e };
   },
-  // lo han golpeado yendo hacia `dir`: rueda una casilla hacia allí (si puede) y cambia de cara
+  // lo han golpeado yendo hacia `dir`: rueda una casilla hacia allí (si puede) y cambia de cara. Si allí hay un portal, lo
+  // cruza como una pelota: sale por el otro, una casilla más allá en la misma dirección (si esa casilla está libre)
   rollDice(tl, dir) {
-    const [dx, dy] = DIRV[dir], x0 = tl.x, y0 = tl.y, x = x0 + dx, y = y0 + dy;
-    const moved = this.cellFree(x, y) && !this.gambleBlocks(x, y) && !(this.S.train && this.trackIndex(x, y) >= 0);
+    const [dx, dy] = DIRV[dir], x0 = tl.x, y0 = tl.y;
+    let x = x0 + dx, y = y0 + dy, via = null;
+    if (this.inBoard(x, y) && isPortal(this.tileAt(x, y))) [x, y] = this.crossPortals(x, y, dx, dy, (px, py, other) => { via ||= { x: px, y: py, ox: other.x, oy: other.y }; });
+    const moved = this.inBoard(x, y) && this.cellFree(x, y) && !this.gambleBlocks(x, y) && !(this.S.train && this.trackIndex(x, y) >= 0);
     Object.assign(tl, rollFaces(tl, dir));
     if (moved) { tl.x = x; tl.y = y; }
-    this.anim({ t: 'diceRoll', id: tl.id, x0, y0, x: tl.x, y: tl.y, dir, face: { t: tl.t, n: tl.n, e: tl.e }, moved });
+    this.anim({ t: 'diceRoll', id: tl.id, x0, y0, x: tl.x, y: tl.y, dir, face: { t: tl.t, n: tl.n, e: tl.e }, moved, ...(moved && via ? { via } : {}) });
     this.log(moved ? 'log.diceRolls' : 'log.diceTumbles', { n: tl.t });
   },
 
@@ -202,14 +206,15 @@ export const gamblingMethods = {
   },
 
   /* ---------- la ruleta ---------- */
-  // caer en la casilla dorada gira la ruleta (sin carta), si sigue ahí alguien al acabar la jugada. En las simulaciones de la
-  // IA no se gira: se apunta quién está en ella (S.goldSpinPend) y la IA lo valora
+  // caer en la casilla dorada (una pelota o el hoyo) gira la ruleta (sin carta), si sigue ahí al acabar la jugada; con el
+  // dorado gana la pelota… o el hoyo (y pierde todo el mundo). En las simulaciones de la IA no se gira: se apunta quién está
+  // en ella (S.goldSpinPend: el jugador, o 'hole') y la IA lo valora
   goldSpin() {
-    const S = this.S, g = S.gamble?.gold, b = g && this.ballAt(g.x, g.y);
+    const S = this.S, g = S.gamble?.gold, b = g && this.ballAt(g.x, g.y), h = g && this.holeAt(g.x, g.y);
     delete S.goldSpin;
-    if (!b || b.decoy) return;
-    if (this.lite) { S.goldSpinPend = ownerOf(b.player); return; }
-    this.log('log.goldSpin', { b: playerTag(b.player) });
+    if ((!b || b.decoy) && !h) return;
+    if (this.lite) { S.goldSpinPend = h ? 'hole' : ownerOf(b.player); return; }
+    if (h) this.log('log.holeGoldSpin'); else this.log('log.goldSpin', { b: playerTag(b.player) });
     this.spinRoulette();
   },
   spinRoulette() {

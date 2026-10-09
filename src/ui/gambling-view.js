@@ -178,6 +178,13 @@ function diceRoll(ev) {
   renderBoard();
   const cell = cellEl(ev.x, ev.y), pic = cell?.querySelector('.cardOnCell');
   sfx('diceRoll');
+  if (ev.via) { // (ha cruzado un portal: entra por uno y sale por el otro, girando)
+    const a = cellCenterPx(ev.via.x, ev.via.y), b = cellCenterPx(ev.via.ox, ev.via.oy);
+    fxSplashRing(a.px, a.py, 'warp'); setTimeout(() => fxSplashRing(b.px, b.py, 'warp'), 120);
+    sfx('portal');
+    if (pic && !REDUCED) pic.animate([{ transform: 'scale(.15) rotate(-240deg)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .7 }, { transform: 'none' }], { duration: 360, easing: 'ease-out' });
+    return;
+  }
   if (pic && !REDUCED) {
     const { dx, dy } = DIRS[ev.dir];
     cell.style.zIndex = 3;

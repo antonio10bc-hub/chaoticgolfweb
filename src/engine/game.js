@@ -1153,6 +1153,7 @@ export class Game {
       this.anim({ t: 'sink', p: 'b' + b.player });
       this.registerWin(b.player);
     } else if (S.tiles.length) this.bhCheck(h, x, y, 'up', 0); // (multiverso) se ha parado junto a un agujero negro
+    if (!b && S.gamble && this.isHoleObj(h) && this.isGold(h.x, h.y)) S.goldSpin = true; // (casino) el hoyo en la dorada también gira la ruleta
   }
 
   // al mover el hoyo durante un JAQUE, las pelotas que estaban dentro se quedan

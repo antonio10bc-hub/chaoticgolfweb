@@ -561,8 +561,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - **Suelo ajedrezado**: rojo si x + y es par, negro si es impar (`cellColor`). Una casilla es **dorada** (`S.gamble.gold`):
     al azar, entre la fila del hoyo y la de las salidas, sin tocar los bordes de los lados, a 2+ del hoyo y 3+ de las salidas.
     No es de ningún color (la ruleta roja o negra no la toca). Lleva dibujada una ruleta pequeña que gira despacio
-    (`GOLD_ICON`): la pelota que **se para** en ella (no la que pasa) gira la ruleta al acabar la jugada, sin carta
-    (`S.goldSpin` → `goldSpin`); con el dorado, gana. La IA lo valora como 1 de cada 9 victorias (`S.goldSpinPend`).
+    (`GOLD_ICON`): la pelota (o el **hoyo**) que **se para** en ella (no la que pasa) gira la ruleta al acabar la jugada, sin
+    carta (`S.goldSpin` → `goldSpin`); con el dorado, gana esa pelota… o el hoyo, y pierde todo el mundo. La IA lo valora
+    como 1 de cada 9 (`S.goldSpinPend`: el jugador o 'hole').
   - **Monedas**: al empezar, **3 por jugador** en casillas vacías al azar (ni salidas, ni PAR, ni la del hoyo, ni la dorada),
     con un RNG aparte sacado de la semilla (el mazo sale igual). La pelota (o el **hoyo**) que pasa por una (o se para en ella;
     también la golpeada) se la lleva (`coinPick`: se le pega una chapita) y, **al terminar la jugada** (`afterPlay` →
@@ -577,7 +578,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - **Dado** (negra, se pone en una casilla vacía y se queda; como el bloque de madera, pero de marfil y con su número): lo que
     choca contra él (pelota u hoyo) **rebota tantas casillas como marca**, en vez de las que le quedaban, y el dado **rueda una
     casilla hacia el otro lado** como un dado de verdad (`rollFaces`: cara de arriba, norte y este; las opuestas suman 7), así
-    que marca otro número. Si no puede rodar (borde, pieza, pelota, hoyo, moneda o la dorada), da la vuelta en su sitio. El
+    que marca otro número. Si rueda hacia un **portal**, lo cruza como una pelota (sale una casilla más allá del otro). Si no
+    puede rodar (borde, pieza, pelota, hoyo, moneda o la dorada), da la vuelta en su sitio. El
     dedo contra un dado rebota en línea recta y se acaba. Al chocar sale su número («×4») y el dado rueda a la vez que la
     pelota rebota (sin esperar uno al otro). Además, **al acabar cada turno
     cada dado cambia de número** al azar (`diceTurn`). Entre dos dados, como mucho 6 rebotes que reinician las casillas
@@ -598,7 +600,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     si está en la dorada; en sus simulaciones no lanza monedas (`S.coinPend`): valora el riesgo de la cruz (la mitad de lo
     avanzado) y la casilla dorada (más si tiene la ruleta). Con cara, elige su tirada extra con `chooseBonus` (o renuncia si
     no le conviene); en la interfaz, también cuando la cara le sale a un bot fuera de su turno. Equilibrio (`npm run
-    simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8 rondas; ~13 % de las partidas se ganan en la
+    simulate -- --deck gambling`): 100 % terminadas, reparto justo por asiento, ~8 rondas; ~15 % de las partidas acaban en la
     casilla dorada (los bots van a por ella para girar la ruleta).
   - Estadísticas: monedas lanzadas, vueltas de dado y de ruleta (las vueltas a la salida, en «caídas fuera»).
   - **Desafíos del casino** (uno por dificultad, `scene: 'casino'`; el suelo, con `gamble(C, v)`: la casilla dorada diseñada,

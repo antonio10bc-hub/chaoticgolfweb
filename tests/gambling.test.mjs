@@ -313,3 +313,22 @@ test('casilla dorada: pararse en ella gira la ruleta al acabar la jugada (pasar 
   shoot(g, 'right', 'palo2');
   assert.equal(g.S.winner, 0); assert.ok(g.S.goldWin);
 });
+
+test('casilla dorada: el hoyo que se para en ella también gira la ruleta; con el dorado gana el hoyo', () => {
+  let g = level({ hole: { x: 3, y: 0 }, gold: { x: 3, y: 2 } });
+  play(g, 'hoyoDown');
+  assert.deepEqual([g.S.hole.x, g.S.hole.y], [3, 2]);
+  assert.ok(g.takeEvents().some(e => e.t === 'roulette'), 'gira');
+  g = level({ hole: { x: 3, y: 0 }, gold: { x: 3, y: 2 } });
+  g._forceSpin = WHEEL.indexOf('gold');
+  play(g, 'hoyoDown');
+  assert.ok(g.S.holeWin && g.S.winner === -1, 'gana el hoyo: pierde todo el mundo');
+});
+
+test('dado: si rueda hacia un portal, lo cruza como una pelota (sale una casilla más allá del otro)', () => {
+  const g = level({ tiles: [DICE(3, 2, 2), { type: 'portal', x: 4, y: 2 }, { type: 'portal', x: 4, y: 0 }], ball: { x: 1, y: 2 } });
+  shoot(g, 'right', 'palo2'); // (llega a (2,2) y choca: el dado rueda a la derecha, entra en el portal y sale por (4,0) → (5,0))
+  const d = g.S.tiles.find(t => t.type === 'dice');
+  assert.deepEqual([d.x, d.y], [5, 0]);
+  assert.ok(g.takeEvents().some(e => e.t === 'diceRoll' && e.via));
+});
