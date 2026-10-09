@@ -438,7 +438,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     salida y el hoyo a su casilla inicial (`windExit`: el lado del borde donde acaba la ruta). Luego, otra vez en calma. **Plantas carnívoras**: se comen la pelota (o el hoyo) que se queda a su lado o encima (cuenta como caerse); no a
     quien pasa, ni a quien vuelve a su salida.
   - **Verano: incendios** (carta naranja **Incendio** ×1): fuego en una casilla vacía que crece solo una casilla vacía por
-    turno, hasta 5, y dura hasta que cambia la estación. Cruzarlo **suma 2** al tiro; quedarse dentro es como caerse del
+    turno, hasta 5, y dura hasta que cambia la estación. Cruzarlo **suma 2** al tiro (la pelota, o el hoyo, sale ardiendo y
+    sigue en llamas, dejando brasas, hasta que se para: `.ballFlames` en `seasons-view.js`); quedarse dentro es como caerse del
     tablero (también el hoyo). Con el **dedo**, pisarlo (aunque queden pasos) te quema: vuelves a tu salida, pierdes los
     pasos que te quedaban y se acaba tu turno.
   - **Otoño: hojas secas** (6 al llegar y van cayendo más entre turnos): restan 1 al tiro y se rompen. Entre turnos a veces

@@ -206,6 +206,13 @@ function seasonTiles(tiles, from, to) {
   return out;
 }
 const ROT = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+// las llamas de la pieza que ha cruzado el fuego (detrás de ella, con las puntas por encima)
+const FLAMES = '<span class="ballFlames" aria-hidden="true"><svg viewBox="-20 -26 40 44">' +
+  '<path class="fl1" d="M0 -25C7 -14 13 -9 11 2C10 10 5 15 0 15C-5 15-10 10-11 2C-13-9-7-14 0-25Z" fill="#E8733A"/>' +
+  '<path class="fl2" d="M-7 -18C-4 -10 0-6-1 2C-2 8-5 10-8 9C-11 7-13 2-12-4C-11-10-9-13-7-18ZM7 -18C9-13 11-10 12-4C13 2 11 7 8 9C5 10 2 8 1 2C0-6 4-10 7-18Z" fill="#FFB23F"/>' +
+  '<path class="fl3" d="M0 -16C4 -9 7 -5 6 2C5 7 3 9 0 9C-3 9-5 7-6 2C-7-5-4-9 0-16Z" fill="#FFE08A"/></svg></span>';
+// se apaga al pararse: cada paso la mantiene encendida un poco más (y si se va del tablero o entra en el hoyo, se apaga sola)
+export function fireOut(el, ms) { clearTimeout(el._flT); el._flT = setTimeout(() => el.classList.remove('aflame'), ms); }
 export const SEASON_PLAY = {
   async gust(ev) { // el viento la lleva: deprisa, girando, con rachas de aire
     const el = pieceEl(ev.p);
@@ -238,10 +245,15 @@ export const SEASON_PLAY = {
     sfx('ice');
     await wait(10);
   },
-  async flare(ev) { // cruza el fuego: llamarada e impulso
+  async flare(ev) { // cruza el fuego: llamarada e impulso; sale ardiendo hasta que se para (animations.js mantiene las llamas en cada paso)
     const el = pieceEl(ev.p);
     burst(ev.x, ev.y, { n: 10, colors: FIRE_C, size: 7, dist: 26, up: 18, dur: 460, gravity: -10 });
-    if (el) { el.classList.remove('scorched'); void el.offsetWidth; el.classList.add('scorched'); setTimeout(() => el.classList.remove('scorched'), 700); }
+    if (el) {
+      el.classList.remove('scorched'); void el.offsetWidth; el.classList.add('scorched'); setTimeout(() => el.classList.remove('scorched'), 700);
+      if (!el.querySelector('.ballFlames')) el.insertAdjacentHTML('beforeend', FLAMES); // (al final: el primer hijo es la pieza)
+      el.classList.add('aflame');
+      fireOut(el, 900);
+    }
     sfx('flare');
     await wait(30);
   },

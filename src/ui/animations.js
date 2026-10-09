@@ -18,9 +18,10 @@ import { botReact } from './bot-react.js';
 import { unlock } from './achievements.js';
 import { isBot } from './players.js';
 import { playTrain, playWagon, playTrainBump, markTrainRuns } from './train-view.js';
-import { SEASON_PLAY, markSnowRuns, seasonDone } from './seasons-view.js';
+import { SEASON_PLAY, markSnowRuns, seasonDone, fireOut } from './seasons-view.js';
 import { MULTIVERSE_PLAY } from './multiverse-view.js';
 import { GAMBLING_PLAY, gambleDone, diceNumber } from './gambling-view.js';
+const FIRE_C = ['#FFD23F', '#E8873A', '#D9603A', '#FFF0A8']; // (las brasas de quien ha cruzado el fuego)
 
 let combo = 0;
 
@@ -89,6 +90,10 @@ async function playEvent(ev) {
       if (!isHole) { el.classList.remove('glide'); void el.offsetWidth; el.classList.add('glide'); }
       const left = pieceCenterPx(el); // la estela se queda en la casilla que abandona
       setPos(el, ev.x, ev.y, ms, isHole ? JUICE.move.holeEase : ev.iri ? 'linear' : JUICE.move.ease);
+      if (el.classList.contains('aflame')) { // (estaciones) ha cruzado el fuego: arde hasta pararse (el +2 se gasta al final) y deja brasas
+        fxSpawn(left.px, left.py, { n: 8, colors: FIRE_C, size: 6, dist: 16, up: 16, dur: 480, gravity: -14 });
+        fireOut(el, ms + 260);
+      }
       fxTrailPush(left.px, left.py, ev.iri ? 'iri' : trailCol);
       if (ev.iri) { // palo iridiscente: brillo de colores detrás de la pelota
         el.classList.add('iriRun');

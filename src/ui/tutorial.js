@@ -158,8 +158,9 @@ function place() {
 let orangeTimer = null;
 export function orangeCheck() {
   const el = $('coach');
-  // (ya jugada: el aviso no se queda flotando sin su carta)
-  if (el?.classList.contains('orange') && !document.querySelector(el.dataset.target)) hideCoach();
+  // (ya jugada: el bocadillo que señala una carta de la mano —su explicación o el aviso naranja— no se queda flotando sin ella)
+  const tg = el?.dataset.target;
+  if (el?.classList.contains('visible') && tg?.startsWith('#hands') && !document.querySelector(tg)) hideCoach();
   if (load().orangeTip || orangeTimer) return;
   orangeTimer = setTimeout(() => {
     orangeTimer = null;
