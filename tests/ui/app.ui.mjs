@@ -638,9 +638,11 @@ it('idioma: dos banderas en el menú (abajo a la derecha) cambian el idioma en v
 
 it('menú: el botón de Lo básico dice cuántos llevas y, con todos, un tic', async () => {
   await fresh({ chaoticgolf_stats: { version: 1, basics: { 'clubs-1': true, 'clubs-2': true, 'clubs-3': true } } });
-  const n = await app(() => window.chaoticGolf.app.basics.length);
+  // (solo lo más básico: palos y hoyo, los primeros 15; con 145 de golpe asustaba)
+  const n = await app(() => window.chaoticGolf.app.basics.filter(L => L.deck === 'basic').length);
+  assert.equal(n, 15);
   assert.equal(await app(() => document.getElementById('storyProg').textContent), '3/' + n);
-  const ids = await app(() => window.chaoticGolf.app.basics.map(L => L.id));
+  const ids = await app(() => window.chaoticGolf.app.basics.filter(L => L.deck === 'basic').map(L => L.id));
   await fresh({ chaoticgolf_stats: { version: 1, basics: Object.fromEntries(ids.map(id => [id, true])) } });
   assert.ok(await app(() => document.getElementById('storyProg').classList.contains('all')));
 });

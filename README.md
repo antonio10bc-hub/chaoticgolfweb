@@ -678,8 +678,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Campos propios de estos niveles: `spawn` (la salida de la pelota, si no es donde empieza: para enseñar las caídas),
   `home` (la casilla inicial del hoyo, ídem), `season.wind` (la ruta del viento, soplando) y `seed` (con azar —monedas, ruleta, túnel, meteoritos, el dado recién
   puesto—, la misma jugada da siempre el mismo resultado). Cada situación del tablero tiene además su aviso la primera
-  vez que pasa (choque, búnker, portal, salirse, el hoyo que se traga una pelota…). El botón del menú muestra el progreso
-  ("3/30") o un tic gris con todo. El logro "Lo básico, dominado" pide la primera sección entera.
+  vez que pasa (choque, búnker, portal, salirse, el hoyo que se traga una pelota…). El botón del menú y la barra de arriba cuentan solo
+  lo más básico (palos y hoyo: "3/15"; con todos, un tic gris); cada bloque lleva su propio x/y. El logro "Lo básico, dominado" pide la primera sección entera.
   **Diseño:** `tools/basics-design.mjs` es la fuente (tableros en ASCII, leyenda en `tools/lib/basics-ascii.mjs`);
   `tools/lib/basics-solver.mjs` recorre todas las jugadas de un turno con el motor de verdad (las monedas se lanzan, la
   dorada gira) y comprueba que haya solución sin depender del azar, que cada carta haga falta, que ninguna pieza sobre y

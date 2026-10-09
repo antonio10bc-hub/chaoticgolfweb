@@ -27,7 +27,10 @@ export const basicAt = i => app.basics[i] || null;
 export const userLevelAt = j => loadLevels()[j];
 // las dos secciones de Lo básico y los bloques de cada una (una baraja, o una combinación en Lo no tan básico)
 export const SECTIONS = ['basics', 'advanced'];
-export const basicsDone = (R = loadRecords()) => app.basics.filter(L => R.basics[L.id]).length;
+// el contador de arriba y el del menú: solo lo más básico (palos y hoyo, los primeros 15); el resto lleva el suyo en cada bloque
+// (con 145 de golpe asustaba)
+const firstBlock = () => app.basics.filter(L => L.deck === 'basic');
+const firstDone = (R = loadRecords()) => firstBlock().filter(L => R.basics[L.id]).length;
 // ¿la partida en curso es un nivel del creador? (vuelve a Modos de juego)
 export const levelFromModes = () => app.mode === 'story' && !app.variant && app.levelIndex != null;
 
@@ -78,8 +81,8 @@ export function openStory() {
   aiStop();
   const R = loadRecords(), done = R.basics, sv = loadSave('puzzle');
   const next = app.basics.findIndex(L => !done[L.id]);
-  // progreso: "12 de 25 completados" + barra
-  const nb = app.basics.length, nd = basicsDone(R);
+  // progreso: "3 de 15 completados" (lo más básico: palos y hoyo) + barra
+  const nb = firstBlock().length, nd = firstDone(R);
   $('storyProgress').innerHTML = nb ? `<div class="spText"><b>${esc(t('story.progress', { n: nd, total: nb }))}</b>` +
     `${nd === nb ? `<span class="spAll"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>${esc(t('story.allDone'))}</span>` : ''}</div>` +
     `<div class="spBar" role="progressbar" aria-valuemin="0" aria-valuemax="${nb}" aria-valuenow="${nd}"><i style="width:${Math.round(100 * nd / nb)}%"></i></div>` : '';
@@ -137,11 +140,11 @@ export async function playLevelCard(b) {
   if (await confirmReplaceSave(slot)) startLevel(L, 'story', i, { variant: basic ? 'puzzle' : null });
 }
 
-// botón del menú: cuántos niveles de Lo básico llevas ("3/25") o, con todos, un tic gris
+// botón del menú: cuántos llevas de los primeros ("3/15", palos y hoyo) o, con ellos, un tic gris
 export function paintStoryBtn() {
-  const el = $('storyProg'), n = app.basics.length;
+  const el = $('storyProg'), n = firstBlock().length;
   if (!el || !n) return;
-  const done = basicsDone(), all = done === n;
+  const done = firstDone(), all = done === n;
   el.classList.toggle('all', all);
   el.innerHTML = all ? `<svg class="i" aria-hidden="true"><use href="#i-check"/></svg>` : `${done}/${n}`;
   $('storyBtn').setAttribute('aria-label', `${t('menu.story')} · ${all ? t('story.allDone') : t('story.progress', { n: done, total: n })}`);
