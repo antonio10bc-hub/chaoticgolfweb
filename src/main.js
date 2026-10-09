@@ -224,15 +224,19 @@ fxAmbientStart();
     startDaily();
   };
   dailyFromLink();
-  // TEMPORAL (vídeos de cada baraja): …/#vitrina guarda en Tus niveles los niveles vitrina (los que ya estén, no se repiten).
-  // Borrar con src/content/levels/vitrina.js
+  // TEMPORAL (vídeos de cada baraja): los niveles vitrina se guardan solos en Tus niveles, una vez por dispositivo (si los
+  // borras, no vuelven; con …/#vitrina se vuelven a añadir). Borrar con src/content/levels/vitrina.js
+  const VITRINA_KEY = 'chaoticgolf_vitrina';
   const vitrinaFromLink = async () => {
-    if (location.hash !== '#vitrina') return;
-    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin history */ }
+    const link = location.hash === '#vitrina';
+    let done = null; try { done = localStorage.getItem(VITRINA_KEY); } catch (e) { /* sin storage */ }
+    if (!link && done) return;
+    if (link) try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin history */ }
     const [{ VITRINA }, { receiveLevel }, { openModes }] = await Promise.all([import('./content/levels/vitrina.js'), import('./ui/my-levels.js'), import('./ui/screen-modes.js')]);
-    const added = VITRINA.filter(L => !receiveLevel({ ...L, origin: 'own' }).dup).length;
-    toast(added ? `${added} niveles vitrina guardados en Tus niveles` : 'Los niveles vitrina ya estaban en Tus niveles');
-    openModes('special');
+    const added = VITRINA.filter(L => !receiveLevel(L).dup).length;
+    try { localStorage.setItem(VITRINA_KEY, '1'); } catch (e) { /* sin storage */ }
+    if (link) { toast(added ? `${added} niveles vitrina guardados en Tus niveles` : 'Los niveles vitrina ya estaban en Tus niveles'); openModes('special'); }
+    else if (app.screen === 'modes') openModes('special'); // (si ya estaba en Modos de juego, que los vea)
   };
   vitrinaFromLink();
   // enlace con una combinación de Ultimate compartida (…#ultimate=CÓDIGO): la misma partida

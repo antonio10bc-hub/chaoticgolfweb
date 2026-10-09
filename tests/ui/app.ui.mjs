@@ -26,7 +26,8 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', ...seed });
+      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open',
+      chaoticgolf_vitrina: 1, ...seed }); // (TEMPORAL: sin los niveles vitrina en Tus niveles)
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
   await sleep(700);
