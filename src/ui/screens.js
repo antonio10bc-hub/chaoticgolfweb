@@ -70,9 +70,34 @@ export function bindFabAutoHide() {
   window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
 }
 
+// al salir de una partida a su lista (Juegos especiales, Partidas rápidas, Lo básico), la tarjeta de lo que se jugaba: la
+// pantalla se coloca a su altura (y no arriba del todo)
+function anchorOfGame() {
+  const v = app.variant, r = app.run;
+  if (app.mode === 'story' && v === 'puzzle' && app.levelIndex != null) return `#lvlGrid [data-puzzle="${app.levelIndex}"]`;
+  if (app.mode === 'story' && !v && app.levelIndex != null) return `.lvlSection.workshop [data-level="${app.levelIndex}"]`;
+  if (v === 'challenge' && r?.id) return `.crCard[data-chid="${r.id}"]`;
+  if (v === 'rush') return '.rwCard';
+  if (app.mode === 'pve' && !v) return `.deckCard[data-deck="${app.lastPveCfg?.deck || 'classic'}"]`;
+  return null;
+}
+export const returning = { sel: null }; // (la tarjeta a la que volver; Lo básico no hace su propio desplazamiento)
+function scrollToAnchor(s, sel) {
+  returning.sel = sel;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (returning.sel !== sel) return;
+    returning.sel = null;
+    const el = app.screen === s && $(s + 'Screen').querySelector(sel);
+    if (!el || !el.offsetParent) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 70 || r.bottom > innerHeight - 20) el.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }));
+}
+
 export function showScreen(s) {
   document.body.classList.remove('fabHide'); // (cada pantalla empieza arriba, con los botones a la vista)
   const prev = app.screen;
+  const anchor = prev === 'game' && (s === 'modes' || s === 'story') ? anchorOfGame() : null;
   app.screen = s;
   // transición: la pantalla que entra aparece con un fundido suave (salvo movimiento reducido)
   const el = $(s + 'Screen');
@@ -89,6 +114,7 @@ export function showScreen(s) {
   // cada pantalla empieza arriba: si el menú estaba desplazado (móvil), la partida salía cortada por arriba
   // y sin forma de volver (mide lo que la pantalla y no se puede desplazar)
   if (prev !== s && (window.scrollY || document.scrollingElement?.scrollTop)) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  if (anchor) scrollToAnchor(s, anchor); // (volviendo de una partida: a la altura de su tarjeta)
   // fundido corto de la pantalla que entra (Web Animations: no obliga a maquetar antes de tiempo; sin fill, al
   // terminar no deja transform y los botones fijos de dentro siguen fijos)
   if (prev !== s && el && !REDUCED && el.animate) {

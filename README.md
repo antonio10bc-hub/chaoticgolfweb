@@ -213,6 +213,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
+- **Volver a la lista:** al salir de una partida a su lista (Juegos especiales, Partidas rápidas o Lo básico), la
+  pantalla se coloca a la altura de la tarjeta de lo que se jugaba —el desafío, la serie del contrarreloj, tu nivel de El
+  taller, la baraja o el nivel de Lo básico— en lugar de arriba del todo (`anchorOfGame` en `screens.js`).
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
   El reto diario y los desafíos caducan: la partida guardada de ayer (o un desafío de la semana pasada) se borra y sale el reto nuevo.

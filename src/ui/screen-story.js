@@ -16,7 +16,7 @@ import { recordStart, levelBest, turnsLabel, loadRecords } from './records.js';
 import { musicScene } from '../audio/sfx.js';
 import { tutorialStart } from './tutorial.js';
 import { loadProfile } from './profile.js';
-import { showScreen, levelName, confirmReplaceSave, MODE_NAV, newFreeGame } from './screens.js';
+import { showScreen, levelName, confirmReplaceSave, MODE_NAV, newFreeGame, returning } from './screens.js';
 import { applyOwnLook } from './screen-pve.js';
 import { resumeGame } from './resume.js';
 import { openModes, deckArt } from './screen-modes.js';
@@ -126,6 +126,7 @@ export function openStory() {
 // el siguiente, a la vista si queda más abajo (los de las dos primeras filas ya se ven: no se mide nada; y se mide en el
 // fotograma siguiente, para no obligar a maquetar la pantalla en mitad del clic)
 function scrollToNext() {
+  if (returning.sel) return; // (volviendo de un nivel: a la altura de ese nivel, no del siguiente)
   const nx = $('lvlGrid').querySelector('.lvlCard.next');
   if (!nx || +nx.dataset.puzzle < 10) return;
   requestAnimationFrame(() => { if (app.screen === 'story' && nx.getBoundingClientRect().bottom > innerHeight - 40) nx.scrollIntoView({ block: 'center' }); });

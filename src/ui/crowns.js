@@ -97,7 +97,7 @@ function crownCard(ch, i, wk, done, saved, st) {
   const end = saved ? `<span class="crSlot"><span class="chCont">${esc(t('menu.continue'))}</span></span>`
     : done ? `<span class="crSlot won">${crownSVG(true, 'crSlotIc')}<small>${esc(t('crowns.won'))}</small></span>`
     : `<span class="crSlot">${crownSVG(false, 'crSlotIc')}<span class="crPlay">${icon('i-play')}${esc(t('modes.play'))}</span></span>`;
-  return `<button class="crCard g-${g}${done ? ' won' : ''}${saved ? ' saved' : ''}" style="--n:${i}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" ` +
+  return `<button class="crCard g-${g}${done ? ' won' : ''}${saved ? ' saved' : ''}" style="--n:${i}" data-chid="${ch.id}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" ` +
     `aria-label="${esc(`${name}. ${desc} ${done ? t('crowns.won') : ''}`)}">` +
     `<span class="crPic${decks.length > 1 ? ' two' : ''}">${art}<span class="crChIco">${icon(ch.icon)}</span></span>` +
     `<span class="crBody"><span class="crTag">${pips}<span>${esc(t('modes.groups.' + g))}</span></span>` +

@@ -439,7 +439,7 @@ function ultCard(dk, qsave = loadSave('pve'), still = false) {
   const togs = ULT_DECKS.map((id, i) => { const act = !!(mask & (1 << i)), d = deckOfId(id);
     return `<button class="ultTog${act ? ' on' : ''}" data-ult="${id}" aria-pressed="${act}" title="${esc(t('decks.' + id + '.name'))}">` +
       `<span class="ultMark" aria-hidden="true"><svg class="i"><use href="#${act ? 'i-check' : 'i-plus'}"/></svg></span>${deckArt(d)}<span class="ultName">${esc(t('ult.short.' + id))}</span></button>`; }).join('');
-  return `<article class="deckCard ultimate${still ? ' still' : ''}" style="--dk:${dk.color}">` +
+  return `<article class="deckCard ultimate${still ? ' still' : ''}" data-deck="${dk.id}" style="--dk:${dk.color}">` +
     `<header class="ultTop"><span class="ultEmblem">${deckArt(dk)}</span><h3>${esc(t('decks.' + dk.id + '.name'))}</h3><p>${esc(t('decks.' + dk.id + '.desc'))}</p></header>` +
     `<div class="ultTogs" role="group" aria-label="${esc(t('ult.togglesAria'))}">${togs}</div>` +
     `<p class="ultSum"><span>${esc(t('ult.count', { n: on, total: ULT_DECKS.length }))}</span><span class="ultSize"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>${esc(comboLabel(mask))}</span></p>` +
@@ -497,7 +497,7 @@ export function openModes(tab) {
       ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
       : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '') +
         (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '');
-    return `<article class="deckCard${dk.locked ? ' locked' : ''}${dk.ultimate ? ' ultimate' : ''}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
+    return `<article class="deckCard${dk.locked ? ' locked' : ''}${dk.ultimate ? ' ultimate' : ''}" data-deck="${dk.id}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       // (Ultimate: las barajas que reúne, a la derecha de su nombre)
       `<div class="dkMain">${dk.ultimate ? `<div class="ultHead"><h3>${esc(t('decks.' + dk.id + '.name'))}</h3>` +

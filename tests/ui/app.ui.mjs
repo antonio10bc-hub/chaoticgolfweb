@@ -672,6 +672,32 @@ it('menú: el botón de Lo básico dice cuántos llevas y, con todos, un tic', a
   assert.ok(await app(() => document.getElementById('storyProg').classList.contains('all')));
 });
 
+it('al salir de un nivel o un desafío, la lista vuelve a la altura de su tarjeta (no arriba del todo)', async () => {
+  await fresh();
+  const inView = sel => page.evaluate(sel => { const el = document.querySelector(sel), r = el.getBoundingClientRect();
+    return { y: Math.round(scrollY), top: Math.round(r.top), ok: r.top >= 0 && r.bottom <= innerHeight }; }, sel);
+  // un desafío de abajo (Juegos especiales)
+  await click('#modesBtn'); await sleep(300); await click('[data-mtab="special"]'); await sleep(500);
+  const id = await app(() => document.querySelectorAll('.crCard')[4].dataset.chid);
+  await page.evaluate(id => document.querySelector(`.crCard[data-chid="${id}"]`).click(), id); await confirmIfAsked(); await sleep(900);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
+  await click('#menuBtn'); await confirmIfAsked(); await sleep(600);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'modes');
+  const c = await inView(`.crCard[data-chid="${id}"]`);
+  assert.ok(c.ok && c.y > 0, 'el desafío, a la vista: ' + JSON.stringify(c));
+  await app(() => localStorage.removeItem('chaoticgolf_save_challenge'));
+  // un nivel avanzado de Lo básico
+  await click('#modesBack'); await sleep(300);
+  await click('#storyBtn'); await sleep(500);
+  const n = await app(() => Math.min(60, window.chaoticGolf.app.basics.length - 1));
+  await page.evaluate(n => document.querySelector(`#lvlGrid [data-puzzle="${n}"]`).click(), n); await confirmIfAsked(); await sleep(900);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'game');
+  await click('#menuBtn'); await confirmIfAsked(); await sleep(600);
+  assert.equal(await app(() => window.chaoticGolf.app.screen), 'story');
+  const b = await inView(`#lvlGrid [data-puzzle="${n}"]`);
+  assert.ok(b.ok && b.y > 0, 'el nivel, a la vista: ' + JSON.stringify(b));
+});
+
 it('Lo básico: los puzles de un turno, por bloques con filas de 5; superar uno se guarda por su id', async () => {
   await fresh({ chaoticgolf_levelsEpoch: 2, chaoticgolf_stats: { version: 1, puzzles: { 0: true, 1: true } } }); // (antes: p01 y p02 resueltos)
   await click('#storyBtn'); await sleep(400);
