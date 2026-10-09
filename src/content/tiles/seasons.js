@@ -45,15 +45,16 @@ const ICE_PIC = '<svg class="tilePic icePic" viewBox="0 0 100 140" aria-hidden="
   '</svg>';
 
 // dionea: dos lóbulos rojos con dientes que se abren y se cierran despacio, sobre su roseta de hojas
-const JAW = side => `<g class="plantJaw ${side}"><path d="M0 0C${side === 'l' ? '-6 -16 -26 -20 -30 -6C-32 2 -22 6 -12 4' : '6 -16 26 -20 30 -6C32 2 22 6 12 4'}Z" fill="#C8463F"/>` +
+// (el grupo que gira no lleva transform propio ni de sus padres: el desplazamiento va dentro, así el eje de CSS, 50px 62px,
+// cae en la bisagra de la boca y no fuera de la planta)
+const JAW = side => `<g class="plantJaw ${side}"><g transform="translate(50 62)"><path d="M0 0C${side === 'l' ? '-6 -16 -26 -20 -30 -6C-32 2 -22 6 -12 4' : '6 -16 26 -20 30 -6C32 2 22 6 12 4'}Z" fill="#C8463F"/>` +
   `<path d="M0 0C${side === 'l' ? '-6 -12 -20 -14 -24 -5' : '6 -12 20 -14 24 -5'}" fill="none" stroke="#E98A77" stroke-width="3" stroke-linecap="round"/>` +
-  `<path d="${side === 'l' ? 'M-30 -6l-5 -3M-27 -13l-4 -5M-20 -17l-1 -6M-12 -17l2 -6' : 'M30 -6l5 -3M27 -13l4 -5M20 -17l1 -6M12 -17l-2 -6'}" stroke="#F1E6C0" stroke-width="2" stroke-linecap="round"/></g>`;
+  `<path d="${side === 'l' ? 'M-30 -6l-5 -3M-27 -13l-4 -5M-20 -17l-1 -6M-12 -17l2 -6' : 'M30 -6l5 -3M27 -13l4 -5M20 -17l1 -6M12 -17l-2 -6'}" stroke="#F1E6C0" stroke-width="2" stroke-linecap="round"/></g></g>`;
 const PLANT_PIC = '<svg class="tilePic plantPic" viewBox="0 0 100 140" aria-hidden="true">' +
   '<ellipse cx="53" cy="94" rx="30" ry="10" fill="rgba(20,40,10,.22)"/>' +
   '<g fill="#4F8A3A"><path d="M50 92C34 92 20 86 16 76C30 76 42 82 50 92Z"/><path d="M50 92C66 92 80 86 84 76C70 76 58 82 50 92Z"/><path d="M50 92C42 98 30 104 24 102C30 94 42 92 50 92Z"/><path d="M50 92C58 98 70 104 76 102C70 94 58 92 50 92Z"/></g>' +
-  '<path d="M50 92C49 80 50 70 50 62" stroke="#3E7230" stroke-width="5" stroke-linecap="round" fill="none"/>' +
-  '<g transform="translate(50 62)"><g class="plantHead">' + JAW('l') + JAW('r') +
-  '<ellipse cx="0" cy="-1" rx="5" ry="3.6" fill="#8E2B28"/></g></g>' +
+  '<g class="plantHead"><path d="M50 92C49 80 50 70 50 62" stroke="#3E7230" stroke-width="5" stroke-linecap="round" fill="none"/>' + JAW('l') + JAW('r') + // (el tallo, con la cabeza: se mece y se lanza con ella)
+  '<ellipse cx="50" cy="61" rx="5" ry="3.6" fill="#8E2B28"/></g>' +
   '</svg>';
 
 // incendio: lenguas de fuego que tiemblan sobre la hierba quemada, con chispas
