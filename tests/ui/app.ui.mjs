@@ -26,7 +26,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', chaoticgolf_crownsIntro: 1,
+      chaoticgolf_intros: { daily: true, rush: true, rush2: true, rush3: true, challenge: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', chaoticgolf_crownsIntro: 1,
       chaoticgolf_vitrina: 1, ...seed }); // (TEMPORAL: sin los niveles vitrina en Tus niveles)
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
@@ -308,7 +308,7 @@ it('desafíos de la semana: 5 tarjetas con los rivales de la semana; ganar uno d
   assert.equal(await app(() => document.querySelectorAll('.crCard').length), 5);
   assert.equal(await app(() => document.querySelectorAll('.crCard.won').length), 0);
   assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '0');
-  assert.equal(await app(() => document.querySelectorAll('[data-crclock] .crT').length), 3, 'la cuenta atrás, en tres casillas');
+  assert.equal(await app(() => document.querySelectorAll('.mdSection.crowns [data-crclock] .crT').length), 3, 'la cuenta atrás, en tres casillas');
   const id = await app(() => document.querySelector('.crCard').dataset.mode.split(':')[1]);
   await click('.crCard'); await confirmIfAsked(); await sleep(600);
   const run = await app(async () => { const { app } = window.chaoticGolf, cr = await import('/src/ui/crowns.js'), ch = await import('/src/content/challenges.js');

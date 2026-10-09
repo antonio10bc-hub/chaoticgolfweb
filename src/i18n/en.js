@@ -288,7 +288,7 @@ export default {
     puzzleDone: 'Level cleared!', puzzleChip: 'In a single turn', nextPuzzle: 'Next level',
     puzzleFail: 'So close… try again!', puzzleFailSub: 'The turn ended without sinking the ball: there is a way to win with this hand.',
     dailyDone: 'Daily challenge done!', dailyBest: 'Today’s record!', dailyToday: 'your best today: {turns}', streakGoal: '{n}-day streak!', streakChip: '{streak} · goal: {m}',
-    rushHole: 'Hole {n} done!', rushScore: '{base} + {bonus} for time', rushTimeUp: 'Time’s up!', rushReached: 'You reached hole {n}', rushTotal: 'total: {n}', rushDone: 'Time attack over: {n} points!',
+    rushHole: 'Hole {n} done!', rushScore: '{base} + {bonus} for time', rushTimeUp: 'Time’s up!', rushReached: 'You reached hole {n}', rushTotal: 'total: {n}', rushNoMedal: 'Medals are for finishing all 5 holes', medalNew: 'Medal of the week: {medal}!', medalKeep: 'Your medal this week: {medal}', medalNext: '{n} more points for {medal}', rushDone: 'Time attack over: {n} points!',
     nextHole: 'Hole {n}', modes: 'Modes',
     challengeDone: 'Challenge beaten!', challengeChip: 'Challenge beaten', crownNew: '+1 crown! You have {n}', crownHad: 'You already had this crown', nextChallenge: 'Next challenge',
     style: { portal: 'Through the portal!', chain: 'Cannon shot!', swallow: 'The hole came for it!', steal: 'Last-second steal!', long: 'Long shot!', zigzag: 'Zigzag!', first: 'First try!', gold: 'Jackpot!' },
@@ -453,7 +453,7 @@ export default {
     caption: 'Look how I finished my game of Chaotic Golf!', won: 'In {turns}', lost: 'Not this time', and: ' and ', copied: 'Result copied: paste it anywhere', failed: 'Couldn’t copy it' },
   intro: { go: 'Let’s play!',
     daily: { title: 'Daily challenge', points: 'A small board against 2 bots, the same for everyone.|A different mechanic every day: portals, catapults, a river, a box with holes…|Win in as few turns as you can and keep your streak going.' },
-    rush: { title: 'Time attack', points: '5 holes in a row, with very little time each: the clock only runs on your turn.|Two hunters start from the edge of the board and come for you: all they want is to hit your ball. If they fall in the hole, they’re out (they can’t win).|Fewer turns and more seconds to spare, more points. If time runs out, the run is over.' },
+    rush: { title: 'Time attack', points: 'Every Monday, a new run of 5 holes, the same for everyone; replay it as often as you like.|Very little time per hole (it only runs on your turn) and two hunters who only want to hit you.|Finish it for bronze; 2800 points for silver and 4000 for gold.' },
     challenge: { title: 'Challenges', points: 'Games against the bots with one special rule: read it before you start.|Every Monday, 5 new ones from different decks.|Every challenge you win gives you a crown.' },
   },
   decks: {
@@ -509,7 +509,7 @@ export default {
   preview: { tapAgain: 'Tap again', tapHere: 'Tap here' },
   // custom balls (src/ui/skins.js) and the "Your ball" window (src/ui/my-ball.js)
   skins: {
-    unit: { days1: '{n} day', wins1: '{n} win', series1: '{n} run', days: '{n} days', wins: '{n} wins', series: '{n} runs', crowns1: '{n} crown', crowns: '{n} crowns' },
+    unit: { days1: '{n} day', wins1: '{n} win', series1: '{n} run', days: '{n} days', wins: '{n} wins', series: '{n} runs', golds1: '{n} gold', golds: '{n} golds', crowns1: '{n} crown', crowns: '{n} crowns' },
     fire: { name: 'Fire', goal: 'Daily challenge streak' },
     classic: { name: 'Classic', goal: 'Wins with the classic deck' },
     water: { name: 'Water', goal: 'Wins with the water deck' },
@@ -519,7 +519,7 @@ export default {
     cosmos: { name: 'Cosmos', goal: 'Wins with the multiverse deck' },
     fortune: { name: 'Fortune', goal: 'Wins with the casino deck' },
     prism: { name: 'Prism', goal: 'Wins with Ultimate' },
-    bolt: { name: 'Bolt', goal: 'Complete time-attack runs' },
+    bolt: { name: 'Bolt', goal: 'Time-attack gold medals' },
     crown: { name: 'Crown', goal: 'Challenge crowns' },
     puzzle: { name: 'Puzzle', goal: 'The basics, part by part' },
   },
@@ -557,7 +557,7 @@ export default {
   },
   stats: {
     decksH: 'By deck', combos: 'Ultimate: {n} combinations played', more: 'See and share', progressH: 'Progress',
-    specialH: 'Time attack and challenges', rushBest: 'Time attack record', rushDone: 'Full runs', rushRuns: 'Runs played',
+    specialH: 'Time attack and challenges', rushBest: 'Time attack record', rushGold: 'Golds', rushSilver: 'Silvers', rushBronze: 'Bronzes', rushDone: 'Full runs', rushRuns: 'Runs played',
     crowns: 'Crowns', crownWeeks: 'Weeks with all 5', ballsH: 'Your balls',
     tot: { golpes: 'strokes', hundidas: 'sunk', colisiones: 'hits', portales: 'portals', caidas: 'falls', rio: 'river cells',
       lanzadas: 'launches', tuneles: 'tunnels', tren: 'train cells', nieve: 'snowball cells', tragadas: 'swallowed by black holes',
@@ -739,6 +739,16 @@ export default {
     knockOff: '{name} knocks {target} off the board', pushAway: '{name} pushes {target} away from the hole', holeAway: '{name} moves the hole away from {target}',
     holeCloser: '{name} brings the hole closer', bunkerBlock: '{name} puts a bunker in {target}’s way', bunker: '{name} places a bunker',
     portal: '{name} opens a portal', river: '{name} extends the river', block: '{name} places a block', corner: '{name} places a corner', tunnel: '{name} places a tunnel', launcher: '{name} places a launcher', lake: '{name} grows the lake', closer: '{name} gets closer to the hole', generic: '{name} makes a move',
+  },
+  rushw: {
+    title: 'Time attack of the week', total: 'medals', total1: 'medal', newIn: 'New run in', share: 'Share your medals',
+    gold: 'Gold', silver: 'Silver', bronze: 'Bronze', noMedal: 'No medal', finish: 'Finish it', goal: '{n} pts',
+    series: 'This week’s run', seriesSub: '5 holes and 2 hunters, the same for everyone. The clock only runs on your turn.',
+    best: 'Your best this week: {n} points', noBest: 'Not finished this week yet', hole: 'hole', pts: 'pts',
+    improve: 'Improve', continue: 'Continue: hole {n}', restart: 'Start over',
+    shareTitle: 'Your medals', shareWeek: 'This week: {n} points',
+    shareText: '⏱️ This week I got {medal} in the Chaotic Golf time attack ({n} points). Can you beat it?',
+    shareTextNone: '⏱️ The Chaotic Golf time attack of the week: 5 holes, 2 hunters and very little time. Dare you?',
   },
   crowns: {
     title: 'Challenges of the week', total: 'crowns', total1: 'crown', weekAria: '{n} of 5 this week', newIn: 'New challenges in', day: 'day', days: 'days', hours: 'hours', mins: 'min', secs: 'sec',

@@ -7,7 +7,7 @@ import { t } from '../i18n/index.js';
 const KEY = 'chaoticgolf_intros';
 const ICON = { daily: 'i-calendar', rush: 'i-timer', challenge: 'i-crown' };
 // versión de cada presentación: si cambian las reglas del modo, se vuelve a enseñar una vez (contrarreloj 2: los cazadores)
-const VER = { rush: 2 };
+const VER = { rush: 3 }; // (3: la serie de la semana y sus medallas)
 const seenKey = id => VER[id] ? id + VER[id] : id;
 const seen = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
 const markSeen = id => { try { localStorage.setItem(KEY, JSON.stringify({ ...seen(), [seenKey(id)]: true })); } catch (e) { /* sin storage */ } };

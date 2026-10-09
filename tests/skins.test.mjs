@@ -21,8 +21,9 @@ test('racha: el nivel es la mejor racha alcanzada (7 · 30 · 365) y lo que falt
   assert.equal(skinProgress(f, rec({ daily: { bestStreak: 400 } }), PUZ).target, null);
 });
 
-test('barajas: victorias con cada una (minigolf y Ultimate por su id) y series de contrarreloj', () => {
-  const R = rec({ decks: { classic: { w: 50 }, minigolf: { w: 10 }, train: { w: 60 }, ultimate: { w: 100 } }, rush: { done: 5 } });
+test('barajas: victorias con cada una (minigolf y Ultimate por su id) y oros del contrarreloj', () => {
+  const golds = n => Object.fromEntries(Array.from({ length: n }, (_, i) => ['2026-W' + (10 + i), { best: 4100, medal: 'gold' }]));
+  const R = rec({ decks: { classic: { w: 50 }, minigolf: { w: 10 }, train: { w: 60 }, ultimate: { w: 100 } }, rush: { done: 30, weeks: { ...golds(5), '2026-W40': { best: 3000, medal: 'silver' } } } });
   assert.equal(skinProgress(skinById('classic'), R, PUZ).lvl, 2);
   assert.equal(skinProgress(skinById('water'), R, PUZ).lvl, 0);
   assert.equal(skinProgress(skinById('wood'), R, PUZ).lvl, 1);
@@ -31,9 +32,10 @@ test('barajas: victorias con cada una (minigolf y Ultimate por su id) y series d
   assert.equal(skinProgress(skinById('cosmos'), rec({ decks: { multiverse: { w: 55 } } }), PUZ).lvl, 2);
   assert.equal(skinProgress(skinById('fortune'), rec({ decks: { gambling: { w: 12 } } }), PUZ).lvl, 1);
   assert.equal(skinProgress(skinById('prism'), R, PUZ).lvl, 3);
-  assert.equal(skinProgress(skinById('bolt'), R, PUZ).lvl, 2);
-  // antes del contador de series: ~6 victorias por serie
-  assert.equal(skinProgress(skinById('bolt'), rec({ won: { rush: 13 } }), PUZ).lvl, 1);
+  assert.equal(skinProgress(skinById('bolt'), R, PUZ).lvl, 2, '5 oros (la plata no cuenta)');
+  assert.equal(skinProgress(skinById('bolt'), rec({ rush: { done: 40, weeks: {} } }), PUZ).lvl, 0, 'las series completas ya no cuentan');
+  assert.equal(skinProgress(skinById('bolt'), rec({ rush: { weeks: golds(1) } }), PUZ).lvl, 1);
+  assert.equal(skinProgress(skinById('bolt'), rec({ rush: { weeks: golds(15) } }), PUZ).lvl, 3);
 });
 
 test('Corona: por coronas (10 · 50 · 150) y Lo básico (por partes): un nivel por parte completa, en orden', () => {

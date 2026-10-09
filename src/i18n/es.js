@@ -291,7 +291,7 @@ export default {
     puzzleDone: '¡Nivel superado!', puzzleChip: 'En un solo turno', nextPuzzle: 'Siguiente nivel',
     puzzleFail: 'Casi… ¡otra vez!', puzzleFailSub: 'El turno ha terminado sin embocar: hay una forma de ganar con esta mano.',
     dailyDone: '¡Reto del día completado!', dailyBest: '¡Récord del día!', dailyToday: 'tu mejor hoy: {turns}', streakGoal: '¡Racha de {n} días!', streakChip: '{streak} · meta: {m}',
-    rushHole: '¡Hoyo {n} completado!', rushScore: '{base} + {bonus} por tiempo', rushTimeUp: '¡Se acabó el tiempo!', rushReached: 'Llegaste al hoyo {n}', rushTotal: 'total: {n}', rushDone: '¡Contrarreloj terminado: {n} puntos!',
+    rushHole: '¡Hoyo {n} completado!', rushScore: '{base} + {bonus} por tiempo', rushTimeUp: '¡Se acabó el tiempo!', rushReached: 'Llegaste al hoyo {n}', rushTotal: 'total: {n}', rushNoMedal: 'La medalla, terminando los 5 hoyos', medalNew: '¡Medalla de la semana: {medal}!', medalKeep: 'Tu medalla de la semana: {medal}', medalNext: 'Te faltan {n} puntos para {medal}', rushDone: '¡Contrarreloj terminado: {n} puntos!',
     nextHole: 'Hoyo {n}', modes: 'Modos',
     challengeDone: '¡Desafío superado!', challengeChip: 'Desafío superado', crownNew: '¡+1 corona! Llevas {n}', crownHad: 'Ya tenías esta corona', nextChallenge: 'Siguiente desafío',
     style: { portal: '¡De portal!', chain: '¡Carambola!', swallow: '¡El hoyo fue a por ella!', steal: '¡Robo en el último segundo!', long: '¡Tiro largo!', zigzag: '¡En zigzag!', first: '¡A la primera!', gold: '¡Bote!' },
@@ -456,7 +456,7 @@ export default {
     caption: '¡Mira cómo he terminado mi partida de Chaotic Golf!', won: 'En {turns}', lost: 'Esta vez no', and: ' y ', copied: 'Resultado copiado: pégalo donde quieras', failed: 'No se ha podido copiar' },
   intro: { go: '¡A jugar!',
     daily: { title: 'Reto diario', points: 'Un tablero pequeño contra 2 bots, igual para todo el mundo.|Cada día, una mecánica distinta: portales, catapultas, un río, una caja con agujeros…|Gana en los menos turnos posibles y mantén tu racha de días.' },
-    rush: { title: 'Contrarreloj', points: '5 hoyos seguidos, con muy poco tiempo cada uno: el reloj solo corre en tu turno.|Dos cazadores salen del borde del tablero a por ti: solo quieren golpear tu pelota. Si entran en el hoyo, se van (no ganan).|Menos turnos y más segundos de sobra, más puntos. Si el tiempo llega a cero, se acaba la serie.' },
+    rush: { title: 'Contrarreloj', points: 'Cada lunes, una serie nueva de 5 hoyos, igual para todos; repítela cuantas veces quieras.|Muy poco tiempo por hoyo (solo corre en tu turno) y dos cazadores que solo quieren golpearte.|Termínala para el bronce; con 2800 puntos, plata, y con 4000, oro.' },
     challenge: { title: 'Desafíos', points: 'Partidas contra la máquina con una regla especial: léela antes de empezar.|Cada lunes, 5 nuevos, de barajas distintas.|Cada desafío que ganes te da una corona.' },
   },
   decks: {
@@ -512,7 +512,7 @@ export default {
   preview: { tapAgain: 'Toca otra vez', tapHere: 'Toca aquí' },
   // pelotas personalizadas (src/ui/skins.js) y la ventana "Tu pelota" (src/ui/my-ball.js)
   skins: {
-    unit: { days1: '{n} día', wins1: '{n} victoria', series1: '{n} serie', days: '{n} días', wins: '{n} victorias', series: '{n} series', crowns1: '{n} corona', crowns: '{n} coronas' },
+    unit: { days1: '{n} día', wins1: '{n} victoria', series1: '{n} serie', days: '{n} días', wins: '{n} victorias', series: '{n} series', golds1: '{n} oro', golds: '{n} oros', crowns1: '{n} corona', crowns: '{n} coronas' },
     fire: { name: 'Fuego', goal: 'Racha del reto diario' },
     classic: { name: 'Clásica', goal: 'Victorias con la baraja clásica' },
     water: { name: 'Agua', goal: 'Victorias con la baraja de agua' },
@@ -522,7 +522,7 @@ export default {
     cosmos: { name: 'Cosmos', goal: 'Victorias con la baraja del multiverso' },
     fortune: { name: 'Fortuna', goal: 'Victorias con la baraja del casino' },
     prism: { name: 'Prisma', goal: 'Victorias con Ultimate' },
-    bolt: { name: 'Rayo', goal: 'Series de contrarreloj completas' },
+    bolt: { name: 'Rayo', goal: 'Medallas de oro del contrarreloj' },
     crown: { name: 'Corona', goal: 'Coronas de los desafíos' },
     puzzle: { name: 'Puzle', goal: 'Lo básico, por partes' },
   },
@@ -560,7 +560,7 @@ export default {
   },
   stats: {
     decksH: 'Por baraja', combos: 'Ultimate: {n} combinaciones jugadas', more: 'Ver y compartir', progressH: 'Progreso',
-    specialH: 'Contrarreloj y desafíos', rushBest: 'Récord del contrarreloj', rushDone: 'Series completas', rushRuns: 'Series jugadas',
+    specialH: 'Contrarreloj y desafíos', rushBest: 'Récord del contrarreloj', rushGold: 'Oros', rushSilver: 'Platas', rushBronze: 'Bronces', rushDone: 'Series completas', rushRuns: 'Series jugadas',
     crowns: 'Coronas', crownWeeks: 'Semanas con las 5', ballsH: 'Tus pelotas',
     tot: { golpes: 'golpes', hundidas: 'embocadas', colisiones: 'choques', portales: 'portales', caidas: 'caídas fuera', rio: 'casillas por el río',
       lanzadas: 'lanzamientos', tuneles: 'túneles', tren: 'casillas del tren', nieve: 'casillas de la bola de nieve', tragadas: 'tragadas por agujeros negros',
@@ -742,6 +742,16 @@ export default {
     knockOff: '{name} saca del tablero a {target}', pushAway: '{name} aparta a {target} del hoyo', holeAway: '{name} aleja el hoyo de {target}',
     holeCloser: '{name} se acerca el hoyo', bunkerBlock: '{name} pone un búnker en el camino de {target}', bunker: '{name} coloca un búnker',
     portal: '{name} abre un portal', river: '{name} alarga el río', block: '{name} pone un bloque', corner: '{name} coloca una esquina', tunnel: '{name} pone un túnel', launcher: '{name} coloca una lanzadera', lake: '{name} hace crecer el lago', closer: '{name} se acerca al hoyo', generic: '{name} mueve ficha',
+  },
+  rushw: {
+    title: 'Contrarreloj de la semana', total: 'medallas', total1: 'medalla', newIn: 'Nueva serie en', share: 'Compartir tus medallas',
+    gold: 'Oro', silver: 'Plata', bronze: 'Bronce', noMedal: 'Sin medalla', finish: 'Termínala', goal: '{n} pts',
+    series: 'La serie de la semana', seriesSub: '5 hoyos y 2 cazadores, iguales para todos. El reloj solo corre en tu turno.',
+    best: 'Tu mejor esta semana: {n} puntos', noBest: 'Aún sin completar esta semana', hole: 'hoyo', pts: 'pts',
+    improve: 'Mejorar', continue: 'Seguir: hoyo {n}', restart: 'Empezar de nuevo',
+    shareTitle: 'Tus medallas', shareWeek: 'Esta semana: {n} puntos',
+    shareText: '⏱️ Esta semana he sacado {medal} en el contrarreloj de Chaotic Golf ({n} puntos). ¿Lo mejoras?',
+    shareTextNone: '⏱️ El contrarreloj de la semana de Chaotic Golf: 5 hoyos, 2 cazadores y muy poco tiempo. ¿Te atreves?',
   },
   crowns: {
     title: 'Desafíos de la semana', total: 'coronas', total1: 'corona', weekAria: '{n} de 5 esta semana', newIn: 'Nuevos desafíos en', day: 'día', days: 'días', hours: 'horas', mins: 'min', secs: 'seg',

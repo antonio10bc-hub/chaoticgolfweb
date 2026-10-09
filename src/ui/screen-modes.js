@@ -12,7 +12,7 @@
 import { track } from './analytics.js';
 import { app } from './app.js';
 import { $, esc } from './dom.js';
-import { mulberry32, randomSeed } from '../engine/rng.js';
+import { mulberry32 } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { Game } from '../engine/game.js';
 import { modeArt } from './mode-art.js';
@@ -21,7 +21,7 @@ import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
-import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo, winCrown, crownsOf } from './records.js';
+import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo, winCrown, crownsOf, recordRushWeek } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, placeHunters, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
@@ -39,6 +39,7 @@ import { SEASON_ICON } from './season-art.js';
 import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
 import { WHEEL } from '../engine/gambling.js';
 import { challengeById, challengeCfg, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
+import { rushSectionHTML, shareRush } from './rush-week.js';
 import { crownsSectionHTML, thisWeek, weekRivals, startCrownClock, shareCrowns, maybeCrownsIntro, animateCrownTotal } from './crowns.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
@@ -205,14 +206,21 @@ export const rushScore = (turns, secsLeft) => {
   const bonus = Math.max(0, Math.round(secsLeft * 5));
   return { base, bonus, total: base + bonus };
 };
-function newRush() {
-  const s = randomSeed();
-  return { seeds: Array.from({ length: RUSH_HOLES }, (_, i) => (s + i * 7919) >>> 0), hole: 0, total: RUSH_HOLES, scores: [] };
+// la serie de la semana: la misma para todo el mundo (sus hoyos, sus cazadores y, con decide en ai-driver.js, lo que hacen)
+export function newRush(week = weekKey()) {
+  const s = seedOf('rushWeek:' + week);
+  return { week, seeds: Array.from({ length: RUSH_HOLES }, (_, i) => (s + i * 7919) >>> 0), hole: 0, total: RUSH_HOLES, scores: [] };
+}
+// la serie a medias, si es de esta semana (la de la semana pasada ya no vale)
+export function rushRun() {
+  const r = store.get(RUSH_KEY);
+  if (r && r.week !== weekKey()) { store.set(RUSH_KEY, null); return null; }
+  return r;
 }
 // cada hoyo: un campo generado (dificultad 0…4) y dos cazadores en el borde que solo quieren golpearte (si entran en el
 // hoyo, salen de la partida). Es una partida contra la máquina (la IA mueve a los cazadores); empiezas tú
-export function startRushHole(run = store.get(RUSH_KEY)) {
-  if (!run) run = newRush();
+export function startRushHole(run = rushRun()) {
+  if (!run || run.week !== weekKey()) run = newRush();
   store.set(RUSH_KEY, run);
   const seed = run.seeds[run.hole], lvl = generateLevel(seed, run.hole);
   lvl.hunters = placeHunters(lvl, seed, RUSH_HUNTERS);
@@ -236,8 +244,8 @@ export async function startRush(fresh) {
   if (!await modeIntro('rush')) return;
   if (!await confirmReplaceSave('rush')) return;
   if (fresh) store.set(RUSH_KEY, null);
-  if (fresh || !store.get(RUSH_KEY)) recordStart('rush');
-  startRushHole(fresh ? newRush() : store.get(RUSH_KEY) || newRush());
+  if (fresh || !rushRun()) recordStart('rush');
+  startRushHole(fresh ? newRush() : rushRun() || newRush());
 }
 const rushLeft = r => Math.max(0, (r.limit || 90) - (r.elapsed || 0));
 // al embocar en contrarreloj: puntos del hoyo, total y siguiente (o final)
@@ -247,12 +255,13 @@ export function rushHoleDone() {
   const scores = [...(run.scores || []), sc.total];
   const sum = scores.reduce((a, b) => a + b, 0);
   const last = run.hole + 1 >= run.total;
-  let newBest = false;
+  let newBest = false, week = null;
   if (last) {
     store.set(RUSH_KEY, null);
     updateRecords(d => { d.rush.runs++; d.rush.done = (d.rush.done ?? Math.floor((d.won.rush || 0) / 6)) + 1; if (sum > d.rush.best) { newBest = true; d.rush.best = sum; } d.won.rush++; });
-  } else store.set(RUSH_KEY, { seeds: run.seeds, hole: run.hole + 1, total: run.total, scores });
-  return { sc, sum, last, newBest, turns, best: loadRecords().rush.best };
+    week = recordRushWeek(run.week || weekKey(), sum); // (su medalla de la semana)
+  } else store.set(RUSH_KEY, { week: run.week, seeds: run.seeds, hole: run.hole + 1, total: run.total, scores });
+  return { sc, sum, last, newBest, turns, best: loadRecords().rush.best, week };
 }
 // se acabó el tiempo: la serie termina con lo sumado hasta ahora
 function rushTimeUp() {
@@ -470,7 +479,6 @@ export function openModes(tab) {
   if (TABS.includes(tab)) modesTab = tab;
   const R = loadRecords();
   const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge');
-  const rush = store.get(RUSH_KEY);
   const btn = (act, label, main = true, dis = false) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}"${dis ? ' disabled' : ''}>${esc(label)}</button>`;
   const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
   const stat = (icon, txt) => `<span class="mdStat"><svg class="i" aria-hidden="true"><use href="#${icon}"/></svg>${esc(txt)}</span>`;
@@ -510,17 +518,7 @@ export function openModes(tab) {
 
   /* ---- juegos especiales ---- */
   // una sola línea con lo importante (récord, hoyo a medias) y el botón a la derecha
-  // contrarreloj: una tarjeta como las de las barajas (su cronómetro ilustrado, qué es, sus cifras y el botón)
-  const rushBtns = rsave ? cont('resume:rush') : rush ? cont('rush', t('modes.rush.continue', { n: rush.hole + 1 })) + btn('rushNew', t('modes.restartRun'), false) : btn('rushNew', t('modes.play'));
-  const rushCard = `<article class="deckCard rushCard" style="--dk:var(--mode-rush)">` +
-    `<div class="dkPic">${modeArt('rush', 'dkArt')}</div>` +
-    `<div class="dkMain"><h3>${esc(t('modes.rush.title'))}</h3><p>${esc(t('modes.rush.sub'))}</p>` +
-    (rush ? `<div class="mdStats">${stat('i-timer', t('modes.holeN', { n: rush.hole + 1, total: rush.total }))}</div>` : '') + `</div>` +
-    `<dl class="dkStats"><div><dt>${esc(t('modes.rush.statBest'))}</dt><dd>${R.rush.best || 0}</dd></div>` +
-    `<div><dt>${esc(t('modes.rush.statDone'))}</dt><dd>${R.rush.done ?? Math.floor((R.won.rush || 0) / 6)}</dd></div>` +
-    `<div><dt>${esc(t('decks.played'))}</dt><dd>${R.rush.runs || 0}</dd></div></dl>` +
-    `<div class="dkBtns">${rushBtns}</div></article>`;
-  const specialPanel = crownsSectionHTML(R, csave) + rushCard + // (primero los desafíos de la semana)
+  const specialPanel = crownsSectionHTML(R, csave) + rushSectionHTML(R, rushRun(), rsave) + // (primero los desafíos de la semana)
     yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
@@ -629,6 +627,7 @@ export function bindModes() {
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
       case 'crShare': shareCrowns(); break;
+      case 'rwShare': shareRush(); break;
       case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
       case 'ultHist': openComboHistory({ deckArt, onPick: m => { setCombo(m); paintUlt(); } }); break;
       case 'editor': openEditor(); break;
@@ -642,7 +641,7 @@ export function bindModes() {
     const i = TABS.indexOf(modesTab) + (e.key === 'ArrowRight' ? 1 : -1);
     if (TABS[i]) setModesTab(TABS[i], { focus: true });
   });
-  MODE_NAV.rush = { back: () => openModes('special'), restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
+  MODE_NAV.rush = { back: () => openModes('special'), restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } }; // (otra vez la serie de la semana)
   MODE_NAV.challenge = { back: () => openModes('special'), restart: () => startChallenge(app.run?.id) };
 }
 async function yoursAction(b) {

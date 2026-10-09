@@ -163,7 +163,7 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 De vez en cuando cruza el tablero una ráfaga de viento (`shape: 'wind'` en `src/fx/particles.js`): una estela que
 se traza, avanza ondulando y acaba en un remolino pequeño; a veces va acompañada de otra más fina.
 
-**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para el contrarreloj (cronómetro; su tarjeta es como la de las barajas, con récord, series completas y jugadas), los desafíos de la semana (su cabecera de coronas), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
+**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para los desafíos de la semana (su cabecera de coronas), el contrarreloj de la semana (su cabecera de medallas), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
 
 **Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
 
@@ -270,7 +270,15 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
-  multijugador local. **Juegos especiales** —  contrarreloj (5 hoyos generados con muy poco tiempo cada uno —40, 45, 50, 55 y
+  multijugador local. **Juegos especiales** —  el **contrarreloj de la semana** (`src/ui/rush-week.js`: cada lunes una
+  serie fija, la misma para todo el mundo —sus hoyos, sus cazadores y, con `decide` en `ai-driver.js`, lo que hacen—, que
+  se repite cuantas veces se quiera; no hay serie libre. Cada semana da una medalla, la mejor: bronce por terminarla,
+  plata desde 2800 puntos y oro desde 4000 —`RUSH_MEDALS` en `records.js`, `records.rush.weeks`—. Su sección va detrás de
+  los desafíos, con la misma cabecera en azul —tus medallas de siempre (oro, plata, bronce), la cuenta atrás hasta la serie
+  nueva y compartir: una imagen con tu medalla de la semana, tus medallas y tu pelota— y la tarjeta de la serie: sus 5
+  hoyos —a medias, los hechos con sus puntos y el siguiente—, tu mejor resultado de la semana y las tres medallas sobre su
+  barra; con medalla, la tarjeta toma su color. Al terminar, el final dice la medalla y cuánto falta para la siguiente;
+  la serie a medias o guardada de la semana pasada caduca. Cada serie: 5 hoyos generados con muy poco tiempo cada uno —40, 45, 50, 55 y
   60 s: `RUSH_LIMITS`— que solo corre en tu turno; el tablero se tiñe de rojo según se acaba; puntos por tus turnos y
   segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
   mecánica —búnker; río y pelota de obstáculo; portales y madera; lago, esquinas y lanzadera; todo en campo grande—,
@@ -355,7 +363,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   `styles/skins.css`): una ventana con tu pelota en grande sobre un green (con la que llevas puesta y tu color) y, debajo,
   las 10 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días), **Clásica**, **Agua**, **Madera**, **Vapor**, **Estaciones**,
-  **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (series de contrarreloj completas: 1 · 5 · 15),
+  **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (medallas de oro del contrarreloj: 1 · 5 · 15),
   **Corona** (coronas de los desafíos: 10 · 50 · 150) y **Puzle** (Lo básico por
   partes: palos, clásica, agua y minigolf · tren, estaciones, multiverso y casino · Lo no tan básico). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
   **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
@@ -726,7 +734,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   secciones (`src/ui/stats-sections.js`): victorias **por baraja** (todas, Ultimate incluida, y cuántas combinaciones
   has jugado), **partida rápida**, **reto diario** (jugados, % ganados, racha actual y máxima; "Ver y compartir" abre su
   ventana), **progreso** (Lo básico por bloques —palos y hoyo, cada baraja— y Lo no tan básico, y los desafíos por grupo), **contrarreloj y
-  desafíos** (récord, series completas y jugadas, coronas y semanas con las 5), **tus pelotas**
+  desafíos** (récord, series completas y jugadas, oros, platas y bronces, coronas y semanas con las 5), **tus pelotas**
   (cada una con su nivel), logros, **totales** de la mesa (golpes, embocadas, choques, portales, caídas y lo de cada
   mecánica: casillas por el río, lanzamientos, túneles, casillas del tren y de la bola de nieve, tragadas por agujeros
   negros, meteoritos) y los mejores resultados de tus niveles.

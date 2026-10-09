@@ -24,6 +24,7 @@ import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challeng
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
 import { openShareDialog, prepareShare, shareNow } from './share-play.js';
+import { medalSVG, rushMedalLabel, RUSH_GOAL } from './rush-week.js';
 
 export const hideWin = () => $('winOverlay').classList.remove('visible');
 
@@ -134,7 +135,10 @@ export function showWin() {
       chips = recChip(t('win.rushScore', { base: r.sc.base, bonus: r.sc.bonus }), true) + recChip(t('win.rushTotal', { n: r.sum }));
       if (r.last) {
         $('winMsg').textContent = t('win.rushDone', { n: r.sum });
-        chips += r.newBest ? recChip(t('stats.newBest'), true) : recChip(t('modes.rush.best', { n: r.best }));
+        // la medalla de la semana (nueva o la que ya tenías) y lo que falta para la siguiente
+        const w = r.week, next = w && (w.medal === 'bronze' ? 'silver' : w.medal === 'silver' ? 'gold' : null);
+        if (w) chips += `<span class="winRec${w.upgraded ? ' new' : ''} medalChip m-${w.medal}">${medalSVG(w.medal, 'wrMedal')}${esc(t(w.upgraded ? 'win.medalNew' : 'win.medalKeep', { medal: rushMedalLabel(w.medal) }))}</span>`;
+        if (next) chips += recChip(t('win.medalNext', { n: Math.max(0, RUSH_GOAL[next] - w.best), medal: rushMedalLabel(next) }));
         btns = btn('rushNew', t('modes.again'), true) + btn('modes', t('win.modes'));
       } else btns = btn('rushNext', t('win.nextHole', { n: app.run.hole + 2 }), true) + btn('modes', t('win.modes'));
       break;
@@ -231,8 +235,8 @@ export function showRushTimeUp({ sum, newBest, hole, best }) {
   $('winOverlay').classList.add('lost');
   $('winStyle').innerHTML = '';
   $('winChips').innerHTML = `<span class="winRec">${esc(t('win.rushReached', { n: hole }))}</span>` +
-    `<span class="winRec${newBest ? ' new' : ''}">${esc((newBest ? t('stats.newBest') + ' · ' : '') + t('win.rushTotal', { n: sum }))}</span>` +
-    (!newBest ? `<span class="winRec">${esc(t('modes.rush.best', { n: best }))}</span>` : '');
+    `<span class="winRec">${esc(t('win.rushTotal', { n: sum }))}</span>` +
+    `<span class="winRec">${esc(t('win.rushNoMedal'))}</span>`; // (la medalla, solo con la serie completa)
   $('winStats').innerHTML = ''; $('winSummary').innerHTML = ''; $('winRoute').innerHTML = ''; $('winWhy').innerHTML = '';
   $('winOverlay').querySelector('.box').style.borderColor = 'transparent';
   $('winBtns').innerHTML = `<button data-act="rushNew" class="btn-primary btn-lg">${esc(t('modes.again'))}</button><button data-act="modes" class="btn-light">${esc(t('win.modes'))}</button>`;

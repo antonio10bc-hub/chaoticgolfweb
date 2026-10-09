@@ -1939,3 +1939,68 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
   .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crSlot.won .crSlotIc, .crT.flip b { animation: none !important; }
   .crSpark { opacity: .6; }
 }
+
+/* =========================================================
+   Contrarreloj de la semana (rush-week.js): la misma cabecera que los desafíos, en azul (tus medallas de siempre, la cuenta
+   atrás y compartir), y la tarjeta de la serie: sus 5 hoyos y las tres medallas sobre su barra. Con medalla esta semana, la
+   tarjeta toma su color (oro, plata o bronce)
+   ========================================================= */
+.mdSection.rushWeek { padding: 0 !important; overflow: hidden; container-type: inline-size; }
+.rwHead { color: #F4F8FF; background: radial-gradient(120% 160% at 10% 50%, #6E9BD6 0%, #3F6FA8 42%, #1F3A63 100%); }
+.rwHead .crRays { background: repeating-conic-gradient(rgba(220,236,255,.13) 0 9deg, transparent 9deg 24deg); }
+.rwHead .crBadge { background: radial-gradient(closest-side, rgba(255,226,150,.36), rgba(255,226,150,0)); }
+.rwHead .crT { background: linear-gradient(180deg, rgba(8,20,40,.4), rgba(8,20,40,.2)); border-color: rgba(210,230,255,.24); }
+.rwHead .crShare { --b-bg: rgba(230,240,255,.14); --b-fg: #F4F8FF; --b-line: rgba(230,240,255,.4); }
+.rwHead .crShare:hover { background-color: rgba(230,240,255,.26); }
+.rwBig { width: 66px; height: 82px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(8,20,40,.35)); animation: crBob 3.4s ease-in-out infinite; }
+.rwTallies { display: flex; gap: 14px; margin-top: 2px; }
+.rwTally { display: inline-flex; align-items: center; gap: 5px; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rwMini { width: 18px; height: 23px; }
+
+.rwBody { padding: 12px; }
+.rwCard { display: flex; flex-direction: column; gap: 14px; padding: 14px 16px 16px; border-radius: 16px; border: 1px solid var(--cream-line); background: rgba(255,255,255,.42); }
+.rwCard.m-gold { background: linear-gradient(160deg, #FFF7DC, #F8E4A4); border-color: #D9A93C; }
+.rwCard.m-silver { background: linear-gradient(160deg, #FCFDFE, #E1E6EA); border-color: #B5BEC5; }
+.rwCard.m-bronze { background: linear-gradient(160deg, #FFF3E7, #F2D3B6); border-color: #D59A6A; }
+.rwTop { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.rwInfo { min-width: 0; }
+.rwInfo h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.rwInfo p { margin: 3px 0 7px; font-size: 12.5px; line-height: 1.3; color: var(--ink-soft); }
+.rwBest { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.rwBest .i { width: 15px; height: 15px; color: var(--mode-rush); }
+.rwBtns { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+button.rwPlay { --b-bg: var(--mode-rush); --b-fg: var(--cream); --b-line: var(--mode-rush); padding: 9px 18px 9px 14px; font-size: 14px; font-weight: 600; gap: 6px; }
+button.rwPlay:hover { background-color: #2D4F7C; transform: scale(1.04); }
+.rwPlay .i { width: 13px; height: 13px; }
+.rwHoles { display: flex; align-items: center; }
+.rwHole { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 2px; border-radius: 12px;
+  border: 1.5px dashed rgba(63,111,168,.38); color: var(--mode-rush); }
+.rwHole b { font-size: 16px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.rwHole small { font-size: 9.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.rwHole.done { background: var(--mode-rush); border: 1.5px solid var(--mode-rush); color: #F4F8FF; }
+.rwHole.cur { border: 2px solid var(--accent); color: var(--accent); }
+.rwLink { flex: 0 0 8px; height: 2px; background: rgba(63,111,168,.3); }
+.rwTrack { padding: 0 4px; }
+.rwMarks { position: relative; height: 76px; }
+.rwMark { position: absolute; left: var(--x); bottom: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; text-align: center; white-space: nowrap; }
+.rwMark .rwMedal { width: 30px; height: 38px; overflow: visible; color: rgba(36,36,36,.3); }
+.rwMark.got .rwMedal { filter: drop-shadow(0 3px 6px rgba(20,30,40,.22)); animation: crPop .6s .2s cubic-bezier(.3,1.6,.5,1) both; }
+.rwMark b { font-size: 11.5px; font-weight: 700; }
+.rwMark small { font-size: 10.5px; color: var(--ink-soft); }
+.rwMark:not(.got) b { color: var(--ink-soft); }
+.rwBar { height: 8px; margin-top: 6px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; }
+.rwBar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #D98F57, #B9C2C9 55%, #F2C24E); transition: width .6s var(--ease-out); }
+@container (max-width: 640px) {
+  .rwBig { width: 54px; height: 67px; }
+  .rwTally { font-size: 14px; }
+  .rwTop { flex-direction: column; align-items: stretch; }
+  .rwBtns { flex-direction: row; align-items: center; justify-content: flex-start; }
+  .rwHole b { font-size: 14px; }
+  .rwHole small { font-size: 8.5px; letter-spacing: .04em; }
+}
+/* fin de la serie: la medalla de la semana */
+.winRec.medalChip .wrMedal { width: 16px; height: 20px; }
+.winRec.new.medalChip.m-gold { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
+.winRec.new.medalChip.m-silver { background: linear-gradient(160deg, #F4F6F8, #C5CDD3); border-color: #A7B0B7; color: #2F3940; }
+.winRec.new.medalChip.m-bronze { background: linear-gradient(160deg, #F3C49C, #CF8550); border-color: #B26B3A; color: #3E2210; }
+@media (prefers-reduced-motion: reduce) { .rwBig, .rwMark.got .rwMedal { animation: none !important; } }

@@ -22,7 +22,7 @@ let pendSince = 0;        // watchdog de acciones pendientes huérfanas
 const rand = Math.random; // (ritmo: pausas de "pensar")
 // decisiones de los bots: al azar, salvo en el reto diario y el semanal (la misma partida para todo el mundo): ahí
 // el azar sale de la semilla y del momento de la partida, así que con las mismas jugadas los bots juegan igual
-const SHARED = ['daily', 'weekly'];
+const SHARED = ['daily', 'weekly', 'rush']; // (el contrarreloj: la serie de la semana, igual para todos)
 function decide(tag, p = -1) {
   const g = G();
   if (!SHARED.includes(app.variant) || g?.seed == null) return Math.random;

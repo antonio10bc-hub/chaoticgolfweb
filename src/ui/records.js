@@ -57,7 +57,7 @@ const blank = () => ({
   pve: { streak: 0, bestStreak: 0, fastest: null }, // partida rápida (1 persona): racha y victoria con menos turnos
   daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
     played: 0, won: 0, dist: {} }, // días jugados y ganados, y en cuántos turnos (tu mejor de cada día): turnos -> días (sin límite de fechas)
-  rush: { best: 0, runs: 0 }, // (done: series completas, las cinco; lo añade rushHoleDone)
+  rush: { best: 0, runs: 0, weeks: {} }, // (done: series completas, las cinco; lo añade rushHoleDone) · weeks: semana -> { best, medal }
   challenges: {}, // id -> true (ganado alguna vez)
   weekly: { weeks: {} },  // (el antiguo desafío semanal) semana "AAAA-Www" -> { best, strokes }
   crowns: { n: 0, weeks: {}, legacy: 0 }, // coronas: n (todas), weeks (semana -> ids ganados esa semana), legacy (las regaladas)
@@ -280,6 +280,30 @@ export function recordEnd(kind, { won, stats, levelIndex = null, levelId = null,
   return { newBest, best, streak, newFastest, fastest: d.pve.fastest, dailyStreak: d.daily.streak };
 }
 export const levelBest = i => loadRecords().levels[i] || null;
+
+// contrarreloj de la semana: medalla según los puntos de una serie completa (bronce: terminarla)
+export const RUSH_MEDALS = [['gold', 4000], ['silver', 2800], ['bronze', 0]];
+export const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
+export const rushMedalOf = sum => RUSH_MEDALS.find(([, n]) => sum >= n)[0];
+// una serie completa de esa semana: su mejor resultado y su medalla (la mejor de la semana)
+export function recordRushWeek(week, sum) {
+  let prev = null, newBest = false;
+  const d = updateRecords(d => {
+    const w = d.rush.weeks[week] = d.rush.weeks[week] || { best: 0, medal: null };
+    prev = w.medal; newBest = sum > w.best;
+    if (newBest) w.best = sum;
+    const m = rushMedalOf(sum);
+    if (!w.medal || MEDAL_RANK[m] > MEDAL_RANK[w.medal]) w.medal = m;
+  });
+  const w = d.rush.weeks[week];
+  return { medal: w.medal, prev, upgraded: w.medal !== prev, best: w.best, newBest };
+}
+// medallas de siempre: cuántas de cada (una por semana, la mejor)
+export function rushMedalCounts(R = loadRecords()) {
+  const c = { gold: 0, silver: 0, bronze: 0 };
+  for (const w of Object.values(R.rush?.weeks || {})) if (w?.medal) c[w.medal]++;
+  return c;
+}
 
 // coronas: ganar un desafío de la semana (una vez por semana y desafío) suma una
 export function winCrown(week, id) {

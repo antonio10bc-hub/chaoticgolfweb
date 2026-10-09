@@ -67,7 +67,7 @@ export function timeParts(ms) {
   return d ? [[String(d), d === 1 ? 'crowns.day' : 'crowns.days'], [two(h), 'crowns.hours'], [two(m), 'crowns.mins']]
     : [[two(h), 'crowns.hours'], [two(m), 'crowns.mins'], [two(s % 60), 'crowns.secs']];
 }
-const clockHTML = () => timeParts(weekEndsAt() - Date.now()).map(([v, k], i) =>
+export const clockHTML = () => timeParts(weekEndsAt() - Date.now()).map(([v, k], i) =>
   (i ? '<i class="crColon" aria-hidden="true"></i>' : '') + `<span class="crT"><b>${v}</b><small>${esc(t(k))}</small></span>`).join('');
 
 /* ---------- la sección ---------- */
@@ -119,8 +119,8 @@ export function animateCrownTotal() {
   el.textContent = from; requestAnimationFrame(step);
 }
 
-// la cuenta atrás de la cabecera (cada segundo, mientras se ve): la casilla que cambia da un salto; al cambiar de semana,
-// la sección se vuelve a pintar
+// las cuentas atrás de la pantalla (la de los desafíos y la del contrarreloj; cada segundo, mientras se ven): la casilla
+// que cambia da un salto; al cambiar de semana, la pantalla se vuelve a pintar
 let tick = null;
 export function startCrownClock(repaint) {
   clearInterval(tick);
@@ -128,10 +128,13 @@ export function startCrownClock(repaint) {
     const sec = document.querySelector('.mdSection.crowns');
     if (!sec || app.screen !== 'modes') { clearInterval(tick); return; }
     if (sec.dataset.week !== weekKey()) { repaint(); return; }
-    const el = sec.querySelector('[data-crclock]'), parts = timeParts(weekEndsAt() - Date.now()), boxes = el ? [...el.querySelectorAll('.crT')] : [];
-    if (!el || boxes.length !== parts.length || parts.some(([, k], i) => boxes[i].querySelector('small').textContent !== t(k))) { if (el) el.innerHTML = clockHTML(); return; }
-    parts.forEach(([v], i) => { const b = boxes[i].querySelector('b'); if (b.textContent === v) return;
-      b.textContent = v; boxes[i].classList.remove('flip'); void boxes[i].offsetWidth; boxes[i].classList.add('flip'); });
+    const parts = timeParts(weekEndsAt() - Date.now());
+    for (const el of document.querySelectorAll('[data-crclock]')) {
+      const boxes = [...el.querySelectorAll('.crT')];
+      if (boxes.length !== parts.length || parts.some(([, k], i) => boxes[i].querySelector('small').textContent !== t(k))) { el.innerHTML = clockHTML(); continue; }
+      parts.forEach(([v], i) => { const b = boxes[i].querySelector('b'); if (b.textContent === v) return;
+        b.textContent = v; boxes[i].classList.remove('flip'); void boxes[i].offsetWidth; boxes[i].classList.add('flip'); });
+    }
   }, 1000);
 }
 

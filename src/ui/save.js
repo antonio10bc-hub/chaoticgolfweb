@@ -58,7 +58,7 @@ function migrate() {
 function expired(d) {
   const when = new Date(d.savedAt || 0);
   if (d.slot === 'daily') return (d.run?.date || dateKey(when)) !== dateKey();
-  if (d.slot === 'challenge') return d.run?.week !== weekKey();
+  if (d.slot === 'challenge' || d.slot === 'rush') return d.run?.week !== weekKey(); // (también la serie del contrarreloj)
   return false;
 }
 

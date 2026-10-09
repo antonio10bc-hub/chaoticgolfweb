@@ -6,7 +6,7 @@
 import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
 import { app } from './app.js';
-import { TOTALS, dailyStats } from './records.js';
+import { TOTALS, dailyStats, rushMedalCounts } from './records.js';
 import { DECKS } from '../content/decks.js';
 import { CHALLENGES, CH_GROUPS } from '../content/challenges.js';
 import { SKINS, skinProgress, skinBall, ROMAN } from './skins.js';
@@ -56,13 +56,14 @@ function progress(R) {
   return `<div class="pgList">${sec('basics')}${sec('advanced')}${bar(t('stats.mode_challenge'), cd, cn)}${sub(ch)}</div>`;
 }
 
-// contrarreloj y desafíos de la semana (coronas)
+// contrarreloj (récord, series y medallas) y desafíos de la semana (coronas)
 function special(R) {
-  const rush = R.rush || {}, full = Object.values(R.crowns?.weeks || {}).filter(w => w.length >= 5).length;
+  const rush = R.rush || {}, full = Object.values(R.crowns?.weeks || {}).filter(w => w.length >= 5).length, medals = rushMedalCounts(R);
   return `<div class="stTotals">` +
     chip('i-timer', t('stats.rushBest'), t('modes.rush.pts', { n: rush.best || 0 })) +
     chip('i-check', t('stats.rushDone'), rush.done ?? Math.floor((R.won.rush || 0) / 6)) +
     chip('i-reset', t('stats.rushRuns'), rush.runs || 0) +
+    ['gold', 'silver', 'bronze'].map(m => chip('i-trophy', t('stats.rush' + m[0].toUpperCase() + m.slice(1)), medals[m])).join('') +
     chip('i-crown', t('stats.crowns'), R.crowns?.n || 0) +
     chip('i-calendar', t('stats.crownWeeks'), full) + `</div>`;
 }

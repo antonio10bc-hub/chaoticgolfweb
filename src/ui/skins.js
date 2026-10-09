@@ -12,7 +12,7 @@
 //   fortuna    victorias con la del casino: una ficha de casino (el canto a rayas) · el aro de la ruleta girando detrás ·
 //              bañada en oro, con su destello, y dos monedas y un dado en órbita
 //   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
-//   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
+//   rayo       medallas de oro del contrarreloj de la semana (1 · 5 · 15): esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
 //   corona     coronas de los desafíos de la semana (10 · 50 · 150): orbe real · la corona · gemas en sus bandas y en órbita
 //   puzle      Lo básico por partes (las barajas de siempre · las nuevas · Lo no tan básico): piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
 // Lo ganado se calcula siempre desde las estadísticas (records.js): no hay nada más que guardar que la
@@ -36,15 +36,15 @@ export const SKINS = [
   { id: 'cosmos', kind: 'deck', deck: 'multiverse', at: [10, 50, 100], accent: '#5B3FB8' },
   { id: 'fortune', kind: 'deck', deck: 'gambling', at: [10, 50, 100], accent: '#B8892B' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
-  { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
+  { id: 'bolt', kind: 'golds', at: [1, 5, 15], accent: '#3F6FA8' },
   { id: 'crown', kind: 'crowns', at: [10, 50, 150], accent: '#B5473F' },
   { id: 'puzzle', kind: 'groups', of: 'basics', accent: '#2E8A80' },
 ];
 export const skinById = id => SKINS.find(s => s.id === id) || null;
 export const ROMAN = ['', 'I', 'II', 'III'];
 
-// series de contrarreloj completas (antes de existir el contador: ~6 victorias por serie, 5 hoyos y la serie)
-const rushDone = R => R.rush.done ?? Math.floor((R.won.rush || 0) / 6);
+// medallas de oro del contrarreloj (una por semana)
+const rushGolds = R => Object.values(R.rush?.weeks || {}).filter(w => w?.medal === 'gold').length;
 // partes de Lo básico: cuántos niveles hay en cada una y cuántos superados
 function groupCounts(R, basics) {
   const items = (basics || []).map(L => ({ g: basicTier(L), done: !!R.basics?.[L.id] }));
@@ -61,7 +61,7 @@ export function skinProgress(s, R = loadRecords(), basics = app.basics) {
     const next = gs[lvl];
     return { lvl, value: next ? next.done : gs[2].n, target: next ? next.n : null, pct: next ? next.done / Math.max(1, next.n) : 1, group: next?.g || null };
   }
-  const value = s.kind === 'streak' ? R.daily.bestStreak || 0 : s.kind === 'deck' ? R.decks[s.deck]?.w || 0 : s.kind === 'crowns' ? R.crowns?.n || 0 : rushDone(R);
+  const value = s.kind === 'streak' ? R.daily.bestStreak || 0 : s.kind === 'deck' ? R.decks[s.deck]?.w || 0 : s.kind === 'crowns' ? R.crowns?.n || 0 : rushGolds(R);
   const lvl = s.at.filter(n => value >= n).length;
   const target = s.at[lvl] ?? null, prev = s.at[lvl - 1] ?? 0;
   return { lvl, value, target, pct: target ? Math.min(1, (value - prev) / (target - prev)) : 1 };

@@ -113,3 +113,29 @@ test('hoyos del contrarreloj con cazadores: terminan casi siempre (bots en tu lu
   }
   assert.ok(done >= n * .8, `${done}/${n}`);
 });
+
+test('contrarreloj de la semana: medalla por puntos (bronce, terminarla), la mejor de la semana y sus cuentas', async () => {
+  const mem = {};
+  globalThis.localStorage = { getItem: k => mem[k] ?? null, setItem: (k, v) => { mem[k] = String(v); }, removeItem: k => { delete mem[k]; } };
+  const { recordRushWeek, rushMedalOf, rushMedalCounts, loadRecords } = await import('../src/ui/records.js');
+  assert.deepEqual([0, 2799, 2800, 3999, 4000].map(rushMedalOf), ['bronze', 'bronze', 'silver', 'silver', 'gold']);
+  let r = recordRushWeek('2026-W41', 1500);
+  assert.equal(r.medal, 'bronze'); assert.equal(r.upgraded, true);
+  r = recordRushWeek('2026-W41', 3100);
+  assert.deepEqual([r.medal, r.prev, r.upgraded, r.best], ['silver', 'bronze', true, 3100]);
+  r = recordRushWeek('2026-W41', 900);
+  assert.deepEqual([r.medal, r.upgraded, r.best, r.newBest], ['silver', false, 3100, false], 'una peor no quita nada');
+  recordRushWeek('2026-W42', 4300);
+  assert.deepEqual(rushMedalCounts(loadRecords()), { gold: 1, silver: 1, bronze: 0 }, 'una por semana, la mejor');
+});
+
+test('contrarreloj de la semana: la misma serie para todos esa semana y otra la siguiente', async () => {
+  globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
+  const { seedOf } = await import('../src/content/levels/generate.js');
+  const seeds = wk => { const s = seedOf('rushWeek:' + wk); return Array.from({ length: 5 }, (_, i) => (s + i * 7919) >>> 0); };
+  assert.deepEqual(seeds('2026-W41'), seeds('2026-W41'));
+  assert.notDeepEqual(seeds('2026-W41'), seeds('2026-W42'));
+  // los hoyos y la salida de los cazadores salen solo de la semilla
+  const a = generateLevel(seeds('2026-W41')[0], 0), b = generateLevel(seeds('2026-W41')[0], 0);
+  assert.deepEqual(placeHunters(a, seeds('2026-W41')[0], 2), placeHunters(b, seeds('2026-W41')[0], 2));
+});
