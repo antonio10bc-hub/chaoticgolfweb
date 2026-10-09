@@ -32,7 +32,7 @@
      { t:'grow', x, y, tile }               el fuego crece, cae una hoja o llueve (un charco)
      { t:'snow', x, y, dir } / snowIn / snowOut   la bola de nieve rueda una casilla / aparece / se derrite
      { t:'snowPack', x, y, ids }            lo que lleva dentro la bola de nieve (cambia al atrapar algo)
-     (baraja del Gambling, src/engine/gambling.js)
+     (baraja del casino, src/engine/gambling.js)
      { t:'coinPick', p, x, y }              la pelota se lleva la moneda de esa casilla
      { t:'coinFlip', p, x, y, side }        la lanza al acabar la jugada: 'heads' (cara, repite) o 'tails' (cruz, a su salida)
      { t:'goHome', p, x, y, why }           vuelve a su salida por la moneda ('coin') o por la ruleta ('roulette')
@@ -194,7 +194,7 @@ export class Game {
     if (cfg.startWith?.length) g.dealOneOf(cfg.startWith);
     if (cfg.train) g.setupTrain({ layout: !!cfg.trainLayout });
     if (cfg.seasons) g.setupSeasons(); // (baraja de las estaciones: una al azar, con lo que trae)
-    if (cfg.gambling) g.setupGambling(); // (baraja del Gambling: la casilla dorada y las monedas)
+    if (cfg.gambling) g.setupGambling(); // (baraja del casino: la casilla dorada y las monedas)
     g.log('log.newGamePve', { h: S.human + 1, n: S.nPlayers, t: S.turn + 1 });
     return g;
   }
@@ -206,7 +206,7 @@ export class Game {
   // barajas nuevas (partida rápida): cada jugador empieza con una de sus cartas especiales. Quien no tenga ninguna
   // cambia una carta de su mano, al azar, por una de ellas sacada del mazo, también al azar (la suya vuelve a ese
   // hueco del mazo: las copias no cambian). Con el RNG de la partida: la misma semilla, el mismo reparto
-  // Si en el mazo ya no quedan (baraja con pocas cartas especiales, como la del Gambling), se cambia por una de las que
+  // Si en el mazo ya no quedan (baraja con pocas cartas especiales, como la del casino), se cambia por una de las que
   // sobran a quien empezó con dos
   dealOneOf(keys) {
     const S = this.S, set = new Set(keys);
@@ -1862,5 +1862,5 @@ export class Game {
   }
 }
 
-// (barajas de las estaciones, del multiverso y del Gambling) sus reglas viven en seasons.js, multiverse.js y gambling.js
+// (barajas de las estaciones, del multiverso y del casino) sus reglas viven en seasons.js, multiverse.js y gambling.js
 Object.assign(Game.prototype, seasonMethods, multiverseMethods, gamblingMethods);

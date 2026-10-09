@@ -1,4 +1,4 @@
-// Cartas de la baraja del Gambling (0 copias fuera de su baraja: el resto de barajas no cambia). Reglas en
+// Cartas de la baraja del casino (0 copias fuera de su baraja: el resto de barajas no cambia). Reglas en
 // src/engine/gambling.js (las monedas y la casilla dorada no son cartas: las pone la partida al empezar).
 //   dado    (negra)   pon un dado en una casilla vacía: lo que choca contra él rebota tantas casillas como marca y el dado
 //                     rueda una casilla hacia el otro lado (otra cara)

@@ -1,5 +1,5 @@
 /* =========================================================
-   Baraja del Gambling (el casino).
+   Baraja del casino.
      suelo      ajedrezado, rojo y negro (rojo si x + y es par). Una casilla es dorada (S.gamble.gold): no es de ningún color.
      monedas    al empezar, 3 por jugador en casillas vacías al azar (S.gamble.coins). La pelota (o el hoyo) que pasa por
                 encima (o se para en ella) se la lleva y, al terminar la jugada, la lanza: cara, vuelve a elegir como si

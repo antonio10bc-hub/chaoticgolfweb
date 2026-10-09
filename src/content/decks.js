@@ -35,7 +35,7 @@ export const DECKS = [
   { id: 'multiverse', color: '#5B3FB8', emblem: 'blackhole', scene: 'space', grow: { cols: 2, rows: 0 },
     newCards: ['agujeroNegro', 'gravedad', 'oGravedad', 'meteoritos'],
     counts: base => ({ ...base, bunker: 0, portal: 0, agujeroNegro: 1, gravedad: 2, oGravedad: 1, meteoritos: 3 }) },
-  // el Gambling: el casino. El suelo es ajedrezado (rojo y negro) con una casilla dorada; al empezar hay 3 monedas por
+  // el casino: el casino. El suelo es ajedrezado (rojo y negro) con una casilla dorada; al empezar hay 3 monedas por
   // jugador (cara: repites el movimiento; cruz: a tu salida), dados que te hacen rebotar lo que marcan y la ruleta, que
   // devuelve a su salida a las pelotas del color que salga (con el dorado, la de la casilla dorada gana). Sin búnkeres ni
   // portales

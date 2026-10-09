@@ -91,7 +91,7 @@ function multiverseArt() {
     `<rect x="-8" y="-8" width="${W + 16}" height="${H + 16}" rx="14" fill="#1B1440"/><rect x="0" y="0" width="${W}" height="${H}" rx="8" fill="#3F7440"/>` +
     cells + bh + hole + incoming + ball([cx(5), Y], false) + ball([X, cy(0)], true) + ball([X, cy(3)], true) + ball([cx(1), Y], true) + meteor + '</svg>';
 }
-// el Gambling: el campo ajedrezado (rojo y negro, con la casilla dorada) y, encima, la ruleta que gira; una moneda da
+// el casino: el campo ajedrezado (rojo y negro, con la casilla dorada) y, encima, la ruleta que gira; una moneda da
 // vueltas sobre una casilla y un dado espera en otra
 function gamblingArt() {
   const C = 7, R = 4, CW = 38, CH = 44, W = C * CW, H = R * CH, gold = [5, 2];

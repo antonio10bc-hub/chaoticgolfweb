@@ -1,4 +1,4 @@
-// Baraja del Gambling: el dado (src/engine/gambling.js tiene las reglas). Un cubo como el bloque de madera del minigolf:
+// Baraja del casino: el dado (src/engine/gambling.js tiene las reglas). Un cubo como el bloque de madera del minigolf:
 // lo que choca contra él rebota tantas casillas como marque y el dado rueda una casilla hacia el otro lado (otra cara).
 // Cada dado lleva su orientación: t (la cara de arriba), n (la del norte) y e (la del este); la de delante es 7 − n.
 // Dibujo: un dado de marfil visto desde arriba y un poco de frente (como el bloque): la cara de arriba con sus puntos (el

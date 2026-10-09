@@ -72,7 +72,7 @@ export const setStats = s => { stats = { ...stats, ...s }; };
 const ANIM = new Set(['move', 'teleport', 'impact', 'fall', 'appear', 'sink', 'settle', 'chainStop', 'drift', 'splash', 'bump', 'deflect', 'tunnel', 'launch', 'train', 'wagon',
   'season', 'wind', 'gust', 'crunch', 'puddle', 'slide', 'flare', 'burn', 'eaten', 'grow', 'snow', 'snowIn', 'snowOut', 'snowPack',
   'absorb', 'clone', 'vanish', 'gravity', 'gpull', 'gstuck', 'clash', 'meteor', 'meteorRock', // (multiverso)
-  'coinPick', 'coinFlip', 'coinDrop', 'goHome', 'diceRoll', 'diceTurn', 'roulette', 'goldWin']); // (las últimas: baraja del Gambling)
+  'coinPick', 'coinFlip', 'coinDrop', 'goHome', 'diceRoll', 'diceTurn', 'roulette', 'goldWin']); // (las últimas: baraja del casino)
 
 /* ---------- arranque de partidas ---------- */
 export function startGame(game, mode, { levelIndex = null, level = null, variant = null, run = null } = {}) {

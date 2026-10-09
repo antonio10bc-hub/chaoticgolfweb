@@ -40,7 +40,7 @@ const CARD_LIST = [
   trenVuelta, oTren1, vagon,                        // baraja del tren
   estacion, incendio, oNieve,                       // baraja de las estaciones
   agujeroNegro, gravedad2, oGravedad, meteoritos,   // baraja del multiverso
-  dado, ruleta,                                     // baraja del Gambling
+  dado, ruleta,                                     // baraja del casino
 ];
 
 for (const c of CARD_LIST) {

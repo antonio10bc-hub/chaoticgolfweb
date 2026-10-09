@@ -30,6 +30,7 @@ import { openEditor, edLibraryChanged } from './editor.js';
 import { deleteWithUndo, addCodeDialog } from './my-levels.js';
 import { createVsGame, dressVsGame, openPveSetup, lastPve, cfgSub, repeatLastPve, STYLE_COLOR, startAfterLineup, startPveMatch, applyOwnLook } from './screen-pve.js';
 import { PERSONAS, personaById, faceSVG, HUNTER_NAMES } from './persona.js';
+import { HUNTER_COLOR } from '../art.js';
 import { isBot } from './players.js';
 import { loadProfile } from './profile.js';
 import { DECKS, ULT_DECKS, deckById as deckOfId } from '../content/decks.js';
@@ -223,9 +224,10 @@ export function startRushHole(run = store.get(RUSH_KEY)) {
   showScreen('game');
   saveGame();
 }
-// tu color y tu nombre; los cazadores, con nombre de matón (sacado de la semilla del hoyo)
+// tu color y tu nombre; los cazadores, negros y con nombre de matón (sacado de la semilla del hoyo)
 function dressHunters(S, seed) {
   applyOwnLook(S, [0], [loadProfile()]);
+  for (const p of S.hunters || []) S.colorMap[p] = HUNTER_COLOR;
   const r = mulberry32((seed ^ 0x3c6ef372) >>> 0), names = [...HUNTER_NAMES];
   for (const p of S.hunters || []) S.playerNames[p] = names.splice(Math.floor(r() * names.length), 1)[0];
   app.viewer = 0;
@@ -396,7 +398,7 @@ const DECK_ART = {
   blackhole: () => cardBase('blackhole', '#2A1F55', '#07040F') +
     `<g clip-path="url(#dk-blackhole-c)"><g fill="#fff">${[[16, 12, .8], [44, 10, .6], [40, 50, .7], [17, 47, .5], [47, 18, .5], [13, 29, .45]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` +
     BH_GARGANTUA(30, 30, .38) + `</g>` + frame,
-  // el Gambling: la ruleta sobre el tapete verde, con un dado delante (al pasar por la tarjeta, la ruleta gira)
+  // el casino: la ruleta sobre el tapete verde, con un dado delante (al pasar por la tarjeta, la ruleta gira)
   roulette: () => cardBase('roulette', '#2C8A5C', '#0F4A30') +
     `<g clip-path="url(#dk-roulette-c)"><g stroke="rgba(255,255,255,.05)" stroke-width="1.4">${[0, 12, 24, 36, 48, 60].map(i => `<path d="M${i - 14} 60 L${i + 14} 0M${i - 14} 0 L${i + 14} 60"/>`).join('')}</g></g>` +
     `<circle cx="30" cy="25" r="15.5" fill="#5A2E1A"/><circle cx="30" cy="25" r="14.5" fill="none" stroke="#E2B23C" stroke-width="1.2"/>` +

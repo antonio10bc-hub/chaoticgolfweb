@@ -54,10 +54,12 @@ export async function loadArt() {
 
 // color visible de un jugador (en PVE cada quien elige/asigna color); el de una copia, el de su jugador (multiverso)
 export const DECOY_COLOR = '#E4E2D8'; // (las pelotas de obstáculo: blanco grisáceo, que se vea sobre el césped)
+export const HUNTER_COLOR = '#2A2A2E'; // (contrarreloj: los cazadores, negros)
 export function pColor(p) {
   const S = app.game?.S;
   if (S?.balls?.some(b => b.decoy && b.player === p)) return DECOY_COLOR;
   p = ownerOf(p);
+  if (S?.hunters?.includes(p)) return HUNTER_COLOR;
   return (S && S.colorMap) ? S.colorMap[p] : PLAYER_COLORS[p % PLAYER_COLORS.length];
 }
 

@@ -19,7 +19,7 @@
 //            soft — la bola de nieve atrapa como un búnker, pero salir de ella no cuesta nada.
 //   blackhole — (baraja del multiverso) se traga la pelota que pasa o se para a su lado y la parte en 4 (tiles/blackhole.js).
 //   meteorite — (baraja del multiverso) la roca que deja una lluvia de meteoritos: un muro, como el bloque (tiles/meteorite.js).
-//   dice  — (baraja del Gambling) el dado: se rebota tantas casillas como marca y rueda al otro lado (tiles/dice.js).
+//   dice  — (baraja del casino) el dado: se rebota tantas casillas como marca y rueda al otro lado (tiles/dice.js).
 // Sonido (opcional, interfaz): placeSound al colocarla, stepSound al rodar por encima.
 import bunker from './bunker.js';
 import portal from './portal.js';

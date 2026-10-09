@@ -64,7 +64,7 @@ async function playEvent(ev) {
   if (ev.t === 'bump' && ev.p === 'loco') return playTrainBump(ev);
   if (SEASON_PLAY[ev.t]) return SEASON_PLAY[ev.t](ev); // (baraja de las estaciones)
   if (MULTIVERSE_PLAY[ev.t]) return MULTIVERSE_PLAY[ev.t](ev); // (baraja del multiverso)
-  if (GAMBLING_PLAY[ev.t]) return GAMBLING_PLAY[ev.t](ev); // (baraja del Gambling)
+  if (GAMBLING_PLAY[ev.t]) return GAMBLING_PLAY[ev.t](ev); // (baraja del casino)
   const el = pieceEl(ev.p);
   if (!el) return;
   botReact(ev); // caras y bocadillos de los bots (decorativo)

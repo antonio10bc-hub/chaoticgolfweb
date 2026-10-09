@@ -56,7 +56,7 @@ src/
     game.js                clase Game: estado S + acción pendiente + eventos
     seasons.js             (baraja de las estaciones) viento, fuego, hojas y lluvia, bola de nieve y cambio de estación
     multiverse.js          (baraja del multiverso) copias de pelotas, agujero negro, gravedad y lluvia de meteoritos
-    gambling.js            (baraja del Gambling) monedas a cara o cruz, el dado, la ruleta y la casilla dorada
+    gambling.js            (baraja del casino) monedas a cara o cruz, el dado, la ruleta y la casilla dorada
     rng.js                 RNG con semilla (partidas reproducibles)
   content/
     cards/                 una carta (o familia) por archivo + registro ordenado (index.js)
@@ -80,7 +80,7 @@ src/
     seasons-view.js        (baraja de las estaciones) la estación en pantalla, su indicador, el viento, la bola de nieve
                            y sus animaciones · season-art.js  iconos de las estaciones y la bola de nieve
     multiverse-view.js     (baraja del multiverso) animaciones: tragar, partirse, desaparecer, gravedad, meteoritos
-    gambling-view.js       (baraja del Gambling) el suelo y las monedas en pantalla; la moneda que se lanza, el dado que rueda,
+    gambling-view.js       (baraja del casino) el suelo y las monedas en pantalla; la moneda que se lanza, el dado que rueda,
                            la ruleta en medio de la pantalla y el bote
     new-deck.js            "¡Nueva baraja!": el anuncio, una vez, de la baraja que se estrena
     skins.js / my-ball.js  pelotas que se ganan (3 niveles cada una) y la ventana "Tu pelota"
@@ -258,7 +258,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   `records.js`) no caducan como los días guardados (60); quien ya jugaba arranca con lo que se puede sacar de esos días.
 - **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **Gambling** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
@@ -357,7 +357,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   **Fuego** (racha del reto diario: 7 · 30 · 365 días), **Clásica**, **Agua**, **Madera**, **Vapor**, **Estaciones**,
   **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (series de contrarreloj completas: 1 · 5 · 15),
   **Corona** (coronas de los desafíos: 10 · 50 · 150) y **Puzle** (Lo básico por
-  partes: palos, clásica, agua y minigolf · tren, estaciones, multiverso y Gambling · Lo no tan básico). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
+  partes: palos, clásica, agua y minigolf · tren, estaciones, multiverso y casino · Lo no tan básico). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
   **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
   fuego dentro · llamas pequeñas alrededor de toda la bola · más lava, llamas más altas y grandes bolas de fuego en órbita (redondas, con lenguas en todas direcciones que giran y una estela que queda siempre detrás); bañada en oro (hoyuelos dorados y aro) · laurel ·
   destello y destellos en órbita; agua dentro · ondas · más agua, burbujas y gotas en órbita; vetas · marco de madera ·
@@ -578,7 +578,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   - Pelota de logros **Cosmos** (10 · 50 · 100 victorias con la baraja): la bola por dentro como un trozo de espacio (nebulosa y
     estrellas, translúcida: se sigue viendo el color de quien juega) · el disco de Gargantua alrededor (por detrás arriba, por
     delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
-- **Baraja del Gambling** (el casino; reglas en `src/engine/gambling.js`, cartas en `cards/gambling.js`, pieza en
+- **Baraja del casino** ( reglas en `src/engine/gambling.js`, cartas en `cards/gambling.js`, pieza en
   `tiles/dice.js`, animaciones en `src/ui/gambling-view.js` y `styles/gambling.css`; +2 columnas; sin búnkeres ni portales;
   también en Ultimate). Mazo: Dado ×2 (negra) y Ruleta ×2 (naranja); cada jugador empieza con una de ellas (si
   en el mazo ya no quedan, `dealOneOf` se la cambia a quien empezó con dos).
@@ -645,7 +645,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     discontinuo) · el aro de la ruleta (rojo, negro y la franja dorada) girando detrás · bañada en oro, con su destello, y dos
     monedas y un dado en órbita. También dibujada en la imagen de compartir.
   - **En el creador** (grupo Casino): el dado (se elige su número, del 1 al 6; con otro número, pulsar un dado lo cambia), la
-    moneda y la casilla dorada (una por nivel; ninguna pieza encima), y la plantilla de mazo Gambling. Con dorada, monedas o
+    moneda y la casilla dorada (una por nivel; ninguna pieza encima), y la plantilla de mazo Casino. Con dorada, monedas o
     ruletas en el mazo, el taller enseña el suelo ajedrezado. El código para compartir lleva el número de cada dado y la
     dorada y las monedas (`o.g`), validadas al leerlo.
 - **Ultimate Chaotic Golf, el combinador** (`comboCfg`/`comboSize` en `src/content/decks.js`, `src/ui/ultimate.js`,
@@ -655,7 +655,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   activada: rellena, con borde de arcoíris, brillo y ✓; apagada: translúcida, en gris, con borde discontinuo y +; siempre
   queda al menos una y se recuerda en el dispositivo; si no caben en una fila, se reparten en dos filas parejas, 4 y 3:
   `fitUltTogs`); cuántas van y el campo que sale; y debajo, continuar, nueva partida,
-  historial y cartas nuevas. Se combinan las **7** (también el Gambling: su suelo ajedrezado, sus monedas y la casilla dorada;
+  historial y cartas nuevas. Se combinan las **7** (también el casino: su suelo ajedrezado, sus monedas y la casilla dorada;
   fuera del agua y del agujero negro, que conservan su casilla), también la clásica (sin ella, ni
   búnkeres ni portales). La partida junta sus cartas y lo suyo (vías del tren, estaciones) y siempre trae el palo iridiscente
   (el de 10, en campos de 13 columnas o más). El **campo crece con la combinación** (una baraja: su campo; las 6: 19×13) y,
@@ -691,7 +691,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Lo básico** (`src/ui/screen-story.js`, niveles en `src/content/levels/basics.json`): todos los niveles son de "gana en
   un turno" con mano fija, en el orden en que se aprende el juego: **145 niveles en 29 filas de 5**. Dos secciones:
   **Lo básico** (105: palos y hoyo ×15, clásica ×15, agua ×10, minigolf ×15, tren ×10, estaciones ×15, multiverso ×15 y
-  Gambling ×10) y **Lo no tan básico** (40: iridiscente y palo 10, agua y minigolf, y cada baraja con las demás, hasta
+  casino ×10) y **Lo no tan básico** (40: iridiscente y palo 10, agua y minigolf, y cada baraja con las demás, hasta
   "Todo junto"). Cada nivel se juega con el fondo de su baraja (en las combinaciones, el de la primera; "Todo junto", el
   de Ultimate). Quedan fuera, a propósito, lo que necesita rivales (JAQUE, NO, reaccionar con naranjas) y lo que pasa al
   acabar el turno (se enseña con el estado inicial: el viento ya soplando, el fuego ya puesto…). Cada bloque con su cabecera (icono de la baraja, nombre, barra y x/y) y sus **filas de 5** (en el móvil
@@ -828,7 +828,7 @@ npm run simulate                  # telemetría: 500 partidas bot-contra-bot, vi
 npm run simulate -- --random 0 --players 4 --size l --games 2000
 npm run simulate -- --deck seasons            # con una baraja: su mazo, su tamaño y lo suyo (y cuánto actúa cada mecánica)
 npm run simulate -- --deck multiverse         # (multiverso: agujeros, copias, gravedad y meteoritos por partida)
-npm run simulate -- --deck gambling           # (Gambling: monedas, dados, ruletas y botes por partida)
+npm run simulate -- --deck gambling           # (casino: monedas, dados, ruletas y botes por partida)
 npm run smoke                     # prueba de humo en Chrome real (capturas en smoke-out/)
 npm run golden                    # regenera el oráculo desde tests/oracle/original.html
 npm run preload                   # regenera la precarga de index.html (tras añadir un módulo o un nivel)

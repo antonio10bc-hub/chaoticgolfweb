@@ -571,7 +571,7 @@ export const VITRINA = [
  {
   "version": 1,
   "vitrina": "gambling",
-  "name": "Gambling: Bote",
+  "name": "Casino: Bote",
   "cols": 8,
   "rows": 8,
   "hole": {

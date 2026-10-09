@@ -9,7 +9,7 @@
 //   vapor      victorias con la del tren: cinturón de hierro con remaches · bocanadas de vapor · caldera encendida y el tren en su vía
 //   estaciones victorias con la de las estaciones: cuatro colores · pétalos, hojas y copos · colores vivos que giran y las cuatro en órbita
 //   cosmos     victorias con la del multiverso: el espacio dentro · el disco de Gargantua · más estrellas y copias en órbita
-//   fortuna    victorias con la del Gambling: una ficha de casino (el canto a rayas) · el aro de la ruleta girando detrás ·
+//   fortuna    victorias con la del casino: una ficha de casino (el canto a rayas) · el aro de la ruleta girando detrás ·
 //              bañada en oro, con su destello, y dos monedas y un dado en órbita
 //   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
 //   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita

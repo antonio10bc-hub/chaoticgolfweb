@@ -1,4 +1,4 @@
-// Baraja del Gambling en pantalla: el suelo ajedrezado, las monedas y los dados tal como se ven durante la jugada, y las
+// Baraja del casino en pantalla: el suelo ajedrezado, las monedas y los dados tal como se ven durante la jugada, y las
 // animaciones de sus eventos (src/engine/gambling.js).
 //   coinPick  la moneda salta y se queda pegada a la pelota o al hoyo (una chapita dorada) hasta que la lanza
 //   coinFlip  una moneda grande da vueltas en medio de la pantalla y cae: cara (una carita: se vuelve a elegir) o cruz (a la salida)

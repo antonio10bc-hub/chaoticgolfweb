@@ -86,7 +86,7 @@ export function sfx(name) {
     case 'gravity': tone(160, 420, .5, 'sine', .35); tone(80, 210, .5, 'triangle', .15, .04); break;     // la gravedad atrae
     case 'gstuck': tone(120, 90, .14, 'sine', .5); noiseHit(.08, 700, .2, 'lowpass', .02, 1); break;      // tira y no puede
     case 'meteor': noiseHit(.22, 380, .5, 'lowpass', 0, .8); tone(140, 50, .18, 'sine', .45); break;      // impacto de meteorito
-    // (baraja del Gambling)
+    // (baraja del casino)
     case 'coin': tone(1568, 1568, .06, 'square', .12); tone(2093, 2093, .16, 'triangle', .18, .05); break;       // se lleva una moneda
     case 'coinFlip': [0, .08, .16, .24, .32, .4, .48].forEach((d, i) => tone(2400 - i * 90, 2300 - i * 90, .03, 'triangle', .07, d)); break; // la moneda gira en el aire
     case 'coinHeads': [784, 988, 1319].forEach((f, i) => tone(f, f, .14, 'triangle', .22, i * .06)); break;        // cara
