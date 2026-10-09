@@ -1,20 +1,20 @@
-// Simulador de desafíos, desafío semanal y reto diario: dibuja el campo en ASCII y juega partidas bot
+// Simulador de desafíos y reto diario: dibuja el campo en ASCII y juega partidas bot
 // contra bot con telemetría (rondas, ventaja por posición de salida, uso de cada mecánica por partida).
 // Sirve para diseñar y equilibrar campos en src/content/challenges.js.
-//   node tools/sim-challenges.mjs [ids|ch|weekly|base|vars] [partidas=40] [dibujar=1] [variantes.mjs]
-//     ids: lista separada por comas (p. ej. pinball,prism) · ch: todos los desafíos · weekly: las reglas semanales
+//   node tools/sim-challenges.mjs [ids|ch|warmup|mid|expert|base|vars] [partidas=40] [dibujar=1] [variantes.mjs]
+//     ids: lista separada por comas (p. ej. pinball,prism) · ch: todos los desafíos · warmup/mid/expert: los de un grupo
 //     base: partidas normales de referencia · vars: solo las variantes del archivo (export default [ {id, board, …} ])
 // Referencia: una partida normal de 7×9 dura unas 6 rondas y de 9×11 unas 7,5. Objetivo por grupo:
 // calentamiento ~4-6, intermedio ~6-8, experto ~7-10, sin colas largas (p90) ni una salida que gane de más.
 import { Game, PLAYER_COLORS } from '../src/engine/game.js';
 import { mulberry32 } from '../src/engine/rng.js';
 import { simulateGame } from '../src/ai/autoplay.js';
-import { CHALLENGES, WEEKLY, challengeCfg, challengeTiles, setupChallenge } from '../src/content/challenges.js';
+import { CHALLENGES, challengeCfg, setupChallenge } from '../src/content/challenges.js';
 const [which = 'all', Narg = '40', show = '1', variantsFile] = process.argv.slice(2);
 const N = +Narg;
 const BASES = [{ id: 'base7', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal' }, { id: 'base9', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal' }, { id: 'baseMini', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'minigolf' }];
 const VARS = variantsFile ? (await import(new URL(variantsFile, 'file://' + process.cwd() + '/').href)).default : [];
-const list = [...VARS, ...BASES, ...CHALLENGES, ...WEEKLY.map(w => ({ ...w, weekly: true }))].filter(c => which === 'all' || which.split(',').includes(c.id) || (which === 'weekly' && c.weekly) || (which === 'vars' && VARS.includes(c)) || (which === 'ch' && !c.weekly && !c.id.startsWith('base') && !VARS.includes(c)) || (which === 'base' && c.id.startsWith('base')));
+const list = [...VARS, ...BASES, ...CHALLENGES].filter(c => which === 'all' || which.split(',').includes(c.id) || c.group === which || (which === 'vars' && VARS.includes(c)) || (which === 'ch' && CHALLENGES.includes(c)) || (which === 'base' && c.id.startsWith('base')));
 const SYM = { river: '~', lake: 'L', bunker: 'b', portal: 'P', block: '#', tunnel: 'T', leaf: 'h', puddle: 'c', ice: '=', plant: 'Y', fire: 'F', blackhole: '@', meteorite: 'R', dice: 'D' }; // (estaciones; * bola de nieve; casino: G dorada, o moneda)
 const CR = ['◤', '◥', '◢', '◣'], LA = ['↑', '→', '↓', '←'];
 function make(ch, seed) {

@@ -1,5 +1,5 @@
 // Estadísticas (pestaña de Ajustes), lo que no son gráficas: cada baraja, el reto diario, tu progreso en Lo básico (por
-// bloques) y los desafíos, el contrarreloj y el desafío semanal, tus pelotas y los totales de la mesa.
+// bloques) y los desafíos, el contrarreloj y las coronas, tus pelotas y los totales de la mesa.
 // Todo sale de las listas del juego (DECKS, CHALLENGES y sus grupos, los niveles y puzles cargados, SKINS, TOTALS de
 // records.js): una baraja, un desafío, un puzle, una pelota o una mecánica nueva aparece aquí sola (y
 // tests/stats.test.mjs comprueba que tenga sus textos).
@@ -56,18 +56,15 @@ function progress(R) {
   return `<div class="pgList">${sec('basics')}${sec('advanced')}${bar(t('stats.mode_challenge'), cd, cn)}${sub(ch)}</div>`;
 }
 
-// contrarreloj y desafío semanal
+// contrarreloj y desafíos de la semana (coronas)
 function special(R) {
-  const rush = R.rush || {}, weeks = Object.values(R.weekly?.weeks || {});
-  const wPlayed = weeks.filter(w => (w.p || 0) > 0 || w.best != null).length, wWon = weeks.filter(w => w.best != null).length;
-  const wBest = weeks.reduce((m, w) => w.best != null && (m == null || w.best < m) ? w.best : m, null);
+  const rush = R.rush || {}, full = Object.values(R.crowns?.weeks || {}).filter(w => w.length >= 5).length;
   return `<div class="stTotals">` +
     chip('i-timer', t('stats.rushBest'), t('modes.rush.pts', { n: rush.best || 0 })) +
     chip('i-check', t('stats.rushDone'), rush.done ?? Math.floor((R.won.rush || 0) / 6)) +
     chip('i-reset', t('stats.rushRuns'), rush.runs || 0) +
-    chip('i-calendar', t('stats.weeksPlayed'), wPlayed) +
-    chip('i-trophy', t('stats.weeksWon'), wWon) +
-    (wBest != null ? chip('i-bolt', t('stats.weekBest'), t(wBest === 1 ? 'stats.turn1' : 'stats.turnsShort', { n: wBest })) : '') + `</div>`;
+    chip('i-crown', t('stats.crowns'), R.crowns?.n || 0) +
+    chip('i-calendar', t('stats.crownWeeks'), full) + `</div>`;
 }
 
 // tus pelotas: cada una con el nivel que tienes (apagada si aún no), y cuántos niveles llevas de todos

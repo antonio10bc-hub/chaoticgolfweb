@@ -1,10 +1,11 @@
-// Desafíos y desafío semanal: campos diseñados (con su variación) bien colocados y jugables hasta el final.
+// Desafíos: campos diseñados (con su variación) bien colocados y jugables hasta el final, y los 5 de cada semana.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, PLAYER_COLORS } from '../src/engine/game.js';
 import { mulberry32 } from '../src/engine/rng.js';
 import { simulateGame } from '../src/ai/autoplay.js';
-import { CHALLENGES, WEEKLY, CH_GROUPS, challengeCfg, challengeTiles, setupChallenge } from '../src/content/challenges.js';
+import { CHALLENGES, CH_GROUPS, challengeCfg, setupChallenge, weekChallenges, weekMonday, challengeDecks, weekEndsAt, WEEK_SLOTS, CH_EPOCH } from '../src/content/challenges.js';
+import { DECKS } from '../src/content/decks.js';
 import { TILES } from '../src/content/tiles/index.js';
 
 const make = (ch, seed) => {
@@ -18,11 +19,37 @@ test('desafíos: todos en un grupo de dificultad y con nombre propio', () => {
   assert.ok(CHALLENGES.length >= 18);
   for (const ch of CHALLENGES) assert.ok(CH_GROUPS.includes(ch.group), ch.id);
   assert.equal(new Set(CHALLENGES.map(c => c.id)).size, CHALLENGES.length);
-  assert.equal(new Set(WEEKLY.map(c => c.id)).size, WEEKLY.length);
+  for (const ch of CHALLENGES) for (const d of challengeDecks(ch)) assert.ok(DECKS.some(x => x.id === d), `${ch.id}: baraja ${d}`);
 });
 
-test('desafíos y semanal: las piezas caen dentro, sin solaparse ni tapar hoyo, salidas o PAR (salvo búnkeres a propósito)', () => {
-  for (const ch of [...CHALLENGES, ...WEEKLY]) for (const seed of [1, 2, 3, 7, 99]) { // (con y sin reflejo)
+// la semana ISO del lunes n semanas después de la primera
+const weekN = n => { const u = new Date(weekMonday(CH_EPOCH).getTime() + (n * 7 + 3) * 864e5), y = u.getUTCFullYear();
+  return `${y}-W${String(Math.ceil(((u - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7)).padStart(2, '0')}`; };
+test('desafíos de la semana: 2 de calentamiento, 2 intermedios y 1 experto, cada uno de una baraja distinta, y todos van saliendo', () => {
+  const seen = {}, last = {};
+  for (let n = 0; n < 104; n++) {
+    const wk = weekN(n), list = weekChallenges(wk);
+    assert.deepEqual(list.map(c => c.group), WEEK_SLOTS, wk);
+    const decks = list.flatMap(challengeDecks);
+    assert.equal(new Set(decks).size, decks.length, `${wk}: baraja repetida (${list.map(c => c.id)})`);
+    assert.ok(new Set(decks).size >= 5, wk);
+    for (const c of list) { assert.ok(last[c.id] == null || n - last[c.id] >= 3, `${wk}: ${c.id} repite demasiado pronto`); last[c.id] = n; seen[c.id] = (seen[c.id] || 0) + 1; }
+  }
+  for (const c of CHALLENGES) assert.ok(seen[c.id] >= 4, `${c.id}: sale ${seen[c.id] || 0} veces en dos años`);
+});
+test('desafíos de la semana: siempre los mismos para la misma semana (también calculados en otro orden) y antes de la primera, los de la primera', () => {
+  const a = weekChallenges(weekN(30)).map(c => c.id), b = weekChallenges(weekN(5)).map(c => c.id);
+  assert.deepEqual(weekChallenges(weekN(30)).map(c => c.id), a);
+  assert.deepEqual(weekChallenges(weekN(5)).map(c => c.id), b);
+  assert.deepEqual(weekChallenges('2026-W01').map(c => c.id), weekChallenges(CH_EPOCH).map(c => c.id));
+  // la semana acaba el lunes siguiente a las 00:00
+  const end = weekEndsAt(new Date(2026, 9, 9, 15)); // (viernes)
+  assert.equal(end.getDay(), 1); assert.equal(end.getDate(), 12); assert.equal(end.getHours(), 0);
+  assert.equal(weekEndsAt(new Date(2026, 9, 12, 0, 5)).getDate(), 19, 'el lunes ya cuenta la semana nueva');
+});
+
+test('desafíos: las piezas caen dentro, sin solaparse ni tapar hoyo, salidas o PAR (salvo búnkeres a propósito)', () => {
+  for (const ch of CHALLENGES) for (const seed of [1, 2, 3, 7, 99]) { // (con y sin reflejo)
     const S = make(ch, seed).S, seen = new Set();
     for (const t of S.tiles) {
       const k = t.x + ',' + t.y, where = `${ch.id} (semilla ${seed}): ${t.type} en ${k}`;
@@ -36,9 +63,9 @@ test('desafíos y semanal: las piezas caen dentro, sin solaparse ni tapar hoyo, 
   }
 });
 
-test('desafíos y semanal: entre bots, cada uno se juega hasta que alguien gana', () => {
+test('desafíos: entre bots, cada uno se juega hasta que alguien gana', () => {
   const rand = mulberry32(5);
-  for (const ch of [...CHALLENGES, ...WEEKLY]) {
+  for (const ch of CHALLENGES) {
     let won = 0;
     for (let i = 0; i < 3; i++) {
       const g = make(ch, 100 + i);
@@ -89,10 +116,10 @@ test('reto diario: cada mecánica se juega hasta el final entre bots', async () 
   }
 });
 
-test('desafíos del tren (uno por dificultad): circuito cerrado con 4 paradas, sin pisar hoyo, salidas ni piezas, y sin PAR', async () => {
+test('desafíos del tren (alguno en cada dificultad): circuito cerrado con 4 paradas, sin pisar hoyo, salidas ni piezas, y sin PAR', async () => {
   const { validPath } = await import('../src/engine/train.js');
   const trains = CHALLENGES.filter(c => c.track);
-  assert.deepEqual(CH_GROUPS.map(g => trains.filter(c => c.group === g).length), [1, 1, 1]);
+  assert.ok(CH_GROUPS.every(g => trains.some(c => c.group === g)));
   for (const ch of trains) for (const seed of [1, 2, 3, 7, 99]) {
     const S = make(ch, seed).S, tr = S.train, where = `${ch.id} (semilla ${seed})`;
     assert.ok(tr && validPath(tr.path, S.cols, S.rows), 'vuelta válida: ' + where);
@@ -128,9 +155,9 @@ test('reto diario del tren: entra en la rueda el 2 de octubre sin cambiar los d�
   }
 });
 
-test('estaciones: un desafío por dificultad con su estación (y su bola de nieve en invierno), sin pisar salidas ni hoyo', () => {
+test('estaciones: alguno en cada dificultad con su estación (y su bola de nieve en invierno), sin pisar salidas ni hoyo', () => {
   const seasons = CHALLENGES.filter(c => c.season);
-  assert.deepEqual(CH_GROUPS.map(g => seasons.filter(c => c.group === g).length), [1, 1, 1]);
+  assert.ok(CH_GROUPS.every(g => seasons.some(c => c.group === g)));
   for (const ch of seasons) for (const seed of [1, 2, 3, 7, 99]) {
     const g = make(ch, seed), S = g.S, where = `${ch.id} (semilla ${seed})`;
     assert.equal(S.season.now, ch.season.now, where);
@@ -154,4 +181,18 @@ test('reto diario de las estaciones: entra en la rueda el 3 de octubre sin cambi
     assert.equal(!!g.S.season.snow, ch.season.now === 'winter', 'la bola de nieve, en invierno');
     assert.equal(g.S.deck.filter(k => k === 'estacion').length, 0, 'sin cambio de estación');
   }
+});
+
+test('coronas: una por cada desafío superado y semana del antiguo semanal ganada; luego, una por desafío y semana', async () => {
+  const mem = {};
+  globalThis.localStorage = { getItem: k => mem[k] ?? null, setItem: (k, v) => { mem[k] = String(v); }, removeItem: k => { delete mem[k]; } };
+  const { loadRecords, winCrown, crownsOf } = await import('../src/ui/records.js');
+  mem.chaoticgolf_stats = JSON.stringify({ version: 1, challenges: { noPalo3: true, prism: true, pinball: false }, weekly: { weeks: { '2026-W38': { best: 4 }, '2026-W39': { best: null } } } });
+  const R = loadRecords();
+  assert.deepEqual([R.crowns.n, R.crowns.legacy], [3, 3], '2 desafíos + 1 semana ganada');
+  assert.deepEqual(winCrown('2026-W41', 'crossing'), { fresh: true, n: 4 });
+  assert.deepEqual(winCrown('2026-W41', 'crossing'), { fresh: false, n: 4 }, 'la misma semana, no repite');
+  assert.deepEqual(winCrown('2026-W45', 'crossing'), { fresh: true, n: 5 }, 'otra semana, sí');
+  assert.deepEqual(crownsOf('2026-W41'), ['crossing']);
+  assert.equal(loadRecords().crowns.legacy, 3, 'las regaladas se recuerdan (para el aviso)');
 });

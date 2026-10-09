@@ -1,4 +1,5 @@
-// Desafíos y desafío semanal: partidas contra bots con reglas, mazo y, sobre todo, un campo diseñado.
+// Desafíos (cada semana, 5 de ellos: weekChallenges) y reto diario: partidas contra bots con reglas, mazo y, sobre todo,
+// un campo diseñado.
 // Cada campo es un diseño hecho a mano en coordenadas relativas al recorrido (el hoyo arriba en el
 // centro, la columna de PAR debajo y la fila de salidas; ver Game.standard) y cada partida lo varía un
 // poco con su semilla: se refleja de lado, cambian los giros de algunas piezas o una pieza secundaria
@@ -280,35 +281,166 @@ export const CHALLENGES = [
     ] },
 ];
 
-/* ---------- desafío semanal: una regla por semana (remezcla de los campos de arriba) ---------- */
+/* ---------- las reglas del antiguo desafío semanal (remezcla de los campos de arriba), ya como desafíos ---------- */
 const layoutOf = id => CHALLENGES.find(c => c.id === id).layout;
-export const WEEKLY = [
-  { id: 'tinyChaos', icon: 'i-users', board: { cols: 5, rows: 6, par: 2 }, opps: 3, diff: 'hard' },
+CHALLENGES.push(
+  { id: 'bigHitters', group: 'mid', icon: 'i-club', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal', deck: 'drive' },
+  { id: 'driftDuel', group: 'warmup', icon: 'i-hole', board: { cols: 5, rows: 5, par: 2 }, opps: 1, diff: 'hard', rules: { holeDrift: true } },
+  { id: 'floodDrift', group: 'warmup', icon: 'i-wave', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'water', scene: 'lake', rules: { holeDrift: true }, layout: layoutOf('rapids'), mirror: true },
+  { id: 'iriParty', group: 'warmup', icon: 'i-prism', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'prism', scene: 'prism', layout: layoutOf('prism') },
+  { id: 'fingerFest', group: 'warmup', icon: 'i-hand', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'fingers', scene: 'mini', layout: layoutOf('warren'), mirror: true },
+  { id: 'tinyChaos', group: 'mid', icon: 'i-users', board: { cols: 5, rows: 6, par: 2 }, opps: 3, diff: 'hard' },
   // portales a los lados y detrás de la salida (lejos del hoyo, que se mueve solo y también los cruza)
-  { id: 'portalMaze', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', rules: { holeDrift: true }, mirror: true,
+  { id: 'portalMaze', group: 'mid', icon: 'i-spiral', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'noPortals', rules: { holeDrift: true }, mirror: true,
     layout: C => [
       { type: 'portal', pair: 1, x: C.cx - 4, y: C.hy + 2 }, { type: 'portal', pair: 1, x: C.cx + 4, y: C.hy + 4 },
       { type: 'portal', pair: 2, x: C.cx - 2, y: C.by + 1 }, { type: 'portal', pair: 2, x: C.cx + 3, y: C.hy - 1 },
       { type: 'bunker', x: C.cx + 1, y: C.hy + 2 },
     ] },
-  { id: 'lakeDuel', icon: 'i-drop', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard', deck: 'water', scene: 'lake', layout: layoutOf('archipelago'), mirror: true },
-  { id: 'bigHitters', icon: 'i-club', board: { cols: 9, rows: 11, par: 4 }, opps: 2, diff: 'normal', deck: 'drive' },
-  { id: 'duel', icon: 'i-trophy', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard' },
-  { id: 'bunkerCrowd', icon: 'i-sand', board: { cols: 9, rows: 9, par: 4 }, opps: 4, diff: 'normal', layout: layoutOf('noPalo3') },
-  { id: 'driftDuel', icon: 'i-hole', board: { cols: 5, rows: 5, par: 2 }, opps: 1, diff: 'hard', rules: { holeDrift: true } },
-  { id: 'floodDrift', icon: 'i-wave', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'water', scene: 'lake', rules: { holeDrift: true }, layout: layoutOf('rapids'), mirror: true },
-  { id: 'woodDuel', icon: 'i-burst', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard', deck: 'wood', scene: 'mini', layout: layoutOf('pinball'), mirror: true },
-  { id: 'iriParty', icon: 'i-prism', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'prism', scene: 'prism', layout: layoutOf('prism') },
-  { id: 'launchCrowd', icon: 'i-launch', board: { cols: 9, rows: 9, par: 4 }, opps: 4, diff: 'normal', deck: 'wood', scene: 'mini', layout: layoutOf('launchpads'), mirror: true },
-  // (casino, desde la semana 42 de 2026: las semanas de antes siguen con su regla) noche de casino: los dados cargados con
-  // tres rivales
-  { id: 'casinoNight', from: '2026-W42', icon: 'i-roulette', board: { cols: 9, rows: 9, par: 4 }, opps: 3, diff: 'normal', deck: 'dice', scene: 'casino', mirror: true,
-    layout: (C, v) => CHALLENGES.find(c => c.id === 'loadedDice').layout(C, v), gamble: C => ({ gold: { x: C.cx - 3, y: C.hy + 1 } }) },
-  { id: 'fingerFest', icon: 'i-hand', board: { cols: 7, rows: 7, par: 3 }, opps: 2, diff: 'normal', deck: 'fingers', scene: 'mini', layout: layoutOf('warren'), mirror: true },
-];
+  { id: 'lakeDuel', group: 'mid', icon: 'i-drop', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard', deck: 'water', scene: 'lake', layout: layoutOf('archipelago'), mirror: true },
+  { id: 'duel', group: 'mid', icon: 'i-trophy', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard' },
+  { id: 'bunkerCrowd', group: 'mid', icon: 'i-sand', board: { cols: 9, rows: 9, par: 4 }, opps: 4, diff: 'normal', layout: layoutOf('noPalo3') },
+  // noche de casino: los dados cargados con tres rivales
+  { id: 'casinoNight', group: 'mid', icon: 'i-roulette', board: { cols: 9, rows: 9, par: 4 }, opps: 3, diff: 'normal', deck: 'dice', scene: 'casino', mirror: true,
+    layout: (C, v) => layoutOf('loadedDice')(C, v), gamble: C => ({ gold: { x: C.cx - 3, y: C.hy + 1 } }) },
+  { id: 'woodDuel', group: 'expert', icon: 'i-burst', board: { cols: 9, rows: 9, par: 4 }, opps: 1, diff: 'hard', deck: 'wood', scene: 'mini', layout: layoutOf('pinball'), mirror: true },
+  { id: 'launchCrowd', group: 'expert', icon: 'i-launch', board: { cols: 9, rows: 9, par: 4 }, opps: 4, diff: 'normal', deck: 'wood', scene: 'mini', layout: layoutOf('launchpads'), mirror: true },
+);
+
+/* ---------- desafíos de las barajas con menos (y combinaciones de dos barajas: decks) ---------- */
+const merge = (...cs) => { const o = {}; for (const c of cs) for (const [k, n] of Object.entries(c)) o[k] = Math.max(o[k] || 0, n); return o; };
+Object.assign(DECKS, {
+  // (estaciones) verano fijo: el mazo de siempre, sin cartas de incendio (los del campo ya crecen solos)
+  summerOnly: () => ({ ...defaultCounts(), bunker: 0, portal: 0 }),
+  // (estaciones + agua) otoño fijo con ríos y lagos
+  monsoon: () => ({ ...defaultCounts(), bunker: 0, portal: 0, river: 2, lake: 1 }),
+  // (estaciones + casino) invierno fijo, su bola de nieve, un dado y una ruleta
+  snowDice: () => ({ ...defaultCounts(), bunker: 0, portal: 0, oNieve: 3, dado: 1, ruleta: 1 }),
+  // (multiverso) lluvia de estrellas: meteoritos de sobra y una gravedad naranja
+  shower: () => ({ ...defaultCounts(), bunker: 0, portal: 0, meteoritos: 3, oGravedad: 1 }),
+  // (multiverso) estrella binaria: los agujeros negros ya están; meteoritos y sin gravedad (que acortaba mucho la partida)
+  binary: () => ({ ...defaultCounts(), bunker: 0, portal: 0, meteoritos: 2 }),
+  // (multiverso + casino) todo lo de las dos barajas
+  cosmicCasino: () => merge(deckOf('multiverse'), deckOf('gambling')),
+  // (casino) el bote: tres ruletas
+  jackpot: () => ({ ...defaultCounts(), bunker: 0, portal: 0, ruleta: 3 }),
+  // (Ultimate + agua) unos cuantos palos iridiscentes y ríos
+  rainbow: () => ({ ...defaultCounts(), bunker: 0, portal: 0, paloIri: 4, river: 2, lake: 1 }),
+  // (tren + agua) el mercancías: lo del tren y lagos (sin cartas de río: llevaban el hoyo a la vía y el tren ganaba solo)
+  freight: () => ({ ...deckOf('train'), lake: 2 }),
+});
+CHALLENGES.push(
+  /* calentamiento */
+  // la cochera: las salidas, dentro del circuito del tren; para ir al hoyo hay que salir cruzando la vía
+  { id: 'depot', group: 'warmup', icon: 'i-train', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'train', scene: 'rail', noPar: true, mirror: true,
+    layout: (C, v) => [{ type: 'bunker', x: C.cx - 2, y: C.hy + 1 }, { type: 'bunker', x: C.cx + 2, y: C.hy + v.pick([1, 2]) }],
+    track: () => ({ path: outline(2, Array(5).fill(5), Array(5).fill(7)) }) }, // (C.by = 6: las salidas, en medio de la vuelta)
+  // ola de calor (verano fijo): dos incendios a los lados del camino que crecen solos; cruzarlos suma 2 al tiro
+  { id: 'heatwave', group: 'warmup', icon: 'i-flame', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'summerOnly', scene: 'seasons', mirror: true,
+    season: { now: 'summer' },
+    layout: (C, v) => cells('fire', [[C.cx - 3, C.hy + 3], [C.cx + 3, C.hy + v.pick([0, 1])]]) },
+  // el bote (casino): la casilla dorada a medio camino, tres ruletas, pocas monedas y un búnker en la calle del PAR
+  { id: 'jackpot', group: 'warmup', icon: 'i-coin', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal', deck: 'jackpot', scene: 'casino', mirror: true,
+    layout: C => [{ type: 'bunker', x: C.cx, y: C.hy + 2, onPar: true }],
+    gamble: (C, v) => ({ gold: { x: C.cx + v.pick([-2, 2]), y: C.hy + 2 }, count: 4 }) },
+  // río arcoíris (Ultimate + agua): palos iridiscentes y dos ríos que bajan por los lados; los búnkeres paran el tiro
+  { id: 'rainbowRiver', group: 'warmup', icon: 'i-prism', board: { cols: 7, rows: 9, par: 3 }, opps: 2, diff: 'normal', deck: 'rainbow', scene: 'prism', decks: ['ultimate', 'water'], mirror: true,
+    layout: (C, v) => [...col('river', 0, C.hy - 1, C.hy + 2), ...col('river', C.cols - 1, C.hy + 1, C.by - 1),
+      { type: 'bunker', x: C.cx - 1, y: C.hy - 1 }, { type: 'bunker', x: C.cx + 1, y: C.hy }, { type: 'bunker', x: C.cx + v.pick([-2, 2]), y: C.hy + 3 }] },
+  /* intermedio */
+  // monzón (otoño fijo + agua): ríos que bajan entre la hojarasca y charcos junto al hoyo
+  { id: 'monsoon', group: 'mid', icon: 'i-leaf', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'monsoon', scene: 'seasons', decks: ['seasons', 'water'], mirror: true,
+    season: { now: 'autumn' },
+    layout: (C, v) => [...col('river', C.cx - 3, C.hy, C.hy + 3), ...col('river', C.cx + 2, C.hy + 2, C.by - 1),
+      ...cells('leaf', [[C.cx - 1, C.hy + 2], [C.cx + 1, C.hy + 3], [C.cx - 2, C.hy + 4], [C.cx + 3, C.hy + 1]]),
+      { type: 'puddle', x: C.cx + 1, y: C.hy }, { type: 'puddle', x: C.cx - 1, y: C.hy - 1 + v.pick([0, 1]) }] },
+  // casino en la nieve (invierno fijo + casino): dados junto al hoyo, carriles de hielo y la bola de nieve
+  { id: 'snowDice', group: 'mid', icon: 'i-snow', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'snowDice', scene: 'seasons', decks: ['seasons', 'gambling'], mirror: true,
+    season: { now: 'winter', snow: (C, v) => ({ x: C.cx - 3, y: C.hy + v.pick([0, 1]) }) },
+    layout: (C, v) => [die(C.cx + 1, C.hy, 5), die(C.cx - 2, C.hy + 2, v.pick([2, 3])), ...col('ice', C.cx + 2, C.hy + 2, C.by - 1), ...cells('ice', [[C.cx - 1, C.hy + 4]])],
+    gamble: C => ({ gold: { x: C.cx + 3, y: C.hy }, fill: false }) },
+  // casino cósmico (multiverso + casino): un agujero negro junto a las monedas (cada copia de la pelota lanza las suyas)
+  { id: 'cosmicCasino', group: 'mid', icon: 'i-blackhole', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'cosmicCasino', scene: 'space', decks: ['multiverse', 'gambling'], mirror: true,
+    layout: (C, v) => [{ type: 'blackhole', x: C.cx + 2, y: C.hy + v.pick([2, 3]) }, die(C.cx - 2, C.hy + 1, 4)],
+    gamble: C => ({ gold: { x: C.cx - 3, y: C.hy }, count: 6 }) },
+  // lluvia de estrellas (multiverso): dos rocas junto al hoyo y meteoritos de sobra en el mazo
+  { id: 'meteorShower', group: 'mid', icon: 'i-meteor', board: { cols: 9, rows: 9, par: 4 }, opps: 2, diff: 'normal', deck: 'shower', scene: 'space', mirror: true,
+    layout: (C, v) => [rock(C.cx - 1, C.hy), rock(C.cx + 2, C.hy + 2 + v.pick([0, 1]))] },
+  /* experto */
+  // el mercancías (tren + agua): una vuelta ancha entre la salida y el hoyo con dos vagones, un río por la banda que baja
+  // hasta un lago y otro lago al otro lado (lo que el tren saca por las curvas acaba en el agua)
+  { id: 'freight', group: 'expert', icon: 'i-train', board: { cols: 9, rows: 10, par: 5 }, opps: 2, diff: 'normal', deck: 'freight', scene: 'rail', decks: ['train', 'water'], noPar: true, mirror: true,
+    layout: (C, v) => [...col('river', 0, C.hy - 1, C.hy + 2), ...cells('lake', [[0, C.hy + 3], [C.cols - 1, C.hy + 4]]), { type: 'bunker', x: C.cx - 2, y: C.hy + v.pick([0, 1]) }],
+    track: C => ({ path: outline(1, Array(C.cols - 2).fill(C.hy + 2), Array(C.cols - 2).fill(C.hy + 4)), cars: 2 }) },
+  // estrella binaria (multiverso, sin PAR): dos agujeros negros a los lados del camino, rocas que guardan el hoyo (solo se
+  // entra por abajo) y tres rivales
+  { id: 'binaryStar', group: 'expert', icon: 'i-blackhole', board: { cols: 9, rows: 11, par: 6 }, opps: 3, diff: 'normal', deck: 'binary', scene: 'space', noPar: true, mirror: true,
+    layout: (C, v) => [{ type: 'blackhole', x: C.cx - 3, y: C.hy + 2 }, { type: 'blackhole', x: C.cx + 3, y: C.hy + 4 },
+      rock(C.cx - 1, C.hy), rock(C.cx + 1, C.hy), rock(C.cx, C.hy - 1), rock(C.cx + v.pick([-2, 2]), C.by - 2)] },
+);
+
+/* ---------- las barajas de cada desafío ---------- */
+// la del fondo (scene) y, en las combinaciones, las que mezcla (decks: la primera es la principal)
+const SCENE_DECK = { lake: 'water', mini: 'minigolf', rail: 'train', seasons: 'seasons', space: 'multiverse', casino: 'gambling', prism: 'ultimate' };
+export const challengeDecks = ch => ch.decks || [SCENE_DECK[ch.scene] || 'classic'];
+for (const id of ['sawmill', 'locks']) CHALLENGES.find(c => c.id === id).decks = ['minigolf', 'water']; // (aserradero y esclusas: madera y agua)
+
+/* ---------- los desafíos de la semana ---------- */
+// Cada semana (de lunes a domingo, la semana ISO) tocan 5: dos de calentamiento, dos intermedios y uno experto, cada uno de
+// una baraja distinta (una combinación ocupa sus dos barajas). Se eligen al azar con la semilla de la semana entre los que
+// no han salido hace poco (cada uno vuelve, como pronto, cuando ya han salido casi todos los de su grupo), así que hay que
+// ir semana a semana desde la primera (CH_EPOCH). Un desafío nuevo entra desde su semana (`from: 'AAAA-Www'`): las de antes
+// no cambian.
+export const CH_EPOCH = '2026-W41';
+export const WEEK_SLOTS = ['warmup', 'warmup', 'mid', 'mid', 'expert'];
+// el lunes (UTC) de una semana "AAAA-Www" y la semana de un lunes
+export function weekMonday(wk) {
+  const [y, w] = wk.split('-W').map(Number), jan4 = Date.UTC(y, 0, 4), dow = new Date(jan4).getUTCDay() || 7;
+  return new Date(jan4 + ((w - 1) * 7 - (dow - 1)) * 864e5);
+}
+function keyOfMonday(d) {
+  const u = new Date(d), wd = u.getUTCDay() || 7;
+  u.setUTCDate(u.getUTCDate() + 4 - wd);
+  const y = u.getUTCFullYear(), n = Math.ceil(((u - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+  return `${y}-W${String(n).padStart(2, '0')}`;
+}
+function seedOfStr(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+const weekCache = new Map();
+export function weekChallenges(wk) {
+  if (wk < CH_EPOCH) wk = CH_EPOCH;
+  if (weekCache.has(wk)) return weekCache.get(wk);
+  const last = {}, t0 = weekMonday(CH_EPOCH).getTime(), end = weekMonday(wk).getTime();
+  let out = null;
+  for (let n = 0, t = t0; t <= end; n++, t += 7 * 864e5) {
+    const key = keyOfMonday(t), r = mulberry32(seedOfStr('crowns:' + key));
+    const pool = CHALLENGES.filter(c => !c.from || c.from <= key), picked = [], used = new Set();
+    const left = { warmup: 2, mid: 2, expert: 1 };
+    for (let k = 0; k < WEEK_SLOTS.length; k++) {
+      // (los huecos que quedan: sus desafíos sin repetir baraja; si no hay, sin repetir la principal; si no, cualquiera)
+      const of = pool.filter(c => left[c.group] > 0 && !picked.includes(c)), free = c => challengeDecks(c).every(d => !used.has(d));
+      const cands = of.some(free) ? of.filter(free) : of.some(c => !used.has(challengeDecks(c)[0])) ? of.filter(c => !used.has(challengeDecks(c)[0])) : of;
+      const age = c => last[c.id] ?? -99, gap = c => Math.floor(pool.filter(x => x.group === c.group).length / WEEK_SLOTS.filter(x => x === c.group).length * .6);
+      const fresh = cands.filter(c => n - age(c) >= gap(c)).sort((x, y) => age(x) - age(y));
+      // (al azar entre el cuarto que lleva más tiempo sin salir; si no queda ninguno, el que más)
+      const from = fresh.length ? fresh.slice(0, Math.ceil(fresh.length / 4)) : [cands.reduce((x, c) => age(c) < age(x) ? c : x)];
+      const ch = from[Math.floor(r() * from.length)];
+      picked.push(ch); left[ch.group]--; challengeDecks(ch).forEach(d => used.add(d));
+    }
+    for (const c of picked) last[c.id] = n;
+    out = WEEK_SLOTS.map((g, i) => picked.filter(c => c.group === g)[i - WEEK_SLOTS.indexOf(g)]);
+    if (!weekCache.has(key)) weekCache.set(key, out);
+  }
+  return out;
+}
+// cuándo se acaba la semana (el lunes siguiente a las 00:00, hora local) desde `now`
+export function weekEndsAt(now = new Date()) {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()), wd = d.getDay() || 7;
+  d.setDate(d.getDate() + 8 - wd);
+  return d;
+}
 
 /* ---------- montar una partida ---------- */
-// lo que necesita Game.pve de un desafío (o regla semanal): tamaño, mazo y reglas
+// lo que necesita Game.pve de un desafío: tamaño, mazo y reglas
 export function challengeCfg(ch) {
   const extra = { ...ch.board, counts: ch.deck ? DECKS[ch.deck]() : undefined };
   if (!extra.counts) delete extra.counts;
@@ -387,12 +519,18 @@ export function setupChallenge(S, ch, seed, designed = t => t) {
   if (tr) S.train = tr;
   if (ch.noPar) S.parCells = [];
   const se = challengeSeason(ch, S, seed);
-  if (se) { if (se.snow) S.tiles = S.tiles.filter(t => t.x !== se.snow.x || t.y !== se.snow.y); S.season = se; }
+  if (se) {
+    if (se.snow) S.tiles = S.tiles.filter(t => t.x !== se.snow.x || t.y !== se.snow.y);
+    S.season = se;
+    // (los incendios del diseño: un grupo por mancha, como los de un nivel)
+    const fires = S.tiles.filter(t => t.type === 'fire');
+    for (const f of fires) if (!f.g) { const g = ++se.fireId, stack = [f]; f.g = g;
+      while (stack.length) { const c = stack.pop(); for (const o of fires) if (!o.g && Math.abs(o.x - c.x) + Math.abs(o.y - c.y) === 1) { o.g = g; stack.push(o); } } }
+  }
   const gb = challengeGamble(ch, S, seed);
   if (gb) S.gamble = gb;
 }
 export const challengeById = id => CHALLENGES.find(c => c.id === id);
-export const weeklyById = id => WEEKLY.find(c => c.id === id);
 
 /* ---------- reto diario: tablero pequeño y una sola mecánica cada día ---------- */
 // El tablero es el de siempre (5×5, PAR 2) y, algún día, una o dos filas o columnas más (sizes: los

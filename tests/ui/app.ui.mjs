@@ -26,7 +26,7 @@ async function fresh(seed = {}) {
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
-      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true, weekly: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open',
+      chaoticgolf_intros: { daily: true, rush: true, rush2: true, challenge: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', chaoticgolf_crownsIntro: 1,
       chaoticgolf_vitrina: 1, ...seed }); // (TEMPORAL: sin los niveles vitrina en Tus niveles)
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.chaoticGolf?.app.game && document.getElementById('loadScreen')?.classList.contains('done') !== false);
@@ -302,34 +302,59 @@ it('contrarreloj: dos cazadores en el borde, lejos de ti; su turno no gasta tu t
   await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
 });
 
-it('desafío semanal: misma regla, semilla y rivales en dos cargas', async () => {
+it('desafíos de la semana: 5 tarjetas con los rivales de la semana; ganar uno da su corona (dorada, +1 arriba) y se comparte', async () => {
   await fresh();
-  const take = async () => {
-    await click('#modesBtn'); await sleep(300);
-    await click('[data-mode="weekly"]'); await confirmIfAsked(); await sleep(500);
-    const r = await app(() => { const { app } = window.chaoticGolf; return JSON.stringify({ v: app.variant, id: app.run.id, week: app.run.week, seed: app.game.seed, personas: app.game.S.personas }); });
-    await click('#menuBtn'); await sleep(300);
-    await app(() => localStorage.removeItem('chaoticgolf_save_weekly'));
-    return r;
-  };
-  const a = await take();
-  assert.equal(JSON.parse(a).v, 'weekly');
-  await page.reload({ waitUntil: 'networkidle0' }); await sleep(800);
-  assert.equal(await take(), a);
+  await click('#modesBtn'); await sleep(300); await click('[data-mtab="special"]'); await sleep(400);
+  assert.equal(await app(() => document.querySelectorAll('.crCard').length), 5);
+  assert.equal(await app(() => document.querySelectorAll('.crCard.won').length), 0);
+  assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '0');
+  assert.match(await app(() => document.querySelector('[data-crleft]').textContent), /^\d+[dhm]/);
+  const id = await app(() => document.querySelector('.crCard').dataset.mode.split(':')[1]);
+  await click('.crCard'); await confirmIfAsked(); await sleep(600);
+  const run = await app(async () => { const { app } = window.chaoticGolf, cr = await import('/src/ui/crowns.js'), ch = await import('/src/content/challenges.js');
+    return { v: app.variant, id: app.run.id, week: app.run.week, now: cr.thisWeek().wk, personas: app.game.S.personas.filter(Boolean), want: cr.weekRivals(app.run.week, ch.challengeById(app.run.id)) }; });
+  assert.equal(run.v, 'challenge'); assert.equal(run.id, id); assert.equal(run.week, run.now);
+  assert.deepEqual(run.personas, run.want, 'los rivales de la semana');
+  // ganarlo: su corona
+  const r = await app(async () => (await import('/src/ui/screen-modes.js')).challengeDone(true));
+  assert.equal(r.crown.fresh, true); assert.equal(r.crown.n, 1); assert.ok(r.next && r.next !== id, 'el siguiente por ganar');
+  assert.equal((await app(async () => (await import('/src/ui/screen-modes.js')).challengeDone(true))).crown.fresh, false, 'una vez por semana');
+  await click('#menuBtn'); await confirmIfAsked(); await sleep(300);
+  await app(() => localStorage.removeItem('chaoticgolf_save_challenge')); // (salir la guarda: aquí no ha terminado de verdad)
+  await click('#modesBtn'); await sleep(1400);
+  assert.equal(await page.evaluate(i => document.querySelector(`.crCard[data-mode="ch:${i}"]`)?.classList.contains('won'), id), true, 'la tarjeta, ganada');
+  assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '1');
+  assert.equal(await app(() => document.querySelectorAll('.crMinis i.on').length), 1);
+  // compartir: la imagen con tus coronas
+  await click('[data-mode="crShare"]'); await sleep(900);
+  assert.ok(await app(() => document.querySelector('#dialog[open] .sharePreview')), 'la imagen para compartir');
+  await app(() => document.getElementById('dialog').close());
 });
 
-it('reto diario y semanal: la partida guardada de ayer (o de la semana pasada) caduca y sale el reto nuevo', async () => {
+it('desafíos de la semana: el aviso del cambio sale una vez, a quien ya jugaba, con las coronas regaladas', async () => {
+  await fresh({ chaoticgolf_crownsIntro: null, chaoticgolf_stats: { version: 1, played: { challenge: 4 }, won: {}, challenges: { noPalo3: true, prism: true }, weekly: { weeks: { '2026-W30': { best: 3 } } } } });
+  await app(() => localStorage.removeItem('chaoticgolf_crownsIntro'));
+  await click('#modesBtn'); await sleep(300); await click('[data-mtab="special"]'); await sleep(500);
+  assert.ok(await app(() => document.querySelector('#dialog[open] .crIntro')), 'el aviso');
+  assert.match(await app(() => document.querySelector('.crIntro li.gift').textContent), /3/);
+  await app(() => document.getElementById('dialog').close());
+  assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '3');
+  await click('[data-mtab="quick"]'); await sleep(400); await click('[data-mtab="special"]'); await sleep(500);
+  assert.equal(await app(() => !!document.querySelector('#dialog[open] .crIntro')), false, 'solo una vez');
+});
+
+it('reto diario y desafíos: la partida guardada de ayer (o de la semana pasada) caduca y sale el reto nuevo', async () => {
   await fresh();
   await click('#dailyCard'); await sleep(900);
   await app(async () => { const { app } = window.chaoticGolf; (await import('/src/ui/save.js')).saveGame(); });
   // la de hoy se puede continuar
   assert.ok(await app(async () => !!(await import('/src/ui/save.js')).loadSave('daily')), 'la de hoy sigue');
-  // la misma partida, pero de ayer (y una semanal de otra semana)
-  await app(() => { for (const [slot, f] of [['daily', r => ({ ...r, date: '2000-01-01' })], ['weekly', r => ({ ...r, week: '2000-W01' })]]) {
+  // la misma partida, pero de ayer (y un desafío de otra semana)
+  await app(() => { for (const [slot, f] of [['daily', r => ({ ...r, date: '2000-01-01' })], ['challenge', r => ({ ...r, week: '2000-W01' })]]) {
     const d = JSON.parse(localStorage.getItem('chaoticgolf_save_daily')); d.slot = slot; d.variant = slot; d.run = f(d.run); localStorage.setItem('chaoticgolf_save_' + slot, JSON.stringify(d)); } });
-  for (const slot of ['daily', 'weekly']) {
-    assert.equal(await app(async s => (await import('/src/ui/save.js')).loadSave(s), slot), null, slot + ': caducada');
-    assert.equal(await app(s => localStorage.getItem('chaoticgolf_save_' + s), slot), null, slot + ': borrada');
+  for (const slot of ['daily', 'challenge']) {
+    assert.equal(await page.evaluate(async s => (await import('/src/ui/save.js')).loadSave(s), slot), null, slot + ': caducada');
+    assert.equal(await page.evaluate(s => localStorage.getItem('chaoticgolf_save_' + s), slot), null, slot + ': borrada');
   }
   // nada que continuar: ni en el menú ("Continuar partida") ni en la tarjeta del reto, que empieza el de hoy
   assert.equal(await app(async () => (await import('/src/ui/save.js')).latestSave()), null);

@@ -5,8 +5,8 @@
 //   · Pantalla de Modos: Partida rápida (contra bots o multijugador local), Contrarreloj y Desafíos.
 //   · Contrarreloj — 5 hoyos generados de dificultad creciente, cada uno con su cuenta atrás:
 //                    puntos por turnos y por el tiempo que sobra; si se acaba el tiempo, se acaba la serie.
-//   · Desafíos     — partidas contra la máquina con reglas especiales.
-//   · Desafío semanal — cada semana, una regla especial nueva (igual para todos) y su récord.
+//   · Desafíos     — cada semana, 5 partidas contra la máquina con reglas especiales; cada una ganada, una corona
+//                    (crowns.js).
 // También: el texto para compartir el resultado del reto diario y el aviso en el icono de la app.
 // La serie del contrarreloj se guarda aparte de la partida, para poder dejarla entre hoyos.
 import { track } from './analytics.js';
@@ -15,13 +15,13 @@ import { $, esc } from './dom.js';
 import { mulberry32, randomSeed } from '../engine/rng.js';
 import { startGame } from './controller.js';
 import { Game } from '../engine/game.js';
-import { modeArt, sectionHead, groupHead } from './mode-art.js';
+import { modeArt } from './mode-art.js';
 import { aiStop } from './ai-driver.js';
 import { hideWin } from './win.js';
 import { updateMenuBtn, toast } from './hud.js';
 import { t, getLang } from '../i18n/index.js';
 import { saveGame, loadSave, clearSave } from './save.js';
-import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo } from './records.js';
+import { recordStart, recordDailyPlayed, loadRecords, updateRecords, turnsLabel, dailyStreakInfo, winCrown, crownsOf } from './records.js';
 import { musicScene, sfx } from '../audio/sfx.js';
 import { generateLevel, placeHunters, dateKey, weekKey, seedOf } from '../content/levels/generate.js';
 import { showScreen, confirmReplaceSave, MODE_NAV } from './screens.js';
@@ -37,7 +37,8 @@ import { currentCombo, setCombo, toggleDeck, comboLabel, comboHistory, openCombo
 import { SEASON_ICON } from './season-art.js';
 import { BH_GARGANTUA } from '../content/tiles/blackhole.js';
 import { WHEEL } from '../engine/gambling.js';
-import { CHALLENGES, WEEKLY, CH_GROUPS, challengeById, challengeCfg, challengeTiles, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
+import { challengeById, challengeCfg, setupChallenge, dailyChallenge, DAILY_FEATURES } from '../content/challenges.js';
+import { crownsSectionHTML, thisWeek, weekRivals, startCrownClock, shareCrowns, maybeCrownsIntro, animateCrownTotal } from './crowns.js';
 import { deckIntro, hasDeckIntro } from './deck-intro.js';
 import { REDUCED } from '../fx/juice.js';
 import { confirmDialog } from './dialog.js';
@@ -264,46 +265,22 @@ function rushTimeUp() {
 }
 
 /* =============== desafíos =============== */
-// los desafíos y las reglas semanales (campos diseñados, mazos y reglas) viven en content/challenges.js
+// los desafíos (campos diseñados, mazos y reglas) viven en content/challenges.js; los 5 de cada semana, con sus coronas, en
+// crowns.js. Se juegan con los rivales de la semana (los mismos para todos) y una semilla nueva cada vez
 export async function startChallenge(id) {
   const ch = challengeById(id);
   if (!ch || !await modeIntro('challenge') || !await confirmReplaceSave('challenge')) return;
+  const { wk } = thisWeek();
   recordStart('challenge', { challenge: id });
   const { cfg, extra } = challengeCfg(ch);
-  startVsGame({ cfg, extra, ch, variant: 'challenge', run: { id, scene: ch.scene } });
+  startVsGame({ cfg, extra, ch, variant: 'challenge', run: { id, week: wk, scene: ch.scene }, rivals: weekRivals(wk, ch) });
 }
-
-/* =============== desafío semanal =============== */
-// cada semana (lunes a domingo) toca una de estas reglas; tablero, mazo y rivales iguales para todos
-export { weekKey }; // (semana ISO: content/levels/generate.js)
-const weekDaysLeft = () => 8 - (new Date().getDay() || 7); // incluido hoy
-export function weeklySetup(week = weekKey()) {
-  const r = mulberry32(seedOf('weeklyBots:' + week));
-  const rules = WEEKLY.filter(w => !w.from || week >= w.from); // (una regla nueva entra desde su semana: las de antes no cambian)
-  const rule = rules[seedOf('weekly:' + week) % rules.length];
-  // rivales: sin repetir y, mientras se pueda, de personalidades distintas
-  const pool = [...PERSONAS], rivals = [], styles = new Set();
-  while (rivals.length < rule.opps && pool.length) {
-    const fresh = pool.filter(p => !styles.has(p.style));
-    const from = fresh.length ? fresh : pool, pick = from[Math.floor(r() * from.length)];
-    rivals.push(pick.id); styles.add(pick.style); pool.splice(pool.indexOf(pick), 1);
-  }
-  return { rule, rivals, seed: seedOf('weeklyGame:' + week) };
-}
-function startWeeklyGame(week = weekKey()) {
-  const { rule, rivals, seed } = weeklySetup(week);
-  const { cfg, extra } = challengeCfg(rule);
-  startVsGame({ cfg, extra, ch: rule, variant: 'weekly', run: { id: rule.id, week, scene: rule.scene }, seed, rivals });
-}
-export async function startWeekly() {
-  if (!await modeIntro('weekly') || !await confirmReplaceSave('weekly')) return;
-  recordStart('weekly', { week: weekKey() });
-  startWeeklyGame();
-}
+// al terminar: ganarlo da su corona de esta semana (una vez). Devuelve si es nueva, el total y el siguiente por ganar
 export function challengeDone(won) {
-  const id = app.run?.id;
-  if (won && id) updateRecords(d => { d.challenges[id] = true; });
-  return { id, won };
+  const id = app.run?.id, wk = app.run?.week || weekKey();
+  const c = won && id ? winCrown(wk, id) : null;
+  const { wk: now, list } = thisWeek(), got = crownsOf(now);
+  return { id, won, crown: c, next: list.find(ch => !got.includes(ch.id) && ch.id !== id)?.id || null };
 }
 
 /* =============== etiqueta del modo en la barra de la partida =============== */
@@ -314,7 +291,6 @@ export function modeChipText() {
     case 'daily': return `${t('modes.daily.title')} · ${r?.feature ? dailyFeatName(r.feature, r.season, r.sub) : new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}`;
     case 'rush': return `${t('modes.holeN', { n: r.hole + 1, total: r.total })} · ${t('modes.rush.pts', { n: (r.scores || []).reduce((a, b) => a + b, 0) })}`;
     case 'challenge': return t('challenges.' + r.id + '.name');
-    case 'weekly': return `${t('modes.weekly.title')} · ${t('weekly.' + r.id + '.name')}`;
     case 'puzzle': return t('story.puzzleChip');
   }
   return '';
@@ -355,7 +331,7 @@ setInterval(() => {
 
 /* =============== pantalla de Modos =============== */
 // Dos pestañas que se deslizan en horizontal (también con el dedo): Partidas rápidas (una tarjeta
-// por baraja) y Juegos especiales (contrarreloj, desafíos, semanal, puzles y tus niveles).
+// por baraja) y Juegos especiales (contrarreloj, los desafíos de la semana, puzles y tus niveles).
 // Solo se ve una a la vez; se recuerda la última.
 const TAB_KEY = 'chaoticgolf_modesTab', TABS = ['quick', 'special'];
 let modesTab = (() => { try { return TABS.includes(localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : 'quick'; } catch (e) { return 'quick'; } })();
@@ -491,7 +467,7 @@ export function openModes(tab) {
   aiStop();
   if (TABS.includes(tab)) modesTab = tab;
   const R = loadRecords();
-  const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge'), wsave = loadSave('weekly');
+  const qsave = loadSave('pve'), rsave = loadSave('rush'), csave = loadSave('challenge');
   const rush = store.get(RUSH_KEY);
   const btn = (act, label, main = true, dis = false) => `<button class="${main ? 'btn-primary' : 'btn-light'} btn-sm" data-mode="${act}"${dis ? ' disabled' : ''}>${esc(label)}</button>`;
   const cont = (act, label = t('menu.continue')) => `<button class="btn-continue btn-sm" data-mode="${act}">${esc(label)}</button>`; // continuar: siempre en naranja
@@ -542,28 +518,8 @@ export function openModes(tab) {
     `<div><dt>${esc(t('modes.rush.statDone'))}</dt><dd>${R.rush.done ?? Math.floor((R.won.rush || 0) / 6)}</dd></div>` +
     `<div><dt>${esc(t('decks.played'))}</dt><dd>${R.rush.runs || 0}</dd></div></dl>` +
     `<div class="dkBtns">${rushBtns}</div></article>`;
-  // desafío: toda la tarjeta es el botón; a la derecha, jugar / continuar / superado y, si ya se ha jugado, victorias/partidas
-  const chEnd = (saved, done, s) => `<span class="chEnd">${saved ? `<span class="chCont">${esc(t('menu.continue'))}</span>`
-    : `<span class="chGo${done ? ' ok' : ''}"><svg class="i" aria-hidden="true"><use href="#${done ? 'i-check' : 'i-play'}"/></svg></span>`}` +
-    (s?.p ? `<small class="chSt" title="${esc(t('modes.chStat', { w: s.w || 0, p: s.p }))}">${s.w || 0}/${s.p}</small>` : '') + `</span>`;
-  const chCard = ch => {
-    const done = R.challenges[ch.id], saved = csave?.run?.id === ch.id, name = t('challenges.' + ch.id + '.name'), desc = t('challenges.' + ch.id + '.desc');
-    return `<button class="chCard g-${ch.group}${done ? ' done' : ''}${saved ? ' saved' : ''}" data-mode="${saved ? 'resume:challenge' : 'ch:' + ch.id}" aria-label="${esc(name + '. ' + desc)}">` +
-      `<span class="mdIco"><svg class="i" aria-hidden="true"><use href="#${ch.icon}"/></svg></span>` +
-      `<span class="chTxt"><b>${esc(name)}</b><small>${esc(desc)}</small></span>${chEnd(saved, done, R.chStats[ch.id])}</button>`;
-  };
-  const chGroups = CH_GROUPS.map(g => ({ g, list: CHALLENGES.filter(c => c.group === g) })).filter(x => x.list.length);
-  const chCards = chGroups.map(({ g, list }) => groupHead(g, list.filter(c => R.challenges[c.id]).length, list.length) +
-    `<div class="chGrid">${list.map(chCard).join('')}</div>`).join('');
-  const nDone = CHALLENGES.filter(c => R.challenges[c.id]).length;
-  const wk = weekKey(), { rule } = weeklySetup(wk), wbest = R.weekly.weeks[wk]?.best, left = weekDaysLeft();
-  const wname = t('weekly.' + rule.id + '.name'), wdesc = t('weekly.' + rule.id + '.desc');
-  const weeklyCard = `<button class="chCard weekly${wbest ? ' done' : ''}${wsave ? ' saved' : ''}" data-mode="${wsave ? 'resume:weekly' : 'weekly'}" aria-label="${esc(t('modes.weekly.title') + ': ' + wname + '. ' + wdesc)}">` +
-    `<span class="wkArt">${modeArt('weekly')}</span>` +
-    `<span class="chTxt"><small class="wkTag">${esc(t('modes.weekly.title'))} · ${esc(t(left === 1 ? 'modes.weekly.lastDay' : 'modes.weekly.daysLeft', { n: left }))}${wbest ? ' · ' + esc(t('modes.weekly.best', { turns: turnsLabel(wbest) })) : ''}</small>` +
-    `<b>${esc(wname)}</b><small>${esc(wdesc)}</small></span>${chEnd(wsave, !!wbest, R.weekly.weeks[wk])}</button>`;
   const specialPanel = rushCard +
-    `<section class="mdSection challenges">${sectionHead({ art: 'challenge', title: t('modes.challengesH'), done: nDone, total: CHALLENGES.length })}${weeklyCard}${chCards}</section>` +
+    crownsSectionHTML(R, csave) +
     yoursSectionHTML();
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
@@ -577,6 +533,9 @@ export function openModes(tab) {
   setModesTab(modesTab, { instant: true });
   showScreen('modes');
   fitUltTogs();
+  startCrownClock(() => openModes());
+  animateCrownTotal();
+  if (modesTab === 'special') maybeCrownsIntro();
 }
 
 // cambia de pestaña: el indicador se desliza; el contenido sale con un fundido corto hacia un lado
@@ -597,7 +556,7 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   const from = panels.find(p => !p.classList.contains('off') && p !== to);
   const seq = ++tabSeq;
   panels.forEach(p => { (p._anims || []).forEach(a => a.cancel()); p._anims = []; }); // (las nuestras: getAnimations() obligaría a recalcular estilos)
-  const show = () => { panels.forEach(p => p.classList.toggle('off', p !== to)); fitUltTogs(); };
+  const show = () => { panels.forEach(p => p.classList.toggle('off', p !== to)); fitUltTogs(); if (tab === 'special' && app.screen === 'modes') maybeCrownsIntro(); };
   if (instant || REDUCED || !from || !to.animate) { show(); return; }
   sfx('select');
   const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-20 * dir}px)` }],
@@ -668,7 +627,7 @@ export function bindModes() {
       case 'rush': startRush(false); break;
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
-      case 'weekly': startWeekly(); break;
+      case 'crShare': shareCrowns(); break;
       case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
       case 'ultHist': openComboHistory({ deckArt, onPick: m => { setCombo(m); paintUlt(); } }); break;
       case 'editor': openEditor(); break;
@@ -684,7 +643,6 @@ export function bindModes() {
   });
   MODE_NAV.rush = { back: () => openModes('special'), restart: () => { store.set(RUSH_KEY, null); recordStart('rush'); startRushHole(newRush()); } };
   MODE_NAV.challenge = { back: () => openModes('special'), restart: () => startChallenge(app.run?.id) };
-  MODE_NAV.weekly = { back: () => openModes('special'), restart: () => { clearSave('weekly'); startWeeklyGame(app.run?.week); } };
 }
 async function yoursAction(b) {
   const d = b.dataset;

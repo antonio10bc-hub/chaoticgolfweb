@@ -13,19 +13,19 @@
 //              bañada en oro, con su destello, y dos monedas y un dado en órbita
 //   prisma     victorias con Ultimate: brillo iridiscente · halo arcoíris · iris más vivo y destellos en órbita
 //   rayo       series de contrarreloj completas: esfera de cronómetro · su corona y la estela · cargada de electricidad y rayos en órbita
-//   corona     desafíos superados por grupo (calentamiento · intermedio · experto): orbe real · la corona · gemas en sus bandas y en órbita
+//   corona     coronas de los desafíos de la semana (10 · 50 · 150): orbe real · la corona · gemas en sus bandas y en órbita
 //   puzle      Lo básico por partes (las barajas de siempre · las nuevas · Lo no tan básico): piezas dibujadas · el marco del puzle · piezas de colores y tres en órbita
 // Lo ganado se calcula siempre desde las estadísticas (records.js): no hay nada más que guardar que la
 // pelota puesta y qué niveles se han visto (para el aviso de "¡Nueva!"), en el perfil.
 import { app } from './app.js';
 import { loadRecords } from './records.js';
-import { CHALLENGES, CH_GROUPS } from '../content/challenges.js';
+import { CH_GROUPS } from '../content/challenges.js';
 import { loadProfile, saveProfile } from './profile.js';
 import { SEASON_ICON } from './season-art.js';
 import { basicTier } from '../content/levels/index.js';
 const SEASON_SVG = s => `<svg viewBox="0 0 24 24" aria-hidden="true">${SEASON_ICON[s]}</svg>`;
 
-export const GROUPS = CH_GROUPS; // (calentamiento, intermedio, experto: los tres niveles de corona y puzle)
+export const GROUPS = CH_GROUPS; // (los tres niveles de la pelota Puzle: las partes de Lo básico)
 export const SKINS = [
   { id: 'fire', kind: 'streak', at: [7, 30, 365], accent: '#E8733A' },
   { id: 'classic', kind: 'deck', deck: 'classic', at: [10, 50, 100], accent: '#C9962E' },
@@ -37,7 +37,7 @@ export const SKINS = [
   { id: 'fortune', kind: 'deck', deck: 'gambling', at: [10, 50, 100], accent: '#B8892B' },
   { id: 'prism', kind: 'deck', deck: 'ultimate', at: [10, 50, 100], accent: '#8E6BE0' },
   { id: 'bolt', kind: 'rush', at: [1, 5, 15], accent: '#3F6FA8' },
-  { id: 'crown', kind: 'groups', of: 'challenges', accent: '#B5473F' },
+  { id: 'crown', kind: 'crowns', at: [10, 50, 150], accent: '#B5473F' },
   { id: 'puzzle', kind: 'groups', of: 'basics', accent: '#2E8A80' },
 ];
 export const skinById = id => SKINS.find(s => s.id === id) || null;
@@ -45,11 +45,9 @@ export const ROMAN = ['', 'I', 'II', 'III'];
 
 // series de contrarreloj completas (antes de existir el contador: ~6 victorias por serie, 5 hoyos y la serie)
 const rushDone = R => R.rush.done ?? Math.floor((R.won.rush || 0) / 6);
-// grupos (desafíos o puzles): cuántos hay de cada uno y cuántos superados
-function groupCounts(of, R, basics) {
-  const items = of === 'challenges'
-    ? CHALLENGES.map(c => ({ g: c.group, done: !!R.challenges[c.id] }))
-    : (basics || []).map(L => ({ g: basicTier(L), done: !!R.basics?.[L.id] }));
+// partes de Lo básico: cuántos niveles hay en cada una y cuántos superados
+function groupCounts(R, basics) {
+  const items = (basics || []).map(L => ({ g: basicTier(L), done: !!R.basics?.[L.id] }));
   return GROUPS.map(g => ({ g, n: items.filter(x => x.g === g).length, done: items.filter(x => x.g === g && x.done).length }));
 }
 
@@ -57,13 +55,13 @@ function groupCounts(of, R, basics) {
 //   { lvl, value, target, pct, group? } (target null: ya tiene los 3)
 export function skinProgress(s, R = loadRecords(), basics = app.basics) {
   if (s.kind === 'groups') {
-    const gs = groupCounts(s.of, R, basics);
+    const gs = groupCounts(R, basics);
     let lvl = 0;
     while (lvl < 3 && gs[lvl].n > 0 && gs[lvl].done >= gs[lvl].n) lvl++;
     const next = gs[lvl];
     return { lvl, value: next ? next.done : gs[2].n, target: next ? next.n : null, pct: next ? next.done / Math.max(1, next.n) : 1, group: next?.g || null };
   }
-  const value = s.kind === 'streak' ? R.daily.bestStreak || 0 : s.kind === 'deck' ? R.decks[s.deck]?.w || 0 : rushDone(R);
+  const value = s.kind === 'streak' ? R.daily.bestStreak || 0 : s.kind === 'deck' ? R.decks[s.deck]?.w || 0 : s.kind === 'crowns' ? R.crowns?.n || 0 : rushDone(R);
   const lvl = s.at.filter(n => value >= n).length;
   const target = s.at[lvl] ?? null, prev = s.at[lvl - 1] ?? 0;
   return { lvl, value, target, pct: target ? Math.min(1, (value - prev) / (target - prev)) : 1 };

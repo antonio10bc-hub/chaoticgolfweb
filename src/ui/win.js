@@ -20,7 +20,7 @@ import { humansOf, multiHuman, displayName, isBot } from './players.js';
 import { recordEnd, turnsLabel, claimStreakGoal, nextStreakGoal, loadRecords } from './records.js';
 import { replayLevel, nextLevel, openStory, hasNextLevel, levelFromModes } from './screen-story.js';
 import { startPveMatch } from './screen-pve.js';
-import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, startWeekly, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
+import { openModes, startDaily, rushHoleDone, startRushHole, startRush, challengeDone, startChallenge, modeStore, RUSH_KEY, tabOfGame, streakLabel, dailyShareText } from './screen-modes.js';
 import { backToEditor, leaveToMenu, newFreeGame } from './screens.js';
 import { keyMomentHTML } from './why-lost.js';
 import { openShareDialog, prepareShare, shareNow } from './share-play.js';
@@ -69,7 +69,7 @@ export function showWin() {
   else if (S.holeWin) msg = t('win.holeGold'); // (casino: el hoyo estaba en la casilla dorada)
   else if (S.goldWin) msg = solo || (!multi && S.winners[0] === me && mode === 'pve') ? t('win.goldYou') : t('win.gold', { names }); // (casino: ¡bote!; en solitario, es tuyo)
   else if (solo) msg = t({ puzzle: 'win.puzzleDone', daily: 'win.dailyDone', rush: 'win.rushHole' }[app.variant] || 'win.levelDone', { n: (app.run?.hole ?? 0) + 1 });
-  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone', weekly: 'win.weeklyDone' }[slot] || 'win.youWon');
+  else if (!multi && S.winners.length === 1 && S.winners[0] === me) msg = t({ challenge: 'win.challengeDone', daily: 'win.dailyDone' }[slot] || 'win.youWon');
   else if (!multi && S.winners.includes(me)) msg = t('win.tieWithYou', { names });
   else msg = S.winners.length > 1 ? t('win.tie', { names }) : t('win.one', { names });
   $('winMsg').textContent = msg;
@@ -129,11 +129,6 @@ export function showWin() {
       if (mode === 'pve') app.shareText = dailyShareText({ won: !lost, turns, st: stats, S, date: app.run.date });
       break;
     }
-    case 'weekly':
-      chips = lost ? '' : recChip((rec.newBest ? t('win.weeklyBest') + ' · ' : '') + turnsLabel(turns), rec.newBest) +
-        (rec.best && !rec.newBest && rec.best.turns !== turns ? recChip(t('win.weeklyToday', { turns: turnsLabel(rec.best.turns) })) : '');
-      btns = btn('weekly', lost ? t('win.retry') : t('modes.again'), true) + btn('modes', t('win.modes'));
-      break;
     case 'rush': {
       const r = rushHoleDone();
       chips = recChip(t('win.rushScore', { base: r.sc.base, bonus: r.sc.bonus }), true) + recChip(t('win.rushTotal', { n: r.sum }));
@@ -144,11 +139,16 @@ export function showWin() {
       } else btns = btn('rushNext', t('win.nextHole', { n: app.run.hole + 2 }), true) + btn('modes', t('win.modes'));
       break;
     }
-    case 'challenge':
-      challengeDone(!lost);
-      chips = !lost ? recChip(t('win.challengeChip'), true) : '';
-      btns = btn('challengeRetry', lost ? t('win.retry') : t('win.replay'), lost) + btn('modes', t('win.modes'), !lost);
+    case 'challenge': { // (ganado: su corona de esta semana, si aún no la tenías, y el siguiente desafío por ganar)
+      const r = challengeDone(!lost), crown = '<svg class="i" aria-hidden="true"><use href="#i-crown"/></svg>';
+      chips = lost ? '' : r.crown?.fresh ? `<span class="winRec new crownChip">${crown}${esc(t('win.crownNew', { n: r.crown.n }))}</span>`
+        : recChip(t('win.crownHad'));
+      app.nextChallenge = !lost && r.next;
+      btns = lost ? btn('challengeRetry', t('win.retry'), true) + btn('modes', t('win.modes'))
+        : r.next ? btn('challengeNext', t('win.nextChallenge'), true) + btn('modes', t('win.modes'))
+        : btn('modes', t('win.modes'), true) + btn('challengeRetry', t('win.replay'));
       break;
+    }
     case 'test':
       btns = btn('replay', t('win.retry'), true) + btn('editor', t('win.backToEditor'));
       break;
@@ -351,7 +351,7 @@ function burst(x, y, R, r, n = 8) {
 // línea de contexto de la imagen: modo y turnos
 function shareMeta(slot, turns, lost) {
   const modeName = { story: t('story.yours'), puzzle: t('story.title'), daily: t('modes.daily.title'), rush: t('modes.rush.title'),
-    challenge: app.run?.id ? t('challenges.' + app.run.id + '.name') : t('modes.challenge.title'), weekly: t('modes.weekly.title'),
+    challenge: app.run?.id ? t('challenges.' + app.run.id + '.name') : t('modes.challenge.title'), 
     pve: multiHuman() ? t('pve.localTitle') : t('decks.' + (app.lastPveCfg?.deck || 'classic') + '.name'), test: t('menu.editorTitle') }[slot] || '';
   return [modeName, lost ? '' : turnsLabel(turns)].filter(Boolean).join(' · ');
 }
@@ -383,7 +383,7 @@ export function bindWin() {
       case 'rushNew': hideWin(); startRush(true); break;
       case 'menuHome': leaveToMenu(); break;
       case 'challengeRetry': hideWin(); startChallenge(app.run?.id); break;
-      case 'weekly': hideWin(); startWeekly(); break;
+      case 'challengeNext': hideWin(); startChallenge(app.nextChallenge); break;
       case 'share': if (app.shareInfo) openShareDialog(app.shareInfo); break;
       case 'shareNow': if (app.shareInfo) shareNow(app.shareInfo, b); break;
     }

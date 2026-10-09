@@ -1,7 +1,8 @@
 // Estadísticas globales del jugador (todas sus partidas en este dispositivo):
 // partidas empezadas y ganadas por modo, totales de la mesa, el mejor resultado de cada nivel,
 // la racha de partida rápida, el reto diario (récord del día y racha de días), el contrarreloj,
-// los desafíos y los niveles de Lo básico superados, el desafío semanal (récord de cada semana), el historial contra
+// los desafíos y los niveles de Lo básico superados, las coronas (desafíos de la semana ganados), el antiguo desafío
+// semanal (récord de cada semana), el historial contra
 // cada rival (y quién te gana más: tu némesis), partidas por día (evolución) y cartas más usadas.
 import { t } from '../i18n/index.js';
 import { dateKey } from '../content/levels/generate.js';
@@ -57,14 +58,20 @@ const blank = () => ({
   daily: { days: {}, streak: 0, bestStreak: 0, last: null, goalSeen: null, // fecha -> { best, strokes }; goalSeen: día de la última meta celebrada
     played: 0, won: 0, dist: {} }, // días jugados y ganados, y en cuántos turnos (tu mejor de cada día): turnos -> días (sin límite de fechas)
   rush: { best: 0, runs: 0 }, // (done: series completas, las cinco; lo añade rushHoleDone)
-  challenges: {}, // id -> true
-  weekly: { weeks: {} },  // semana "AAAA-Www" -> { best, strokes }
+  challenges: {}, // id -> true (ganado alguna vez)
+  weekly: { weeks: {} },  // (el antiguo desafío semanal) semana "AAAA-Www" -> { best, strokes }
+  crowns: { n: 0, weeks: {}, legacy: 0 }, // coronas: n (todas), weeks (semana -> ids ganados esa semana), legacy (las regaladas)
   rivals: {},     // personaje -> { w, l, beat } (tus victorias y derrotas contra él; beat: veces que ganó él)
   history: {},    // fecha -> { p, w } (partidas terminadas y ganadas ese día)
   cards: {},      // carta -> veces que la has jugado
   decks: {},      // baraja de la partida rápida -> { p: jugadas, w: victorias (tuyas o de alguna persona en local) }
   chStats: {},    // desafío -> { p: jugadas, w: victorias }
 });
+// antes de existir las coronas: una por cada desafío superado y por cada semana ganada del antiguo desafío semanal
+function seedCrowns(d) {
+  const n = Object.values(d.challenges || {}).filter(Boolean).length + Object.values(d.weekly?.weeks || {}).filter(w => w?.best != null).length;
+  return { n, weeks: {}, legacy: n };
+}
 // antes de existir, de cada desafío solo se sabía si estaba superado: cuenta como 1 jugada y 1 victoria
 const seedChStats = d => Object.fromEntries(Object.keys(d.challenges || {}).filter(k => d.challenges[k]).map(k => [k, { p: 1, w: 1 }]));
 // antes de existir los contadores del reto diario, se sacan de los días guardados (los últimos 60) y de la mejor racha
@@ -86,6 +93,7 @@ export function loadRecords() {
         weekly: { ...b.weekly, ...d.weekly }, rivals: { ...d.rivals }, history: { ...d.history }, cards: { ...d.cards },
         decks: d.decks ? { ...d.decks } : seedDecks(d),
         chStats: d.chStats ? { ...d.chStats } : seedChStats(d),
+        crowns: d.crowns ? { ...b.crowns, ...d.crowns, weeks: { ...d.crowns.weeks } } : seedCrowns(d),
         basics: { ...d.basics }, puzzles: { ...d.puzzles }, challenges: { ...d.challenges } };
     }
   } catch (e) { /* sin storage o corrupto */ }
@@ -272,6 +280,19 @@ export function recordEnd(kind, { won, stats, levelIndex = null, levelId = null,
   return { newBest, best, streak, newFastest, fastest: d.pve.fastest, dailyStreak: d.daily.streak };
 }
 export const levelBest = i => loadRecords().levels[i] || null;
+
+// coronas: ganar un desafío de la semana (una vez por semana y desafío) suma una
+export function winCrown(week, id) {
+  let fresh = false;
+  const d = updateRecords(d => {
+    d.challenges[id] = true;
+    const wk = d.crowns.weeks[week] = d.crowns.weeks[week] || [];
+    if (wk.includes(id)) return;
+    wk.push(id); d.crowns.n++; fresh = true;
+  });
+  return { fresh, n: d.crowns.n };
+}
+export const crownsOf = (week, R = loadRecords()) => R.crowns.weeks[week] || [];
 
 // tu némesis: el personaje que más veces te ha ganado (al menos 2)
 export function nemesisId(R = loadRecords()) {

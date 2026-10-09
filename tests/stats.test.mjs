@@ -44,7 +44,7 @@ test('todo lo que sale en Estadísticas tiene su texto (es y en)', () => {
     ...DECKS.filter(dk => !dk.locked && !dk.ultimate).map(dk => 'ult.short.' + dk.id),
     ...SKINS.map(s => 'skins.' + s.id + '.name'),
     ...CH_GROUPS.map(g => 'modes.groups.' + g),
-    ...['decksH', 'combos', 'more', 'progressH', 'specialH', 'rushBest', 'rushDone', 'rushRuns', 'weeksPlayed', 'weeksWon', 'weekBest', 'ballsH'].map(k => 'stats.' + k),
+    ...['decksH', 'combos', 'more', 'progressH', 'specialH', 'rushBest', 'rushDone', 'rushRuns', 'crowns', 'crownWeeks', 'ballsH'].map(k => 'stats.' + k),
   ];
   assert.deepEqual(missing(keys), []);
 });

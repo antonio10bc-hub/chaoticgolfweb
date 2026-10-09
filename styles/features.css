@@ -1795,3 +1795,137 @@ html.reduceMotion .dsBarV { animation: none; }
 .dsBox .dlgBtns .i { width: 16px; height: 16px; }
 .dsShare.done { --b-bg: var(--grass-dark); --b-line: var(--grass-dark); }
 @media (max-width: 380px) { .dlgBox.dsBox { padding: 18px 16px 14px; } .dsNum b { font-size: 25px; } .dsNum small { font-size: 10.5px; } }
+
+/* =========================================================
+   Desafíos de la semana (crowns.js): la cabecera con tus coronas (rayos que giran, destellos, la corona que flota con su
+   brillo, las 5 de la semana y la cuenta atrás; compartir arriba a la derecha) y las 5 tarjetas, una por fila. Sin hacer:
+   blancas, con la corona en silueta y "Jugar"; ganadas: doradas, con la corona de oro. En la sección estrecha (móvil), más
+   compacto (container query)
+   ========================================================= */
+.mdSection.crowns { padding: 0 !important; overflow: hidden; container-type: inline-size; }
+.crHead { position: relative; display: flex; align-items: center; gap: 18px; padding: 20px 70px 20px 22px; overflow: hidden; isolation: isolate;
+  color: #FFF4D6; background: radial-gradient(120% 160% at 10% 50%, #D8695C 0%, #B5473F 40%, #6C1F1A 100%); }
+.crRays { position: absolute; z-index: -1; left: 69px; top: 50%; width: 620px; height: 620px; margin: -310px 0 0 -310px; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255,226,170,.15) 0 9deg, transparent 9deg 24deg);
+  -webkit-mask: radial-gradient(closest-side, #000 25%, transparent 100%); mask: radial-gradient(closest-side, #000 25%, transparent 100%);
+  animation: crSpin 48s linear infinite; }
+@keyframes crSpin { to { transform: rotate(1turn); } }
+.crSpark { position: absolute; z-index: -1; width: 9px; height: 9px; background: #FFE9A8; opacity: 0;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: crTwinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -.47s); }
+.crSpark:nth-of-type(1) { left: 22px; top: 18px; } .crSpark:nth-of-type(2) { left: 118px; top: 12px; transform: scale(.7); }
+.crSpark:nth-of-type(3) { left: 132px; bottom: 16px; } .crSpark:nth-of-type(4) { left: 14px; bottom: 22px; transform: scale(.6); }
+.crSpark:nth-of-type(5) { left: 46%; top: 14px; transform: scale(.6); } .crSpark:nth-of-type(6) { right: 18%; bottom: 14px; }
+.crSpark:nth-of-type(7) { right: 30%; top: 20px; transform: scale(.8); }
+@keyframes crTwinkle { 0%, 100% { opacity: 0; scale: .4; } 45% { opacity: .95; scale: 1.15; } 60% { opacity: .6; scale: .9; } }
+.crBadge { flex: 0 0 auto; width: 96px; height: 96px; display: grid; place-items: center; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,220,140,.42), rgba(255,220,140,0)); }
+.crBig { width: 80px; height: 65px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(60,10,5,.35)); animation: crBob 3.4s ease-in-out infinite; }
+@keyframes crBob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-5px) rotate(3deg); } }
+.crSheen { transform-box: view-box; animation: crSheen 3.6s ease-in-out infinite; }
+@keyframes crSheen { 0%, 55% { transform: translateX(0); } 100% { transform: translateX(96px); } }
+.crInfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.crTitle { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
+.crTotal { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
+.crTotal b { font-size: 50px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; }
+.crTotal small { font-size: 16px; font-weight: 500; opacity: .9; }
+.crWeek { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 4px; }
+.crMinis { display: inline-flex; gap: 5px; }
+.crMinis i { display: grid; color: rgba(255,240,220,.5); }
+.crMini { width: 24px; height: 20px; }
+.crMinis i.on .crMini { animation: crPop .5s cubic-bezier(.3,1.6,.5,1) both; }
+.crMinis i:nth-child(2) .crMini { animation-delay: .06s; } .crMinis i:nth-child(3) .crMini { animation-delay: .12s; }
+.crMinis i:nth-child(4) .crMini { animation-delay: .18s; } .crMinis i:nth-child(5) .crMini { animation-delay: .24s; }
+@keyframes crPop { from { transform: scale(.3); opacity: 0; } }
+.crTime { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 11px 4px 9px; border-radius: 999px; background: rgba(40,6,4,.24); white-space: nowrap; }
+.crTime .i { width: 14px; height: 14px; }
+.crTime b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.crShare { position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; padding: 0; display: grid; place-items: center; border-radius: 50%;
+  --b-bg: rgba(255,244,214,.14); --b-fg: #FFF4D6; --b-line: rgba(255,244,214,.38); box-shadow: none; }
+.crShare:hover { --b-bg: rgba(255,244,214,.26); transform: scale(1.06); }
+.crShare .i { width: 19px; height: 19px; }
+
+.crList { display: grid; gap: 8px; padding: 12px; }
+button.crCard { --b-bg: rgba(255,255,255,.42); --b-line: var(--cream-line); --gc: var(--mode-challenge);
+  display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 10px 12px; min-width: 0; text-align: left;
+  border-radius: 16px; position: relative; overflow: hidden; color: var(--ink); white-space: normal; font-weight: 400;
+  animation: crIn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--n) * 55ms); transition: transform .2s, border-color .2s, background-color .2s; }
+@keyframes crIn { from { opacity: 0; transform: translateY(10px); } }
+button.crCard:hover { transform: translateY(-2px); border-color: rgba(181,71,63,.45); }
+.crPic { position: relative; flex: 0 0 auto; display: flex; align-items: center; }
+.crPic .crDk { display: grid; width: 50px; height: 50px; }
+.crPic .crDk .dkArt { width: 100%; height: 100%; }
+.crPic.two .crDk + .crDk { margin-left: -20px; transform: rotate(9deg) translateY(2px); }
+.crPic.two .crDk:first-child { transform: rotate(-6deg); }
+.crChIco { position: absolute; left: 32px; bottom: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #fff;
+  background: linear-gradient(145deg, var(--c1), var(--c2)); border: 2px solid var(--cream); }
+.crPic.two .crChIco { left: 64px; }
+.crChIco .i { width: 14px; height: 14px; }
+.crCard.g-warmup { --c1: #EE8C80; --c2: #CC5A4E; } .crCard.g-mid { --c1: #D2574B; --c2: #A13A31; } .crCard.g-expert { --c1: #A83830; --c2: #6C1F1A; }
+.crBody { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.crTag { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.crTag em { font-style: normal; color: var(--dk); letter-spacing: .02em; text-transform: none; font-size: 11.5px; }
+.crName { font-size: 16px; font-weight: 600; line-height: 1.15; letter-spacing: -.01em; }
+.crDesc { font-size: 12.5px; line-height: 1.3; color: var(--ink-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.crMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; margin-top: 2px; }
+.crM { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.crM .i { width: 13px; height: 13px; color: var(--ink-soft); }
+.crFaces { display: inline-flex; margin-right: 2px; }
+.crFaces .avatar { width: 21px; height: 21px; box-shadow: none; border: 1.5px solid var(--cream); }
+.crFaces .avatar + .avatar { margin-left: -7px; }
+.crEnd { flex: 0 0 auto; }
+.crSlot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 64px; }
+.crSlotIc { width: 38px; height: 31px; flex: 0 0 auto; overflow: visible; }
+.crSlotIc.empty { color: rgba(36,36,36,.3); }
+.crPlay { display: inline-flex; align-items: center; gap: 5px; padding: 7px 13px 7px 11px; border-radius: 999px; background: var(--mode-challenge); color: var(--cream); font-size: 12.5px; font-weight: 600; white-space: nowrap; transition: transform .2s; }
+.crPlay .i { width: 12px; height: 12px; }
+button.crCard:hover .crPlay { transform: scale(1.06); }
+/* ganada: dorada, con la corona de oro (aparece con un salto y brilla) */
+button.crCard.won { --b-bg: linear-gradient(160deg, #FFF7DC 0%, #F8E4A4 100%); background: var(--b-bg); --b-line: #D9A93C; }
+button.crCard.won:hover { border-color: #B9822A; }
+.crCard.won::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.55) 50%, transparent 60%);
+  transform: translateX(-100%); animation: crCardSheen 5s ease-in-out infinite; animation-delay: calc(var(--n) * .4s); }
+@keyframes crCardSheen { 0%, 70% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.crSlot.won .crSlotIc { filter: drop-shadow(0 3px 6px rgba(185,130,42,.45)); animation: crPop .6s .3s cubic-bezier(.3,1.6,.5,1) both; }
+.crSlot.won small { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8C5E17; }
+.crCard.won .crTag, .crCard.won .crDesc { color: #7A6534; }
+.crCard.saved { --b-line: var(--accent); }
+@container (max-width: 560px) {
+  .crHead { gap: 12px; padding: 16px 58px 16px 14px; }
+  .crBadge { width: 70px; height: 70px; }
+  .crBig { width: 60px; height: 49px; }
+  .crRays { left: 49px; }
+  .crTotal b { font-size: 38px; }
+  .crTotal small { font-size: 14px; }
+  .crShare { width: 38px; height: 38px; top: 12px; right: 12px; }
+  .crMini { width: 20px; height: 17px; }
+  .crPic .crDk { width: 42px; height: 42px; }
+  .crChIco { left: 26px; width: 22px; height: 22px; }
+  .crPic.two .crChIco { left: 50px; }
+  .crPic.two .crDk + .crDk { margin-left: -18px; }
+  .crName { font-size: 15px; }
+  .crDesc { font-size: 12px; }
+  .crSt { display: none; }
+  .crSlot { min-width: 0; }
+  .crPlay { padding: 6px 10px; font-size: 12px; }
+  .crPlay .i { display: none; }
+  .crSlot.won small { font-size: 10.5px; }
+}
+/* el aviso del cambio */
+#dialog:has(.crIntro) { width: min(420px, 92vw); }
+.dlgBox.crIntro { align-items: center; text-align: center; }
+.crIntro .dlgBtns { align-self: stretch; justify-content: center; }
+.crIntroArt { display: grid; place-items: center; height: 88px; margin: -4px auto 4px; width: 120px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(242,194,78,.38), rgba(242,194,78,0)); }
+.crIntro h3 { margin: 4px 0 12px; }
+.crIntro ul { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.crIntro li { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 1.3; }
+.crIntro li > .i, .crIntro li > .crLi { flex: 0 0 auto; width: 22px; height: 22px; color: var(--mode-challenge); }
+.crIntro li.gift { padding: 9px 11px; border-radius: 12px; background: rgba(242,194,78,.22); font-weight: 600; }
+.crIntro li.gift .i { color: #8C5E17; }
+/* fin de partida: la corona ganada */
+.winRec.new.crownChip { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
+.winRec.crownChip .i { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crMinis i.on .crMini, .crSlot.won .crSlotIc { animation: none !important; }
+  .crSpark { opacity: .6; }
+}

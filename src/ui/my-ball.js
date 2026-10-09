@@ -19,9 +19,9 @@ let view = null, lastFocus = null, wearCta = null;
 
 // lo que pide cada nivel ("7 días", "15 victorias", "Intermedio")
 export function goalLabel(s, lvl) {
-  if (s.kind === 'groups') return t((s.of === 'basics' ? 'story.tiers.' : 'modes.groups.') + GROUPS[lvl - 1]); // (Lo básico, por partes)
+  if (s.kind === 'groups') return t('story.tiers.' + GROUPS[lvl - 1]); // (Lo básico, por partes)
   const n = s.at[lvl - 1];
-  return t((s.kind === 'streak' ? 'skins.unit.days' : s.kind === 'rush' ? 'skins.unit.series' : 'skins.unit.wins') + (n === 1 ? '1' : ''), { n });
+  return t((s.kind === 'streak' ? 'skins.unit.days' : s.kind === 'rush' ? 'skins.unit.series' : s.kind === 'crowns' ? 'skins.unit.crowns' : 'skins.unit.wins') + (n === 1 ? '1' : ''), { n });
 }
 const skinName = sk => sk ? `${t('skins.' + sk.id + '.name')} ${ROMAN[sk.lvl]}` : t('profile.basic');
 export { skinName };

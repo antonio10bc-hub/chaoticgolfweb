@@ -288,8 +288,12 @@ function copied(btn) {
 export async function openShareDialog({ title, meta, text = null }) {
   if (!app.finalPlay || !app.game) return;
   const blob = await buildShareImage({ title, meta });
+  shareImageDialog(blob, { text, what: 'jugada' });
+}
+// el diálogo con una imagen ya hecha (la jugada final, tus coronas…): compartir, copiar, descargar y, si lo hay, el texto
+export function shareImageDialog(blob, { text = null, what = 'jugada', name = 'chaotic-golf.png' } = {}) {
   if (!blob) { toast(t('share.failed'), 'warn'); return; }
-  const file = new File([blob], 'chaotic-golf.png', { type: 'image/png' });
+  const file = new File([blob], name, { type: 'image/png' });
   const url = URL.createObjectURL(blob);
   const caption = t('share.caption') + ' ' + location.origin + location.pathname;
   const canShareFile = !!navigator.canShare?.({ files: [file] });
@@ -306,13 +310,13 @@ export async function openShareDialog({ title, meta, text = null }) {
     const b = e.target.closest('[data-share]');
     if (!b) return;
     sfx('select');
-    track('compartir', { que: 'jugada', como: b.dataset.share });
+    track('compartir', { que: what, como: b.dataset.share });
     try {
       if (b.dataset.share === 'native') await navigator.share({ files: [file], text: caption });
       if (b.dataset.share === 'copy') { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast(t('share.imgCopied')); }
       if (b.dataset.share === 'text') { await navigator.clipboard.writeText(text); toast(t('share.copied')); }
       if (b.dataset.share === 'download') {
-        const a = document.createElement('a'); a.href = url; a.download = 'chaotic-golf.png'; a.click();
+        const a = document.createElement('a'); a.href = url; a.download = name; a.click();
       }
     } catch (err) { if (err?.name !== 'AbortError') toast(t('share.failed'), 'warn'); }
   };

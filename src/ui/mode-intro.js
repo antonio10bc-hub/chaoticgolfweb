@@ -5,7 +5,7 @@ import { $, esc } from './dom.js';
 import { t } from '../i18n/index.js';
 
 const KEY = 'chaoticgolf_intros';
-const ICON = { daily: 'i-calendar', rush: 'i-timer', challenge: 'i-bolt', weekly: 'i-flag' };
+const ICON = { daily: 'i-calendar', rush: 'i-timer', challenge: 'i-crown' };
 // versión de cada presentación: si cambian las reglas del modo, se vuelve a enseñar una vez (contrarreloj 2: los cazadores)
 const VER = { rush: 2 };
 const seenKey = id => VER[id] ? id + VER[id] : id;

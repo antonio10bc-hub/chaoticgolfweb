@@ -163,7 +163,7 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 De vez en cuando cruza el tablero una ráfaga de viento (`shape: 'wind'` en `src/fx/particles.js`): una estela que
 se traza, avanza ondulando y acaba en un remolino pequeño; a veces va acompañada de otra más fina.
 
-**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para el contrarreloj (cronómetro; su tarjeta es como la de las barajas, con récord, series completas y jugadas), los desafíos (trofeo), el semanal (calendario), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
+**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para el contrarreloj (cronómetro; su tarjeta es como la de las barajas, con récord, series completas y jugadas), los desafíos de la semana (su cabecera de coronas), los puzles (piezas que encajan) y tus niveles (el taller). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
 
 **Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
 
@@ -203,7 +203,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Bots con personalidad:** nombre, cara que cambia de humor y bocadillos al jugar, recibir un golpe,
   caerse o embocar. Dificultad fácil / normal / difícil (`LEVELS` en `src/ai/bot.js`).
 - **Presentación de la mesa** (`src/ui/lineup.js`): al empezar una partida contra la máquina (partida rápida,
-  multijugador local, reto diario, desafíos y semanal), con el tablero ya cargado y antes de que juegue nadie,
+  multijugador local, reto diario y desafíos), con el tablero ya cargado y antes de que juegue nadie,
   una ventana dice quién eres (tu pelota, con la que llevas puesta, y tu nombre), quién empieza y el orden de
   los turnos: una fila con cada jugador (cara, nombre, personalidad o "Tú"), el turno la recorre una vez y
   vuelve a quien empieza, que se queda con la etiqueta "Empieza". Con el color del modo. Hasta pulsar
@@ -215,7 +215,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
   Reiniciar pide confirmación; empezar otra partida del mismo modo avisa de que sustituye la guardada.
-  El reto diario y el desafío semanal caducan: la partida guardada de ayer (o de la semana pasada) se borra y sale el reto nuevo.
+  El reto diario y los desafíos caducan: la partida guardada de ayer (o un desafío de la semana pasada) se borra y sale el reto nuevo.
 - **Ajustes** (el botón redondo del engranaje, en cualquier pantalla; pestañas Ajustes y Estadísticas):
   sonido y pista de música (con fundido menú ↔ partida),
   velocidad de las animaciones, acelerar solo los turnos de la máquina, tema del campo (clásico, otoño,
@@ -233,7 +233,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   repite dos días seguidos; algún día el tablero crece una o dos filas o columnas: `dailyChallenge` en
   `src/content/challenges.js`; récord del día en turnos propios y racha de días) y debajo
   Lo básico y Modos de juego. Crear una partida rápida nueva con otra guardada avisa y la borra.
-  **La misma partida para todo el mundo:** la semilla sale de la fecha (el día de cada uno, a su medianoche), el reparto no depende del color que elijas (el motor recibe siempre el mismo y el tuyo se aplica después, solo de aspecto) y, en el reto diario y el semanal, los bots deciden con un azar que sale de la semilla y del momento de la partida (`decide` en `ai-driver.js`): con las mismas jugadas, los bots juegan igual y los turnos que compartís son comparables. La partida del reto lleva el fondo de su mecánica (`scene` en `DAILY_FEATURES`: río y charca, el lago; catapultas, caja con agujeros, bloque y esquina, la madera del minigolf; palo iridiscente, el de Ultimate; portales y arenero, el campo de siempre) y, al acabar, el final enseña tu pelota con la que llevas puesta sobre un green, en lugar del icono. La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
+  **La misma partida para todo el mundo:** la semilla sale de la fecha (el día de cada uno, a su medianoche), el reparto no depende del color que elijas (el motor recibe siempre el mismo y el tuyo se aplica después, solo de aspecto) y, en el reto diario, los bots deciden con un azar que sale de la semilla y del momento de la partida (`decide` en `ai-driver.js`): con las mismas jugadas, los bots juegan igual y los turnos que compartís son comparables. La partida del reto lleva el fondo de su mecánica (`scene` en `DAILY_FEATURES`: río y charca, el lago; catapultas, caja con agujeros, bloque y esquina, la madera del minigolf; palo iridiscente, el de Ultimate; portales y arenero, el campo de siempre) y, al acabar, el final enseña tu pelota con la que llevas puesta sobre un green, en lugar del icono. La tarjeta tiene la misma forma en cualquier estado y con cualquier mecánica: cada línea ocupa una fila
   (fecha y dificultad; título con la racha; la mecánica; rivales; estado), el tic verde de completado es
   una insignia sobre la miniatura de los rivales y en el móvil el botón es un círculo (flecha, o repetir si ya
   está completado).
@@ -281,7 +281,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   imprecisión). Juegan después de ti, una carta negra por turno y nunca fuera de su turno (ni reacciones ni JAQUE); no
   pueden ganar y, si entran en el hoyo, salen de la partida (`hunterGone`). Por eso el hoyo es una partida contra la
   máquina (`app.mode = 'pve'`, variante `rush`), con sus turnos siempre a doble velocidad. La presentación del modo se
-  vuelve a enseñar una vez con las reglas nuevas (`VER` en `mode-intro.js`). Y 18 **desafíos** en tres grupos de 6
+  vuelve a enseñar una vez con las reglas nuevas (`VER` en `mode-intro.js`). Y los **desafíos**, en tres grupos
   por dificultad (calentamiento, intermedio, experto). Viven en `src/content/challenges.js` (sin interfaz): cada uno
   tiene su tamaño de campo, mazo, rivales, reglas y un **campo diseñado a mano** en coordenadas relativas al recorrido
   (hoyo, columna de PAR y salidas), que cada partida varía con su semilla (se refleja de lado, cambian giros o una pieza
@@ -289,8 +289,24 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   archipiélago. Intermedio: atajos (3 parejas de portales), pinball, madrigueras, pista de despegue (cadenas de
   lanzaderas que se abren y cierran al girar), campo largo (palos de 4, 5 y 10), solo naranjas. Experto: aserradero,
   esclusas (ríos que desembocan en lanzaderas), espejos (laberinto de esquinas), prisma (iridiscentes con búnkeres de
-  tope), multitud y caos total. El **desafío semanal** remezcla esos campos con una regla nueva cada semana (12, igual
-  para todos: tablero, mazo y rivales) con su récord. Todos se han equilibrado con cientos de partidas entre bots
+  tope), multitud y caos total. (El antiguo **desafío semanal** ya no existe: sus reglas son desafíos más.)
+  **Desafíos de la semana** (`src/ui/crowns.js`): los desafíos son un evento semanal. Cada lunes (semana ISO, hora local)
+  salen 5 de un fondo de 53 (`weekChallenges` en `challenges.js`): 2 de calentamiento, 2 intermedios y 1 experto, cada uno de
+  una baraja distinta (`challengeDecks`: la de su fondo o, en las combinaciones, `decks`, que ocupan sus dos barajas). Se
+  eligen con la semilla de la semana entre los que llevan más tiempo sin salir, semana a semana desde la primera
+  (`CH_EPOCH`, 2026-W41); uno nuevo entra con `from` sin cambiar las semanas de antes. Cada desafío ganado da **una
+  corona** (una por desafío y semana: `records.crowns`); al estrenarlo, cada jugador recibe una corona por cada desafío que
+  ya había superado y por cada semana ganada del antiguo semanal (`legacy`), y un aviso breve se lo cuenta la primera vez
+  que entra en Juegos especiales (solo a quien ya jugaba). La sección tiene una cabecera animada (rayos que giran,
+  destellos, la corona que flota con su brillo, el total que sube, las 5 coronas de la semana y la cuenta atrás hasta los
+  nuevos) con el botón de **compartir** arriba a la derecha (una imagen 1080×1350 con tus coronas, las de la semana y tu
+  pelota con la que llevas puesta) y 5 tarjetas detalladas: baraja (o barajas), dificultad, nombre y regla, campo y PAR,
+  los rivales de la semana (los mismos para todos) y su dificultad, tus victorias y, a la derecha, su corona: en silueta
+  con "Jugar" o, ganada, dorada y "Conseguida" (la tarjeta entera pasa a oro). Al ganar, el final dice "+1 corona" y
+  ofrece el siguiente desafío por ganar. Los 10 nuevos: Cochera (las salidas dentro de la vuelta del tren), Ola de calor
+  (verano fijo), El bote (casino), Río arcoíris (Ultimate + agua), Lluvia de estrellas (multiverso), Monzón (estaciones +
+  agua), Casino en la nieve (estaciones + casino), Casino cósmico (multiverso + casino), Mercancías (tren + agua) y
+  Estrella binaria (multiverso). Todos se han equilibrado con cientos de partidas entre bots
   (duración, uso de cada mecánica, ventaja por posición) y `tests/challenges.test.mjs` comprueba sus campos y que se
   juegan hasta el final.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
@@ -336,7 +352,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las 10 pelotas que se ganan, cada una con **3 niveles** de la misma idea, cada vez más espectacular:
   **Fuego** (racha del reto diario: 7 · 30 · 365 días), **Clásica**, **Agua**, **Madera**, **Vapor**, **Estaciones**,
   **Cosmos** y **Prisma** (victorias con cada baraja: 10 · 50 · 100), **Rayo** (series de contrarreloj completas: 1 · 5 · 15),
-  **Corona** (desafíos: un nivel por grupo completo, calentamiento · intermedio · experto) y **Puzle** (Lo básico por
+  **Corona** (coronas de los desafíos: 10 · 50 · 150) y **Puzle** (Lo básico por
   partes: palos, clásica, agua y minigolf · tren, estaciones, multiverso y Gambling · Lo no tan básico). Todas siguen el molde de la de agua: **I** cambia la bola por dentro,
   **II** añade algo por fuera, sutil pero claro, y **III** intensifica lo de dentro y añade piezas que giran alrededor:
   fuego dentro · llamas pequeñas alrededor de toda la bola · más lava, llamas más altas y grandes bolas de fuego en órbita (redondas, con lenguas en todas direcciones que giran y una estela que queda siempre detrás); bañada en oro (hoyuelos dorados y aro) · laurel ·
@@ -613,8 +629,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     y en la subida) y **La banca** (experto, sin PAR: la dorada pegada al hoyo y guardada por dados, tres ruletas). Simulados:
     5,2 · 7,7 · 9,7 rondas, sin ventaja por salida. Los dados del diseño solo dicen su número (`die(x, y, t)`; el resto de
     caras, `dressDice`).
-  - **Desafío semanal** «Noche de casino» (los dados cargados con tres rivales), desde la semana 2026-W42: las reglas tienen
-    `from` y una nueva no cambia las semanas de antes (`weeklySetup` sortea entre las que ya existían esa semana).
+  - **Noche de casino** (los dados cargados con tres rivales; antes, regla del desafío semanal, ahora un desafío intermedio).
   - **Reto diario del casino** (en la rueda desde el 9 de octubre de 2026, sin cambiar los días anteriores; sale por primera vez
     el 10): monedas (cuatro en el camino) · dado (uno junto al hoyo) · ruleta (la casilla dorada a un lado y dos ruletas); la
     tarjeta dice cuál («Casino: Dado»). Simulados: ~4,3 rondas.
@@ -707,7 +722,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   secciones (`src/ui/stats-sections.js`): victorias **por baraja** (todas, Ultimate incluida, y cuántas combinaciones
   has jugado), **partida rápida**, **reto diario** (jugados, % ganados, racha actual y máxima; "Ver y compartir" abre su
   ventana), **progreso** (Lo básico por bloques —palos y hoyo, cada baraja— y Lo no tan básico, y los desafíos por grupo), **contrarreloj y
-  desafío semanal** (récord, series completas y jugadas, semanas jugadas y ganadas, mejor semanal), **tus pelotas**
+  desafíos** (récord, series completas y jugadas, coronas y semanas con las 5), **tus pelotas**
   (cada una con su nivel), logros, **totales** de la mesa (golpes, embocadas, choques, portales, caídas y lo de cada
   mecánica: casillas por el río, lanzamientos, túneles, casillas del tren y de la bola de nieve, tragadas por agujeros
   negros, meteoritos) y los mejores resultados de tus niveles.
@@ -819,7 +834,7 @@ npm run preload                   # regenera la precarga de index.html (tras añ
 
 ```bash
 npm run sim:challenges -- pinball,prism 60      # desafíos: campo en ASCII + rondas, ventaja por salida, uso de mecánicas
-npm run sim:challenges -- ch 60 0               # todos los desafíos (weekly: las semanales · base: partidas normales)
+npm run sim:challenges -- ch 60 0               # todos los desafíos (warmup/mid/expert: un grupo · base: partidas normales)
 npm run sim:challenges -- vars 80 1 mis-variantes.mjs   # probar variantes de un campo (export default [{ id, board, layout, … }])
 npm run sim:rush -- 200 2                        # contrarreloj: tus turnos por hoyo con 2 cazadores, golpes recibidos, sin terminar
 npm run basics:design                            # Lo básico: comprueba cada nivel y genera sus JSON (-- --check: solo comprobar)

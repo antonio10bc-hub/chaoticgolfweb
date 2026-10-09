@@ -1,6 +1,6 @@
 // Guardado automático de la partida en curso: uno por modo ("ranura"), así empezar una partida
 // de un modo no pisa la que tengas a medias en otro. Ranuras: story (tus niveles), puzzle (Lo básico), daily,
-// rush (contrarreloj), pve (partida rápida), challenge (desafío) y weekly (desafío semanal).
+// rush (contrarreloj), pve (partida rápida) y challenge (un desafío de la semana).
 // Se guarda tras cada jugada, al salir al menú y al ocultar la página; se borra al terminar.
 // El menú ofrece "Continuar partida" con la más reciente; cada pantalla, la suya.
 import { app } from './app.js';
@@ -10,9 +10,9 @@ import { dateKey, weekKey } from '../content/levels/generate.js';
 const KEY = slot => 'chaoticgolf_save_' + slot;
 const OLD_KEY = 'chaoticgolf_save'; // formato anterior: un único guardado
 const VERSION = 1;
-export const SLOTS = ['story', 'puzzle', 'daily', 'rush', 'pve', 'challenge', 'weekly'];
+export const SLOTS = ['story', 'puzzle', 'daily', 'rush', 'pve', 'challenge']; // (weekly: el antiguo desafío semanal, ya no existe)
 export const slotOf = (mode = app.mode, variant = app.variant) => variant || mode;
-export const VS_SLOTS = ['pve', 'challenge', 'daily', 'weekly', 'rush']; // contra la máquina (al continuar arranca la IA; el contrarreloj, por sus cazadores)
+export const VS_SLOTS = ['pve', 'challenge', 'daily', 'rush']; // contra la máquina (al continuar arranca la IA; el contrarreloj, por sus cazadores)
 
 const finished = S => S.winner !== null && !S.jaque;
 
@@ -52,12 +52,13 @@ function migrate() {
   } catch (e) { /* sin storage */ }
 }
 
-// el reto diario y el desafío semanal caducan: el de ayer (o el de la semana pasada) ya no es el de hoy
+// el reto diario y los desafíos de la semana caducan: el de ayer (o el de la semana pasada) ya no es el de hoy
 // (salía la partida del día anterior, con otra mecánica, en lugar del reto nuevo). Se borra al cargarlo.
+// (un desafío guardado antes de las coronas no sabe su semana: también caduca)
 function expired(d) {
   const when = new Date(d.savedAt || 0);
   if (d.slot === 'daily') return (d.run?.date || dateKey(when)) !== dateKey();
-  if (d.slot === 'weekly') return (d.run?.week || weekKey(when)) !== weekKey();
+  if (d.slot === 'challenge') return d.run?.week !== weekKey();
   return false;
 }
 
