@@ -2027,6 +2027,7 @@ button.rwPlay:hover { background-color: #2D4F7C; transform: scale(1.04); }
 .wsArt .mdArt { width: 100%; height: 100%; }
 .lvlSection.workshop:hover .wsArt { transform: rotate(-5deg) scale(1.07); }
 #modesGrid .wsHead h3 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; text-transform: none; color: var(--cream); }
+button.wsCode { margin-left: auto; position: relative; z-index: 1; box-shadow: none; }
 .wsBody { padding: 14px 16px 16px; }
 /* la casilla del siguiente nivel: del tamaño de una tarjeta, con borde discontinuo y un + */
 button.lvlNew { --b-bg: transparent; --b-line: transparent; display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px 6px 8px;

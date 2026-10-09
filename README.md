@@ -325,11 +325,13 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Modos de juego, **El taller** (tus niveles: los del creador y los recibidos; cada uno se edita o se elimina —con
   "Deshacer", sin diálogo—). Su cabecera es la alfombrilla de corte del creador, sin contador; al final de la lista, en
   el sitio del siguiente nivel, una casilla vacía con un + («Nivel 10» si hay 9) abre el creador con un nivel nuevo, que
-  al guardarse va detrás (`openEditor({ fresh: true })`). El código de un nivel recibido se añade desde la biblioteca del creador. Los puzles de "gana en 1 turno" ya no están
+  al guardarse va detrás (`openEditor({ fresh: true })`). A la derecha de la cabecera, «Añadir código» (el de un nivel que te hayan pasado). Los puzles de "gana en 1 turno" ya no están
   aquí: son Lo básico.
 - **Creador de niveles** (`src/ui/editor.js`): un taller sobre una alfombrilla de corte, con la misma barra que la
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las
-  herramientas por baraja con el dibujo real de cada pieza (pelota, hoyo, PAR, obstáculo, borrar; búnker, portal con
+  herramientas por baraja —cada grupo en su recuadro, con un fondo muy suave del color de su baraja y un punto de ese color
+  junto al título; en el móvil, una raya de su color entre grupos— con el dibujo real de cada pieza (pelota, hoyo, PAR,
+  obstáculo, borrar y «Borrar todo», que deja el tablero solo con la pelota y el hoyo y se deshace con Ctrl+Z; búnker, portal con
   parejas A/B/C; río, lago; bloque, esquina, túnel y lanzadera, con su giro) y sus opciones; en el centro el tablero
   con reglas numeradas y +/− de columnas y filas en sus bordes; a la derecha el mazo (plantillas por baraja y cada
   carta con su número) o la mano inicial (puzles). Un nivel nuevo es de 12×9 con PAR 5 en el centro. Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,

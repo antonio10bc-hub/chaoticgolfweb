@@ -141,6 +141,17 @@ function undoStep(from, to) {
   refresh();
 }
 const edUndo = () => undoStep(ED.undo, ED.redo);
+// "Borrar todo" (Básico): deja el tablero limpio, solo con la pelota y el hoyo (piezas, PAR, obstáculos, vías, monedas,
+// la casilla dorada y la bola de nieve fuera; la estación del nivel se queda). Se deshace como cualquier cambio
+function clearBoard() {
+  const L = ED.level;
+  if (!L.tiles.length && !L.parCells.length && !L.extraBalls.length && !L.rails && !L.gamble && !L.season?.snow) return;
+  pushUndo();
+  L.tiles = []; L.parCells = []; L.extraBalls = [];
+  delete L.rails; delete L.gamble; if (L.season) delete L.season.snow;
+  sfx('woodTick'); toast(t('ed.cleared'));
+  refresh({ fit: false });
+}
 const edRedo = () => undoStep(ED.redo, ED.undo);
 
 /* ---------- casillas ---------- */
@@ -452,12 +463,17 @@ function toolPic(tool) {
   }
 }
 const toolName = tool => t('ed.tools.' + tool);
+// cada grupo, con el color de su baraja (un fondo muy suave y un punto junto al título); en Básico, además, "Borrar todo"
+const GROUP_DECK = { classic: 'classic', water: 'water', mini: 'minigolf', train: 'train', seasons: 'seasons', multiverse: 'multiverse', gambling: 'gambling' };
+const groupColor = g => GROUP_DECK[g] ? DECKS.find(d => d.id === GROUP_DECK[g])?.color : '#4E5E6A';
 function renderTools() {
   const key = tool => Object.keys(SHORTCUT).find(k => SHORTCUT[k] === tool);
-  $('edTools').innerHTML = GROUPS.map(([g, tools]) => `<div class="edGroup"><h3>${esc(t('ed.groups.' + g))}</h3><div class="edToolRow">` +
+  $('edTools').innerHTML = GROUPS.map(([g, tools]) => `<div class="edGroup g-${g}" style="--gc:${groupColor(g)}"><h3>${esc(t('ed.groups.' + g))}</h3><div class="edToolRow">` +
     tools.map(tool => { const on = ED.tool === tool, k = key(tool);
       return `<button class="edTool${on ? ' on' : ''}${tool === 'portal' ? ' pair' + ED.pair : ''}" data-tool="${tool}" aria-pressed="${on}" title="${esc(toolName(tool) + (k ? ` (${k.toUpperCase()})` : ''))}">` +
         `<span class="tiPic">${toolPic(tool)}</span><span class="tiName">${esc(toolName(tool))}</span></button>`; }).join('') +
+    (g === 'basic' ? `<button class="edTool edClear" data-edclear="1" title="${esc(t('ed.clearTitle'))}"><span class="tiPic"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></span>` +
+      `<span class="tiName">${esc(t('ed.clear'))}</span></button>` : '') +
     `</div></div>`).join('');
   renderToolOpts();
 }
@@ -732,6 +748,7 @@ function onKey(e) {
 
 export function bindEditor() {
   $('edTools').addEventListener('click', e => {
+    if (e.target.closest('[data-edclear]')) { clearBoard(); return; }
     const b = e.target.closest('[data-tool]');
     if (!b) return;
     ED.tool = b.dataset.tool; sfx('select'); renderTools();

@@ -376,7 +376,7 @@ export default {
     colAdd: 'Añadir columna', colDel: 'Quitar columna', rowAdd: 'Añadir fila', rowDel: 'Quitar fila',
     cols: '{n} columnas', rows: '{n} filas',
     test: 'Probar nivel', testTitle: 'Juega el nivel con trampas: cualquier carta a mano, deshacer y mover piezas', cardsBtn: 'Cartas',
-    newLevel: 'Nuevo nivel',
+    newLevel: 'Nuevo nivel', clear: 'Borrar todo', clearTitle: 'Deja el tablero limpio: solo la pelota y el hoyo (Ctrl+Z lo deshace)', cleared: 'Tablero limpio · Ctrl+Z para deshacer',
     groups: { gambling: 'Casino', multiverse: 'Multiverso', seasons: 'Estaciones', train: 'Tren', basic: 'Básico', classic: 'Clásica', water: 'Agua', mini: 'Minigolf' },
     tools: { dice: 'Dado', coin: 'Moneda', gold: 'Dorada', blackhole: 'Agujero negro', meteorite: 'Roca', leaf: 'Hoja seca', puddle: 'Charco', ice: 'Hielo', plant: 'Planta', fire: 'Fuego', snowball: 'Bola de nieve', station: 'Parada', loco: 'Locomotora', track: 'Vías', ball: 'Pelota', hole: 'Hoyo', par: 'PAR', decoy: 'Obstáculo', erase: 'Borrar', bunker: 'Búnker', portal: 'Portal',
       river: 'Río', lake: 'Lago', block: 'Bloque', corner: 'Esquina', tunnel: 'Túnel', launcher: 'Lanzadera' },

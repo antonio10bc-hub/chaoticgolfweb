@@ -57,7 +57,17 @@ body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; righ
 .edPanel h3 { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin: 10px 2px 6px; }
 .edPanel h3:first-child { margin-top: 2px; }
 
-/* herramientas */
+/* herramientas: cada grupo, en su recuadro con un fondo muy suave del color de su baraja y un punto de ese color junto
+   al título (en el móvil, una tira: una raya fina entre grupos) */
+.edGroup { padding: 6px 6px 7px; border-radius: 13px; background: color-mix(in srgb, var(--gc, #4E5E6A) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gc, #4E5E6A) 16%, transparent); }
+.edGroup + .edGroup { margin-top: 8px; }
+.edPanel .edGroup h3 { display: flex; align-items: center; gap: 6px; margin: 1px 2px 6px; color: color-mix(in srgb, var(--gc, #4E5E6A) 70%, var(--ink)); }
+.edGroup h3::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--gc, #4E5E6A); flex: 0 0 auto; }
+.edTool.edClear { --b-fg: var(--accent-deep); }
+.edTool.edClear .tiPic .i { width: 22px; height: 22px; }
+.edTool.edClear .tiName { font-size: 9.6px; letter-spacing: -.01em; text-overflow: clip; }
+.edTool.edClear:hover { background-color: #FBE3DE; }
 .edToolRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .edTool { --b-bg: #FBFBF1; --b-line: var(--cream-line); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
   padding: 6px 3px 5px; border-radius: 12px; min-width: 0; }
@@ -280,7 +290,8 @@ button.edSlot.orange { --b-line: var(--accent); background-color: #FFF6E6; }
   #edToolsPanel { grid-row: 2; padding: 8px 10px; border-radius: 14px; overflow: visible; }
   #edTools { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
   .edGroup { display: contents; }
-  .edGroup h3 { display: none; }
+  .edGroup h3, .edPanel .edGroup h3 { display: none; }
+  .edGroup + .edGroup .edToolRow { border-left: 2px solid color-mix(in srgb, var(--gc, #4E5E6A) 45%, transparent); padding-left: 6px; } /* (la raya, del color del grupo que empieza) */
   /* (anchos explícitos, sin encoger: Safari medía mal las filas y unas herramientas quedaban encima de otras) */
   .edToolRow { display: flex; flex: 0 0 auto; gap: 5px; }
   .edTool { flex: 0 0 58px; width: 58px; min-width: 58px; }

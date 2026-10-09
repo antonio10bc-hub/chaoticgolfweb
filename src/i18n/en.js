@@ -373,7 +373,7 @@ export default {
     colAdd: 'Add column', colDel: 'Remove column', rowAdd: 'Add row', rowDel: 'Remove row',
     cols: '{n} columns', rows: '{n} rows',
     test: 'Test level', testTitle: 'Play the level with cheats: any card at hand, undo and move pieces', cardsBtn: 'Cards',
-    newLevel: 'New level',
+    newLevel: 'New level', clear: 'Clear all', clearTitle: 'Clears the board: only the ball and the hole stay (Ctrl+Z undoes it)', cleared: 'Board cleared · Ctrl+Z to undo',
     groups: { gambling: 'Casino', multiverse: 'Multiverse', seasons: 'Seasons', train: 'Train', basic: 'Basics', classic: 'Classic', water: 'Water', mini: 'Mini golf' },
     tools: { dice: 'Die', coin: 'Coin', gold: 'Gold square', blackhole: 'Black hole', meteorite: 'Rock', leaf: 'Dry leaf', puddle: 'Puddle', ice: 'Ice', plant: 'Plant', fire: 'Fire', snowball: 'Snowball', station: 'Stop', loco: 'Engine', track: 'Tracks', ball: 'Ball', hole: 'Hole', par: 'PAR', decoy: 'Obstacle', erase: 'Erase', bunker: 'Bunker', portal: 'Portal',
       river: 'River', lake: 'Lake', block: 'Block', corner: 'Corner', tunnel: 'Tunnel', launcher: 'Launcher' },

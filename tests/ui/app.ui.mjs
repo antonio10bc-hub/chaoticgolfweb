@@ -755,12 +755,32 @@ it('El taller: tus niveles y, en el sitio del siguiente, un + que abre el creado
   assert.equal(await app(() => document.querySelectorAll('.lvlSection.workshop [data-level]').length), 2);
   assert.ok(await app(() => document.querySelector('.lvlSection.workshop .lvlRow > :last-child').matches('[data-mode="editorNew"]')), 'el +, el último');
   assert.match(await app(() => document.querySelector('[data-mode="editorNew"]').textContent), /Nivel 3/);
+  await click('.wsHead [data-lvcode]'); await sleep(300); // (añadir el código de un nivel recibido, a la derecha de la cabecera)
+  assert.ok(await page.$('#dialog[open]'), 'añadir código');
+  await app(() => document.getElementById('dialog').close()); await sleep(200);
   await click('[data-mode="editorNew"]'); await sleep(600);
   assert.equal(await app(() => window.chaoticGolf.app.screen), 'editor');
   assert.equal(await app(() => document.getElementById('edName').value), '', 'un nivel nuevo, sin nombre');
   await page.focus('#edName'); await page.keyboard.type('Tres'); await page.keyboard.press('Enter');
   await click('#edSave'); await sleep(300);
   assert.deepEqual(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.map(L => L.name)), ['Uno', 'Dos', 'Tres'], 'guardado detrás');
+});
+
+it('creador: la paleta, por grupos con el color de su baraja; "Borrar todo" deja solo la pelota y el hoyo y se deshace', async () => {
+  await fresh();
+  await app(() => import('/src/ui/editor.js').then(m => m.openEditor({ fresh: true }))); await sleep(600);
+  const gs = await app(() => [...document.querySelectorAll('#edTools .edGroup')].map(g => g.style.getPropertyValue('--gc')));
+  assert.equal(new Set(gs).size, gs.length, 'cada grupo, su color');
+  await click('#edTools [data-tool="bunker"]');
+  const [cx, cy] = await app(() => { const r = document.querySelector('#edBoard .cell[data-x="1"][data-y="1"]').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
+  await page.mouse.click(cx, cy); await sleep(100);
+  const lv = () => app(() => JSON.parse(localStorage.getItem('chaoticgolf_editor')).level);
+  assert.equal((await lv()).tiles.length, 1);
+  await click('#edTools [data-edclear]'); await sleep(200);
+  const L = await lv();
+  assert.deepEqual([L.tiles.length, L.parCells.length], [0, 0]); assert.ok(L.hole && L.ball, 'la pelota y el hoyo se quedan');
+  await page.keyboard.down('Control'); await page.keyboard.press('KeyZ'); await page.keyboard.up('Control'); await sleep(200);
+  assert.deepEqual([(await lv()).tiles.length, (await lv()).parCells.length], [1, 5], 'se deshace');
 });
 
 it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien lo recibe lo guarda', async () => {

@@ -134,7 +134,8 @@ function scrollToNext() {
 /* ---------- sección de Modos de juego: tus niveles ---------- */
 // tus niveles (propios y recibidos): cada uno con editar y eliminar; arriba, crear y añadir un código
 // El taller (Juegos especiales): tus niveles, bajo una cabecera de alfombrilla de corte como la del creador, y al final una
-// casilla vacía con un + en el sitio del siguiente: abre el creador con un nivel nuevo (el que vendría después en la lista)
+// casilla vacía con un + en el sitio del siguiente: abre el creador con un nivel nuevo (el que vendría después en la lista).
+// A la derecha de la cabecera, añadir el código de un nivel que te hayan pasado
 export function yoursSectionHTML() {
   const levels = loadLevels(), prog = loadProgress(), sv = loadSave('story');
   const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
@@ -146,7 +147,8 @@ export function yoursSectionHTML() {
   const next = levels.length + 1;
   const add = `<button class="lvlNew" data-mode="editorNew" title="${esc(t('story.newLevel', { n: next }))}" aria-label="${esc(t('story.newLevel', { n: next }))}">` +
     `<span class="lvlNewBox">${icon('i-plus')}</span><small>${esc(t('story.level', { n: next }))}</small></button>`;
-  return `<section class="lvlSection yours workshop"><header class="wsHead"><span class="wsArt">${modeArt('yours')}</span><h3>${esc(t('story.workshop'))}</h3></header>` +
+  return `<section class="lvlSection yours workshop"><header class="wsHead"><span class="wsArt">${modeArt('yours')}</span><h3>${esc(t('story.workshop'))}</h3>` +
+    `<button class="btn-ghost btn-sm btn-icon wsCode" data-lvcode="1">${icon('i-copy')}${esc(t('lib.addCode'))}</button></header>` +
     `<div class="wsBody"><div class="lvlRow">${cards}${add}</div></div></section>`;
 }
 // tarjeta de nivel pulsada (Lo básico o tus niveles): continúa el nivel a medias o lo empieza
