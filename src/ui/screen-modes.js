@@ -354,7 +354,7 @@ const tabOfGame = () => app.mode === 'pve' && !app.variant ? 'quick' : app.mode 
 // de madera; Ultimate: el prisma que abre la luz en un arcoíris). Al pasar por la tarjeta se animan (features.css)
 const CARD_CLIP = id => `<clipPath id="dk-${id}-c"><rect x="11" y="5" width="38" height="50" rx="7"/></clipPath>`;
 const cardBase = (id, top, bottom) => `<defs><linearGradient id="dk-${id}-g" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>${CARD_CLIP(id)}</defs>` +
-  `<rect x="11" y="5" width="38" height="50" rx="7" fill="url(#dk-${id}-g)"/>`;
+  `<rect x="11" y="5" width="38" height="50" rx="7" fill="${top}"/>`; // (plana, como el menú)
 const frame = '<rect x="14" y="8" width="32" height="44" rx="5" fill="none" stroke="rgba(241,241,220,.55)" stroke-width="1.2"/>';
 const FLAGP = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="1.4" fill="#242424"/><path d="M${x} ${y} V${y - 13}" stroke="#F1F1DC" stroke-width="1.4" stroke-linecap="round"/><path d="M${x + .4} ${y - 13} L${x + 7} ${y - 10.6} L${x + .4} ${y - 8.2} Z" fill="#E8873A"/>`;
 const DECK_ART = {

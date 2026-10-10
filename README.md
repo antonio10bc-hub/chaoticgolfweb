@@ -215,6 +215,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
+- **Dirección de arte de Modos de juego:** la misma que el menú principal: colores planos, sin degradados, brillos,
+  halos, cristal ni sombras en el texto; las texturas, rayas diagonales a dos tonos como el césped segado (cabeceras de
+  los eventos, fondos de las barajas, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la
+  sombra como un tono más oscuro. Las imágenes de compartir (coronas y medallas) siguen el mismo estilo.
 - **Volver a la lista:** al salir de una partida a su lista (Eventos, El taller, Partidas rápidas o Lo básico), la
   pantalla se coloca a la altura de la tarjeta de lo que se jugaba —el desafío, la serie del contrarreloj, tu nivel de El
   taller, la baraja o el nivel de Lo básico— en lugar de arriba del todo (`anchorOfGame` en `screens.js`).
@@ -268,9 +272,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cuanto el gesto es horizontal (con resistencia en los extremos) y al soltar pasa a la de al lado desde ahí —si se ha
   arrastrado bastante o rápido— o vuelve a su sitio con un rebote (`bindModesSwipe`).
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): el césped a rayas de la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones fundidas, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros de cristal. Todas miden lo mismo, sea cual sea su estado (sin jugar, con «Repetir» o con partida a medias): van en una rejilla de filas iguales (`.dkSame`) y, en el móvil, los botones llevan su nombre corto («Nueva», «Repetir», «Continuar», «Cartas») para caber en una fila. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
-  iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
-  al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): en plano, con su color y rayas diagonales a dos tonos como el césped segado del menú: la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones en pastel, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros lisos. Todas miden lo mismo, sea cual sea su estado (sin jugar, con «Repetir» o con partida a medias): van en una rejilla de filas iguales (`.dkSame`) y, en el móvil, los botones llevan su nombre corto («Nueva», «Repetir», «Continuar», «Cartas») para caber en una fila. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: rayas
+  pastel de su arcoíris (rosa, aguamarina, menta y oro pálido) y un borde de franjas de esos colores, en plano. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
   deslizándose entero, de una vez; la pestaña oculta no se quita del todo (`content-visibility: hidden`), así que volver a
   ella no recalcula sus ~2.000 elementos. Las tarjetas de Modos llevan una sombra corta y suave (`--mdShadow`): la larga de
@@ -317,8 +320,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   corona** (una por desafío y semana: `records.crowns`); al estrenarlo, cada jugador recibe una corona por cada desafío que
   ya había superado y por cada semana ganada del antiguo semanal (`legacy`), y un aviso breve se lo cuenta la primera vez
   que entra en Eventos (solo a quien ya jugaba). Es la primera sección de Eventos (antes que el
-  contrarreloj). Su cabecera es animada: a la izquierda, la corona (de oro, con una pelota de golf en el centro y bolitas
-  de oro en las puntas) que flota con su brillo entre rayos que giran y destellos, y el total, que sube; a la derecha, la
+  contrarreloj). Su cabecera es plana, como el menú (rojo con rayas diagonales a dos tonos): a la izquierda, la corona
+  (plana, de oro con su mitad en sombra, una pelota de golf en el centro y bolitas de oro en las puntas) que flota, y el
+  total, que sube; a la derecha, la
   cuenta atrás hasta los nuevos en tres casillas grandes (días, horas y minutos; el último día, horas, minutos y
   segundos), que saltan al cambiar, con la etiqueta encima alineada con la primera y los dos puntos quietos a media altura
   de las cifras. El botón de **compartir**, pequeño, arriba a la derecha: una imagen 1080×1350 con tus coronas, las 5 de

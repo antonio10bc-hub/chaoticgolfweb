@@ -1,35 +1,30 @@
 /* =========================================================
    Ultimate Chaotic Golf, el combinador (src/ui/screen-modes.js · ultCard)
-   Aparte del resto de barajas, tras un separador pequeño. Paleta iridiscente y etérea: nácar claro con reflejos de
-   rosa, aguamarina, menta y oro pálido (nada de morados), borde de arcoíris pastel y un brillo lento. Un icono por
+   Aparte del resto de barajas, tras un separador pequeño. En plano, como el menú: rayas diagonales pastel (rosa,
+   aguamarina, menta y oro pálido: su arcoíris, sin degradados) y un borde de franjas de esos colores. Un icono por
    baraja: tocar = activarla o quitarla.
    ========================================================= */
 .ultSep { display: flex; align-items: center; gap: 12px; margin: 8px 8px; height: 10px; color: rgba(241,241,220,.75); pointer-events: none; }
-.ultSep i { flex: 1; height: 1.5px; border-radius: 1px; background: linear-gradient(90deg, transparent, rgba(255,214,234,.8), rgba(176,236,246,.9), rgba(196,244,220,.8), transparent); }
-.ultSep span { font-size: 12px; line-height: 1; background: linear-gradient(90deg, #FFD3EA, #B9ECF6, #CFF7E2, #FFF0C2); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ultSep i { flex: 1; height: 1.5px; border-radius: 1px; background: rgba(241,241,220,.35); }
+.ultSep span { font-size: 12px; line-height: 1; color: rgba(241,241,220,.75); }
 
 .deckCard.ultimate { --dk: #9FD8E8; position: relative; overflow: hidden; isolation: isolate;
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 22px 24px 20px;
   background-color: #F7F5EF;
-  background-image: var(--grain),
-    radial-gradient(90% 120% at 0% 0%, rgba(255,205,228,.75), transparent 55%),
-    radial-gradient(80% 120% at 100% 100%, rgba(176,236,246,.8), transparent 55%),
-    radial-gradient(60% 90% at 62% 0%, rgba(205,247,226,.75), transparent 60%),
-    radial-gradient(50% 80% at 35% 110%, rgba(255,240,194,.8), transparent 60%);
-  box-shadow: 0 24px 60px rgba(40,70,80,.28), 0 0 40px rgba(190,236,246,.5); }
-/* borde de arcoíris pastel que se desliza despacio */
-.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2.5px; pointer-events: none; z-index: 2;
-  background: linear-gradient(115deg, #FFC7E2, #A9E4F5, #BDF3DA, #FFEAB0, #FFC7E2); background-size: 300% 100%; animation: iriShift 10s steps(150) infinite;
+  background-image: var(--grain), repeating-linear-gradient(135deg, #FBE6EF 0 64px, #E3F3F8 64px 128px, #E6F6EE 128px 192px, #FBF2DC 192px 256px);
+  box-shadow: var(--mdShadow); }
+/* borde de franjas de color (planas: su arcoíris) */
+.deckCard.ultimate::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 3px; pointer-events: none; z-index: 2;
+  background: linear-gradient(90deg, #F2A3C6 0 25%, #86CDE3 25% 50%, #8FD8B5 50% 75%, #EFC872 75%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
 .deckCard.ultimate > * { position: relative; z-index: 1; }
 
 /* arriba: el prisma, el nombre y qué es */
 .ultTop { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 640px; }
-.ultEmblem { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 2px;
-  background: radial-gradient(circle at 50% 40%, #fff, rgba(255,255,255,.4) 75%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 6px 16px rgba(120,180,200,.3); }
-.ultEmblem .dkArt { width: 38px; height: 38px; filter: drop-shadow(0 0 6px rgba(170,230,245,.7)); }
+.ultEmblem { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 2px; background: #fff; }
+.ultEmblem .dkArt { width: 38px; height: 38px; }
 .ultTop h3 { font-size: 30px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05;
-  background: linear-gradient(90deg, #D9709E, #4FA9C9 40%, #49B48C 70%, #C9962E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  color: #2A3A44; }
 .ultTop p { font-size: 14px; color: #4B5A60; line-height: 1.35; max-width: 640px; text-wrap: balance; }
 
 /* en medio: las seis barajas, grandes. Activada: rellena, con borde de arcoíris, brillo y ✓. Apagada: translúcida, en gris y con + */
@@ -40,14 +35,11 @@
 .ultTog .dkArt { width: 54px; height: 54px; filter: grayscale(1) opacity(.4); transition: filter .25s, transform .25s var(--ease-out); }
 .ultName { font-size: 12.5px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ultMark { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-  background: #fff; color: #7A888E; box-shadow: 0 0 0 1.5px rgba(42,58,68,.25), 0 2px 6px rgba(40,70,80,.15); transition: background .2s, color .2s, transform .2s var(--ease-out); }
+  background: #fff; color: #7A888E; box-shadow: 0 0 0 1.5px rgba(42,58,68,.25); transition: background .2s, color .2s, transform .2s var(--ease-out); }
 .ultMark .i { width: 14px; height: 14px; }
-.ultTog.on { background: #fff; border: 2px solid transparent; color: #24424C; transform: translateY(-3px);
-  background-image: linear-gradient(#fff, #fff), linear-gradient(115deg, #FF9FCB, #6FCBE6, #7FE0B4, #FFD36E);
-  background-origin: border-box; background-clip: padding-box, border-box;
-  box-shadow: 0 10px 24px rgba(90,170,200,.35), 0 0 0 5px rgba(255,255,255,.55); }
-.ultTog.on .dkArt { filter: drop-shadow(0 3px 6px rgba(40,70,80,.2)); transform: scale(1.06); }
-.ultTog.on .ultMark { color: #fff; background: linear-gradient(135deg, #FF9FCB, #6FCBE6 50%, #7FE0B4); box-shadow: 0 2px 8px rgba(80,160,190,.45); transform: scale(1.08); }
+.ultTog.on { background: #fff; border: 2px solid #2A3A44; color: #24424C; transform: translateY(-3px); }
+.ultTog.on .dkArt { filter: none; transform: scale(1.06); }
+.ultTog.on .ultMark { color: #fff; background: #2A3A44; box-shadow: none; transform: scale(1.08); }
 .ultTog:hover { transform: translateY(-4px); }
 .ultTog:not(.on):hover { background: rgba(255,255,255,.55); border-color: rgba(42,58,68,.4); }
 .ultTog:not(.on):hover .dkArt { filter: grayscale(.5) opacity(.7); }
@@ -61,17 +53,14 @@
 .ultSize { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .ultSize .i { width: 14px; height: 14px; opacity: .7; }
 .ultBtns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
-.ultBtns .btn-primary { --b-bg: #2A3A44; --b-fg: #FFFFFF; --b-line: #2A3A44; padding-inline: 22px;
-  background-image: linear-gradient(100deg, rgba(255,199,226,.28), rgba(169,228,245,.32) 45%, rgba(189,243,218,.28) 75%, rgba(255,234,176,.28)); }
+.ultBtns .btn-primary { --b-bg: #2A3A44; --b-fg: #FFFFFF; --b-line: #2A3A44; padding-inline: 22px; }
 .ultBtns .btn-light { --b-bg: rgba(255,255,255,.75); --b-fg: #2A3A44; --b-line: rgba(42,58,68,.22); }
 .ultBtns .btn-text { color: #4B5A60; }
 .ultHistBtn .i { width: 15px; height: 15px; margin-right: 5px; }
 .ultHistBtn em { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #2A3A44; color: #fff; }
 
-/* el brillo que la cruza despacio, de vez en cuando */
-.deckCard.ultimate > .ultSheen { position: absolute; z-index: 0; inset: 0; pointer-events: none; transform: translateX(-120%);
-  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.55) 45%, rgba(255,255,255,.12) 55%, transparent 70%); animation: ultSheen 9s ease-in-out 2s infinite; }
-@keyframes ultSheen { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+/* (sin brillos: plana, como el menú) */
+.deckCard.ultimate > .ultSheen { display: none; }
 .deckCard.ultimate.still { animation: none; }
 html.reduceMotion .deckCard.ultimate::before, html.reduceMotion .deckCard.ultimate > .ultSheen { animation: none; }
 

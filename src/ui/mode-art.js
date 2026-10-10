@@ -8,7 +8,7 @@ import { esc } from './dom.js';
 import { t } from '../i18n/index.js';
 
 const base = (id, top, bottom) => `<defs><linearGradient id="md-${id}-g" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>` +
-  `<clipPath id="md-${id}-c"><rect x="11" y="5" width="38" height="50" rx="7"/></clipPath></defs><rect x="11" y="5" width="38" height="50" rx="7" fill="url(#md-${id}-g)"/>`;
+  `<clipPath id="md-${id}-c"><rect x="11" y="5" width="38" height="50" rx="7"/></clipPath></defs><rect x="11" y="5" width="38" height="50" rx="7" fill="${top}"/>`; // (plana, como el menú)
 const frame = '<rect x="14" y="8" width="32" height="44" rx="5" fill="none" stroke="rgba(241,241,220,.55)" stroke-width="1.2"/>';
 const ticks = (cx, cy, r0, r1, n = 12) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n; return `<path d="M${(cx + Math.sin(a) * r0).toFixed(1)} ${(cy - Math.cos(a) * r0).toFixed(1)}L${(cx + Math.sin(a) * r1).toFixed(1)} ${(cy - Math.cos(a) * r1).toFixed(1)}"/>`; }).join('');
 

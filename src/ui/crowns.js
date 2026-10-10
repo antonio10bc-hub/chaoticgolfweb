@@ -1,6 +1,6 @@
-// Desafíos de la semana (Juegos especiales): cada lunes, 5 desafíos nuevos (content/challenges.js: weekChallenges) y cada
-// uno ganado da una corona. La sección tiene su cabecera animada (la corona con tus coronas de siempre, las 5 de esta
-// semana, el tiempo que queda y el botón de compartir: una imagen con tus coronas y tu pelota), las 5 tarjetas (baraja,
+// Desafíos de la semana (Modos de juego › Eventos): cada lunes, 5 desafíos nuevos (content/challenges.js: weekChallenges) y
+// cada uno ganado da una corona. La sección tiene su cabecera (plana, como el menú: la corona que flota con tus coronas de
+// siempre, el tiempo que queda y el botón de compartir: una imagen con tus coronas, las 5 de la semana y tu pelota), las 5 tarjetas (baraja,
 // dificultad, campo, rivales y, a la derecha, su corona: vacía o ganada) y, una sola vez, el aviso del cambio (con las
 // coronas regaladas por lo que ya habías superado).
 import { app } from './app.js';
@@ -26,27 +26,18 @@ import { REDUCED } from '../fx/juice.js';
 /* ---------- la corona ---------- */
 // gold: ganada (oro, con una pelota de golf en el centro y bolitas de oro en las puntas) · si no, su silueta vacía
 // (discontinua). El cuerpo y la banda van pegados
-let crownSeq = 0;
 const BODY = 'M9 41 L5 15 L20 27 L32 7 L44 27 L59 15 L55 41 Z';
 const DIMPLES = [[-2.6, -2.2], [.4, -3.4], [3, -1.2], [-3.4, .8], [-.6, .2], [2.4, 2.2], [-1.6, 3.2], [1, 4.2]]; // (los hoyuelos de la pelota, desde su centro)
 export function crownSVG(gold = true, cls = 'crIcon') {
-  const id = 'crg' + (++crownSeq);
   if (!gold) return `<svg class="${cls} empty" viewBox="0 0 64 52" aria-hidden="true"><path d="${BODY} M9 41 H55 V45.5 A2.5 2.5 0 0 1 52.5 48 H11.5 A2.5 2.5 0 0 1 9 45.5 Z" fill="rgba(36,36,36,.04)" ` +
     `stroke="currentColor" stroke-width="2.4" stroke-dasharray="4 3.2" stroke-linejoin="round"/></svg>`;
-  const tip = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${id}t)" stroke="#8C5E17" stroke-width="1.1"/>`;
-  return `<svg class="${cls}" viewBox="0 0 64 52" aria-hidden="true"><defs>` +
-    `<linearGradient id="${id}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".45" stop-color="#F2C24E"/><stop offset="1" stop-color="#B9822A"/></linearGradient>` +
-    `<radialGradient id="${id}t" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFF6CF"/><stop offset=".55" stop-color="#F2C24E"/><stop offset="1" stop-color="#B9822A"/></radialGradient>` +
-    `<radialGradient id="${id}b" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#F3F1E6"/><stop offset="1" stop-color="#CFCBB8"/></radialGradient>` +
-    `<clipPath id="${id}c"><path d="${BODY}"/><rect x="9" y="40" width="46" height="8" rx="2.5"/></clipPath></defs>` +
-    `<path d="${BODY}" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4" stroke-linejoin="round"/>` +
-    `<rect x="9" y="40" width="46" height="8" rx="2.5" fill="url(#${id})" stroke="#8C5E17" stroke-width="1.4"/>` +
-    `<path d="M11 44 H53" stroke="rgba(140,94,23,.3)" stroke-width="1" stroke-dasharray="1.2 2.4"/>` +
-    tip(5, 15, 3.6) + tip(32, 7, 4) + tip(59, 15, 3.6) +
-    `<g clip-path="url(#${id}c)"><path class="crSheen" d="M-14 52 L4 0 L14 0 L-4 52Z" fill="rgba(255,255,255,.6)"/></g>` +
-    `<circle cx="32" cy="31" r="7" fill="url(#${id}b)" stroke="#8C5E17" stroke-width="1.2"/>` +
-    `<g fill="rgba(120,110,80,.22)">${DIMPLES.map(([x, y]) => `<circle cx="${32 + x}" cy="${31 + y}" r=".9"/>`).join('')}</g>` +
-    `<ellipse cx="29.6" cy="28.4" rx="2" ry="1.3" fill="rgba(255,255,255,.9)" transform="rotate(-30 29.6 28.4)"/></svg>`;
+  // (plana, como el menú: el oro y su mitad en sombra, la banda más oscura, las bolitas y la pelota de golf, sin contornos)
+  return `<svg class="${cls}" viewBox="0 0 64 52" aria-hidden="true">` +
+    `<path d="${BODY}" fill="#F2C24E"/><path d="M32 7 L44 27 L59 15 L55 41 L32 41Z" fill="#E3AD3A"/>` +
+    `<rect x="9" y="40" width="46" height="8" rx="2.5" fill="#D99A2B"/><path d="M32 40 H52.5 A2.5 2.5 0 0 1 55 42.5 V45.5 A2.5 2.5 0 0 1 52.5 48 H32Z" fill="#C98B22"/>` +
+    `<circle cx="5" cy="15" r="3.8" fill="#F2C24E"/><circle cx="32" cy="7" r="4.2" fill="#F2C24E"/><circle cx="59" cy="15" r="3.8" fill="#E3AD3A"/>` +
+    `<circle cx="32" cy="31" r="7" fill="#FFFFFF"/><path d="M38.2 27.6 A7 7 0 0 1 28.4 37 A7.4 7.4 0 0 0 38.2 27.6Z" fill="#E7E4D8"/>` +
+    `<g fill="#E2DFD2">${DIMPLES.map(([x, y]) => `<circle cx="${32 + x}" cy="${31 + y}" r=".9"/>`).join('')}</g></svg>`;
 }
 
 /* ---------- la semana ---------- */
@@ -75,9 +66,7 @@ const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>
 const PIPS = { warmup: 1, mid: 2, expert: 3 };
 export function crownsSectionHTML(R = loadRecords(), csave = null) {
   const { wk, list } = thisWeek(), won = crownsOf(wk, R), n = R.crowns?.n || 0;
-  const sparks = Array.from({ length: 7 }, (_, i) => `<span class="crSpark" style="--i:${i}"></span>`).join('');
   const head = `<header class="crHead">` +
-    `<span class="crRays" aria-hidden="true"></span>${sparks}` +
     `<div class="crMain"><div class="crBadge">${crownSVG(true, 'crBig')}</div>` +
     `<div class="crInfo"><span class="crTitle">${esc(t('crowns.title'))}</span>` +
     `<span class="crTotal"><b>${n}</b><small>${esc(t(n === 1 ? 'crowns.total1' : 'crowns.total'))}</small></span></div></div>` +
@@ -146,28 +135,23 @@ function crownPath(c, x, y, s) { // (la misma corona que el SVG, 64×52, con el 
   c.beginPath(); c.moveTo(...p(9, 39)); for (const q of [[5, 15], [20, 27], [32, 7], [44, 27], [59, 15], [55, 39]]) c.lineTo(...p(...q)); c.closePath();
   return p;
 }
+// (la misma corona plana que el SVG: el oro y su mitad en sombra, la banda, las bolitas y la pelota de golf)
 function drawCrown(c, x, y, s, gold = true) {
-  const g = c.createLinearGradient(x - 30 * s, y - 24 * s, x + 20 * s, y + 24 * s);
-  g.addColorStop(0, '#FFF0B0'); g.addColorStop(.45, '#F2C24E'); g.addColorStop(1, '#B9822A');
   const p = crownPath(c, x, y, s);
   const band = () => { c.beginPath(); c.roundRect(...p(9, 40), 46 * s, 8 * s, 2.5 * s); };
   if (!gold) {
     c.setLineDash([6 * s / 1.6, 5 * s / 1.6]); c.lineWidth = 2.4 * s; c.strokeStyle = 'rgba(255,240,220,.55)'; c.stroke();
     band(); c.stroke(); c.setLineDash([]); return;
   }
-  c.fillStyle = g; c.fill(); c.lineWidth = 1.4 * s; c.strokeStyle = '#8C5E17'; c.lineJoin = 'round'; c.stroke();
-  band(); c.fill(); c.stroke();
-  for (const [px, py, r] of [[5, 15, 3.6], [32, 7, 4], [59, 15, 3.6]]) { // (bolitas de oro)
-    const [cx, cy] = p(px, py), tg = c.createRadialGradient(cx - r * s * .3, cy - r * s * .4, 0, cx, cy, r * s);
-    tg.addColorStop(0, '#FFF6CF'); tg.addColorStop(.55, '#F2C24E'); tg.addColorStop(1, '#B9822A');
-    c.beginPath(); c.arc(cx, cy, r * s, 0, 7); c.fillStyle = tg; c.fill(); c.lineWidth = 1.1 * s; c.strokeStyle = '#8C5E17'; c.stroke();
-  }
-  // la pelota de golf, en el centro
-  const [bx, by] = p(32, 31), bg = c.createRadialGradient(bx - 2.4 * s, by - 2.6 * s, 0, bx, by, 7 * s);
-  bg.addColorStop(0, '#fff'); bg.addColorStop(.7, '#F3F1E6'); bg.addColorStop(1, '#CFCBB8');
-  c.beginPath(); c.arc(bx, by, 7 * s, 0, 7); c.fillStyle = bg; c.fill(); c.lineWidth = 1.2 * s; c.strokeStyle = '#8C5E17'; c.stroke();
-  c.fillStyle = 'rgba(120,110,80,.22)';
-  for (const [dx, dy] of DIMPLES) { c.beginPath(); c.arc(bx + dx * s, by + dy * s, .9 * s, 0, 7); c.fill(); }
+  const poly = (pts, col) => { c.beginPath(); pts.forEach((q, i) => c[i ? 'lineTo' : 'moveTo'](...p(...q))); c.closePath(); c.fillStyle = col; c.fill(); };
+  const dot = (px, py, r, col) => { c.beginPath(); c.arc(...p(px, py), r * s, 0, 7); c.fillStyle = col; c.fill(); };
+  c.fillStyle = '#F2C24E'; c.fill();
+  poly([[32, 7], [44, 27], [59, 15], [55, 41], [32, 41]], '#E3AD3A');
+  band(); c.fillStyle = '#D99A2B'; c.fill();
+  c.beginPath(); c.roundRect(...p(32, 40), 23 * s, 8 * s, [0, 2.5 * s, 2.5 * s, 0]); c.fillStyle = '#C98B22'; c.fill();
+  dot(5, 15, 3.8, '#F2C24E'); dot(32, 7, 4.2, '#F2C24E'); dot(59, 15, 3.8, '#E3AD3A');
+  dot(32, 31, 7, '#FFFFFF');
+  for (const [dx, dy] of DIMPLES) dot(32 + dx, 31 + dy, .9, '#E2DFD2');
 }
 export async function buildCrownImage() {
   await document.fonts?.ready;
@@ -175,18 +159,12 @@ export async function buildCrownImage() {
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
   // fondo: el rojo de los desafíos, con rayos de luz desde la corona
-  const bg = c.createLinearGradient(0, 0, W * .4, H); bg.addColorStop(0, '#C9564B'); bg.addColorStop(1, '#5E1A16'); c.fillStyle = bg; c.fillRect(0, 0, W, H);
-  const cx = W / 2, cy = 430;
-  c.save(); c.translate(cx, cy); c.fillStyle = 'rgba(255,226,170,.09)';
-  for (let i = 0; i < 16; i++) { c.rotate(Math.PI / 8); c.beginPath(); c.moveTo(0, 0); c.lineTo(-70, -1000); c.lineTo(70, -1000); c.fill(); }
+  // fondo: plano, como el menú: el rojo de los desafíos con rayas diagonales a dos tonos
+  c.fillStyle = '#B5473F'; c.fillRect(0, 0, W, H);
+  c.save(); c.translate(W / 2, H / 2); c.rotate(Math.PI / 4); c.fillStyle = 'rgba(255,255,255,.045)';
+  for (let i = -24; i < 24; i += 2) c.fillRect(i * 90, -H * 1.5, 90, H * 3);
   c.restore();
-  const halo = c.createRadialGradient(cx, cy, 20, cx, cy, 380); halo.addColorStop(0, 'rgba(255,220,140,.42)'); halo.addColorStop(1, 'rgba(255,220,140,0)');
-  c.fillStyle = halo; c.fillRect(0, 0, W, H);
-  // destellos
-  c.fillStyle = 'rgba(255,240,200,.85)';
-  for (const [x, y, r] of [[230, 250, 10], [860, 300, 14], [180, 560, 8], [900, 600, 9], [300, 130, 6], [780, 150, 7]]) {
-    c.beginPath(); for (let i = 0; i < 8; i++) { const a = Math.PI * i / 4, d = i % 2 ? r * .3 : r; c[i ? 'lineTo' : 'moveTo'](x + d * Math.cos(a), y + d * Math.sin(a)); } c.fill();
-  }
+  const cx = W / 2, cy = 430;
   // la marca
   c.textAlign = 'center'; c.font = '600 44px Outfit, sans-serif';
   const brand = 'chaotic golf', bw = c.measureText(brand + '.').width;

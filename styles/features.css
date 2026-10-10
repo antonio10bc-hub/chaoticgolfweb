@@ -1127,9 +1127,7 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 .mdTabs button:hover { background-color: transparent; }
 .mdTabs button:not([aria-selected="true"]):hover { --b-fg: #fff; }
 .mdTabInd { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 3); border-radius: 999px;
-  background-color: var(--tabC); background-image: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
-  box-shadow: 0 4px 14px rgba(10,25,10,.28), inset 0 1px 0 rgba(255,255,255,.18);
-  transition: transform .45s cubic-bezier(.34,1.32,.5,1), background-color .35s ease; }
+  background-color: var(--tabC); transition: transform .45s cubic-bezier(.34,1.32,.5,1), background-color .35s ease; }
 #modesGrid[data-tab="special"] .mdTabInd { transform: translateX(100%); }
 #modesGrid[data-tab="workshop"] .mdTabInd { transform: translateX(200%); }
 .mdViewport { touch-action: pan-y; } /* (el desplazamiento vertical, del navegador; el horizontal, para arrastrar las pestañas) */
@@ -1171,42 +1169,34 @@ html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: n
 .dkStats dt { order: 2; font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); margin-top: 3px; }
 .dkStats dd { order: 1; margin: 0; font-size: 24px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* bloqueada: apagada, con candado y "Próximamente" */
-/* cada baraja, con el fondo de su partida de fondo de la tarjeta: el césped a rayas de la clásica, el agua del lago, el
-   verde del minigolf, el de las vías del tren, las cuatro estaciones, el espacio con estrellas y el tapete del casino.
-   Sobre los fondos oscuros, el texto en crema; sobre los claros (clásica, tren y estaciones), oscuro. La ilustración, en un
-   recuadro de cristal; las cifras, en otro. (Ultimate tiene su propio nácar: ultimate.css) */
-.deckCard[data-deck="classic"] { --scene: repeating-linear-gradient(135deg, #8BBE7A 0 90px, #94C584 90px 180px); --sceneC: #8BBE7A; }
-.deckCard[data-deck="water"] { --scene: radial-gradient(ellipse 55% 60% at 30% 40%, rgba(120,200,210,.35), transparent 75%),
-    repeating-linear-gradient(170deg, rgba(255,255,255,.05) 0 2px, transparent 2px 26px), linear-gradient(170deg, #4E9FAE, #357C8D 70%, #2E6F80); --sceneC: #3F8C9C; }
-.deckCard[data-deck="minigolf"] { --scene: radial-gradient(circle at 20% 30%, rgba(255,255,255,.06) 0 2px, transparent 3px) 0 0 / 26px 26px,
-    radial-gradient(circle at 70% 80%, rgba(0,0,0,.05) 0 2px, transparent 3px) 0 0 / 32px 32px,
-    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 60px, transparent 60px 120px); --sceneC: #5FA94F; }
-.deckCard[data-deck="train"] { --scene: repeating-linear-gradient(90deg, rgba(120,96,52,.07) 0 3px, transparent 3px 34px),
-    repeating-linear-gradient(135deg, #C9C98E 0 90px, #D1D098 90px 180px); --sceneC: #C9C98E; }
-.deckCard[data-deck="seasons"] { --scene: radial-gradient(ellipse 60% 80% at 50% 40%, rgba(255,255,255,.18), transparent 75%), linear-gradient(105deg, #A6D08E 0%, #DCC77A 34%, #D69B5E 66%, #DCE7EC 100%); --sceneC: #DCC77A; }
-.deckCard[data-deck="multiverse"] { --scene: radial-gradient(1.4px 1.4px at 12% 22%, #fff, transparent), radial-gradient(1px 1px at 33% 70%, #fff, transparent),
-    radial-gradient(1.6px 1.6px at 58% 18%, #fff, transparent), radial-gradient(1px 1px at 74% 62%, #fff, transparent), radial-gradient(1.3px 1.3px at 88% 30%, #fff, transparent),
-    radial-gradient(1px 1px at 46% 88%, rgba(255,255,255,.8), transparent), radial-gradient(1.2px 1.2px at 95% 85%, rgba(255,255,255,.8), transparent),
-    radial-gradient(ellipse 60% 70% at 80% 20%, rgba(120,90,220,.35), transparent 70%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,.028) 0 90px, transparent 90px 180px); --sceneC: #1B1545; }
-.deckCard[data-deck="gambling"] { --scene: repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 44px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 44px),
-    radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255,255,255,.08), transparent 70%); --sceneC: #145C3E; }
-.deckCard[data-deck]:not(.ultimate) { background-color: var(--sceneC); background-image: var(--grain), var(--scene); border: 1px solid rgba(255,255,255,.22); }
-.deckCard[data-deck]:not(.ultimate) .dkPic { background: rgba(255,255,255,.18); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 12px rgba(0,0,0,.12);
-  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-.deckCard[data-deck]:not(.ultimate) .dkArt { filter: drop-shadow(0 4px 6px rgba(0,0,0,.28)); }
-.deckCard[data-deck]:not(.ultimate) .dkStats { background: rgba(255,255,255,.4); }
+/* cada baraja, con el fondo de su partida de fondo de la tarjeta, en plano (como el menú): su color y rayas diagonales a
+   dos tonos, como el césped segado; el agua, el minigolf, las vías, las cuatro estaciones, el espacio con estrellas y el
+   tapete del casino. Sobre los fondos oscuros, el texto en crema; sobre los claros (clásica, tren y estaciones), oscuro.
+   La ilustración y las cifras, en recuadros lisos. (Ultimate tiene su propia tarjeta: ultimate.css) */
+.deckCard[data-deck="classic"] { --scene: repeating-linear-gradient(135deg, #8BBE7A 0 64px, #94C584 64px 128px); --sceneC: #8BBE7A; }
+.deckCard[data-deck="water"] { --scene: repeating-linear-gradient(135deg, #3F8C9C 0 64px, #4796A6 64px 128px); --sceneC: #3F8C9C; }
+.deckCard[data-deck="minigolf"] { --scene: repeating-linear-gradient(135deg, #5FA94F 0 64px, #67B157 64px 128px); --sceneC: #5FA94F; }
+.deckCard[data-deck="train"] { --scene: repeating-linear-gradient(90deg, rgba(120,96,52,.08) 0 3px, transparent 3px 34px),
+    repeating-linear-gradient(135deg, #C9C98E 0 64px, #D1D098 64px 128px); --sceneC: #C9C98E; }
+.deckCard[data-deck="seasons"] { --scene: repeating-linear-gradient(135deg, #CDE5BE 0 64px, #EDE2B2 64px 128px, #EBCDAB 128px 192px, #E9F0F3 192px 256px); --sceneC: #EDE2B2; }
+.deckCard[data-deck="multiverse"] { --scene: radial-gradient(1.6px 1.6px at 12% 22%, #fff 98%, transparent), radial-gradient(1.2px 1.2px at 33% 70%, #fff 98%, transparent),
+    radial-gradient(1.8px 1.8px at 58% 18%, #fff 98%, transparent), radial-gradient(1.2px 1.2px at 74% 62%, #fff 98%, transparent), radial-gradient(1.5px 1.5px at 88% 30%, #fff 98%, transparent),
+    radial-gradient(1.2px 1.2px at 46% 88%, #fff 98%, transparent), radial-gradient(1.4px 1.4px at 95% 85%, #fff 98%, transparent),
+    repeating-linear-gradient(135deg, #1B1545 0 64px, #211A52 64px 128px); --sceneC: #1B1545; }
+.deckCard[data-deck="gambling"] { --scene: repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px); --sceneC: #145C3E; }
+.deckCard[data-deck]:not(.ultimate) { background-color: var(--sceneC); background-image: var(--grain), var(--scene); border: none; }
+.deckCard[data-deck]:not(.ultimate) .dkPic { background: rgba(255,255,255,.2); }
+.deckCard[data-deck]:not(.ultimate) .dkStats { background: rgba(255,255,255,.45); }
 .deckCard[data-deck]:not(.ultimate) .dkStats div + div { border-left-color: rgba(36,36,36,.14); }
 /* fondos oscuros: el texto, en crema */
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain h3, .dkStats dd) { color: #FFF7E6; }
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain p, .dkStats dt, .dkCards) { color: rgba(255,247,230,.82); }
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkCards { text-decoration-color: rgba(255,247,230,.4); }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats { background: rgba(0,0,0,.2); }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats { background: rgba(0,0,0,.18); }
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats div + div { border-left-color: rgba(255,255,255,.18); }
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary { --b-bg: #FFF7E6; --b-fg: var(--ink); --b-line: #FFF7E6; } /* (sobre fondo oscuro, el botón en crema) */
 .deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary:hover { background-color: #fff; }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain h3, .dkMain p) { text-shadow: 0 1px 2px rgba(0,0,0,.25); }
 /* fondos claros: oscuro, un poco más marcado */
 .deckCard:is([data-deck="classic"], [data-deck="train"], [data-deck="seasons"]) .dkMain p { color: rgba(36,36,36,.75); }
 .deckCard.locked { background-color: #E6E6D0; }
@@ -1871,38 +1861,27 @@ html.reduceMotion .dsBarV { animation: none; }
 @media (max-width: 380px) { .dlgBox.dsBox { padding: 18px 16px 14px; } .dsNum b { font-size: 25px; } .dsNum small { font-size: 10.5px; } }
 
 /* =========================================================
-   Desafíos de la semana (crowns.js): la cabecera con tus coronas (rayos que giran, destellos, la corona que flota con su
-   brillo, las 5 de la semana y la cuenta atrás; compartir arriba a la derecha) y las 5 tarjetas, una por fila. Sin hacer:
+   Desafíos de la semana (crowns.js): la cabecera con tus coronas (plana, como el menú: rojo con rayas diagonales a dos
+   tonos, la corona que flota y la cuenta atrás; compartir arriba a la derecha) y las 5 tarjetas, una por fila. Sin hacer:
    blancas, con la corona en silueta y "Jugar"; ganadas: doradas, con la corona de oro. En la sección estrecha (móvil), más
    compacto (container query)
    ========================================================= */
 .mdSection.crowns { padding: 0 !important; overflow: hidden; container-type: inline-size; }
 .crHead { position: relative; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px 24px;
-  padding: 20px 64px 20px 22px; overflow: hidden; isolation: isolate;
-  color: #FFF4D6; background: radial-gradient(120% 160% at 10% 50%, #D8695C 0%, #B5473F 40%, #6C1F1A 100%); }
-.crRays { position: absolute; z-index: -1; left: 70px; top: 50%; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%;
-  background: repeating-conic-gradient(rgba(255,226,170,.15) 0 9deg, transparent 9deg 24deg);
-  -webkit-mask: radial-gradient(closest-side, #000 25%, transparent 100%); mask: radial-gradient(closest-side, #000 25%, transparent 100%);
-  animation: crSpin 48s linear infinite; }
-@keyframes crSpin { to { transform: rotate(1turn); } }
-.crSpark { position: absolute; z-index: -1; width: 9px; height: 9px; background: #FFE9A8; opacity: 0;
-  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: crTwinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -.47s); }
-.crSpark:nth-of-type(1) { left: 22px; top: 18px; } .crSpark:nth-of-type(2) { left: 128px; top: 12px; transform: scale(.7); }
-.crSpark:nth-of-type(3) { left: 140px; bottom: 16px; } .crSpark:nth-of-type(4) { left: 14px; bottom: 22px; transform: scale(.6); }
-.crSpark:nth-of-type(5) { left: 44%; top: 14px; transform: scale(.6); } .crSpark:nth-of-type(6) { right: 40%; bottom: 12px; }
-.crSpark:nth-of-type(7) { right: 6%; bottom: 18px; transform: scale(.8); }
-@keyframes crTwinkle { 0%, 100% { opacity: 0; scale: .4; } 45% { opacity: .95; scale: 1.15; } 60% { opacity: .6; scale: .9; } }
+  padding: 20px 64px 20px 22px; overflow: hidden; color: #FFF4D6;
+  background-color: #B5473F; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 64px, transparent 64px 128px); }
+
+
 .crMain { display: flex; align-items: center; gap: 16px; min-width: 0; }
-.crBadge { flex: 0 0 auto; width: 104px; height: 104px; display: grid; place-items: center; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255,220,140,.42), rgba(255,220,140,0)); }
-.crBig { width: 90px; height: 73px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(60,10,5,.35)); animation: crBob 3.4s ease-in-out infinite; }
+.crBadge { flex: 0 0 auto; width: 96px; height: 96px; display: grid; place-items: center; }
+.crBig { width: 90px; height: 73px; overflow: visible; animation: crBob 3.4s ease-in-out infinite; }
 @keyframes crBob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-5px) rotate(3deg); } }
-.crSheen { transform-box: view-box; animation: crSheen 3.6s ease-in-out infinite; }
-@keyframes crSheen { 0%, 55% { transform: translateX(0); } 100% { transform: translateX(96px); } }
+
+
 .crInfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .crTitle { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
 .crTotal { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
-.crTotal b { font-size: 62px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px rgba(255,210,120,.35); }
+.crTotal b { font-size: 62px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; }
 .crTotal small { font-size: 18px; font-weight: 500; opacity: .9; }
 /* el reloj: tres casillas grandes (la que cambia da un salto), con la etiqueta encima, alineada con la primera; los dos
    puntos, quietos y a media altura de las cifras */
@@ -1910,8 +1889,8 @@ html.reduceMotion .dsBarV { animation: none; }
 .crClockLbl { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; padding-left: 2px; }
 .crTimer { display: flex; align-items: flex-start; gap: 7px; }
 .crT { --pt: 11px; --fs: 42px; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 78px; padding: var(--pt) 10px 8px; border-radius: 16px;
-  background: linear-gradient(180deg, rgba(40,6,4,.38), rgba(40,6,4,.2)); border: 1px solid rgba(255,230,190,.22); }
-.crT b { font-size: var(--fs); font-weight: 700; line-height: 1; color: #FFE7A6; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255,210,120,.4); }
+  background: rgba(70,12,8,.28); }
+.crT b { font-size: var(--fs); font-weight: 700; line-height: 1; color: #FFE7A6; font-variant-numeric: tabular-nums; }
 .crT small { font-size: 10.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .crT.flip b { animation: crFlip .45s cubic-bezier(.3,1.5,.5,1); }
 @keyframes crFlip { from { transform: translateY(-40%) scale(.85); opacity: .2; } }
@@ -1937,7 +1916,7 @@ button.crCard:hover { transform: translateY(-2px); background-color: #FBE3DE; bo
 .crPic.two .crDk + .crDk { margin-left: -20px; transform: rotate(9deg) translateY(2px); }
 .crPic.two .crDk:first-child { transform: rotate(-6deg); }
 .crChIco { position: absolute; left: 32px; bottom: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #fff;
-  background: linear-gradient(145deg, var(--c1), var(--c2)); border: 2px solid var(--cream); }
+  background: var(--c2); border: 2px solid var(--cream); }
 .crPic.two .crChIco { left: 64px; }
 .crChIco .i { width: 14px; height: 14px; }
 .crCard.g-warmup { --c1: #EE8C80; --c2: #CC5A4E; } .crCard.g-mid { --c1: #D2574B; --c2: #A13A31; } .crCard.g-expert { --c1: #A83830; --c2: #6C1F1A; }
@@ -1959,12 +1938,11 @@ button.crCard:hover { transform: translateY(-2px); background-color: #FBE3DE; bo
 .crPlay .i { width: 12px; height: 12px; }
 button.crCard:hover .crPlay { transform: scale(1.06); }
 /* ganada: dorada, con la corona de oro (aparece con un salto y brilla) */
-button.crCard.won { --b-bg: linear-gradient(160deg, #FFF7DC 0%, #F8E4A4 100%); background: var(--b-bg); --b-line: #D9A93C; }
-button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8C 100%); border-color: #B9822A; }
-.crCard.won::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.55) 50%, transparent 60%);
-  transform: translateX(-100%); animation: crCardSheen 5s ease-in-out infinite; animation-delay: calc(var(--n) * .4s); }
-@keyframes crCardSheen { 0%, 70% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-.crSlot.won .crSlotIc { filter: drop-shadow(0 3px 6px rgba(185,130,42,.45)); animation: crPop .6s .3s cubic-bezier(.3,1.6,.5,1) both; }
+button.crCard.won { --b-bg: #FBEDC4; --b-line: #E3BE5C; }
+button.crCard.won:hover { background-color: #F8E5AE; border-color: #D9A93C; }
+
+
+.crSlot.won .crSlotIc { animation: crPop .6s .3s cubic-bezier(.3,1.6,.5,1) both; }
 .crSlot.won small { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8C5E17; }
 .crCard.won .crTag, .crCard.won .crDesc { color: #7A6534; }
 .crCard.saved { --b-line: var(--accent); }
@@ -1973,7 +1951,6 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
   .crMain { padding-right: 40px; }
   .crBadge { width: 80px; height: 80px; }
   .crBig { width: 70px; height: 57px; }
-  .crRays { left: 54px; top: 56px; }
   .crTotal b { font-size: 48px; }
   .crTotal small { font-size: 15px; }
   .crClock { margin: 0; align-self: center; }
@@ -1992,13 +1969,11 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
   .crPlay .i { display: none; }
   .crSlot.won small { font-size: 10.5px; }
 }
-}
 /* el aviso del cambio */
 #dialog:has(.crIntro) { width: min(420px, 92vw); }
 .dlgBox.crIntro { align-items: center; text-align: center; }
 .crIntro .dlgBtns { align-self: stretch; justify-content: center; }
-.crIntroArt { display: grid; place-items: center; height: 88px; margin: -4px auto 4px; width: 120px; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(242,194,78,.38), rgba(242,194,78,0)); }
+.crIntroArt { display: grid; place-items: center; height: 88px; margin: -4px auto 4px; width: 120px; }
 .crIntro h3 { margin: 4px 0 12px; }
 .crIntro ul { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
 .crIntro li { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 1.3; }
@@ -2006,11 +1981,10 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
 .crIntro li.gift { padding: 9px 11px; border-radius: 12px; background: rgba(242,194,78,.22); font-weight: 600; }
 .crIntro li.gift .i { color: #8C5E17; }
 /* fin de partida: la corona ganada */
-.winRec.new.crownChip { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
+.winRec.new.crownChip { background: #F2C24E; border-color: #F2C24E; color: #4A2F06; }
 .winRec.crownChip .i { width: 16px; height: 16px; }
 @media (prefers-reduced-motion: reduce) {
-  .crRays, .crSpark, .crBig, .crSheen, button.crCard, .crCard.won::after, .crSlot.won .crSlotIc, .crT.flip b { animation: none !important; }
-  .crSpark { opacity: .6; }
+  .crBig, button.crCard, .crSlot.won .crSlotIc, .crT.flip b { animation: none !important; }
 }
 
 /* =========================================================
@@ -2019,22 +1993,22 @@ button.crCard.won:hover { background: linear-gradient(160deg, #FFF3CC 0%, #F5DA8
    tarjeta toma su color (oro, plata o bronce)
    ========================================================= */
 .mdSection.rushWeek { padding: 0 !important; overflow: hidden; container-type: inline-size; }
-.rwHead { color: #F4F8FF; background: radial-gradient(120% 160% at 10% 50%, #6E9BD6 0%, #3F6FA8 42%, #1F3A63 100%); }
-.rwHead .crRays { background: repeating-conic-gradient(rgba(220,236,255,.13) 0 9deg, transparent 9deg 24deg); }
-.rwHead .crBadge { background: radial-gradient(closest-side, rgba(255,226,150,.36), rgba(255,226,150,0)); }
-.rwHead .crT { background: linear-gradient(180deg, rgba(8,20,40,.4), rgba(8,20,40,.2)); border-color: rgba(210,230,255,.24); }
+.rwHead { color: #F4F8FF; background-color: #3F6FA8; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 64px, transparent 64px 128px); }
+
+
+.rwHead .crT { background: rgba(10,26,52,.32); }
 .rwHead .crShare { --b-bg: rgba(230,240,255,.14); --b-fg: #F4F8FF; --b-line: rgba(230,240,255,.4); }
 .rwHead .crShare:hover { background-color: rgba(230,240,255,.26); }
-.rwBig { width: 66px; height: 82px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(8,20,40,.35)); animation: crBob 3.4s ease-in-out infinite; }
+.rwBig { width: 66px; height: 82px; overflow: visible; animation: crBob 3.4s ease-in-out infinite; }
 .rwTallies { display: flex; gap: 14px; margin-top: 2px; }
 .rwTally { display: inline-flex; align-items: center; gap: 5px; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .rwMini { width: 18px; height: 23px; }
 
 .rwBody { padding: 12px; }
 .rwCard { display: flex; flex-direction: column; gap: 14px; padding: 14px 16px 16px; border-radius: 16px; border: 1px solid var(--cream-line); background: rgba(255,255,255,.42); }
-.rwCard.m-gold { background: linear-gradient(160deg, #FFF7DC, #F8E4A4); border-color: #D9A93C; }
-.rwCard.m-silver { background: linear-gradient(160deg, #FCFDFE, #E1E6EA); border-color: #B5BEC5; }
-.rwCard.m-bronze { background: linear-gradient(160deg, #FFF3E7, #F2D3B6); border-color: #D59A6A; }
+.rwCard.m-gold { background: #FBEDC4; border-color: #E3BE5C; }
+.rwCard.m-silver { background: #ECEFF2; border-color: #BCC4CA; }
+.rwCard.m-bronze { background: #F6E0CC; border-color: #DDA273; }
 .rwTop { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .rwInfo { min-width: 0; }
 .rwInfo h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
@@ -2055,9 +2029,9 @@ button.rwPlay:hover { background-color: #2D4F7C; transform: scale(1.04); }
 .rwMark:not(.got) b { color: var(--ink-soft); }
 .rwBar { height: 10px; margin-top: 8px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; }
 .rwBar i { display: block; height: 100%; border-radius: inherit; background: #D98F57; transition: width .6s var(--ease-out); }
-.rwBar.b-bronze i { background: linear-gradient(90deg, #C27A45, #E3A06A); }
-.rwBar.b-silver i { background: linear-gradient(90deg, #8E979E, #D3D9DE); }
-.rwBar.b-gold i { background: linear-gradient(90deg, #C9962E, #F6D06A); }
+.rwBar.b-bronze i { background: #D98F57; }
+.rwBar.b-silver i { background: #A9B2B9; }
+.rwBar.b-gold i { background: #E8B53E; }
 @container (max-width: 640px) {
   .rwBig { width: 54px; height: 67px; }
   .rwTally { font-size: 14px; }
@@ -2068,9 +2042,9 @@ button.rwPlay:hover { background-color: #2D4F7C; transform: scale(1.04); }
 }
 /* fin de la serie: la medalla de la semana */
 .winRec.medalChip .wrMedal { width: 16px; height: 20px; }
-.winRec.new.medalChip.m-gold { background: linear-gradient(160deg, #F6D06A, #D9A93C); border-color: #C89530; color: #4A2F06; }
-.winRec.new.medalChip.m-silver { background: linear-gradient(160deg, #F4F6F8, #C5CDD3); border-color: #A7B0B7; color: #2F3940; }
-.winRec.new.medalChip.m-bronze { background: linear-gradient(160deg, #F3C49C, #CF8550); border-color: #B26B3A; color: #3E2210; }
+.winRec.new.medalChip.m-gold { background: #F2C24E; border-color: #F2C24E; color: #4A2F06; }
+.winRec.new.medalChip.m-silver { background: #CFD5DA; border-color: #CFD5DA; color: #2F3940; }
+.winRec.new.medalChip.m-bronze { background: #D98F57; border-color: #D98F57; color: #3E2210; }
 @media (prefers-reduced-motion: reduce) { .rwBig, .rwMark.got .rwMedal { animation: none !important; } }
 
 /* =========================================================
