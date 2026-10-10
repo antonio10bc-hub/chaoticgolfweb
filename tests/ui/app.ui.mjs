@@ -809,6 +809,29 @@ it('creador: la paleta, por grupos con el color de su baraja; "Borrar todo" deja
   assert.deepEqual([(await lv()).tiles.length, (await lv()).parCells.length], [1, 5], 'se deshace');
 });
 
+it('creador: la rueda coge una pieza (con su giro) y la suelta en otra casilla (un solo deshacer); Esc la devuelve; los grupos se pliegan', async () => {
+  await fresh();
+  await app(() => import('/src/ui/editor.js').then(m => m.openEditor({ fresh: true }))); await sleep(600);
+  const at = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
+  const lv = () => app(() => JSON.parse(localStorage.getItem('chaoticgolf_editor')).level);
+  await click('#edTools [data-tool="launcher"]');
+  const [a, b] = await at(1, 1); await page.mouse.click(a, b); await sleep(60); await page.mouse.click(a, b); await sleep(60); // pone y gira
+  await page.mouse.click(a, b, { button: 'middle' }); await sleep(120);
+  const [c, d] = await at(3, 4); await page.mouse.click(c, d, { button: 'middle' }); await sleep(120);
+  assert.deepEqual((await lv()).tiles, [{ type: 'launcher', x: 3, y: 4, rot: 1 }]);
+  await page.keyboard.down('Control'); await page.keyboard.press('KeyZ'); await page.keyboard.up('Control'); await sleep(120);
+  assert.deepEqual((await lv()).tiles, [{ type: 'launcher', x: 1, y: 1, rot: 1 }], 'un solo deshacer');
+  const ball = (await lv()).ball, [e, f] = await at(ball.x, ball.y);
+  await page.mouse.click(e, f, { button: 'middle' }); await sleep(80);
+  assert.ok(await app(() => document.getElementById('edBoard').classList.contains('edCarrying')));
+  await page.keyboard.press('Escape'); await sleep(80);
+  assert.deepEqual((await lv()).ball, ball, 'Esc: a su sitio');
+  await click('[data-fold="water"]'); await sleep(80);
+  assert.ok(await app(() => document.querySelector('.edGroup.g-water').classList.contains('folded')));
+  assert.equal(await app(() => getComputedStyle(document.querySelector('.edGroup.g-water .edToolRow')).display), 'none');
+  assert.deepEqual(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_edFolded'))), ['water'], 'se recuerda');
+});
+
 it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien lo recibe lo guarda', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(300);

@@ -122,7 +122,7 @@ function loadDraft() {
   return false;
 }
 function setLevel(L, idx = null) {
-  ED.level = normalize(L); ED.idx = idx; ED.undo = []; ED.redo = [];
+  ED.level = normalize(L); ED.idx = idx; ED.undo = []; ED.redo = []; ED.carry = null; $('edBoard')?.classList.remove('edCarrying');
   ED.saved = idx != null ? snap() : null;
   persist();
 }
@@ -134,6 +134,7 @@ function pushUndo() {
   ED.redo.length = 0;
 }
 function undoStep(from, to) {
+  if (ED.carry) { cancelCarry(); return; } // (llevando algo con la rueda: deshacer lo devuelve a su sitio)
   if (!from.length) return;
   to.push(snap());
   ED.level = normalize(JSON.parse(from.pop()));
@@ -466,15 +467,25 @@ const toolName = tool => t('ed.tools.' + tool);
 // cada grupo, con el color de su baraja (un fondo muy suave y un punto junto al título); en Básico, además, "Borrar todo"
 const GROUP_DECK = { classic: 'classic', water: 'water', mini: 'minigolf', train: 'train', seasons: 'seasons', multiverse: 'multiverse', gambling: 'gambling' };
 const groupColor = g => GROUP_DECK[g] ? DECKS.find(d => d.id === GROUP_DECK[g])?.color : '#4E5E6A';
+// los grupos plegados (se recuerdan): tocar su título lo pliega o lo despliega
+const FOLD_KEY = 'chaoticgolf_edFolded';
+const folded = (() => { try { return new Set(JSON.parse(localStorage.getItem(FOLD_KEY)) || []); } catch (e) { return new Set(); } })();
+function toggleFold(g) {
+  folded.has(g) ? folded.delete(g) : folded.add(g);
+  try { localStorage.setItem(FOLD_KEY, JSON.stringify([...folded])); } catch (e) { /* sin storage */ }
+  sfx('select'); renderTools();
+}
 function renderTools() {
   const key = tool => Object.keys(SHORTCUT).find(k => SHORTCUT[k] === tool);
-  $('edTools').innerHTML = GROUPS.map(([g, tools]) => `<div class="edGroup g-${g}" style="--gc:${groupColor(g)}"><h3>${esc(t('ed.groups.' + g))}</h3><div class="edToolRow">` +
+  $('edTools').innerHTML = GROUPS.map(([g, tools]) => { const shut = folded.has(g) && !tools.includes(ED.tool); // (el de la herramienta activa, siempre abierto)
+    return `<div class="edGroup g-${g}${shut ? ' folded' : ''}" style="--gc:${groupColor(g)}">` +
+    `<h3><button type="button" class="edFold" data-fold="${g}" aria-expanded="${!shut}">${esc(t('ed.groups.' + g))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button></h3><div class="edToolRow">` +
     tools.map(tool => { const on = ED.tool === tool, k = key(tool);
       return `<button class="edTool${on ? ' on' : ''}${tool === 'portal' ? ' pair' + ED.pair : ''}" data-tool="${tool}" aria-pressed="${on}" title="${esc(toolName(tool) + (k ? ` (${k.toUpperCase()})` : ''))}">` +
         `<span class="tiPic">${toolPic(tool)}</span><span class="tiName">${esc(toolName(tool))}</span></button>`; }).join('') +
     (g === 'basic' ? `<button class="edTool edClear" data-edclear="1" title="${esc(t('ed.clearTitle'))}"><span class="tiPic"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></span>` +
       `<span class="tiName">${esc(t('ed.clear'))}</span></button>` : '') +
-    `</div></div>`).join('');
+    `</div></div>`; }).join('');
   renderToolOpts();
 }
 function renderToolOpts() {
@@ -673,6 +684,57 @@ function changed({ tools = false, deck = false } = {}) {
   persist();
 }
 
+/* ---------- coger y soltar con la rueda del ratón (botón central) ---------- */
+// La rueda coge lo que hay en la casilla (la pelota, el hoyo, un obstáculo, la bola de nieve, una pieza —con su giro, su
+// pareja o su número—, una moneda, la dorada o el PAR): pasa a ser la herramienta y sale del tablero (la pelota y el hoyo
+// se quedan hasta soltarlos). Otra vez la rueda (o el clic) lo suelta donde se pulse, con las mismas reglas que al ponerlo:
+// si ahí no vale, se sigue llevando. Esc, el clic derecho o tocar cualquier otra cosa lo devuelven a su sitio. Coger y
+// soltar es un solo paso de deshacer
+function pickAt(x, y) {
+  const L = ED.level, tl = tileAt(x, y), di = decoyAt(x, y), p = parAt(x, y), ci = coinAt(x, y);
+  let tool = null;
+  pushUndo();
+  if (same(L.ball, x, y)) tool = 'ball';
+  else if (same(L.hole, x, y)) tool = 'hole';
+  else if (di >= 0) { tool = 'decoy'; L.extraBalls.splice(di, 1); }
+  else if (snowAt(x, y)) { tool = 'snowball'; delete L.season.snow; }
+  else if (tl) {
+    tool = tl.type;
+    if (TILES[tool].rotates) ED.rots[tool] = tl.rot || 0;
+    if (tool === 'portal') ED.pair = tl.pair || 1;
+    if (tool === 'dice') ED.diceN = tl.t || 1;
+    L.tiles = L.tiles.filter(q => q !== tl);
+  } else if (ci >= 0) { tool = 'coin'; L.gamble.coins.splice(ci, 1); }
+  else if (goldAt(x, y)) { tool = 'gold'; L.gamble.gold = null; }
+  else if (p) { tool = 'par'; ED.parN = p.n; L.parCells = L.parCells.filter(q => q !== p); }
+  if (!tool) { ED.undo.pop(); return; }
+  ED.carry = { tool };
+  ED.tool = tool;
+  $('edBoard').classList.add('edCarrying');
+  sfx('select');
+  edRender(); renderTools(); showGhost(x, y);
+}
+function dropAt(x, y) {
+  const tool = ED.carry.tool, mode = tool === 'ball' || tool === 'hole' ? 'move' : 'paint';
+  const same0 = mode === 'move' && same(ED.level[tool], x, y);
+  if (!same0 && !applyAt(x, y, mode)) return; // (ahí no vale: lo sigues llevando; bad() dice por qué)
+  if (same0) ED.undo.pop(); // (la pelota o el hoyo, soltados donde estaban: nada que deshacer)
+  endCarry();
+  const tl = tileAt(x, y);
+  sfx(tl ? (TILES[tl.type].placeSound || 'pop') : 'card');
+  changed({ tools: true }); paintStatus();
+}
+function endCarry() { ED.carry = null; $('edBoard').classList.remove('edCarrying'); }
+// lo que se llevaba, de vuelta a su sitio (deshace el coger)
+function cancelCarry() {
+  if (!ED.carry) return;
+  endCarry();
+  const prev = ED.undo.pop();
+  if (prev) ED.level = normalize(JSON.parse(prev));
+  sfx('card');
+  edRender(); renderTools(); persist();
+}
+
 /* ---------- guardar, Mis niveles, probar ---------- */
 function save({ quiet = false } = {}) {
   const { errors } = issues(ED.level);
@@ -736,6 +798,7 @@ function onKey(e) {
   const typing = e.target.closest('input, textarea');
   const mod = e.ctrlKey || e.metaKey;
   if (!$('edLib').hidden) { if (e.key === 'Escape') { e.preventDefault(); closeLib(); } return; }
+  if (e.key === 'Escape' && ED.carry) { e.preventDefault(); cancelCarry(); return; } // (lo que se llevaba con la rueda, a su sitio)
   if (e.key === 'Escape' && $('edDeckPanel').classList.contains('open')) { $('edDeckPanel').classList.remove('open'); $('edDeckBtn').setAttribute('aria-expanded', 'false'); return; }
   if (mod && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); return; }
   if (mod && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); edRedo(); return; }
@@ -749,6 +812,8 @@ function onKey(e) {
 export function bindEditor() {
   $('edTools').addEventListener('click', e => {
     if (e.target.closest('[data-edclear]')) { clearBoard(); return; }
+    const f = e.target.closest('[data-fold]');
+    if (f) { toggleFold(f.dataset.fold); return; }
     const b = e.target.closest('[data-tool]');
     if (!b) return;
     ED.tool = b.dataset.tool; sfx('select'); renderTools();
@@ -782,7 +847,10 @@ export function bindEditor() {
   const cellOf = e => { const c = e.target.closest?.('.cell') || document.elementFromPoint(e.clientX, e.clientY)?.closest('#edBoard .cell'); return c ? { x: +c.dataset.x, y: +c.dataset.y } : null; };
   board.addEventListener('pointerdown', e => {
     const c = cellOf(e);
-    if (!c || (e.button !== 0 && e.button !== 2)) return;
+    if (!c) return;
+    if (e.button === 1) { e.preventDefault(); if (ED.carry) dropAt(c.x, c.y); else pickAt(c.x, c.y); return; } // (la rueda: coger y soltar)
+    if (ED.carry) { e.preventDefault(); if (e.button === 2) cancelCarry(); else dropAt(c.x, c.y); return; } // (llevando algo: el clic lo suelta)
+    if (e.button !== 0 && e.button !== 2) return;
     e.preventDefault();
     const mode = modeAt(c.x, c.y, e.button === 2 || ED.tool === 'erase');
     pushUndo();
@@ -807,6 +875,10 @@ export function bindEditor() {
   board.addEventListener('pointercancel', end);
   board.addEventListener('pointerleave', () => { if (!drag) showGhost(null); });
   board.addEventListener('contextmenu', e => e.preventDefault());
+  board.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); }); // (sin el desplazamiento automático de la rueda)
+  board.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
+  // llevando algo con la rueda, cualquier otra cosa del creador (una herramienta, guardar, probar, volver…) lo devuelve antes
+  $('editorScreen').addEventListener('pointerdown', e => { if (ED.carry && !e.target.closest('#edBoard')) cancelCarry(); }, true);
   $('edStage').addEventListener('click', e => {
     const b = e.target.closest('[data-size]');
     if (!b) return;

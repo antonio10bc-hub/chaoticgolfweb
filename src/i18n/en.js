@@ -399,7 +399,7 @@ export default {
       block: 'Drag to place several blocks: everything bounces off them.',
       tunnel: 'The ball comes out of one of its four sides at random.',
       rotates: 'Pick the rotation (or press R). Tap a placed piece to rotate it.',
-      always: 'Right-click erases with any tool. Ctrl+Z undoes.',
+      always: 'Right-click erases with any tool. The mouse wheel picks a piece up and clicking it again drops it. Ctrl+Z undoes.',
     },
     tab: { deck: 'Deck', hand: 'Starting hand' },
     presets: 'Template', preset: { gambling: 'Casino', multiverse: 'Multiverse', seasons: 'Seasons', train: 'Train', classic: 'Classic', water: 'Water', minigolf: 'Mini golf', ultimate: 'Ultimate', empty: 'Empty' },

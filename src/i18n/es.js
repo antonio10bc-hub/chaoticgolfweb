@@ -402,7 +402,7 @@ export default {
       block: 'Arrastra para poner varios bloques: todo rebota en ellos.',
       tunnel: 'La pelota sale por uno de sus cuatro lados, al azar.',
       rotates: 'Elige el giro (o pulsa R). Toca una pieza ya puesta para girarla.',
-      always: 'Clic derecho borra con cualquier herramienta. Ctrl+Z deshace.',
+      always: 'Clic derecho borra con cualquier herramienta. La rueda coge una pieza y otra vez la rueda la suelta. Ctrl+Z deshace.',
     },
     tab: { deck: 'Mazo', hand: 'Mano inicial' },
     presets: 'Plantilla', preset: { gambling: 'Casino', multiverse: 'Multiverso', seasons: 'Estaciones', train: 'Tren', classic: 'Clásica', water: 'Agua', minigolf: 'Minigolf', ultimate: 'Ultimate', empty: 'Vacío' },

@@ -337,7 +337,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   partida (volver, Mis niveles, nombre y estado del nivel, deshacer/rehacer, guardar, compartir). A la izquierda las
   herramientas por baraja —cada grupo en su recuadro, con un fondo muy suave del color de su baraja y un punto de ese color
   junto al título; en el móvil, una raya de su color entre grupos— con el dibujo real de cada pieza (pelota, hoyo, PAR,
-  obstáculo, borrar y «Borrar todo», que deja el tablero solo con la pelota y el hoyo y se deshace con Ctrl+Z; búnker, portal con
+  obstáculo, borrar y «Borrar todo», que deja el tablero solo con la pelota y el hoyo y se deshace con Ctrl+Z; cada grupo se pliega tocando su título —se recuerda—; con la rueda del ratón se coge lo que hay en una casilla —con su giro, su pareja o su número— y otra vez la rueda lo suelta en otra, con las mismas reglas; Esc o el clic derecho lo devuelven y Ctrl+Z deshace el traslado entero; búnker, portal con
   parejas A/B/C; río, lago; bloque, esquina, túnel y lanzadera, con su giro) y sus opciones; en el centro el tablero
   con reglas numeradas y +/− de columnas y filas en sus bordes; a la derecha el mazo (plantillas por baraja y cada
   carta con su número) o la mano inicial (puzles). Un nivel nuevo es de 12×9 con PAR 5 en el centro. Se pinta arrastrando, clic derecho borra, R gira, Ctrl+Z/Ctrl+Y,
