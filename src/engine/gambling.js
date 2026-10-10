@@ -84,7 +84,7 @@ export const gamblingMethods = {
   holeId(h) { return h === this.S.hole ? 'hole' : h.id; },
   // al terminar la jugada (afterPlay): cada moneda, una tirada, y la moneda se va a otra casilla vacía al azar.
   // Cruz: a su salida (el hoyo, a su casilla inicial). Cara: se vuelve a elegir, como si se jugara otra vez la carta (una
-  // acción pendiente `bonus`: la decide el dueño de la pelota; la del hoyo, quien lo movió). Con una cara pendiente, las
+  // acción pendiente `bonus`: la decide el dueño de la pelota; el hoyo repite su movimiento). Con una cara pendiente, las
   // monedas que quedan esperan a que se juegue
   resolveCoins() {
     const S = this.S, q = S.coinQ;
@@ -116,8 +116,9 @@ export const gamblingMethods = {
     const n = Math.max(1, mv?.steps || 1);
     this.pending = { kind: 'move', p, n, ball, targets: this.straightTargets(ball, n), bonus: true };
   },
-  // la moneda del hoyo: cruz, a su casilla inicial (la copia del hoyo, para siempre); cara, quien lo movió elige otra vez
-  // hacia dónde, las mismas casillas. Si el hoyo se ha tragado una pelota en la jugada, no la lanza
+  // la moneda del hoyo: cruz, a su casilla inicial (la copia del hoyo, para siempre); cara, el hoyo repite su movimiento
+  // (la misma dirección y las mismas casillas: las cartas de hoyo ya traen la dirección, no se elige). Si no se sabe hacia
+  // dónde iba, quien lo movió elige otra vez hacia dónde. Si el hoyo se ha tragado una pelota en la jugada, no la lanza
   flipHole(it) {
     const S = this.S, h = it.hole === 'hole' ? S.hole : S.holeCopies?.find(c => c.id === it.hole);
     if (!h || S.balls.some(b => b.holed && !b.decoy && b.x === h.x && b.y === h.y)) { this.dropCoin(it); return; }
@@ -128,6 +129,7 @@ export const gamblingMethods = {
     if (heads) {
       const dist = Math.max(1, it.mv?.dist || 1);
       this.log('log.holeCoinHeads');
+      if (it.mv?.dir) { this.moveHole(it.mv.dir, dist, h); return; } // (repite el mismo movimiento, solo)
       this.pending = { kind: 'holeMove', p: it.by, hole: it.hole, dist, targets: this.straightTargets(h, dist), bonus: true };
       return;
     }
@@ -138,7 +140,7 @@ export const gamblingMethods = {
     this.anim({ t: 'appear', p: 'hole', x, y });
     this.holeLandAt(x, y);
   },
-  // (cara del hoyo) quien lo movió elige hacia dónde; mover el hoyo en un JAQUE lo anula, como con su carta
+  // (cara del hoyo sin dirección conocida) quien lo movió elige hacia dónde; mover el hoyo en un JAQUE lo anula, como con su carta
   holeBonusAt(x, y) {
     const pd = this.pending, tg = pd.targets.find(q => q.x === x && q.y === y);
     const h = pd.hole === 'hole' ? this.S.hole : this.S.holeCopies?.find(c => c.id === pd.hole);

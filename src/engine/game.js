@@ -1066,7 +1066,7 @@ export class Game {
   moveHole(dirKey, dist, h = this.S.hole) {
     const S = this.S, main = h === S.hole, pid = main ? 'hole' : h.id, x0 = h.x, y0 = h.y;
     this.tip('holeMove');
-    if (S.gamble) this.noteMove(h, { dist }); // (casino: con cara, quien lo movió lo vuelve a mover esas casillas)
+    if (S.gamble) this.noteMove(h, { dist, dir: dirKey }); // (casino: con cara, el hoyo repite este movimiento)
     let diceHits = 0;
     const { dx, dy } = DIRS[dirKey];
     let cx = h.x, cy = h.y, dir = dirKey;

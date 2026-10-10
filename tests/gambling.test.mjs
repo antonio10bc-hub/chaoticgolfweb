@@ -111,7 +111,7 @@ test('moneda con el dedo: con cara, otra vez el dedo (cuántos pasos y el camino
   assert.deepEqual(at(g), [2, 0]); assert.equal(g.pending, null);
 });
 
-test('moneda del hoyo: el hoyo también las recoge; cara, quien lo movió lo mueve otra vez; cruz, a su casilla inicial', () => {
+test('moneda del hoyo: el hoyo también las recoge; cara, repite el mismo movimiento él solo (las cartas de hoyo no eligen dirección); cruz, a su casilla inicial', () => {
   const pick = side => { for (let seed = 1; seed < 300; seed++) {
     const g = level({ coins: [{ x: 6, y: 1 }], seed });
     play(g, 'hoyoDown');
@@ -119,11 +119,8 @@ test('moneda del hoyo: el hoyo también las recoge; cara, quien lo movió lo mue
   } };
   let g = level({ coins: [{ x: 6, y: 1 }], seed: pick('heads') });
   play(g, 'hoyoDown');
-  assert.ok(g.pending?.bonus && g.pending.kind === 'holeMove' && g.pending.p === 0 && g.pending.dist === 2);
-  const tg = g.pending.targets.find(q => q.dir === 'left');
-  assert.ok(g.selectableAt(tg.x, tg.y));
-  g.clickCell(tg.x, tg.y);
-  assert.deepEqual([g.S.hole.x, g.S.hole.y], [4, 2]);
+  assert.equal(g.pending, null, 'no se elige nada');
+  assert.deepEqual([g.S.hole.x, g.S.hole.y], [6, 4], 'cara: otra vez 2 hacia abajo');
   g = level({ coins: [{ x: 6, y: 1 }], seed: pick('tails') });
   play(g, 'hoyoDown');
   assert.deepEqual([g.S.hole.x, g.S.hole.y], [6, 0], 'cruz: a su casilla inicial');

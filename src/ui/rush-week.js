@@ -57,17 +57,13 @@ export function rushSectionHTML(R = loadRecords(), run = null, rsave = null) {
     `<div class="crClock"><span class="crClockLbl">${esc(t('rushw.newIn'))}</span><span class="crTimer" data-crclock>${clockHTML()}</span></div>` +
     `<button type="button" class="crShare" data-mode="rwShare" aria-label="${esc(t('rushw.share'))}" title="${esc(t('rushw.share'))}">${icon('i-share')}</button></header>`;
 
-  // los 5 hoyos de la serie (con la serie a medias: los hechos, con sus puntos, y el siguiente)
-  const holes = Array.from({ length: 5 }, (_, i) => {
-    const pts = run?.scores?.[i], cur = run && i === run.hole;
-    return `<span class="rwHole${pts != null ? ' done' : ''}${cur ? ' cur' : ''}"><b>${pts != null ? fmt(pts) : i + 1}</b><small>${esc(t(pts != null ? 'rushw.pts' : 'rushw.hole'))}</small></span>`;
-  }).join('<i class="rwLink" aria-hidden="true"></i>');
-  // las tres medallas sobre su barra (de 0 al oro): las conseguidas, de color; tu mejor de la semana, la marca
+  // las tres medallas, grandes, sobre su barra (de 0 al oro): las conseguidas, rellenas de su color; la barra crece con tu
+  // mejor resultado de la semana y es del color de la medalla que tienes (bronce hasta la plata, plata hasta el oro…)
   const best = wb?.best || 0, max = GOAL.gold * 1.15, pos = v => Math.min(100, 100 * v / max);
   const have = m => wb?.medal && { bronze: 1, silver: 2, gold: 3 }[wb.medal] >= { bronze: 1, silver: 2, gold: 3 }[m];
-  const marks = MEDALS.map(m => `<span class="rwMark${have(m) ? ' got' : ''}" style="--x:${m === 'bronze' ? 6 : pos(GOAL[m])}%">${medalSVG(have(m) ? m : null)}` +
+  const marks = MEDALS.map(m => `<span class="rwMark${have(m) ? ' got' : ''}" style="--x:${m === 'bronze' ? 'max(28px, 6%)' : pos(GOAL[m]) + '%'}">${medalSVG(have(m) ? m : null)}` +
     `<b>${esc(t('rushw.' + m))}</b><small>${esc(m === 'bronze' ? t('rushw.finish') : t('rushw.goal', { n: fmt(GOAL[m]) }))}</small></span>`).join('');
-  const bar = `<div class="rwTrack"><div class="rwMarks">${marks}</div><div class="rwBar"><i style="width:${wb ? pos(best) : 0}%"></i></div></div>`;
+  const bar = `<div class="rwTrack"><div class="rwMarks">${marks}</div><div class="rwBar${wb?.medal ? ' b-' + wb.medal : ''}"><i style="width:${wb ? pos(best) : 0}%"></i></div></div>`;
   const btns = rsave ? `<button class="btn-continue" data-mode="resume:rush">${esc(t('menu.continue'))}</button>`
     : run ? `<button class="btn-continue" data-mode="rush">${esc(t('rushw.continue', { n: run.hole + 1 }))}</button><button class="btn-light btn-sm" data-mode="rushNew">${esc(t('rushw.restart'))}</button>`
     : `<button class="rwPlay" data-mode="rushNew">${icon('i-play')}${esc(t(wb ? 'rushw.improve' : 'modes.play'))}</button>`;
@@ -75,7 +71,7 @@ export function rushSectionHTML(R = loadRecords(), run = null, rsave = null) {
     `<div class="rwTop"><div class="rwInfo"><h3>${esc(t('rushw.series'))}</h3><p>${esc(t('rushw.seriesSub'))}</p>` +
     `<span class="rwBest">${icon('i-trophy')}<span>${wb ? esc(t('rushw.best', { n: '\u0001' })).replace('\u0001', `<b>${fmt(best)}</b>`) : esc(t('rushw.noBest'))}</span></span></div>` +
     `<div class="rwBtns">${btns}</div></div>` +
-    `<div class="rwHoles">${holes}</div>${bar}</article>`;
+    `${bar}</article>`;
   return `<section class="mdSection rushWeek" data-week="${wk}">${head}<div class="rwBody">${card}</div></section>`;
 }
 

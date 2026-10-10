@@ -103,7 +103,7 @@ src/
   i18n/                    textos (es.js, en.js) y t()
   storage.js               localStorage con esquema versionado
   art.js                   arte bitmap opcional + markup de piezas
-assets/icons/              iconos de la app
+assets/icons/              iconos de la app (icon.*) y el favicon: una pelota de golf blanca sobre verde (favicon.svg y su PNG de 32 px)
 assets/art/                arte bitmap opcional (ver más abajo)
 tests/                     node --test: oráculo de reglas, reglas concretas e IA
 tools/                     servidor, oráculo, simulador, prueba de humo, manifiesto de arte
@@ -278,9 +278,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   se repite cuantas veces se quiera; no hay serie libre. Cada semana da una medalla, la mejor: bronce por terminarla,
   plata desde 2800 puntos y oro desde 4000 —`RUSH_MEDALS` en `records.js`, `records.rush.weeks`—. Su sección va detrás de
   los desafíos, con la misma cabecera en azul —tus medallas de siempre (oro, plata, bronce), la cuenta atrás hasta la serie
-  nueva y compartir: una imagen con tu medalla de la semana, tus medallas y tu pelota— y la tarjeta de la serie: sus 5
-  hoyos —a medias, los hechos con sus puntos y el siguiente—, tu mejor resultado de la semana y las tres medallas sobre su
-  barra; con medalla, la tarjeta toma su color. Al terminar, el final dice la medalla y cuánto falta para la siguiente;
+  nueva y compartir: una imagen con tu medalla de la semana, tus medallas y tu pelota— y la tarjeta de la serie: tu mejor
+  resultado de la semana y las tres medallas, grandes, sobre su barra (las conseguidas, rellenas de su color; la barra crece
+  con tu mejor resultado y es del color de tu medalla: bronce hasta la plata, plata hasta el oro…); con medalla, la tarjeta
+  toma su color. Al terminar, el final dice la medalla y cuánto falta para la siguiente;
   la serie a medias o guardada de la semana pasada caduca. Cada serie: 5 hoyos generados con muy poco tiempo cada uno —40, 45, 50, 55 y
   60 s: `RUSH_LIMITS`— que solo corre en tu turno; el tablero se tiñe de rojo según se acaba; puntos por tus turnos y
   segundos de sobra; si llega a cero, se acaba la serie; cada hoyo presenta una
@@ -608,8 +609,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     también la golpeada) se la lleva (`coinPick`: se le pega una chapita) y, **al terminar la jugada** (`afterPlay` →
     `resolveCoins`), la lanza: una moneda grande da vueltas en medio de la pantalla (`coinFlip`). **Cara**: se vuelve a
     elegir, como si se jugara otra vez la carta y sin gastar ninguna (acción pendiente con `bonus`: el palo, hacia dónde con
-    las casillas de su último movimiento; el iridiscente, hacia dónde; el dedo, cuántos pasos y el camino; el hoyo,
-    `holeMove`, hacia dónde y las mismas casillas). Decide el dueño de la pelota; la del hoyo, quien lo movió. Se puede
+    las casillas de su último movimiento; el iridiscente, hacia dónde; el dedo, cuántos pasos y el camino). Decide el dueño
+    de la pelota. El hoyo no elige: con cara repite él solo el mismo movimiento —misma dirección y casillas—, porque las
+    cartas de hoyo ya traen la dirección (si no se sabe hacia dónde iba, `holeMove`: quien lo movió elige). Se puede
     renunciar (Cancelar). Mientras te toca elegir, la barra de ayuda late con un aro dorado y sobre tu pelota (o el hoyo)
     sale el bocadillo «¡Elige otra vez!» (`bonusCta`, `bonusPick`). **Cruz**: vuelve a su salida como si se cayera (`goHome`; el hoyo, a su casilla inicial). Después,
     **la moneda se va a otra casilla vacía al azar** (`coinDrop`): siempre quedan 3 por jugador. Una tirada por moneda; con
