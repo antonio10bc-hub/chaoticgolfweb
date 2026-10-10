@@ -455,7 +455,7 @@ html.paused #game .cell.selectable, html.paused #game .piece .turnMark, html.pau
 /* ---------- Lo básico: progreso y dos tarjetas por fila en móvil ---------- */
 #storyProgress { width: min(420px, 90vw); margin: -2.5vh 0 3.5vh; }
 #storyProgress:empty { display: none; }
-.spText { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--cream); font-size: 14px; margin-bottom: 8px; }
+.spText { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 12px; color: var(--cream); font-size: 14px; margin-bottom: 8px; } /* (el texto y «¡Todo completado!», centrados sobre la barra) */
 .spText b { font-weight: 500; }
 .spAll { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--cream); background: rgba(241,241,220,.18); padding: 3px 10px; border-radius: 999px; }
 .spBar { height: 8px; border-radius: 999px; background: rgba(241,241,220,.25); overflow: hidden; }
@@ -1599,6 +1599,7 @@ html.reduceMotion .deckCard .dkArt * { animation: none !important; }
 .spTitle small { font-size: 12.5px; color: var(--ink-soft); font-weight: 400; }
 .spBar { display: block; width: min(240px, 100%); height: 6px; border-radius: 999px; background: rgba(36,36,36,.08); overflow: hidden; margin-top: 3px; }
 .spBar i { display: block; height: 100%; border-radius: inherit; background: var(--sp, var(--grass-dark)); }
+#storyProgress .spBar { width: 100%; height: 8px; margin-top: 0; background: rgba(241,241,220,.25); } /* (Lo básico: la barra, del ancho del bloque, bajo el texto centrado) */
 #modesGrid .spHead .lvlCount { font-size: 12px; padding: 3px 10px; background: var(--sp, var(--grass-dark)); }
 #modesGrid .spHead .lvlHeadActs { margin-left: auto; }
 .mdSection.challenges { --sp: var(--mode-challenge); }

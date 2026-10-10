@@ -103,7 +103,9 @@ src/
   i18n/                    textos (es.js, en.js) y t()
   storage.js               localStorage con esquema versionado
   art.js                   arte bitmap opcional + markup de piezas
-assets/icons/              iconos de la app (icon.*) y el favicon: una pelota de golf blanca sobre verde (favicon.svg y su PNG de 32 px)
+assets/icons/              iconos: todos salen de favicon.svg (la pelota de golf blanca sobre verde) con `npm run icons`
+                           (tools/build-icons.mjs): icon.svg, icon-192/512.png (app instalada, a sangre), favicon-32/48/96.png
+                           y favicon.ico en la raíz (32 y 48)
 assets/art/                arte bitmap opcional (ver más abajo)
 tests/                     node --test: oráculo de reglas, reglas concretas e IA
 tools/                     servidor, oráculo, simulador, prueba de humo, manifiesto de arte
