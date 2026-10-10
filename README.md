@@ -165,7 +165,7 @@ muestra su "Continuar partida" en naranja; se borra al terminar.
 De vez en cuando cruza el tablero una ráfaga de viento (`shape: 'wind'` en `src/fx/particles.js`): una estela que
 se traza, avanza ondulando y acaba en un remolino pequeño; a veces va acompañada de otra más fina.
 
-**Juegos especiales** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para los desafíos de la semana (su cabecera de coronas), el contrarreloj de la semana (su cabecera de medallas), los puzles (piezas que encajan) y El taller (su cabecera de alfombrilla de corte). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
+**Eventos y El taller** (`src/ui/mode-art.js`): el mismo estilo de carta ilustrada para los desafíos de la semana (su cabecera de coronas), el contrarreloj de la semana (su cabecera de medallas), los puzles (piezas que encajan) y El taller (su cabecera de alfombrilla de corte). Cada sección con su cabecera (icono, título, barra de progreso) y cada grupo de dificultad con sus marcas (1, 2 o 3) y su barra; los iconos de los desafíos, con un tono por dificultad. Se animan al pasar por encima.
 
 **Iconos de las barajas** (`DECK_ART` en `screen-modes.js`): cada uno, una carta con su escena (el green; la gota sobre las olas; el molino de madera; el prisma que abre la luz en arcoíris), que se anima al pasar por la tarjeta y queda quieta en reposo.
 
@@ -215,7 +215,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
-- **Volver a la lista:** al salir de una partida a su lista (Juegos especiales, Partidas rápidas o Lo básico), la
+- **Volver a la lista:** al salir de una partida a su lista (Eventos, El taller, Partidas rápidas o Lo básico), la
   pantalla se coloca a la altura de la tarjeta de lo que se jugaba —el desafío, la serie del contrarreloj, tu nivel de El
   taller, la baraja o el nivel de Lo básico— en lugar de arriba del todo (`anchorOfGame` en `screens.js`).
 - **Guardado:** uno por modo; tras cada jugada un aviso breve "Guardado" en la barra de la partida. Salir al menú guarda; el "Continuar partida" naranja de cada modo la retoma;
@@ -227,7 +227,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   nieve, noche, lago, brasas, atardecer; cada modo recuerda el suyo y tiene su color por defecto:
   contrarreloj azul, desafíos rojo, reto diario naranja y el resto verde), avisos de jugada, reducir movimiento, formas en las bolas, texto grande, alto contraste,
   modo zurdo y restablecer. Abrir Ajustes o las reglas en partida la pausa. El nombre y el color se eligen
-  en Partida rápida. El Creador de Niveles se abre con el + de El taller (Juegos especiales).
+  en Partida rápida. El Creador de Niveles se abre con el + de El taller (su pestaña en Modos de juego).
 - **Calidad de vida:** pausa (**P**), reglas y cartas (**H** / "?"), historial agrupado por turnos con filtro
   "solo mis jugadas", tocar otra vez la carta elegida la suelta, "Repetir la última" partida rápida, atrás del
   sistema cierra paneles y vuelve de pantalla, aviso al cerrar la pestaña con una jugada a medias y
@@ -261,9 +261,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   imagen 1080×1350 con todo eso más el resumen en texto y el enlace al reto de hoy (hoja del sistema en el móvil;
   imagen y texto al portapapeles en el ordenador). Los contadores (`daily.played`, `daily.won`, `daily.dist` en
   `records.js`) no caducan como los días guardados (60); quien ya jugaba arranca con lo que se puede sacar de esos días.
-- **Modos de juego:** dos pestañas que se deslizan (también con el dedo en el móvil) y se recuerdan:
+- **Modos de juego:** tres pestañas que se recuerdan —**Partidas rápidas**, **Eventos** (los desafíos y el contrarreloj
+  de la semana, con más aire entre ellos) y **El taller** (tus niveles, 5 por fila: 4 en pantallas medianas y 3 en el
+  móvil)—. Las elige una píldora que se desliza con un pequeño rebote y toma el color de cada una (verde, el rojo de los
+  eventos, el gris del taller); en el móvil, con nombres cortos («Rápidas»). Con el dedo, la pestaña sigue al dedo en
+  cuanto el gesto es horizontal (con resistencia en los extremos) y al soltar pasa a la de al lado desde ahí —si se ha
+  arrastrado bastante o rápido— o vuelve a su sitio con un rebote (`bindModesSwipe`).
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva los colores del fondo de su baraja: el recuadro de la ilustración es un degradado de su color, la tarjeta se tiñe suavemente desde la izquierda y las cifras y el nombre toman su tono (`--dk1`/`--dk2`). Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
@@ -275,7 +280,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, su última partida, "Repetir" y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
-  multijugador local. **Juegos especiales** —  el **contrarreloj de la semana** (`src/ui/rush-week.js`: cada lunes una
+  multijugador local. **Eventos** —  el **contrarreloj de la semana** (`src/ui/rush-week.js`: cada lunes una
   serie fija, la misma para todo el mundo —sus hoyos, sus cazadores y, con `decide` en `ai-driver.js`, lo que hacen—, que
   se repite cuantas veces se quiera; no hay serie libre. Cada semana da una medalla, la mejor: bronce por terminarla,
   plata desde 2800 puntos y oro desde 4000 —`RUSH_MEDALS` en `records.js`, `records.rush.weeks`—. Su sección va detrás de
@@ -311,7 +316,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   (`CH_EPOCH`, 2026-W41); uno nuevo entra con `from` sin cambiar las semanas de antes. Cada desafío ganado da **una
   corona** (una por desafío y semana: `records.crowns`); al estrenarlo, cada jugador recibe una corona por cada desafío que
   ya había superado y por cada semana ganada del antiguo semanal (`legacy`), y un aviso breve se lo cuenta la primera vez
-  que entra en Juegos especiales (solo a quien ya jugaba). Es la primera sección de Juegos especiales (antes que el
+  que entra en Eventos (solo a quien ya jugaba). Es la primera sección de Eventos (antes que el
   contrarreloj). Su cabecera es animada: a la izquierda, la corona (de oro, con una pelota de golf en el centro y bolitas
   de oro en las puntas) que flota con su brillo entre rayos que giran y destellos, y el total, que sube; a la derecha, la
   cuenta atrás hasta los nuevos en tres casillas grandes (días, horas y minutos; el último día, horas, minutos y

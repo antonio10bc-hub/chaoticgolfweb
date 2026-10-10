@@ -588,7 +588,7 @@ it('baraja nueva: se anuncia una vez a quien ya jugaba ("Jugar ahora" lleva a su
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'gambling');
 });
 
-it('modos de juego: dos pestañas (una a la vez) y 8 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
+it('modos de juego: tres pestañas (una a la vez: Partidas rápidas, Eventos y El taller) y 8 barajas con estadísticas (Ultimate, la última y la estrella)', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400);
   const vis = () => app(() => [...document.querySelectorAll('.mdPanel')].filter(p => !p.classList.contains('off')).map(p => p.dataset.panel).join());
@@ -604,12 +604,18 @@ it('modos de juego: dos pestañas (una a la vez) y 8 barajas con estadísticas (
   assert.ok(await page.$('.mdPanel[data-panel="quick"] .ultSep + .deckCard.ultimate'), 'aparte, tras un separador');
   assert.equal(await app(() => document.querySelectorAll('.deckCard.locked').length), 0);
   assert.ok(await page.$('[data-mode="quick:water"]')); // la de agua ya se juega
+  assert.equal(await app(() => [...document.querySelectorAll('[data-mtab]')].map(b => b.dataset.mtab).join()), 'quick,special,workshop');
   await click('[data-mtab="special"]'); await sleep(700);
   assert.equal(await vis(), 'special');
   assert.ok(await page.$('.mdPanel[data-panel="special"] [data-mode="rushNew"]'));
+  assert.ok(await page.$('.mdPanel[data-panel="special"] .crCard'), 'los desafíos de la semana, en Eventos');
+  assert.equal(await page.$('.mdPanel[data-panel="special"] .lvlSection.workshop'), null, 'El taller ya no está en Eventos');
+  await click('[data-mtab="workshop"]'); await sleep(700);
+  assert.equal(await vis(), 'workshop');
+  assert.ok(await page.$('.mdPanel[data-panel="workshop"] .lvlSection.workshop [data-mode="editorNew"]'));
   // se recuerda la pestaña
   await click('#modesBack'); await sleep(300); await click('#modesBtn'); await sleep(400);
-  assert.equal(await vis(), 'special');
+  assert.equal(await vis(), 'workshop');
   // una partida rápida cuenta en su baraja
   await click('[data-mtab="quick"]'); await sleep(600);
   await click('[data-mode="quick:classic"]'); await confirmIfAsked(); await sleep(300);
@@ -776,7 +782,7 @@ it('Lo básico: terminar el turno sin embocar muestra "otra vez"', async () => {
 it('El taller: tus niveles y, en el sitio del siguiente, un + que abre el creador con un nivel nuevo (que va detrás)', async () => {
   const lvl = name => ({ version: 1, name, cols: 5, rows: 6, hole: { x: 2, y: 0 }, ball: { x: 2, y: 4 }, parCells: [], tiles: [], deckCounts: { palo1: 2, palo2: 2 } });
   await fresh({ chaoticgolf_levels: { version: 1, levels: [lvl('Uno'), lvl('Dos')] } });
-  await click('#modesBtn'); await sleep(300); await click('[data-mtab="special"]'); await sleep(500);
+  await click('#modesBtn'); await sleep(300); await click('[data-mtab="workshop"]'); await sleep(500);
   assert.match(await app(() => document.querySelector('.lvlSection.workshop .wsHead').textContent), /El taller/);
   assert.equal(await app(() => document.querySelectorAll('.lvlSection.workshop [data-level]').length), 2);
   assert.ok(await app(() => document.querySelector('.lvlSection.workshop .lvlRow > :last-child').matches('[data-mode="editorNew"]')), 'el +, el último');
@@ -837,7 +843,7 @@ it('creador: la rueda coge una pieza (con su giro) y la suelta en otra casilla (
 it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien lo recibe lo guarda', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(300);
-  await click('[data-mtab="special"]'); await sleep(500);
+  await click('[data-mtab="workshop"]'); await sleep(500);
   await click('.lvlSection.workshop [data-mode="editorNew"]'); await sleep(500);
   const at = (x, y) => page.evaluate((x, y) => { const r = document.querySelector(`#edBoard .cell[data-x="${x}"][data-y="${y}"]`).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, x, y);
   await click('#edTools [data-tool="lake"]');
@@ -876,7 +882,7 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   await app(() => { const s = JSON.parse(localStorage.getItem('chaoticgolf_levels')); s.levels.pop(); localStorage.setItem('chaoticgolf_levels', JSON.stringify(s)); });
   // en Tus niveles se elimina sin diálogo y se puede deshacer
   await click('#modesBtn'); await sleep(300);
-  await click('[data-mtab="special"]'); await sleep(500);
+  await click('[data-mtab="workshop"]'); await sleep(500);
   await click('[data-lvdel="0"]'); await sleep(200);
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 0);
   await click('#toast .toastAct'); await sleep(300);

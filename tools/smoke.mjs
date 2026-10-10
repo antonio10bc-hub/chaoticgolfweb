@@ -145,6 +145,7 @@ try {
   await click('#modesBtn'); await sleep(300); // el creador vive en Modos de juego → Juegos especiales
   await click('[data-mtab="special"]'); await sleep(700);
   await confirmIfAsked(); // (la primera vez, el aviso de los desafíos de la semana)
+  await click('[data-mtab="workshop"]'); await sleep(700); // (el creador vive en El taller)
   await click('.lvlSection.workshop [data-mode="editorNew"]'); await sleep(300); // (el + de El taller: un nivel nuevo)
   await click('#edTools [data-tool="bunker"]');
   await click('#edBoard .cell[data-x="1"][data-y="1"]');

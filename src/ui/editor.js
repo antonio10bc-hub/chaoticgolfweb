@@ -942,7 +942,7 @@ export function bindEditor() {
     $('edDeckBtn').setAttribute('aria-expanded', String(open));
   });
   $('edDeckClose').addEventListener('click', () => { $('edDeckPanel').classList.remove('open'); $('edDeckBtn').setAttribute('aria-expanded', 'false'); $('edDeckBtn').focus(); });
-  $('edMenu').addEventListener('click', () => openModes('special')); // el creador vive en Juegos especiales
+  $('edMenu').addEventListener('click', () => openModes('workshop')); // el creador vive en El taller
   // Mis niveles
   $('edLibBtn').addEventListener('click', openLib);
   $('edLibClose').addEventListener('click', closeLib);

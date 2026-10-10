@@ -249,7 +249,7 @@ export function bindStory() {
     if (b) playLevelCard(b);
   });
   // navegación y reinicio: Lo básico vuelve a su pantalla; tus niveles, a Modos de juego
-  MODE_NAV.story = { back: () => openModes('special'), restart: replayLevel };
+  MODE_NAV.story = { back: () => openModes('workshop'), restart: replayLevel };
   MODE_NAV.puzzle = { back: openStory, restart: replayLevel };
   MODE_NAV.test = { back: () => showScreen('editor'), restart: replayLevel };
 }

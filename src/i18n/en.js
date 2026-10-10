@@ -662,8 +662,8 @@ export default {
   modes: {
     chStat: '{w} wins out of {p} games',
     groups: { warmup: 'Warm-up', mid: 'Intermediate', expert: 'Expert' },
-    tabs: { quick: 'Quick games', special: 'Special games' },
-    title: 'Game modes', sub: 'Pick a deck or a special game',
+    tabs: { quick: 'Quick games', special: 'Events', workshop: 'The workshop' }, tabsShort: { quick: 'Quick', special: 'Events', workshop: 'Workshop' },
+    title: 'Game modes', sub: 'Pick a deck, an event or build your levels',
     quick: { kinds: 'against bots or local multiplayer', sub: 'Choose who you play against, the course size and the difficulty.', setup: 'New game', replace: 'You have a saved quick game. Creating a new one will delete it.', last: 'Last: {cfg}' },
     soloH: 'Solo', vsH: 'Against the bots', challengesH: 'Challenges',
     play: 'Play', again: 'Again', restartRun: 'Start over', holeN: 'Hole {n} of {total}',

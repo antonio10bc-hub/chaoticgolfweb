@@ -341,13 +341,13 @@ setInterval(() => {
 }, 250);
 
 /* =============== pantalla de Modos =============== */
-// Dos pestañas que se deslizan en horizontal (también con el dedo): Partidas rápidas (una tarjeta
-// por baraja) y Juegos especiales (contrarreloj, los desafíos de la semana, puzles y tus niveles).
+// Tres pestañas que se deslizan en horizontal (también con el dedo, que arrastra el contenido): Partidas rápidas (una
+// tarjeta por baraja), Eventos (los desafíos y el contrarreloj de la semana) y El taller (tus niveles y el creador).
 // Solo se ve una a la vez; se recuerda la última.
-const TAB_KEY = 'chaoticgolf_modesTab', TABS = ['quick', 'special'];
+const TAB_KEY = 'chaoticgolf_modesTab', TABS = ['quick', 'special', 'workshop']; // (special: Eventos)
 let modesTab = (() => { try { return TABS.includes(localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : 'quick'; } catch (e) { return 'quick'; } })();
 // pestaña de la partida en curso (para volver a su sitio)
-const tabOfGame = () => app.mode === 'pve' && !app.variant ? 'quick' : 'special';
+const tabOfGame = () => app.mode === 'pve' && !app.variant ? 'quick' : app.mode === 'story' && !app.variant ? 'workshop' : 'special';
 
 // emblema del mazo: tres cartas apiladas con el dorso del color de la baraja
 // icono de cada baraja: una carta con su escena (clásica: el green; agua: la gota sobre las olas; minigolf: el molino
@@ -518,16 +518,16 @@ export function openModes(tab) {
 
   /* ---- juegos especiales ---- */
   // una sola línea con lo importante (récord, hoyo a medias) y el botón a la derecha
-  const specialPanel = crownsSectionHTML(R, csave) + rushSectionHTML(R, rushRun(), rsave) + // (primero los desafíos de la semana)
-    yoursSectionHTML();
+  const specialPanel = crownsSectionHTML(R, csave) + rushSectionHTML(R, rushRun(), rsave); // (primero los desafíos de la semana)
 
   const tabBtn = id => `<button role="tab" id="mdTab-${id}" data-mtab="${id}" aria-controls="mdPanel-${id}" aria-selected="${modesTab === id}" tabindex="${modesTab === id ? 0 : -1}">` +
-    `<svg class="i" aria-hidden="true"><use href="#${id === 'quick' ? 'i-bolt' : 'i-trophy'}"/></svg>${esc(t('modes.tabs.' + id))}</button>`;
+    `<svg class="i" aria-hidden="true"><use href="#${{ quick: 'i-bolt', special: 'i-crown', workshop: 'i-wrench' }[id]}"/></svg><span class="tL">${esc(t('modes.tabs.' + id))}</span><span class="tS">${esc(t('modes.tabsShort.' + id))}</span></button>`; // (tS: el nombre corto, en el móvil)
   $('modesGrid').innerHTML =
     `<div class="mdTabs" role="tablist" aria-label="${esc(t('modes.title'))}"><span class="mdTabInd" aria-hidden="true"></span>${TABS.map(tabBtn).join('')}</div>` +
     `<div class="mdViewport"><div class="mdTrack">` +
     `<section class="mdPanel" id="mdPanel-quick" role="tabpanel" aria-labelledby="mdTab-quick" data-panel="quick">${quickPanel}</section>` +
     `<section class="mdPanel" id="mdPanel-special" role="tabpanel" aria-labelledby="mdTab-special" data-panel="special">${specialPanel}</section>` +
+    `<section class="mdPanel" id="mdPanel-workshop" role="tabpanel" aria-labelledby="mdTab-workshop" data-panel="workshop">${yoursSectionHTML()}</section>` +
     `</div></div>`;
   setModesTab(modesTab, { instant: true });
   showScreen('modes');
@@ -540,8 +540,9 @@ export function openModes(tab) {
 // cambia de pestaña: el indicador se desliza; el contenido sale con un fundido corto hacia un lado
 // y el nuevo entra entero desde el otro. Nunca se ven las dos a la vez
 // (así el cambio de altura entre secciones queda oculto y no hay saltos).
+// (dragX: lo arrastrado con el dedo; la salida sigue desde ahí)
 let tabSeq = 0;
-function setModesTab(tab, { instant = false, focus = false } = {}) {
+function setModesTab(tab, { instant = false, focus = false, dragX = 0 } = {}) {
   const grid = $('modesGrid'), track = grid.querySelector('.mdTrack');
   if (!track || !TABS.includes(tab)) return;
   const prev = modesTab, dir = TABS.indexOf(tab) >= TABS.indexOf(prev) ? 1 : -1;
@@ -558,8 +559,10 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   const show = () => { panels.forEach(p => p.classList.toggle('off', p !== to)); fitUltTogs(); if (tab === 'special' && app.screen === 'modes') maybeCrownsIntro(); };
   if (instant || REDUCED || !from || !to.animate) { show(); return; }
   sfx('select');
-  const out = from.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-20 * dir}px)` }],
-    { duration: 110, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  const out = from.animate([{ opacity: dragX ? Math.max(.3, 1 - Math.abs(dragX) / 500) : 1, transform: `translateX(${dragX}px)` },
+    { opacity: 0, transform: `translateX(${dragX ? dragX - 60 * dir : -20 * dir}px)` }],
+    { duration: dragX ? 140 : 110, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  from.style.transform = '';
   from._anims.push(out);
   out.onfinish = () => {
     if (seq !== tabSeq) return;
@@ -572,22 +575,36 @@ function setModesTab(tab, { instant = false, focus = false } = {}) {
   };
 }
 
-// deslizar con el dedo entre pestañas (solo gestos claramente horizontales)
+// deslizar con el dedo entre pestañas: en cuanto el gesto es claramente horizontal, la pestaña sigue al dedo (con
+// resistencia en los extremos, donde no hay más); al soltar, si se ha arrastrado bastante (o rápido), pasa a la de al lado
+// desde donde estaba; si no, vuelve a su sitio con un rebote suave
 function bindModesSwipe() {
-  let x0 = null, y0 = 0, t0 = 0;
+  let x0 = null, y0 = 0, t0 = 0, lock = null, cur = null, dx = 0;
   const grid = $('modesGrid');
+  const panel = () => grid.querySelector('.mdPanel:not(.off)');
   grid.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1 || !e.target.closest('.mdViewport')) { x0 = null; return; }
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+    if (e.touches.length !== 1 || !e.target.closest('.mdViewport') || e.target.closest('.ultTogs')) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); lock = null; dx = 0; cur = panel();
   }, { passive: true });
-  grid.addEventListener('touchend', e => {
-    if (x0 == null) return;
-    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6 || Date.now() - t0 > 700) return;
-    const i = TABS.indexOf(modesTab) + (dx < 0 ? 1 : -1);
-    if (TABS[i]) setModesTab(TABS[i]);
+  grid.addEventListener('touchmove', e => {
+    if (x0 == null || !cur || lock === 'y') return;
+    const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+    if (!lock) { if (Math.abs(mx) < 10 && Math.abs(my) < 10) return; lock = Math.abs(mx) > Math.abs(my) * 1.3 ? 'x' : 'y'; if (lock === 'y') return; }
+    const i = TABS.indexOf(modesTab), edge = (mx > 0 && i === 0) || (mx < 0 && i === TABS.length - 1);
+    dx = edge ? mx / 4 : mx; // (en los extremos, resistencia)
+    cur.style.transform = `translateX(${dx}px)`; cur.style.opacity = String(Math.max(.4, 1 - Math.abs(dx) / 600));
   }, { passive: true });
+  const end = e => {
+    if (x0 == null || !cur) { x0 = null; return; }
+    const el = cur, vx = Math.abs(dx) / Math.max(1, Date.now() - t0), i = TABS.indexOf(modesTab) + (dx < 0 ? 1 : -1);
+    x0 = null; cur = null;
+    if (lock === 'x' && TABS[i] && (Math.abs(dx) > 70 || (Math.abs(dx) > 30 && vx > .45))) { el.style.opacity = ''; setModesTab(TABS[i], { dragX: dx }); return; }
+    if (dx && el.animate && !REDUCED) el.animate([{ transform: `translateX(${dx}px)`, opacity: el.style.opacity || 1 }, { transform: 'none', opacity: 1 }],
+      { duration: 260, easing: 'cubic-bezier(.3,1.4,.5,1)' }); // (vuelve a su sitio, con un rebote)
+    el.style.transform = ''; el.style.opacity = '';
+  };
+  grid.addEventListener('touchend', end, { passive: true });
+  grid.addEventListener('touchcancel', end, { passive: true });
 }
 
 // "Nueva partida": si hay una partida rápida guardada, se avisa y, al aceptar, se borra
@@ -648,7 +665,7 @@ export function bindModes() {
 async function yoursAction(b) {
   const d = b.dataset;
   if (d.lvedit != null) { openEditor({ idx: +d.lvedit }); return; }
-  if (d.lvdel != null) { deleteWithUndo(+d.lvdel, info => { edLibraryChanged(info); if (app.screen === 'modes') openModes('special'); }); return; }
-  if (d.lvcode != null && await addCodeDialog() != null) openModes('special');
+  if (d.lvdel != null) { deleteWithUndo(+d.lvdel, info => { edLibraryChanged(info); if (app.screen === 'modes') openModes('workshop'); }); return; }
+  if (d.lvcode != null && await addCodeDialog() != null) openModes('workshop');
 }
 export { store as modeStore, RUSH_KEY, tabOfGame };

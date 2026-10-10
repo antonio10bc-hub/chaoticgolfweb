@@ -1105,29 +1105,43 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
   #storyScreen .lvlSaved { top: auto; bottom: 6px; right: 6px; left: 6px; text-align: center; font-size: 8.5px; padding: 0 3px; }
 }
 
-/* ---------- Modos de juego: dos pestañas que se deslizan ---------- */
+/* ---------- Modos de juego: tres pestañas que se deslizan ---------- */
 #modesGrid { --mdGap: 40px; }
 /* sombra de las tarjetas de Modos: corta y suave (una larga se veía a través de la tarjeta de abajo mientras aparecía) */
 :root { --mdShadow: 0 3px 8px rgba(10,25,10,.12), 0 10px 26px rgba(10,25,10,.16); }
-.mdTabs { position: relative; align-self: center; display: grid; grid-template-columns: 1fr 1fr; width: min(460px, 100%); padding: 5px; border-radius: 999px;
-  background: rgba(20,40,20,.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.mdTabs button { position: relative; z-index: 1; --b-bg: transparent; --b-line: transparent; --b-fg: var(--cream); border-radius: 999px;
-  padding: 11px 12px; font-size: 15px; font-weight: 500; gap: 8px; justify-content: center; transition: color .3s; }
-.mdTabs button .i { width: 17px; height: 17px; }
-.mdTabs button[aria-selected="true"] { --b-fg: var(--ink); }
+/* la píldora: se desliza con un pequeño rebote y toma el color de su pestaña (verde, el rojo de los eventos, el gris
+   del taller); el texto de la elegida, crema */
+.mdTabs { --tabC: var(--grass-dark); position: relative; align-self: center; display: grid; grid-template-columns: repeat(3, 1fr); width: min(620px, 100%);
+  padding: 5px; border-radius: 999px; background: rgba(20,40,20,.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+#modesGrid[data-tab="quick"] .mdTabs { --tabC: #3F7A3F; }
+#modesGrid[data-tab="special"] .mdTabs { --tabC: var(--mode-challenge); }
+#modesGrid[data-tab="workshop"] .mdTabs { --tabC: #4E5E6A; }
+.mdTabs button { position: relative; z-index: 1; --b-bg: transparent; --b-line: transparent; --b-fg: var(--cream); border-radius: 999px; min-width: 0;
+  padding: 11px 10px; font-size: 15px; font-weight: 500; gap: 8px; justify-content: center; transition: color .3s; }
+.mdTabs button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mdTabs .tS { display: none; }
+@media (max-width: 460px) { .mdTabs .tL { display: none; } .mdTabs .tS { display: inline; } }
+.mdTabs button .i { width: 17px; height: 17px; flex: 0 0 auto; transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
+.mdTabs button[aria-selected="true"] { --b-fg: var(--cream); font-weight: 600; }
+.mdTabs button[aria-selected="true"] .i { transform: scale(1.15); }
 .mdTabs button:hover { background-color: transparent; }
 .mdTabs button:not([aria-selected="true"]):hover { --b-fg: #fff; }
-.mdTabInd { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 999px;
-  background-image: var(--grain); background-color: var(--cream); box-shadow: 0 4px 14px rgba(10,25,10,.25);
-  transition: transform .42s cubic-bezier(.35,1.15,.45,1); }
+.mdTabInd { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 3); border-radius: 999px;
+  background-color: var(--tabC); background-image: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+  box-shadow: 0 4px 14px rgba(10,25,10,.28), inset 0 1px 0 rgba(255,255,255,.18);
+  transition: transform .45s cubic-bezier(.34,1.32,.5,1), background-color .35s ease; }
 #modesGrid[data-tab="special"] .mdTabInd { transform: translateX(100%); }
+#modesGrid[data-tab="workshop"] .mdTabInd { transform: translateX(200%); }
+.mdViewport { touch-action: pan-y; } /* (el desplazamiento vertical, del navegador; el horizontal, para arrastrar las pestañas) */
+/* Eventos: más aire entre los desafíos y el contrarreloj */
+#mdPanel-special .mdSection.rushWeek { margin-top: 14px; }
 .mdTrack { display: block; }
 .mdPanel { display: flex; flex-direction: column; gap: 20px; }
 /* la pestaña oculta no se quita (display: none obligaba a recalcular sus ~2.000 elementos en cada cambio): se salta su
    dibujo y su tamaño, conservando su estado, y volver a enseñarla es inmediato */
 .mdPanel.off { content-visibility: hidden; contain-intrinsic-size: none; height: 0; overflow: hidden; }
 .mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.85); font-size: 14px; }
-html.reduceMotion .mdTabInd { transition: none; }
+html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: none; }
 
 /* ---------- tarjeta de baraja (lista vertical) ---------- */
 .deckList { display: flex; flex-direction: column; gap: 14px; }
@@ -1153,6 +1167,24 @@ html.reduceMotion .mdTabInd { transition: none; }
 .dkStats dt { order: 2; font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); margin-top: 3px; }
 .dkStats dd { order: 1; margin: 0; font-size: 24px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* bloqueada: apagada, con candado y "Próximamente" */
+/* cada baraja, con los colores de su fondo (como las cabeceras de los eventos): el recuadro de la ilustración, un
+   degradado de su color con luz por arriba; la tarjeta, teñida suavemente desde la izquierda y con el borde de su tono;
+   las cifras, de su color. (Ultimate tiene su propio nácar: ultimate.css) */
+.deckCard[data-deck="classic"] { --dk1: #6BAA60; --dk2: #2F5E31; }
+.deckCard[data-deck="water"] { --dk1: #4FC1D6; --dk2: #175B69; }
+.deckCard[data-deck="minigolf"] { --dk1: #D8A46A; --dk2: #855628; }
+.deckCard[data-deck="train"] { --dk1: #D9806A; --dk2: #6E241D; }
+.deckCard[data-deck="seasons"] { --dk1: #E7A0BC; --dk2: #8A3D62; }
+.deckCard[data-deck="multiverse"] { --dk1: #5B44B0; --dk2: #110A26; }
+.deckCard[data-deck="gambling"] { --dk1: #2C8A5C; --dk2: #0D3F28; }
+.deckCard[data-deck]:not(.ultimate) { border: 1px solid color-mix(in srgb, var(--dk) 26%, transparent);
+  background-image: linear-gradient(100deg, color-mix(in srgb, var(--dk) 15%, transparent) 0%, color-mix(in srgb, var(--dk) 4%, transparent) 45%, transparent 75%), var(--grain); }
+.deckCard[data-deck]:not(.ultimate) .dkPic { background: radial-gradient(120% 100% at 30% 15%, var(--dk1), var(--dk2));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -10px 18px rgba(0,0,0,.18); }
+.deckCard[data-deck]:not(.ultimate) .dkArt { filter: drop-shadow(0 4px 6px rgba(0,0,0,.28)); }
+.deckCard[data-deck]:not(.ultimate) .dkStats { background: color-mix(in srgb, var(--dk) 12%, transparent); }
+.deckCard[data-deck]:not(.ultimate) .dkStats dd { color: color-mix(in srgb, var(--dk) 70%, var(--ink)); }
+.deckCard[data-deck]:not(.ultimate) .dkMain h3 { color: color-mix(in srgb, var(--dk) 45%, var(--ink)); }
 .deckCard.locked { background-color: #E6E6D0; }
 .deckCard.locked .dkArt { filter: grayscale(.55); opacity: .7; }
 .deckCard.locked .dkMain h3, .deckCard.locked .dkStats dd { color: var(--ink-soft); }
@@ -1168,7 +1200,8 @@ html.reduceMotion .mdTabInd { transition: none; }
 .pveDeckTag:empty { display: none; }
 @media (max-width: 640px) {
   #modesGrid { --mdGap: 24px; }
-  .mdTabs button { font-size: 13.5px; padding: 10px 6px; gap: 6px; }
+  .mdTabs button { font-size: 13px; padding: 10px 4px; gap: 5px; }
+  .mdTabs button .i { width: 15px; height: 15px; }
   .deckCard { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "pic main" "stats stats" "btns btns"; column-gap: 14px; padding: 14px 14px 14px 12px; }
   .dkPic { width: 64px; height: 64px; border-radius: 14px; align-self: start; }
   .dkArt { width: 52px; height: 52px; }
@@ -1448,6 +1481,17 @@ button.chCard:hover .chGo:not(.ok) { transform: scale(1.08); }
 #modesGrid .lvlActs .i { width: 13px; height: 13px; }
 #modesGrid .lvlWrap > .lvlTag { position: absolute; z-index: 2; left: 10px; right: auto; top: 64px; font-size: 9.5px; padding: 1px 6px; }
 #modesGrid .noLevels { padding: 12px 16px; font-size: 13px; }
+/* El taller: las tarjetas, más grandes (5 por fila; en pantallas medianas, 4; en el móvil, 3) */
+#modesGrid #mdPanel-workshop .lvlRow { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+#modesGrid #mdPanel-workshop .lvlCard { padding: 8px 8px 10px; gap: 7px; }
+#modesGrid #mdPanel-workshop .lvlPreview { height: 132px; }
+#modesGrid #mdPanel-workshop .lvlName { font-size: 13.5px; }
+#modesGrid #mdPanel-workshop .lvlWrap > .lvlTag { top: 116px; left: 12px; font-size: 10.5px; }
+#modesGrid #mdPanel-workshop .lvlActs button { width: 30px; height: 30px; }
+@media (max-width: 820px) { #modesGrid #mdPanel-workshop .lvlRow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  #modesGrid #mdPanel-workshop .lvlPreview { height: 104px; } #modesGrid #mdPanel-workshop .lvlWrap > .lvlTag { top: 88px; } }
+@media (max-width: 560px) { #modesGrid #mdPanel-workshop .lvlRow { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  #modesGrid #mdPanel-workshop .lvlPreview { height: 84px; } #modesGrid #mdPanel-workshop .lvlWrap > .lvlTag { top: 68px; } }
 @media (max-width: 820px) { .chGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .chGrid > .chCard:last-child:nth-child(3n + 1) { grid-column: auto; } .chGrid > .chCard:last-child:nth-child(2n + 1) { grid-column: 1 / -1; }
   #modesGrid .lvlRow { grid-template-columns: repeat(3, minmax(0, 1fr)); } } /* (9 por grupo: 3 × 3) */
 @media (max-width: 560px) {

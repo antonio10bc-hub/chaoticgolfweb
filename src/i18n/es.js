@@ -665,8 +665,8 @@ export default {
   modes: {
     chStat: '{w} victorias de {p} partidas',
     groups: { warmup: 'Calentamiento', mid: 'Intermedio', expert: 'Experto' },
-    tabs: { quick: 'Partidas rápidas', special: 'Juegos especiales' },
-    title: 'Modos de juego', sub: 'Elige una baraja o un juego especial',
+    tabs: { quick: 'Partidas rápidas', special: 'Eventos', workshop: 'El taller' }, tabsShort: { quick: 'Rápidas', special: 'Eventos', workshop: 'El taller' },
+    title: 'Modos de juego', sub: 'Elige una baraja, un evento o crea tus niveles',
     quick: { kinds: 'contra bots o multijugador local', sub: 'Elige contra quién juegas, el tamaño del campo y la dificultad.', setup: 'Nueva partida', replace: 'Tienes una partida rápida guardada. Si creas una nueva, se borrará.', last: 'Última: {cfg}' },
     soloH: 'En solitario', vsH: 'Contra la máquina', challengesH: 'Desafíos',
     play: 'Jugar', again: 'Otra vez', restartRun: 'Empezar de nuevo', holeN: 'Hoyo {n} de {total}',

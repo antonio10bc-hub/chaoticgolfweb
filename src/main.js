@@ -235,8 +235,8 @@ fxAmbientStart();
     const [{ VITRINA }, { receiveLevel }, { openModes }] = await Promise.all([import('./content/levels/vitrina.js'), import('./ui/my-levels.js'), import('./ui/screen-modes.js')]);
     const added = VITRINA.filter(L => !receiveLevel(L).dup).length;
     try { localStorage.setItem(VITRINA_KEY, '1'); } catch (e) { /* sin storage */ }
-    if (link) { toast(added ? `${added} niveles vitrina guardados en Tus niveles` : 'Los niveles vitrina ya estaban en Tus niveles'); openModes('special'); }
-    else if (app.screen === 'modes') openModes('special'); // (si ya estaba en Modos de juego, que los vea)
+    if (link) { toast(added ? `${added} niveles vitrina guardados en Tus niveles` : 'Los niveles vitrina ya estaban en Tus niveles'); openModes('workshop'); }
+    else if (app.screen === 'modes') openModes('workshop'); // (si ya estaba en Modos de juego, que los vea)
   };
   vitrinaFromLink();
   // enlace con una combinación de Ultimate compartida (…#ultimate=CÓDIGO): la misma partida
