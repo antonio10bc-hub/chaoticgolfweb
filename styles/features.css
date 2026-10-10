@@ -1145,6 +1145,10 @@ html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: n
 
 /* ---------- tarjeta de baraja (lista vertical) ---------- */
 .deckList { display: flex; flex-direction: column; gap: 14px; }
+/* las barajas (sin Ultimate): filas iguales, todas con el alto de la más alta, sea cual sea su estado */
+.dkSame { display: grid; grid-auto-rows: 1fr; gap: inherit; }
+.dkSame > .deckCard { height: 100%; box-sizing: border-box; }
+.dkBtns .bS { display: none; }
 .deckCard { --dk: var(--grass-dark); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pic main stats" "pic btns stats";
   align-items: center; column-gap: 20px; row-gap: 12px; padding: 18px 22px 18px 18px; border-radius: 20px;
   background-image: var(--grain); background-color: var(--cream); box-shadow: var(--mdShadow);
@@ -1229,6 +1233,10 @@ html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: n
   .dkMain p { font-size: 12.5px; }
   .dkStats { grid-template-columns: repeat(3, 1fr); padding: 8px 4px; }
   .dkStats dd { font-size: 20px; }
+  .dkBtns { flex-wrap: nowrap; }
+  .dkBtns .bL { display: none; } .dkBtns .bS { display: inline; } /* (en el móvil, los nombres cortos: una sola fila) */
+  .deckCard { grid-template-rows: auto auto 1fr; }
+  .deckCard .dkBtns { align-self: end; } /* (con el alto común, los botones abajo del todo) */
 }
 
 /* ---------- configuración de la partida rápida: en horizontal (cabe en pantalla en PC) ----------

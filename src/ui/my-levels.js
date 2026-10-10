@@ -7,7 +7,7 @@ import { t } from '../i18n/index.js';
 import { loadLevels, saveLevels, loadProgress, saveProgress } from '../storage.js';
 import { updateRecords } from './records.js';
 import { encodeLevel, decodeLevel, levelLink, levelKey } from '../content/levels/share.js';
-import { openDialog } from './dialog.js';
+import { openDialog, confirmDialog } from './dialog.js';
 import { toast, actionToast } from './hud.js';
 import { sfx } from '../audio/sfx.js';
 import { levelPreviewSVG } from './screen-story.js';
@@ -48,9 +48,12 @@ export function deleteLevelAt(j) {
 }
 
 // elimina con aviso "Deshacer"; after() repinta quien lo haya pedido (también al deshacer)
-export function deleteWithUndo(j, after) {
+// eliminar un nivel: primero se confirma (y, aun así, el aviso deja deshacerlo)
+export async function deleteWithUndo(j, after) {
   const L = loadLevels()[j];
   if (!L) return;
+  const name = L.name || t('story.untitled');
+  if (!await confirmDialog(t('lib.deleteConfirm', { name }), t('lib.delete'), true, t('lib.deleteTitle'))) return;
   const undo = deleteLevelAt(j);
   sfx('card');
   after?.({ deleted: j });

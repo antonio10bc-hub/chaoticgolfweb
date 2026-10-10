@@ -493,10 +493,15 @@ export function openModes(tab) {
     const st = R.decks[dk.id] || { p: 0, w: 0 }, last = !dk.locked && lastPve(dk.id);
     const saved = !dk.locked && qsave && (qsave.pveCfg?.deck || 'classic') === dk.id;
     const pct = (st.p ? Math.round(100 * st.w / st.p) : 0) + '%';
+    // (los botones, con su nombre corto en el móvil: así caben en una fila y todas las tarjetas miden lo mismo; la última
+    // configuración, en el aviso de "Repetir")
+    const two = (long, short) => `<span class="bL">${esc(long)}</span><span class="bS">${esc(short)}</span>`;
     const btns = dk.locked
       ? `<span class="dkSoon"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>${esc(t('decks.soon'))}</span>`
-      : (saved ? cont('resume:pve') : '') + btn('quick:' + dk.id, t('modes.quick.setup'), !saved) + (last ? btn('repeat:' + dk.id, t('menu.repeat'), false) : '') +
-        (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${esc(t('deckIntro.button'))}</button>` : '');
+      : (saved ? `<button class="btn-continue btn-sm" data-mode="resume:pve">${two(t('menu.continue'), t('modes.quick.contShort'))}</button>` : '') +
+        `<button class="${saved ? 'btn-light' : 'btn-primary'} btn-sm" data-mode="quick:${dk.id}">${two(t('modes.quick.setup'), t('modes.quick.setupShort'))}</button>` +
+        (last ? `<button class="btn-light btn-sm" data-mode="repeat:${dk.id}" title="${esc(t('modes.quick.last', { cfg: cfgSub(last) }))}">${two(t('menu.repeat'), t('modes.quick.repeatShort'))}</button>` : '') +
+        (hasDeckIntro(dk.id) ? `<button class="btn-text btn-sm dkCards" data-mode="deckCards:${dk.id}"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>${two(t('deckIntro.button'), t('modes.quick.cardsShort'))}</button>` : '');
     return `<article class="deckCard${dk.locked ? ' locked' : ''}${dk.ultimate ? ' ultimate' : ''}" data-deck="${dk.id}" style="--dk:${dk.color}" aria-disabled="${!!dk.locked}">` +
       `<div class="dkPic">${deckArt(dk)}${dk.locked ? `<span class="dkLock"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>` : ''}</div>` +
       // (Ultimate: las barajas que reúne, a la derecha de su nombre)
@@ -510,11 +515,12 @@ export function openModes(tab) {
       `<dl class="dkStats"><div><dt>${esc(t('decks.played'))}</dt><dd>${st.p}</dd></div><div><dt>${esc(t('decks.won'))}</dt><dd>${st.w}</dd></div>` +
       `<div><dt>${esc(t('decks.pct'))}</dt><dd>${pct}</dd></div></dl>` +
       // (la última partida, en la fila de los botones: la tarjeta no crece)
-      `<div class="dkBtns">${btns}${last ? `<span class="mdStats dkLast">${stat('i-reset', t('modes.quick.last', { cfg: cfgSub(last) }))}</span>` : ''}</div>` +
+      `<div class="dkBtns">${btns}</div>` +
       (dk.ultimate ? '<span class="ultSpark a" aria-hidden="true"></span><span class="ultSpark b" aria-hidden="true"></span><span class="ultSpark c" aria-hidden="true"></span><span class="ultSheen" aria-hidden="true"></span>' : '') +
       `</article>`;
   };
-  const quickPanel = `<div class="deckList">${DECKS.map(deckCard).join('')}</div>`;
+  // (las barajas, en su propia rejilla de filas iguales: todas con el alto de la más alta; Ultimate, aparte)
+  const quickPanel = `<div class="deckList"><div class="dkSame">${DECKS.filter(d => !d.ultimate).map(deckCard).join('')}</div>${DECKS.filter(d => d.ultimate).map(deckCard).join('')}</div>`;
 
   /* ---- juegos especiales ---- */
   // una sola línea con lo importante (récord, hoyo a medias) y el botón a la derecha

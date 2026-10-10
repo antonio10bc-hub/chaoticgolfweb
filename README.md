@@ -268,7 +268,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cuanto el gesto es horizontal (con resistencia en los extremos) y al soltar pasa a la de al lado desde ahí —si se ha
   arrastrado bastante o rápido— o vuelve a su sitio con un rebote (`bindModesSwipe`).
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): el césped a rayas de la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones fundidas, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros de cristal. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): el césped a rayas de la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones fundidas, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros de cristal. Todas miden lo mismo, sea cual sea su estado (sin jugar, con «Repetir» o con partida a medias): van en una rejilla de filas iguales (`.dkSame`) y, en el móvil, los botones llevan su nombre corto («Nueva», «Repetir», «Continuar», «Cartas») para caber en una fila. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
@@ -277,7 +277,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   antes se veía, mientras aparecían, como una mancha a través de la tarjeta de abajo. En las pantallas que se desplazan,
   los botones fijos (sonido, ajustes, tu pelota e idioma abajo; "← Menú" arriba) se esconden al bajar y vuelven al subir
   o al llegar arriba (`bindFabAutoHide` en `screens.js`). En el móvil no hay desenfoques de fondo (`backdrop-filter`, lo
-  que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, su última partida, "Repetir" y sus
+  que más cuesta al desplazarse): los velos y las pestañas usan el mismo color algo más opaco. Cada una con su color, "Repetir la última" (su configuración, en el aviso del botón) y sus
   estadísticas (jugadas, victorias y %: `records.decks`). El contrarreloj, cada desafío (`records.chStats`)
   y el semanal de esa semana muestran las mismas mini estadísticas en una línea. Dentro, primero se elige contra la máquina o
   multijugador local. **Eventos** —  el **contrarreloj de la semana** (`src/ui/rush-week.js`: cada lunes una
@@ -334,7 +334,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   juegan hasta el final.
   La primera vez que entras en un modo, una tarjeta corta te lo explica (`src/ui/mode-intro.js`). También en
   Modos de juego, **El taller** (tus niveles: los del creador y los recibidos; cada uno se edita o se elimina —con
-  "Deshacer", sin diálogo—). Su cabecera es la alfombrilla de corte del creador, sin contador; al final de la lista, en
+  confirmación y, aun así, con "Deshacer"—). Su cabecera es la alfombrilla de corte del creador, sin contador; al final de la lista, en
   el sitio del siguiente nivel, una casilla vacía con un + («Nivel 10» si hay 9) abre el creador con un nivel nuevo, que
   al guardarse va detrás (`openEditor({ fresh: true })`). A la derecha de la cabecera, «Añadir código» (el de un nivel que te hayan pasado). Los puzles de "gana en 1 turno" ya no están
   aquí: son Lo básico.

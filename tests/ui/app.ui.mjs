@@ -880,10 +880,13 @@ it('creador: se pinta arrastrando, se guarda, se comparte con un código y quien
   await page.click('#dialog[open] button[value="copy"]'); await sleep(300);
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 2);
   await app(() => { const s = JSON.parse(localStorage.getItem('chaoticgolf_levels')); s.levels.pop(); localStorage.setItem('chaoticgolf_levels', JSON.stringify(s)); });
-  // en Tus niveles se elimina sin diálogo y se puede deshacer
+  // en El taller se elimina tras confirmarlo, y aun así se puede deshacer
   await click('#modesBtn'); await sleep(300);
   await click('[data-mtab="workshop"]'); await sleep(500);
-  await click('[data-lvdel="0"]'); await sleep(200);
+  await click('[data-lvdel="0"]'); await sleep(300);
+  assert.ok(await page.$('#dialog[open]'), 'primero se confirma');
+  assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1, 'sin confirmar, no se borra');
+  await page.click('#dialog[open] button[value="ok"]'); await sleep(300);
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 0);
   await click('#toast .toastAct'); await sleep(300);
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_levels')).levels.length), 1);
