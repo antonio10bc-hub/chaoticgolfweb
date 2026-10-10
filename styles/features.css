@@ -1167,24 +1167,44 @@ html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: n
 .dkStats dt { order: 2; font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); margin-top: 3px; }
 .dkStats dd { order: 1; margin: 0; font-size: 24px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* bloqueada: apagada, con candado y "Próximamente" */
-/* cada baraja, con los colores de su fondo (como las cabeceras de los eventos): el recuadro de la ilustración, un
-   degradado de su color con luz por arriba; la tarjeta, teñida suavemente desde la izquierda y con el borde de su tono;
-   las cifras, de su color. (Ultimate tiene su propio nácar: ultimate.css) */
-.deckCard[data-deck="classic"] { --dk1: #6BAA60; --dk2: #2F5E31; }
-.deckCard[data-deck="water"] { --dk1: #4FC1D6; --dk2: #175B69; }
-.deckCard[data-deck="minigolf"] { --dk1: #D8A46A; --dk2: #855628; }
-.deckCard[data-deck="train"] { --dk1: #D9806A; --dk2: #6E241D; }
-.deckCard[data-deck="seasons"] { --dk1: #E7A0BC; --dk2: #8A3D62; }
-.deckCard[data-deck="multiverse"] { --dk1: #5B44B0; --dk2: #110A26; }
-.deckCard[data-deck="gambling"] { --dk1: #2C8A5C; --dk2: #0D3F28; }
-.deckCard[data-deck]:not(.ultimate) { border: 1px solid color-mix(in srgb, var(--dk) 26%, transparent);
-  background-image: linear-gradient(100deg, color-mix(in srgb, var(--dk) 15%, transparent) 0%, color-mix(in srgb, var(--dk) 4%, transparent) 45%, transparent 75%), var(--grain); }
-.deckCard[data-deck]:not(.ultimate) .dkPic { background: radial-gradient(120% 100% at 30% 15%, var(--dk1), var(--dk2));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -10px 18px rgba(0,0,0,.18); }
+/* cada baraja, con el fondo de su partida de fondo de la tarjeta: el césped a rayas de la clásica, el agua del lago, el
+   verde del minigolf, el de las vías del tren, las cuatro estaciones, el espacio con estrellas y el tapete del casino.
+   Sobre los fondos oscuros, el texto en crema; sobre los claros (clásica, tren y estaciones), oscuro. La ilustración, en un
+   recuadro de cristal; las cifras, en otro. (Ultimate tiene su propio nácar: ultimate.css) */
+.deckCard[data-deck="classic"] { --scene: repeating-linear-gradient(135deg, #8BBE7A 0 90px, #94C584 90px 180px); --sceneC: #8BBE7A; }
+.deckCard[data-deck="water"] { --scene: radial-gradient(ellipse 55% 60% at 30% 40%, rgba(120,200,210,.35), transparent 75%),
+    repeating-linear-gradient(170deg, rgba(255,255,255,.05) 0 2px, transparent 2px 26px), linear-gradient(170deg, #4E9FAE, #357C8D 70%, #2E6F80); --sceneC: #3F8C9C; }
+.deckCard[data-deck="minigolf"] { --scene: radial-gradient(circle at 20% 30%, rgba(255,255,255,.06) 0 2px, transparent 3px) 0 0 / 26px 26px,
+    radial-gradient(circle at 70% 80%, rgba(0,0,0,.05) 0 2px, transparent 3px) 0 0 / 32px 32px,
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 60px, transparent 60px 120px); --sceneC: #5FA94F; }
+.deckCard[data-deck="train"] { --scene: repeating-linear-gradient(90deg, rgba(120,96,52,.07) 0 3px, transparent 3px 34px),
+    repeating-linear-gradient(135deg, #C9C98E 0 90px, #D1D098 90px 180px); --sceneC: #C9C98E; }
+.deckCard[data-deck="seasons"] { --scene: radial-gradient(ellipse 60% 80% at 50% 40%, rgba(255,255,255,.18), transparent 75%), linear-gradient(105deg, #A6D08E 0%, #DCC77A 34%, #D69B5E 66%, #DCE7EC 100%); --sceneC: #DCC77A; }
+.deckCard[data-deck="multiverse"] { --scene: radial-gradient(1.4px 1.4px at 12% 22%, #fff, transparent), radial-gradient(1px 1px at 33% 70%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 58% 18%, #fff, transparent), radial-gradient(1px 1px at 74% 62%, #fff, transparent), radial-gradient(1.3px 1.3px at 88% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 46% 88%, rgba(255,255,255,.8), transparent), radial-gradient(1.2px 1.2px at 95% 85%, rgba(255,255,255,.8), transparent),
+    radial-gradient(ellipse 60% 70% at 80% 20%, rgba(120,90,220,.35), transparent 70%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.028) 0 90px, transparent 90px 180px); --sceneC: #1B1545; }
+.deckCard[data-deck="gambling"] { --scene: repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 44px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 44px),
+    radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255,255,255,.08), transparent 70%); --sceneC: #145C3E; }
+.deckCard[data-deck]:not(.ultimate) { background-color: var(--sceneC); background-image: var(--grain), var(--scene); border: 1px solid rgba(255,255,255,.22); }
+.deckCard[data-deck]:not(.ultimate) .dkPic { background: rgba(255,255,255,.18); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 12px rgba(0,0,0,.12);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 .deckCard[data-deck]:not(.ultimate) .dkArt { filter: drop-shadow(0 4px 6px rgba(0,0,0,.28)); }
-.deckCard[data-deck]:not(.ultimate) .dkStats { background: color-mix(in srgb, var(--dk) 12%, transparent); }
-.deckCard[data-deck]:not(.ultimate) .dkStats dd { color: color-mix(in srgb, var(--dk) 70%, var(--ink)); }
-.deckCard[data-deck]:not(.ultimate) .dkMain h3 { color: color-mix(in srgb, var(--dk) 45%, var(--ink)); }
+.deckCard[data-deck]:not(.ultimate) .dkStats { background: rgba(255,255,255,.4); }
+.deckCard[data-deck]:not(.ultimate) .dkStats div + div { border-left-color: rgba(36,36,36,.14); }
+/* fondos oscuros: el texto, en crema */
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain h3, .dkStats dd) { color: #FFF7E6; }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain p, .dkStats dt, .dkCards) { color: rgba(255,247,230,.82); }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkCards { text-decoration-color: rgba(255,247,230,.4); }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats { background: rgba(0,0,0,.2); }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats div + div { border-left-color: rgba(255,255,255,.18); }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary { --b-bg: #FFF7E6; --b-fg: var(--ink); --b-line: #FFF7E6; } /* (sobre fondo oscuro, el botón en crema) */
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary:hover { background-color: #fff; }
+.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain h3, .dkMain p) { text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+/* fondos claros: oscuro, un poco más marcado */
+.deckCard:is([data-deck="classic"], [data-deck="train"], [data-deck="seasons"]) .dkMain p { color: rgba(36,36,36,.75); }
 .deckCard.locked { background-color: #E6E6D0; }
 .deckCard.locked .dkArt { filter: grayscale(.55); opacity: .7; }
 .deckCard.locked .dkMain h3, .deckCard.locked .dkStats dd { color: var(--ink-soft); }

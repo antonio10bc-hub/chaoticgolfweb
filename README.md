@@ -268,7 +268,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cuanto el gesto es horizontal (con resistencia en los extremos) y al soltar pasa a la de al lado desde ahí —si se ha
   arrastrado bastante o rápido— o vuelve a su sitio con un rebote (`bindModesSwipe`).
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva los colores del fondo de su baraja: el recuadro de la ilustración es un degradado de su color, la tarjeta se tiñe suavemente desde la izquierda y las cifras y el nombre toman su tono (`--dk1`/`--dk2`). Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): el césped a rayas de la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones fundidas, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros de cristal. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: noche
   iridiscente, el prisma con destellos, el nombre en arcoíris, las barajas que reúne ("Incluye") y un brillo que la cruza
   al pasar por encima. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
