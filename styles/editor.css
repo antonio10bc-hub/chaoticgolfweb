@@ -68,14 +68,18 @@ body[data-screen="editor"] #sndPanel { top: 60px; bottom: auto; left: auto; righ
 button.edFold { --b-bg: transparent; --b-line: transparent; --b-fg: inherit; flex: 1; justify-content: flex-start; gap: 6px; padding: 0; margin: 0;
   font: inherit; color: inherit; border-radius: 6px; }
 button.edFold:hover { background-color: transparent; color: var(--ink); }
-.edFold .i { width: 12px; height: 12px; margin-left: auto; opacity: .55; transform: rotate(90deg); transition: transform .2s var(--ease-out); }
-.edGroup.folded .edFold .i { transform: none; }
+.edFold .i { width: 15px; height: 15px; margin-left: auto; opacity: .6; transition: transform .2s var(--ease-out); } /* (el chevron: abajo, abierto; a la derecha, plegado) */
+button.edFold:hover .i { opacity: 1; }
+.edGroup.folded .edFold .i { transform: rotate(-90deg); }
 .edGroup.folded { padding-bottom: 5px; }
 .edGroup.folded h3 { margin-bottom: 0 !important; }
 .edGroup.folded .edToolRow { display: none; }
 /* llevando algo con la rueda: la mano que agarra y el fantasma, más visible */
 #edBoard.edCarrying, #edBoard.edCarrying .cell { cursor: grabbing; }
 #edBoard.edCarrying .edGhost { opacity: .85; }
+/* lo que se lleva, en su sitio: medio transparente y con un borde discontinuo, hasta que se suelte */
+#edBoard .cell.edPicked { outline: 2px dashed rgba(241,241,220,.85); outline-offset: -3px; }
+#edBoard .cell.edPicked > :not(.edGhost) { opacity: .35; }
 .edTool.edClear { --b-fg: var(--accent-deep); }
 .edTool.edClear .tiPic .i { width: 22px; height: 22px; }
 .edTool.edClear .tiName { font-size: 9.6px; letter-spacing: -.01em; text-overflow: clip; }

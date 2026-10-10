@@ -817,6 +817,8 @@ it('creador: la rueda coge una pieza (con su giro) y la suelta en otra casilla (
   await click('#edTools [data-tool="launcher"]');
   const [a, b] = await at(1, 1); await page.mouse.click(a, b); await sleep(60); await page.mouse.click(a, b); await sleep(60); // pone y gira
   await page.mouse.click(a, b, { button: 'middle' }); await sleep(120);
+  assert.ok(await app(() => document.querySelector('#edBoard .cell[data-x="1"][data-y="1"]').matches('.edPicked') &&
+    !!document.querySelector('#edBoard .cell[data-x="1"][data-y="1"] .tile-launcher')), 'mientras se lleva, sigue en su sitio (medio transparente)');
   const [c, d] = await at(3, 4); await page.mouse.click(c, d, { button: 'middle' }); await sleep(120);
   assert.deepEqual((await lv()).tiles, [{ type: 'launcher', x: 3, y: 4, rot: 1 }]);
   await page.keyboard.down('Control'); await page.keyboard.press('KeyZ'); await page.keyboard.up('Control'); await sleep(120);

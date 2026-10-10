@@ -479,7 +479,7 @@ function renderTools() {
   const key = tool => Object.keys(SHORTCUT).find(k => SHORTCUT[k] === tool);
   $('edTools').innerHTML = GROUPS.map(([g, tools]) => { const shut = folded.has(g) && !tools.includes(ED.tool); // (el de la herramienta activa, siempre abierto)
     return `<div class="edGroup g-${g}${shut ? ' folded' : ''}" style="--gc:${groupColor(g)}">` +
-    `<h3><button type="button" class="edFold" data-fold="${g}" aria-expanded="${!shut}">${esc(t('ed.groups.' + g))}<svg class="i" aria-hidden="true"><use href="#i-arrow-r"/></svg></button></h3><div class="edToolRow">` +
+    `<h3><button type="button" class="edFold" data-fold="${g}" aria-expanded="${!shut}">${esc(t('ed.groups.' + g))}<svg class="i" aria-hidden="true"><use href="#i-chevron"/></svg></button></h3><div class="edToolRow">` +
     tools.map(tool => { const on = ED.tool === tool, k = key(tool);
       return `<button class="edTool${on ? ' on' : ''}${tool === 'portal' ? ' pair' + ED.pair : ''}" data-tool="${tool}" aria-pressed="${on}" title="${esc(toolName(tool) + (k ? ` (${k.toUpperCase()})` : ''))}">` +
         `<span class="tiPic">${toolPic(tool)}</span><span class="tiName">${esc(toolName(tool))}</span></button>`; }).join('') +
@@ -557,6 +557,7 @@ export function edRender() {
     html += `<div class="${cls}" role="gridcell" data-x="${x}" data-y="${y}" aria-label="${esc(aria.join(', '))}" style="--row:${y};--col:${x}${tile && (tile.type === 'river' || tile.type === 'lake') ? ';--wd:' + waterDelay(tile.type) : ''}${bg ? `;background-image:url(${bg});background-size:cover` : ''}">${inner}</div>`;
   }
   board.innerHTML = html;
+  if (ED.carry) board.children[ED.carry.y * L.cols + ED.carry.x]?.classList.add('edPicked'); // (lo que se lleva con la rueda, en su sitio)
   if (L.season) board.dataset.season = L.season.now; else delete board.dataset.season; // (el césped de la estación)
   if (L.rails) board.insertAdjacentHTML('beforeend', editorTrainSVG(L));
   $('edRulerX').style.gridTemplateColumns = `repeat(${L.cols}, var(--cell-w))`;
@@ -686,53 +687,63 @@ function changed({ tools = false, deck = false } = {}) {
 
 /* ---------- coger y soltar con la rueda del ratón (botón central) ---------- */
 // La rueda coge lo que hay en la casilla (la pelota, el hoyo, un obstáculo, la bola de nieve, una pieza —con su giro, su
-// pareja o su número—, una moneda, la dorada o el PAR): pasa a ser la herramienta y sale del tablero (la pelota y el hoyo
-// se quedan hasta soltarlos). Otra vez la rueda (o el clic) lo suelta donde se pulse, con las mismas reglas que al ponerlo:
-// si ahí no vale, se sigue llevando. Esc, el clic derecho o tocar cualquier otra cosa lo devuelven a su sitio. Coger y
-// soltar es un solo paso de deshacer
+// pareja o su número—, una moneda, la dorada o el PAR): pasa a ser la herramienta y se queda en su sitio, medio
+// transparente, mientras se decide adónde va. Otra vez la rueda (o el clic) lo lleva donde se pulse, con las mismas reglas
+// que al ponerlo: si ahí no vale, se sigue llevando. Esc, el clic derecho, soltarlo en su sitio o tocar cualquier otra cosa
+// lo dejan donde estaba. Coger y soltar es un solo paso de deshacer
 function pickAt(x, y) {
-  const L = ED.level, tl = tileAt(x, y), di = decoyAt(x, y), p = parAt(x, y), ci = coinAt(x, y);
+  const L = ED.level, tl = tileAt(x, y), p = parAt(x, y);
   let tool = null;
-  pushUndo();
   if (same(L.ball, x, y)) tool = 'ball';
   else if (same(L.hole, x, y)) tool = 'hole';
-  else if (di >= 0) { tool = 'decoy'; L.extraBalls.splice(di, 1); }
-  else if (snowAt(x, y)) { tool = 'snowball'; delete L.season.snow; }
+  else if (decoyAt(x, y) >= 0) tool = 'decoy';
+  else if (snowAt(x, y)) tool = 'snowball';
   else if (tl) {
     tool = tl.type;
     if (TILES[tool].rotates) ED.rots[tool] = tl.rot || 0;
     if (tool === 'portal') ED.pair = tl.pair || 1;
     if (tool === 'dice') ED.diceN = tl.t || 1;
-    L.tiles = L.tiles.filter(q => q !== tl);
-  } else if (ci >= 0) { tool = 'coin'; L.gamble.coins.splice(ci, 1); }
-  else if (goldAt(x, y)) { tool = 'gold'; L.gamble.gold = null; }
-  else if (p) { tool = 'par'; ED.parN = p.n; L.parCells = L.parCells.filter(q => q !== p); }
-  if (!tool) { ED.undo.pop(); return; }
-  ED.carry = { tool };
+  } else if (coinAt(x, y) >= 0) tool = 'coin';
+  else if (goldAt(x, y)) tool = 'gold';
+  else if (p) { tool = 'par'; ED.parN = p.n; }
+  if (!tool) return;
+  ED.carry = { tool, x, y };
   ED.tool = tool;
   $('edBoard').classList.add('edCarrying');
   sfx('select');
   edRender(); renderTools(); showGhost(x, y);
 }
+// quita del tablero lo que se lleva (en su casilla de origen), para ponerlo en la nueva
+function liftCarried() {
+  const L = ED.level, { tool, x, y } = ED.carry;
+  if (tool === 'decoy') L.extraBalls.splice(decoyAt(x, y), 1);
+  else if (tool === 'snowball') delete L.season.snow;
+  else if (tool === 'coin') L.gamble.coins.splice(coinAt(x, y), 1);
+  else if (tool === 'gold') L.gamble.gold = null;
+  else if (tool === 'par') L.parCells = L.parCells.filter(q => !same(q, x, y));
+  else { const tl = tileAt(x, y); L.tiles = L.tiles.filter(q => q !== tl); }
+}
 function dropAt(x, y) {
-  const tool = ED.carry.tool, mode = tool === 'ball' || tool === 'hole' ? 'move' : 'paint';
-  const same0 = mode === 'move' && same(ED.level[tool], x, y);
-  if (!same0 && !applyAt(x, y, mode)) return; // (ahí no vale: lo sigues llevando; bad() dice por qué)
-  if (same0) ED.undo.pop(); // (la pelota o el hoyo, soltados donde estaban: nada que deshacer)
+  const { tool } = ED.carry;
+  if (x === ED.carry.x && y === ED.carry.y) { cancelCarry(); return; } // (en su sitio: se queda como estaba)
+  const before = JSON.stringify(ED.level);
+  pushUndo();
+  if (tool !== 'ball' && tool !== 'hole') liftCarried();
+  if (!applyAt(x, y, tool === 'ball' || tool === 'hole' ? 'move' : 'paint')) { // (ahí no vale: lo sigues llevando; bad() dice por qué)
+    ED.undo.pop(); ED.level = normalize(JSON.parse(before)); edRender(); return;
+  }
   endCarry();
   const tl = tileAt(x, y);
   sfx(tl ? (TILES[tl.type].placeSound || 'pop') : 'card');
   changed({ tools: true }); paintStatus();
 }
 function endCarry() { ED.carry = null; $('edBoard').classList.remove('edCarrying'); }
-// lo que se llevaba, de vuelta a su sitio (deshace el coger)
+// lo que se llevaba se queda donde estaba
 function cancelCarry() {
   if (!ED.carry) return;
   endCarry();
-  const prev = ED.undo.pop();
-  if (prev) ED.level = normalize(JSON.parse(prev));
   sfx('card');
-  edRender(); renderTools(); persist();
+  edRender(); renderTools();
 }
 
 /* ---------- guardar, Mis niveles, probar ---------- */
