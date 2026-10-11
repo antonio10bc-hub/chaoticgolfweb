@@ -2082,3 +2082,18 @@ button.lvlNew small { font-size: 11.5px; font-weight: 600; text-align: center; }
 button.lvlNew:hover { background-color: transparent; color: var(--ink); }
 button.lvlNew:hover .lvlNewBox { background: rgba(78,94,106,.14); border-color: #4E5E6A; transform: scale(1.03); }
 @media (max-width: 560px) { .wsHead { padding: 13px 16px 11px 20px; } .wsArt { width: 44px; height: 44px; } #modesGrid .wsHead h3 { font-size: 19px; } }
+
+/* ---------- menú de depuración del fondo (bg-debug.js: …/#fondo o Alt+Mayús+B) ---------- */
+#bgDebug { position: fixed; z-index: 400; right: 16px; bottom: 64px; width: min(300px, calc(100vw - 32px)); padding: 12px 14px 12px;
+  border-radius: 16px; background-image: var(--grain); background-color: var(--cream); color: var(--ink); box-shadow: var(--mdShadow);
+  display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+#bgDebug header { display: flex; align-items: baseline; gap: 6px; }
+#bgDebug header b { font-size: 15px; font-weight: 600; }
+#bgDebug header small { color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+#bgDebug header button { margin-left: auto; padding: 0; width: 26px; height: 26px; border-radius: 50%; --b-line: var(--cream-line); font-size: 12px; }
+#bgDebug label { display: grid; grid-template-columns: 70px minmax(0, 1fr) 62px; align-items: center; gap: 8px; }
+#bgDebug label span { font-weight: 500; }
+#bgDebug input[type="range"] { width: 100%; accent-color: var(--grass-dark); }
+#bgDebug input[type="color"] { width: 100%; height: 28px; padding: 0; border: 1px solid var(--cream-line); border-radius: 8px; background: none; cursor: pointer; }
+#bgDebug code { font-size: 11.5px; color: var(--ink-soft); text-align: right; white-space: nowrap; }
+#bgDebug footer { display: flex; align-items: center; gap: 8px; }

@@ -220,6 +220,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   contrasta 6:1 y no se confunde con ninguna tarjeta) con una trama sutil de pelotas de golf que se
   desliza en diagonal sin parar (`#scene::before`, una capa que se mueve con `transform`: no repinta la pantalla; quieta
   con movimiento reducido). La ilustración aérea desenfocada de antes (`#menuScene`, `bakeScene`) se queda escondida.
+  **Menú de depuración del fondo** (`src/ui/bg-debug.js`): con `…/#fondo` o Alt+Mayús+B, un panel pequeño con un selector
+  de color, el tamaño de las pelotas (radio, 4-30 px) y la velocidad (0-40 px/s; 0, quieta). Se ve en directo, se recuerda en
+  ese navegador y «Copiar valores» los deja en el portapapeles para fijarlos.
 - **Dirección de arte de Modos de juego:** la misma que el menú principal: colores planos, sin degradados, brillos,
   halos, cristal ni sombras en el texto; las texturas, rayas diagonales a dos tonos como el césped segado (cabeceras de
   los eventos, fondos de las barajas, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la
