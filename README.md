@@ -216,8 +216,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
 - **Fondo de los menús** (menú, Lo básico, Partida rápida y Modos): un color liso (`--menu-bg`, verde bosque `#3F5A3A`, elegido con
-  el menú de depuración) con una trama sutil de pelotas de golf (13 px de radio, planas: la bola, su media luna en sombra,
-  los hoyuelos en trama hexagonal, un brillo y su sombra en el suelo) que se desliza en diagonal sin parar (18 px/s) (`#scene::before`, una capa que se mueve con `transform`: no repinta la pantalla; quieta
+  el menú de depuración) con una trama sutil de pelotas de golf (25 px de radio, planas: la bola, su media luna en sombra,
+  los hoyuelos en trama hexagonal y un brillo; sin sombra) que se desliza en diagonal sin parar (18 px/s) (`#scene::before`, una capa que se mueve con `transform`: no repinta la pantalla; quieta
   con movimiento reducido). La ilustración aérea desenfocada de antes (`#menuScene`, `bakeScene`) se queda escondida.
   **Menú de depuración del fondo** (`src/ui/bg-debug.js`): con `…/#fondo` o Alt+Mayús+B, un panel pequeño con un selector
   de color, el tamaño de las pelotas (radio, 4-30 px) y la velocidad (0-40 px/s; 0, quieta). Se ve en directo, se recuerda en

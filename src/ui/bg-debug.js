@@ -5,20 +5,19 @@
 import { toast } from './hud.js';
 
 const KEY = 'chaoticgolf_bgDebug', TILE = 132;
-export const BG_DEFAULT = { color: '#3F5A3A', size: 13, speed: 18 }; // (size: radio de la pelota; speed: px/s: 7,3 s por vuelta)
+export const BG_DEFAULT = { color: '#3F5A3A', size: 25, speed: 18 }; // (size: radio de la pelota; speed: px/s: 7,3 s por vuelta)
 const load = () => { try { return { ...BG_DEFAULT, ...JSON.parse(localStorage.getItem(KEY)) }; } catch (e) { return { ...BG_DEFAULT }; } };
 const save = v => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* sin storage */ } };
 
 // la baldosa de la trama: dos pelotas de golf al tresbolillo, del radio pedido, planas como el menú: la bola, su media
-// luna en sombra, los hoyuelos en una trama hexagonal (recortados a la bola), un brillo pequeño y su sombra en el suelo
+// luna en sombra, los hoyuelos en una trama hexagonal (recortados a la bola) y un brillo pequeño
 export function ballTile(r) {
   const f = n => +n.toFixed(2), d = r * .34, dr = r * .085, dots = [];
   for (let row = -4; row <= 4; row++) for (let col = -4; col <= 4; col++) {
     const x = (col + (row & 1 ? .5 : 0)) * d, y = row * d * .866;
     if (Math.hypot(x, y) < r * .92) dots.push(`<circle cx='${f(x)}' cy='${f(y)}' r='${f(dr * (1 - Math.hypot(x, y) / r * .35))}'/>`);
   }
-  const ball = `<g id='b'><ellipse cx='${f(r * .18)}' cy='${f(r * 1.02)}' rx='${f(r * .8)}' ry='${f(r * .2)}' fill='%23000' fill-opacity='.1'/>` +
-    `<circle r='${r}' fill='%23F1F1DC' fill-opacity='.1'/>` +
+  const ball = `<g id='b'><circle r='${r}' fill='%23F1F1DC' fill-opacity='.1'/>` +
     `<g clip-path='url(%23c)'><path fill-rule='evenodd' fill='%23000' fill-opacity='.08' d='M${-r} 0a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z` +
     `M${f(-r * 1.12)} ${f(-r * .16)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z'/>` +
     `<g fill='%23000' fill-opacity='.13'>${dots.join('')}</g></g>` +
