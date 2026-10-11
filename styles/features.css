@@ -855,7 +855,8 @@ button:where(:not(#endTurnBtn)) { box-shadow: none !important; } /* (sin especif
 
 /* ---------- color de cada modo: partida rápida verde, contrarreloj azul, desafíos rojo,
    reto diario naranja (el campo de la partida usa la misma paleta, ver themes.css) ---------- */
-:root { --mode-rush: var(--navy); --mode-challenge: #B5473F; --mode-daily: var(--accent); }
+/* (rápidas: el verde del césped un punto más oscuro, para que el crema encima llegue a AA; el taller: gris pizarra) */
+:root { --mode-rush: var(--navy); --mode-challenge: #B5473F; --mode-daily: var(--accent); --mode-quick: #3A7139; --mode-workshop: #4E5E6A; }
 .modeCard.quick .mdIco { background: var(--grass-dark); color: var(--cream); }
 .mdSection.challenges .mdIco, .mdSection.challenges .lvlCount, .chDone { background: var(--mode-challenge); color: var(--cream); }
 .chCard.done { background: rgba(181,71,63,.08); border-color: rgba(181,71,63,.3); }
@@ -1112,9 +1113,9 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
    del taller); el texto de la elegida, crema */
 .mdTabs { --tabC: var(--grass-dark); position: relative; align-self: center; display: grid; grid-template-columns: repeat(3, 1fr); width: min(620px, 100%);
   padding: 5px; border-radius: 999px; background: rgba(20,12,60,.28); }
-#modesGrid[data-tab="quick"] .mdTabs { --tabC: #3F7A3F; }
+#modesGrid[data-tab="quick"] .mdTabs { --tabC: var(--mode-quick); }
 #modesGrid[data-tab="special"] .mdTabs { --tabC: var(--mode-challenge); }
-#modesGrid[data-tab="workshop"] .mdTabs { --tabC: #4E5E6A; }
+#modesGrid[data-tab="workshop"] .mdTabs { --tabC: var(--mode-workshop); }
 .mdTabs button { position: relative; z-index: 1; --b-bg: transparent; --b-line: transparent; --b-fg: var(--cream); border-radius: 999px; min-width: 0;
   padding: 11px 10px; font-size: 15px; font-weight: 500; gap: 8px; justify-content: center; transition: color .3s; }
 .mdTabs button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1137,7 +1138,7 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 /* la pestaña oculta no se quita (display: none obligaba a recalcular sus ~2.000 elementos en cada cambio): se salta su
    dibujo y su tamaño, conservando su estado, y volver a enseñarla es inmediato */
 .mdPanel.off { content-visibility: hidden; contain-intrinsic-size: none; height: 0; overflow: hidden; }
-.mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.85); font-size: 14px; }
+.mdLead { margin: 0 0 -6px; text-align: center; color: rgba(241,241,220,.92); font-size: 14px; } /* (al 92 %: AA también sobre una curva maestra del fondo) */
 html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: none; }
 
 /* ---------- tarjeta de baraja (lista vertical) ---------- */
@@ -1168,36 +1169,39 @@ html.reduceMotion .mdTabInd, html.reduceMotion .mdTabs button .i { transition: n
 .dkStats dt { order: 2; font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); margin-top: 3px; }
 .dkStats dd { order: 1; margin: 0; font-size: 24px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* bloqueada: apagada, con candado y "Próximamente" */
-/* cada baraja, con el fondo de su partida de fondo de la tarjeta, en plano (como el menú): su color y rayas diagonales a
-   dos tonos, como el césped segado; el agua, el minigolf, las vías, las cuatro estaciones, el espacio con estrellas y el
-   tapete del casino. Sobre los fondos oscuros, el texto en crema; sobre los claros (clásica, tren y estaciones), oscuro.
-   La ilustración y las cifras, en recuadros lisos. (Ultimate tiene su propia tarjeta: ultimate.css) */
-.deckCard[data-deck="classic"] { --scene: repeating-linear-gradient(135deg, #8BBE7A 0 64px, #94C584 64px 128px); --sceneC: #8BBE7A; }
-.deckCard[data-deck="water"] { --scene: repeating-linear-gradient(135deg, #3F8C9C 0 64px, #4796A6 64px 128px); --sceneC: #3F8C9C; }
-.deckCard[data-deck="minigolf"] { --scene: repeating-linear-gradient(135deg, #5FA94F 0 64px, #67B157 64px 128px); --sceneC: #5FA94F; }
-.deckCard[data-deck="train"] { --scene: repeating-linear-gradient(90deg, rgba(120,96,52,.08) 0 3px, transparent 3px 34px),
-    repeating-linear-gradient(135deg, #C9C98E 0 64px, #D1D098 64px 128px); --sceneC: #C9C98E; }
-.deckCard[data-deck="seasons"] { --scene: repeating-linear-gradient(135deg, #CDE5BE 0 64px, #EDE2B2 64px 128px, #EBCDAB 128px 192px, #E9F0F3 192px 256px); --sceneC: #EDE2B2; }
-.deckCard[data-deck="multiverse"] { --scene: radial-gradient(1.6px 1.6px at 12% 22%, #fff 98%, transparent), radial-gradient(1.2px 1.2px at 33% 70%, #fff 98%, transparent),
+/* superficies de Modos (las mismas en las tres pestañas): la tarjeta crema, el recuadro interior blanco al 42 % con su
+   filete, y el texto secundario un punto más oscuro que --ink-soft para llegar a AA sobre el crema (4,9:1) */
+#modesGrid { --surface: var(--cream); --surface-2: rgba(255,255,255,.42); --surface-line: var(--cream-line);
+  --surface-ink: var(--ink); --surface-ink-2: #5F6B58; }
+/* cada baraja: tarjeta crema, como las de Eventos, y su color solo de acento: el recuadro de la ilustración lleva el
+   césped de su partida en pequeño (su color y sus rayas a dos tonos: el agua, el minigolf, las vías, las estaciones, el
+   espacio con estrellas, el tapete del casino). Las cifras, en un recuadro neutro igual para todas; un solo botón
+   principal por tarjeta, del color de la pestaña (--deck-cta), los demás en contorno; "Continuar", naranja con texto
+   oscuro (el blanco sobre naranja no llega a AA). (Ultimate tiene su propia tarjeta: ultimate.css) */
+.deckCard[data-deck="classic"] { --deck-scene: repeating-linear-gradient(135deg, #8BBE7A 0 64px, #94C584 64px 128px); --deck-base: #8BBE7A; }
+.deckCard[data-deck="water"] { --deck-scene: repeating-linear-gradient(135deg, #3F8C9C 0 64px, #4796A6 64px 128px); --deck-base: #3F8C9C; }
+.deckCard[data-deck="minigolf"] { --deck-scene: repeating-linear-gradient(135deg, #5FA94F 0 64px, #67B157 64px 128px); --deck-base: #5FA94F; }
+.deckCard[data-deck="train"] { --deck-scene: repeating-linear-gradient(90deg, rgba(120,96,52,.08) 0 3px, transparent 3px 34px),
+    repeating-linear-gradient(135deg, #C9C98E 0 64px, #D1D098 64px 128px); --deck-base: #C9C98E; }
+.deckCard[data-deck="seasons"] { --deck-scene: repeating-linear-gradient(135deg, #CDE5BE 0 64px, #EDE2B2 64px 128px, #EBCDAB 128px 192px, #E9F0F3 192px 256px); --deck-base: #EDE2B2; }
+.deckCard[data-deck="multiverse"] { --deck-scene: radial-gradient(1.6px 1.6px at 12% 22%, #fff 98%, transparent), radial-gradient(1.2px 1.2px at 33% 70%, #fff 98%, transparent),
     radial-gradient(1.8px 1.8px at 58% 18%, #fff 98%, transparent), radial-gradient(1.2px 1.2px at 74% 62%, #fff 98%, transparent), radial-gradient(1.5px 1.5px at 88% 30%, #fff 98%, transparent),
     radial-gradient(1.2px 1.2px at 46% 88%, #fff 98%, transparent), radial-gradient(1.4px 1.4px at 95% 85%, #fff 98%, transparent),
-    repeating-linear-gradient(135deg, #1B1545 0 64px, #211A52 64px 128px); --sceneC: #1B1545; }
-.deckCard[data-deck="gambling"] { --scene: repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px); --sceneC: #145C3E; }
-.deckCard[data-deck]:not(.ultimate) { background-color: var(--sceneC); background-image: var(--grain), var(--scene); border: none; }
-.deckCard[data-deck]:not(.ultimate) .dkPic { background: rgba(255,255,255,.2); }
-.deckCard[data-deck]:not(.ultimate) .dkStats { background: rgba(255,255,255,.45); }
-.deckCard[data-deck]:not(.ultimate) .dkStats div + div { border-left-color: rgba(36,36,36,.14); }
-/* fondos oscuros: el texto, en crema */
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain h3, .dkStats dd) { color: #FFF7E6; }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) :is(.dkMain p, .dkStats dt, .dkCards) { color: rgba(255,247,230,.82); }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkCards { text-decoration-color: rgba(255,247,230,.4); }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats { background: rgba(0,0,0,.18); }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]):not(.ultimate) .dkStats div + div { border-left-color: rgba(255,255,255,.18); }
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary { --b-bg: #FFF7E6; --b-fg: var(--ink); --b-line: #FFF7E6; } /* (sobre fondo oscuro, el botón en crema) */
-.deckCard:is([data-deck="water"], [data-deck="minigolf"], [data-deck="multiverse"], [data-deck="gambling"]) .dkBtns .btn-primary:hover { background-color: #fff; }
-/* fondos claros: oscuro, un poco más marcado */
-.deckCard:is([data-deck="classic"], [data-deck="train"], [data-deck="seasons"]) .dkMain p { color: rgba(36,36,36,.75); }
+    repeating-linear-gradient(135deg, #1B1545 0 64px, #211A52 64px 128px); --deck-base: #1B1545; }
+.deckCard[data-deck="gambling"] { --deck-scene: repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 44px); --deck-base: #145C3E; }
+.deckCard[data-deck] { --deck-cta: var(--mode-quick); }
+.deckCard[data-deck]:not(.ultimate) { background-color: var(--surface); background-image: var(--grain); border: none; }
+.deckCard[data-deck]:not(.ultimate) .dkPic { background-color: var(--deck-base); background-image: var(--deck-scene); overflow: hidden; }
+.deckCard[data-deck]:not(.ultimate) .dkStats { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--surface-line); }
+.deckCard[data-deck]:not(.ultimate) .dkStats div + div { border-left-color: var(--surface-line); }
+.deckCard[data-deck] :is(.dkMain p, .dkStats dt) { color: var(--surface-ink-2); }
+.deckCard[data-deck] .dkBtns .btn-primary { --b-bg: var(--deck-cta); --b-line: var(--deck-cta); --b-fg: var(--cream); box-shadow: none; }
+.deckCard[data-deck] .dkBtns .btn-primary:hover { background-color: color-mix(in srgb, var(--deck-cta) 82%, #000); }
+.deckCard[data-deck] .dkBtns .btn-light { --b-bg: transparent; --b-line: var(--ink-line); }
+.deckCard[data-deck] .dkBtns .btn-light:hover { background-color: var(--surface-2); }
+.deckCard[data-deck] .dkBtns .btn-continue { --b-fg: var(--ink); }
+.deckCard[data-deck] .dkCards { color: var(--surface-ink-2); }
 .deckCard.locked { background-color: #E6E6D0; }
 .deckCard.locked .dkArt { filter: grayscale(.55); opacity: .7; }
 .deckCard.locked .dkMain h3, .deckCard.locked .dkStats dd { color: var(--ink-soft); }
@@ -1664,7 +1668,7 @@ html.reduceMotion .deckCard .dkArt * { animation: none !important; }
 #modesGrid .spHead .lvlCount { font-size: 12px; padding: 3px 10px; background: var(--sp, var(--grass-dark)); }
 #modesGrid .spHead .lvlHeadActs { margin-left: auto; }
 .mdSection.challenges { --sp: var(--mode-challenge); }
-.lvlSection.yours { --sp: #4E5E6A; }
+.lvlSection.yours { --sp: var(--mode-workshop); }
 .mdSection:hover .spArt .mdArt, .lvlSection:hover .spArt .mdArt { transform: rotate(-5deg) scale(1.07); }
 /* al pasar: el trofeo destella, la pieza encaja, el lápiz dibuja */
 .mdArt .mdShine, .mdArt .mdPiece, .mdArt .mdPencil, .dkArt .mdHand { transform-box: view-box; }
@@ -1878,14 +1882,14 @@ html.reduceMotion .dsBarV { animation: none; }
 
 
 .crInfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.crTitle { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
+.crTitle { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; } /* (opacas: al 85 % no llegaban a AA) */
 .crTotal { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
 .crTotal b { font-size: 62px; font-weight: 700; letter-spacing: -.02em; color: #FFE7A6; font-variant-numeric: tabular-nums; }
 .crTotal small { font-size: 18px; font-weight: 500; opacity: .9; }
 /* el reloj: tres casillas grandes (la que cambia da un salto), con la etiqueta encima, alineada con la primera; los dos
    puntos, quietos y a media altura de las cifras */
 .crClock { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-left: auto; }
-.crClockLbl { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; opacity: .85; padding-left: 2px; }
+.crClockLbl { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; padding-left: 2px; }
 .crTimer { display: flex; align-items: flex-start; gap: 7px; }
 .crT { --pt: 11px; --fs: 42px; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 78px; padding: var(--pt) 10px 8px; border-radius: 16px;
   background: rgba(70,12,8,.28); }
@@ -2075,12 +2079,12 @@ button.lvlNew { --b-bg: transparent; --b-line: transparent; display: flex; flex-
   border-radius: 13px; min-width: 0; color: var(--ink-soft); }
 .lvlNewBox { flex: 1 1 auto; min-height: 40px; display: grid; place-items: center; border-radius: 10px;
   border: 2px dashed rgba(78,94,106,.45); background: rgba(78,94,106,.06); transition: background-color .2s, border-color .2s, transform .2s; }
-.lvlNewBox .i { width: 34px; height: 34px; color: #4E5E6A; }
+.lvlNewBox .i { width: 34px; height: 34px; color: var(--mode-workshop); }
 button.lvlNew small { font-size: 11.5px; font-weight: 600; text-align: center; }
 .lvlRow > .lvlNew:only-child .lvlNewBox { min-height: 110px; } /* (sin niveles: la casilla, con su tamaño) */
 .lvlRow > .lvlNew:only-child { width: 150px; }
 button.lvlNew:hover { background-color: transparent; color: var(--ink); }
-button.lvlNew:hover .lvlNewBox { background: rgba(78,94,106,.14); border-color: #4E5E6A; transform: scale(1.03); }
+button.lvlNew:hover .lvlNewBox { background: color-mix(in srgb, var(--mode-workshop) 14%, transparent); border-color: var(--mode-workshop); transform: scale(1.03); }
 @media (max-width: 560px) { .wsHead { padding: 13px 16px 11px 20px; } .wsArt { width: 44px; height: 44px; } #modesGrid .wsHead h3 { font-size: 19px; } }
 
 /* ---------- menú de depuración del fondo (bg-debug.js: …/#fondo o Alt+Mayús+B) ---------- */

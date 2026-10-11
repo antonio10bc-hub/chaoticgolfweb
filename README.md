@@ -215,16 +215,20 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
-- **Fondo de los menús** (menú, Lo básico, Partida rápida y Modos): un color liso (`--menu-bg`, verde bosque `#3F5A3A`, elegido con
-  el menú de depuración) con una trama sutil de pelotas de golf (25 px de radio, planas: la bola, su media luna en sombra,
-  los hoyuelos en trama hexagonal y un brillo; sin sombra) que se desliza en diagonal sin parar (18 px/s) (`#scene::before`, una capa que se mueve con `transform`: no repinta la pantalla; quieta
-  con movimiento reducido). La ilustración aérea desenfocada de antes (`#menuScene`, `bakeScene`) se queda escondida.
+- **Fondo de los menús** (menú, Lo básico, Partida rápida y Modos): un escenario, no un protagonista. Un color base
+  (`--bg-base`, verde bosque `#3F5A3A`) y encima un mapa de curvas de nivel muy tenue, como el de un libro de distancias de
+  golf (`src/ui/topo.js`: lo genera al arrancar, en una baldosa de 640 px que empalma consigo misma; las curvas en crema al
+  5 % y una de cada cuatro, la maestra, al 8 %: todo el fondo cabe en un 6 % de luminosidad y no tiene formas del tamaño
+  de un botón o un avatar). Se desliza en horizontal muy despacio (una vuelta cada 160 s; `#scene::before`, una capa que se
+  mueve con `transform`: no repinta la pantalla; quieto con movimiento reducido) y nunca está detrás del tablero. Cada
+  pestaña de Modos le da un tinte suave de su color (`--bg-tint`): más cálido en Eventos, más frío en El taller. La
+  ilustración aérea desenfocada de antes (`#menuScene`, `bakeScene`) se queda escondida.
   **Menú de depuración del fondo** (`src/ui/bg-debug.js`): con `…/#fondo` o Alt+Mayús+B, un panel pequeño con un selector
-  de color, el tamaño de las pelotas (radio, 4-30 px) y la velocidad (0-40 px/s; 0, quieta). Se ve en directo, se recuerda en
-  ese navegador y «Copiar valores» los deja en el portapapeles para fijarlos.
+  de color, la escala del mapa (320-1200 px), lo que se marcan las curvas (0-12 %) y la velocidad (0-20 px/s; 0, quieto).
+  Se ve en directo, se recuerda en ese navegador y «Copiar valores» los deja en el portapapeles para fijarlos.
 - **Dirección de arte de Modos de juego:** la misma que el menú principal: colores planos, sin degradados, brillos,
   halos, cristal ni sombras en el texto; las texturas, rayas diagonales a dos tonos como el césped segado (cabeceras de
-  los eventos, fondos de las barajas, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la
+  los eventos, la ilustración de cada baraja, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la
   sombra como un tono más oscuro. Las imágenes de compartir (coronas y medallas) siguen el mismo estilo.
 - **Volver a la lista:** al salir de una partida a su lista (Eventos, El taller, Partidas rápidas o Lo básico), la
   pantalla se coloca a la altura de la tarjeta de lo que se jugaba —el desafío, la serie del contrarreloj, tu nivel de El
@@ -279,7 +283,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cuanto el gesto es horizontal (con resistencia en los extremos) y al soltar pasa a la de al lado desde ahí —si se ha
   arrastrado bastante o rápido— o vuelve a su sitio con un rebote (`bindModesSwipe`).
   **Partidas rápidas** — una tarjeta por baraja (`src/content/decks.js`): clásica, agua, minigolf, tren, estaciones,
-  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Cada tarjeta lleva de fondo el de la partida de su baraja (`--scene`): en plano, con su color y rayas diagonales a dos tonos como el césped segado del menú: la clásica, el agua del lago, el verde del minigolf, el de las vías del tren, las cuatro estaciones en pastel, el espacio con estrellas y el tapete del casino; sobre los fondos oscuros, el texto y el botón en crema; sobre los claros, oscuros; la ilustración y las cifras, en recuadros lisos. Todas miden lo mismo, sea cual sea su estado (sin jugar, con «Repetir» o con partida a medias): van en una rejilla de filas iguales (`.dkSame`) y, en el móvil, los botones llevan su nombre corto («Nueva», «Repetir», «Continuar», «Cartas») para caber en una fila. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: rayas
+  multiverso, **casino** y, aparte (tras un separador), **Ultimate**, el combinador. Las tarjetas son crema, como las de Eventos, y el color de cada baraja es solo un acento: el recuadro de su ilustración lleva el césped de su partida en pequeño (`--deck-scene`, en plano: la clásica, el agua del lago, el verde del minigolf, las vías del tren, las cuatro estaciones, el espacio con estrellas y el tapete del casino). Las cifras, en un recuadro neutro igual para todas (`--surface-2`); un solo botón principal por tarjeta, del verde de la pestaña (`--deck-cta`), y los demás en contorno; «Continuar», en naranja con texto oscuro (el único naranja de la pantalla). Todas miden lo mismo, sea cual sea su estado (sin jugar, con «Repetir» o con partida a medias): van en una rejilla de filas iguales (`.dkSame`) y, en el móvil, los botones llevan su nombre corto («Nueva», «Repetir», «Continuar», «Cartas») para caber en una fila. Una baraja nueva va siempre detrás de la última y Ultimate siempre al final, como tarjeta estrella: rayas
   pastel de su arcoíris (rosa, aguamarina, menta y oro pálido) y un borde de franjas de esos colores, en plano. Una baraja por fila, a tamaño normal y con aire entre ellas (la pantalla se desplaza: con tantas
   barajas ya no se aprietan para caber). Al cambiar de pestaña, el panel sale con un fundido corto y el nuevo entra
   deslizándose entero, de una vez; la pestaña oculta no se quita del todo (`content-visibility: hidden`), así que volver a

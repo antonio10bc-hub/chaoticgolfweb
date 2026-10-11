@@ -1,17 +1,23 @@
 /* Pantallas fuera de partida: ilustración aérea de fondo, menú editorial, Partida rápida y Modo Historia */
 
-/* ---- fondo de los menús: un color liso (el de abajo) y una trama
-   sutil de pelotas de golf que se desliza en diagonal sin parar (una capa que se mueve con transform: no repinta la
-   pantalla). La ilustración aérea desenfocada de antes (#menuScene, bake.js) se queda escondida ---- */
-:root { --menu-bg: #3F5A3A; } /* (verde bosque: el que eligió Antonio con el menú de depuración, bg-debug.js) */
-#scene { position: fixed; inset: 0; z-index: 0; background: var(--menu-bg); display: none; overflow: hidden; }
-#scene::before { content: ''; position: absolute; inset: -132px 0 0 -132px; pointer-events: none; will-change: transform;
-  background-image: var(--ballTile, url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='132' height='132'><defs><clipPath id='c'><circle r='25'/></clipPath></defs><g transform='translate(33 33)'><g id='b'><circle r='25' fill='%23F1F1DC' fill-opacity='.1'/><g clip-path='url(%23c)'><path fill-rule='evenodd' fill='%23000' fill-opacity='.08' d='M-25 0a25 25 0 1 0 50 0a25 25 0 1 0 -50 0ZM-28 -4a25 25 0 1 0 50 0a25 25 0 1 0 -50 0Z'/><g fill='%23000' fill-opacity='.13'><circle cx='-4.25' cy='-22.08' r='1.46'/><circle cx='4.25' cy='-22.08' r='1.46'/><circle cx='-17' cy='-14.72' r='1.46'/><circle cx='-8.5' cy='-14.72' r='1.62'/><circle cx='0' cy='-14.72' r='1.69'/><circle cx='8.5' cy='-14.72' r='1.62'/><circle cx='17' cy='-14.72' r='1.46'/><circle cx='-21.25' cy='-7.36' r='1.46'/><circle cx='-12.75' cy='-7.36' r='1.69'/><circle cx='-4.25' cy='-7.36' r='1.87'/><circle cx='4.25' cy='-7.36' r='1.87'/><circle cx='12.75' cy='-7.36' r='1.69'/><circle cx='21.25' cy='-7.36' r='1.46'/><circle cx='-17' cy='0' r='1.62'/><circle cx='-8.5' cy='0' r='1.87'/><circle cx='0' cy='0' r='2.13'/><circle cx='8.5' cy='0' r='1.87'/><circle cx='17' cy='0' r='1.62'/><circle cx='-21.25' cy='7.36' r='1.46'/><circle cx='-12.75' cy='7.36' r='1.69'/><circle cx='-4.25' cy='7.36' r='1.87'/><circle cx='4.25' cy='7.36' r='1.87'/><circle cx='12.75' cy='7.36' r='1.69'/><circle cx='21.25' cy='7.36' r='1.46'/><circle cx='-17' cy='14.72' r='1.46'/><circle cx='-8.5' cy='14.72' r='1.62'/><circle cx='0' cy='14.72' r='1.69'/><circle cx='8.5' cy='14.72' r='1.62'/><circle cx='17' cy='14.72' r='1.46'/><circle cx='-4.25' cy='22.08' r='1.46'/><circle cx='4.25' cy='22.08' r='1.46'/></g></g><ellipse cx='-10' cy='-11' rx='5' ry='3' transform='rotate(-35 -10 -11)' fill='%23F1F1DC' fill-opacity='.22'/></g></g><use href='%23b' x='99' y='99'/></svg>")); background-size: 132px 132px;
-  animation: menuBalls var(--ballDur, 7.33s) linear infinite; animation-play-state: var(--ballPlay, running); }
-/* (--ballTile, --ballDur y --ballPlay: el menú de depuración del fondo, src/ui/bg-debug.js, los cambia en directo) */
-@keyframes menuBalls { to { transform: translate(132px, 132px); } }
+/* ---- fondo de los menús: un color base y, encima, un mapa de curvas de nivel muy tenue (el de un libro de distancias
+   de golf: src/ui/topo.js lo genera al arrancar y bg-debug.js lo pone en --bg-tile) que se desliza en horizontal muy
+   despacio (una vuelta cada 160 s: una capa que se mueve con transform, no repinta la pantalla; quieto con movimiento
+   reducido). Todo el fondo cabe en un 6 % de luminosidad: las curvas al 5 % de crema, las maestras al 8 %. Cada
+   pestaña de Modos le da un tinte suave de su color (--bg-tint): más cálido en Eventos, más frío en El taller. Sin
+   formas del tamaño de un botón o un avatar: no compite con la interfaz. La ilustración aérea desenfocada de antes
+   (#menuScene, bake.js) se queda escondida ---- */
+:root { --bg-base: #3F5A3A; --bg-tint: var(--bg-base); --bg-tint-amt: 0%; --bg-size: 640px; --bg-dur: 160s; }
+#scene { position: fixed; inset: 0; z-index: 0; display: none; overflow: hidden;
+  background-color: color-mix(in oklab, var(--bg-base), var(--bg-tint) var(--bg-tint-amt)); transition: background-color .6s ease; }
+#scene::before { content: ''; position: absolute; inset: 0 0 0 calc(-1 * var(--bg-size)); pointer-events: none; will-change: transform;
+  background-image: var(--bg-tile, none); background-size: var(--bg-size) var(--bg-size);
+  animation: menuDrift var(--bg-dur) linear infinite; }
+@keyframes menuDrift { to { transform: translateX(var(--bg-size)); } }
 html.reduceMotion #scene::before { animation: none; }
 @media (prefers-reduced-motion: reduce) { #scene::before { animation: none; } }
+body[data-screen="modes"][data-modes-tab="special"] #scene { --bg-tint: var(--mode-challenge); --bg-tint-amt: 9%; }
+body[data-screen="modes"][data-modes-tab="workshop"] #scene { --bg-tint: var(--mode-workshop); --bg-tint-amt: 14%; }
 #menuScene { display: none; position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); pointer-events: none;
   filter: blur(18px) saturate(.9) brightness(.82); }
 body[data-screen="menu"] #scene, body[data-screen="story"] #scene, body[data-screen="pve"] #scene,

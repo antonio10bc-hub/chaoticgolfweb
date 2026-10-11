@@ -1,37 +1,23 @@
-// Menú de depuración del fondo de los menús: el color (selector de colores), el tamaño de las pelotas de la trama y la
-// velocidad a la que se desliza (0: quieta). Se abre con …/#fondo o con Alt+Mayús+B; los cambios se ven en directo, se
-// recuerdan en este navegador (chaoticgolf_bgDebug) y "Copiar valores" los deja en el portapapeles para fijarlos en
-// styles/screens.css. Cambia las variables --menu-bg, --ballTile, --ballDur y --ballPlay (styles/screens.css).
+// Menú de depuración del fondo de los menús: el color base (selector de colores), la escala del mapa de curvas de nivel,
+// lo que se marcan sus líneas y la velocidad a la que se desliza (0: quieto). Se abre con …/#fondo o con Alt+Mayús+B;
+// los cambios se ven en directo, se recuerdan en este navegador (chaoticgolf_bgTopo) y "Copiar valores" los deja en el
+// portapapeles para fijarlos aquí (BG_DEFAULT). Cambia --bg-base, --bg-tile, --bg-size y --bg-dur (styles/screens.css).
 import { toast } from './hud.js';
+import { topoTile } from './topo.js';
 
-const KEY = 'chaoticgolf_bgDebug', TILE = 132;
-export const BG_DEFAULT = { color: '#3F5A3A', size: 25, speed: 18 }; // (size: radio de la pelota; speed: px/s: 7,3 s por vuelta)
+const KEY = 'chaoticgolf_bgTopo';
+// (lines: opacidad de las curvas, en %, las maestras 1,6 veces más; speed: px/s, 4 = una vuelta cada 160 s)
+export const BG_DEFAULT = { color: '#3F5A3A', scale: 640, lines: 5, speed: 4 };
 const load = () => { try { return { ...BG_DEFAULT, ...JSON.parse(localStorage.getItem(KEY)) }; } catch (e) { return { ...BG_DEFAULT }; } };
 const save = v => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* sin storage */ } };
 
-// la baldosa de la trama: dos pelotas de golf al tresbolillo, del radio pedido, planas como el menú: la bola, su media
-// luna en sombra, los hoyuelos en una trama hexagonal (recortados a la bola) y un brillo pequeño
-export function ballTile(r) {
-  const f = n => +n.toFixed(2), d = r * .34, dr = r * .085, dots = [];
-  for (let row = -4; row <= 4; row++) for (let col = -4; col <= 4; col++) {
-    const x = (col + (row & 1 ? .5 : 0)) * d, y = row * d * .866;
-    if (Math.hypot(x, y) < r * .92) dots.push(`<circle cx='${f(x)}' cy='${f(y)}' r='${f(dr * (1 - Math.hypot(x, y) / r * .35))}'/>`);
-  }
-  const ball = `<g id='b'><circle r='${r}' fill='%23F1F1DC' fill-opacity='.1'/>` +
-    `<g clip-path='url(%23c)'><path fill-rule='evenodd' fill='%23000' fill-opacity='.08' d='M${-r} 0a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z` +
-    `M${f(-r * 1.12)} ${f(-r * .16)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z'/>` +
-    `<g fill='%23000' fill-opacity='.13'>${dots.join('')}</g></g>` +
-    `<ellipse cx='${f(-r * .4)}' cy='${f(-r * .44)}' rx='${f(r * .2)}' ry='${f(r * .12)}' transform='rotate(-35 ${f(-r * .4)} ${f(-r * .44)})' fill='%23F1F1DC' fill-opacity='.22'/></g>`;
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${TILE}'><defs><clipPath id='c'><circle r='${r}'/></clipPath></defs>` +
-    `<g transform='translate(33 33)'>${ball}</g><use href='%23b' x='99' y='99'/></svg>`;
-  return `url("data:image/svg+xml;utf8,${svg}")`;
-}
+let painted = '';
 export function applyBg(v = load()) {
-  const st = document.documentElement.style;
-  st.setProperty('--menu-bg', v.color);
-  if (v.size !== BG_DEFAULT.size) st.setProperty('--ballTile', ballTile(v.size)); else st.removeProperty('--ballTile'); // (la de siempre ya está en el CSS)
-  st.setProperty('--ballDur', v.speed > 0 ? (TILE / v.speed).toFixed(2) + 's' : '7.33s');
-  st.setProperty('--ballPlay', v.speed > 0 ? 'running' : 'paused');
+  const st = document.documentElement.style, tile = v.scale + '/' + v.lines;
+  st.setProperty('--bg-base', v.color);
+  if (tile !== painted) { painted = tile; st.setProperty('--bg-tile', topoTile({ size: v.scale, alpha: v.lines / 100 })); }
+  st.setProperty('--bg-size', v.scale + 'px');
+  st.setProperty('--bg-dur', v.speed > 0 ? (v.scale / v.speed).toFixed(1) + 's' : '0s');
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', v.color);
 }
 
@@ -41,15 +27,17 @@ function open() {
   el.id = 'bgDebug'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Fondo (depuración)');
   el.innerHTML = `<header><b>Fondo</b><small>depuración</small><button type="button" data-bg="close" aria-label="Cerrar">✕</button></header>` +
     `<label><span>Color</span><input type="color" data-bg="color" value="${v.color}"><code data-bgv="color">${v.color}</code></label>` +
-    `<label><span>Pelota</span><input type="range" data-bg="size" min="4" max="30" step="1" value="${v.size}"><code data-bgv="size">${v.size} px</code></label>` +
-    `<label><span>Velocidad</span><input type="range" data-bg="speed" min="0" max="40" step="0.5" value="${v.speed}"><code data-bgv="speed">${v.speed} px/s</code></label>` +
+    `<label><span>Escala</span><input type="range" data-bg="scale" min="320" max="1200" step="40" value="${v.scale}"><code data-bgv="scale">${v.scale} px</code></label>` +
+    `<label><span>Líneas</span><input type="range" data-bg="lines" min="0" max="12" step="0.5" value="${v.lines}"><code data-bgv="lines">${v.lines} %</code></label>` +
+    `<label><span>Velocidad</span><input type="range" data-bg="speed" min="0" max="20" step="0.5" value="${v.speed}"><code data-bgv="speed">${v.speed} px/s</code></label>` +
     `<footer><button type="button" class="btn-light btn-sm" data-bg="copy">Copiar valores</button><button type="button" class="btn-text btn-sm" data-bg="reset">Restablecer</button></footer>`;
   document.body.appendChild(el);
-  const cur = () => ({ color: el.querySelector('[data-bg="color"]').value.toUpperCase(), size: +el.querySelector('[data-bg="size"]').value, speed: +el.querySelector('[data-bg="speed"]').value });
+  const cur = () => ({ color: el.querySelector('[data-bg="color"]').value.toUpperCase(), scale: +el.querySelector('[data-bg="scale"]').value, lines: +el.querySelector('[data-bg="lines"]').value, speed: +el.querySelector('[data-bg="speed"]').value });
   const paint = val => {
     el.querySelector('[data-bgv="color"]').textContent = val.color;
-    el.querySelector('[data-bgv="size"]').textContent = val.size + ' px';
-    el.querySelector('[data-bgv="speed"]').textContent = val.speed ? val.speed + ' px/s' : 'quieta';
+    el.querySelector('[data-bgv="scale"]').textContent = val.scale + ' px';
+    el.querySelector('[data-bgv="lines"]').textContent = val.lines + ' %';
+    el.querySelector('[data-bgv="speed"]').textContent = val.speed ? val.speed + ' px/s' : 'quieto';
   };
   paint(v);
   el.addEventListener('input', () => { const val = cur(); paint(val); applyBg(val); save(val); });
@@ -59,11 +47,11 @@ function open() {
     if (act === 'reset') {
       try { localStorage.removeItem(KEY); } catch (err) { /* sin storage */ }
       const d = { ...BG_DEFAULT };
-      el.querySelector('[data-bg="color"]').value = d.color; el.querySelector('[data-bg="size"]').value = d.size; el.querySelector('[data-bg="speed"]').value = d.speed;
+      el.querySelector('[data-bg="color"]').value = d.color; el.querySelector('[data-bg="scale"]').value = d.scale; el.querySelector('[data-bg="lines"]').value = d.lines; el.querySelector('[data-bg="speed"]').value = d.speed;
       paint(d); applyBg(d);
     }
     if (act === 'copy') {
-      const val = cur(), txt = `Fondo: color ${val.color} · pelota ${val.size} px de radio · velocidad ${val.speed} px/s (${val.speed ? (TILE / val.speed).toFixed(1) + ' s por vuelta' : 'quieta'})`;
+      const val = cur(), txt = `Fondo: color ${val.color} · escala ${val.scale} px · líneas ${val.lines} % · velocidad ${val.speed} px/s (${val.speed ? Math.round(val.scale / val.speed) + ' s por vuelta' : 'quieto'})`;
       try { await navigator.clipboard.writeText(txt); toast('Valores copiados'); } catch (err) { toast(txt); }
     }
   });

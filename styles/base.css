@@ -71,7 +71,7 @@ html { -webkit-tap-highlight-color: transparent; }
 body {
   font-family: var(--font);
   font-weight: 400;
-  background: var(--menu-bg, #3F5A3A); /* (el de los menús) */
+  background: var(--bg-base, #3F5A3A); /* (el de los menús) */
   color: var(--ink);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
