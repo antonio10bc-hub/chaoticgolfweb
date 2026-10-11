@@ -389,4 +389,4 @@ html.phone :is(#settingsOverlay, #rulesOverlay, #profileOverlay) { background: r
 html.phone :is(#pauseOverlay, #winOverlay) { background: rgba(20,40,20,.7); }
 html.phone #dialog::backdrop { background: rgba(20,40,20,.66); }
 html.phone #lineup { background: rgba(20,40,20,.55); }
-html.phone .mdTabs { background: rgba(20,40,20,.55); }
+html.phone .mdTabs { background: rgba(20,12,60,.32); }

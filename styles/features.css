@@ -1111,7 +1111,7 @@ html.reduceMotion .saveTick { transition: opacity .2s; transform: none; }
 /* la píldora: se desliza con un pequeño rebote y toma el color de su pestaña (verde, el rojo de los eventos, el gris
    del taller); el texto de la elegida, crema */
 .mdTabs { --tabC: var(--grass-dark); position: relative; align-self: center; display: grid; grid-template-columns: repeat(3, 1fr); width: min(620px, 100%);
-  padding: 5px; border-radius: 999px; background: rgba(20,40,20,.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  padding: 5px; border-radius: 999px; background: rgba(20,12,60,.28); }
 #modesGrid[data-tab="quick"] .mdTabs { --tabC: #3F7A3F; }
 #modesGrid[data-tab="special"] .mdTabs { --tabC: var(--mode-challenge); }
 #modesGrid[data-tab="workshop"] .mdTabs { --tabC: #4E5E6A; }
