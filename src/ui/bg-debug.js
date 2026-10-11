@@ -5,24 +5,33 @@
 import { toast } from './hud.js';
 
 const KEY = 'chaoticgolf_bgDebug', TILE = 132;
-export const BG_DEFAULT = { color: '#5B4BA8', size: 15, speed: +(TILE / 16).toFixed(2) }; // (size: radio de la pelota; speed: px/s)
+export const BG_DEFAULT = { color: '#3F5A3A', size: 13, speed: 18 }; // (size: radio de la pelota; speed: px/s: 7,3 s por vuelta)
 const load = () => { try { return { ...BG_DEFAULT, ...JSON.parse(localStorage.getItem(KEY)) }; } catch (e) { return { ...BG_DEFAULT }; } };
 const save = v => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* sin storage */ } };
 
-// la baldosa de la trama: dos pelotas al tresbolillo con sus hoyuelos, del radio pedido
+// la baldosa de la trama: dos pelotas de golf al tresbolillo, del radio pedido, planas como el menú: la bola, su media
+// luna en sombra, los hoyuelos en una trama hexagonal (recortados a la bola), un brillo pequeño y su sombra en el suelo
 export function ballTile(r) {
-  const k = r / 15, dimples = [[-6, -5], [1, -8], [7, -3], [-4, 3], [4, 5]];
-  const ball = (cx, cy) => `<circle cx='${cx}' cy='${cy}' r='${r}'/>`;
-  const dots = (cx, cy) => dimples.map(([x, y]) => `<circle cx='${(cx + x * k).toFixed(1)}' cy='${(cy + y * k).toFixed(1)}' r='${(1.7 * k).toFixed(2)}'/>`).join('');
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${TILE}'><g fill='%23F1F1DC' fill-opacity='.055'>${ball(33, 33)}${ball(99, 99)}</g>` +
-    `<g fill='%23000' fill-opacity='.14'>${dots(33, 33)}${dots(99, 99)}</g></svg>`;
+  const f = n => +n.toFixed(2), d = r * .34, dr = r * .085, dots = [];
+  for (let row = -4; row <= 4; row++) for (let col = -4; col <= 4; col++) {
+    const x = (col + (row & 1 ? .5 : 0)) * d, y = row * d * .866;
+    if (Math.hypot(x, y) < r * .92) dots.push(`<circle cx='${f(x)}' cy='${f(y)}' r='${f(dr * (1 - Math.hypot(x, y) / r * .35))}'/>`);
+  }
+  const ball = `<g id='b'><ellipse cx='${f(r * .18)}' cy='${f(r * 1.02)}' rx='${f(r * .8)}' ry='${f(r * .2)}' fill='%23000' fill-opacity='.1'/>` +
+    `<circle r='${r}' fill='%23F1F1DC' fill-opacity='.1'/>` +
+    `<g clip-path='url(%23c)'><path fill-rule='evenodd' fill='%23000' fill-opacity='.08' d='M${-r} 0a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z` +
+    `M${f(-r * 1.12)} ${f(-r * .16)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z'/>` +
+    `<g fill='%23000' fill-opacity='.13'>${dots.join('')}</g></g>` +
+    `<ellipse cx='${f(-r * .4)}' cy='${f(-r * .44)}' rx='${f(r * .2)}' ry='${f(r * .12)}' transform='rotate(-35 ${f(-r * .4)} ${f(-r * .44)})' fill='%23F1F1DC' fill-opacity='.22'/></g>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${TILE}'><defs><clipPath id='c'><circle r='${r}'/></clipPath></defs>` +
+    `<g transform='translate(33 33)'>${ball}</g><use href='%23b' x='99' y='99'/></svg>`;
   return `url("data:image/svg+xml;utf8,${svg}")`;
 }
 export function applyBg(v = load()) {
   const st = document.documentElement.style;
   st.setProperty('--menu-bg', v.color);
-  if (v.size !== BG_DEFAULT.size) st.setProperty('--ballTile', ballTile(v.size)); else st.removeProperty('--ballTile');
-  st.setProperty('--ballDur', v.speed > 0 ? (TILE / v.speed).toFixed(2) + 's' : '16s');
+  if (v.size !== BG_DEFAULT.size) st.setProperty('--ballTile', ballTile(v.size)); else st.removeProperty('--ballTile'); // (la de siempre ya está en el CSS)
+  st.setProperty('--ballDur', v.speed > 0 ? (TILE / v.speed).toFixed(2) + 's' : '7.33s');
   st.setProperty('--ballPlay', v.speed > 0 ? 'running' : 'paused');
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', v.color);
 }
