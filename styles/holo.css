@@ -1,0 +1,79 @@
+/* =========================================================
+   Foil holográfico (cartas raras): .holo y .holo--subtle
+   Receta sacada de la referencia (lámina iridiscente pastel, casi blanca):
+   · superficie: base lechosa, un cónico pastel que gira alrededor del puntero (--mx, --my), manchas difusas rosa,
+     mantequilla y menta abajo a la izquierda (los reflejos de la lámina arrugada), un velo blanco que lo aclara todo
+     (--holo-wash), relieve arrugado (turbulencia de baja frecuencia, soft-light) y grano fino (overlay)
+   · ::before: los haces de bandas espectrales en diagonal (125°), concentrados en una franja central (máscara)
+   · ::after: el brillo: una luz ancha y suave, sin trazo blanco (todo fundido), con el espectro azul → rosa | amarillo
+     → verde a los lados (screen). Cada luz es una campana (gaussiana) de muchas paradas: sin escalones a cualquier
+     resolución (--holo-specular, lo genera src/ui/holo.js al arrancar)
+   Las dos capas de luz son más grandes que la tarjeta y solo se mueven con transform (deriva) y translate (el puntero:
+   src/ui/holo.js): no se repinta nada al animar. Con movimiento reducido, quietas en su sitio. La tarjeta se inclina
+   hacia el puntero solo mientras está encima: en reposo queda plana (sin transformación 3D, que la convierte en una
+   textura reescalada y emborrona el texto).
+   .holo--subtle: el mismo material como escenario (el fondo de la partida de Ultimate): un tercio de color, bandas el
+   doble de anchas y difusas, sin especular, deriva de 40 s y nada de puntero.
+   ========================================================= */
+:root {
+  --holo-base: #EEF0EE; --holo-sky: #A6D6F0; --holo-aqua: #B7E2EC; --holo-lilac: #D3C4F0; --holo-pink: #F5BFD6;
+  --holo-butter: #FBEAA6; --holo-mint: #C9EFCF; --holo-peach: #F7D3C1; --holo-spec: #FFFFFF;
+  --holo-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23g)' opacity='.5'/></svg>");
+  --holo-crumple: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='.004 .009' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+}
+
+.holo {
+  --mx: 50%; --my: 40%; --hx: 0; --hy: 0; --rx: 0deg; --ry: 0deg;
+  --holo-wash: .22;         /* (velo blanco: cuanto más, más lechoso) */
+  --holo-bands: .62;        /* (opacidad de los haces) */
+  --holo-band: 46px;        /* (ancho de cada color en los haces) */
+  --holo-drift: 11s;
+  position: relative; isolation: isolate; overflow: hidden;
+  background-color: var(--holo-base);
+  background-image: var(--holo-grain), var(--holo-crumple),
+    linear-gradient(rgba(255,255,255,var(--holo-wash)), rgba(255,255,255,var(--holo-wash))),
+    radial-gradient(38% 46% at 16% 78%, var(--holo-pink), transparent 72%),
+    radial-gradient(30% 34% at 34% 92%, var(--holo-mint), transparent 70%),
+    radial-gradient(30% 36% at 8% 50%, var(--holo-butter), transparent 72%),
+    radial-gradient(40% 50% at 88% 12%, var(--holo-butter), transparent 72%),
+    conic-gradient(from 210deg at var(--mx) var(--my), var(--holo-aqua), var(--holo-sky), var(--holo-lilac), var(--holo-pink),
+      var(--holo-peach), var(--holo-butter), var(--holo-mint), var(--holo-aqua));
+  background-size: 160px 160px, 600px 600px, auto, auto, auto, auto, auto, auto;
+  background-blend-mode: overlay, soft-light, normal, normal, normal, normal, normal, normal;
+}
+.holo::before, .holo::after { content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none;
+  transition: translate .25s ease-out; }
+/* los haces: rayas espectrales a 125°, solo en una franja diagonal (la máscara), como en la lámina */
+.holo::before {
+  background: repeating-linear-gradient(125deg, var(--holo-sky) 0, var(--holo-lilac) calc(var(--holo-band) * 1),
+    var(--holo-pink) calc(var(--holo-band) * 2), var(--holo-butter) calc(var(--holo-band) * 3),
+    var(--holo-mint) calc(var(--holo-band) * 4), var(--holo-aqua) calc(var(--holo-band) * 5), var(--holo-sky) calc(var(--holo-band) * 6));
+  -webkit-mask-image: linear-gradient(125deg, transparent 28%, #000 44%, #000 56%, transparent 72%);
+  mask-image: linear-gradient(125deg, transparent 28%, #000 44%, #000 56%, transparent 72%);
+  opacity: var(--holo-bands); mix-blend-mode: multiply;
+  translate: calc(var(--hx) * 70px) calc(var(--hy) * 40px);
+  animation: holoDriftA var(--holo-drift) ease-in-out infinite alternate; }
+/* la especular: un trazo blanco nítido con el espectro a los lados, y otro más fino y paralelo; encima, un brillo ancho */
+.holo::after {
+  background: var(--holo-specular, linear-gradient(125deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%));
+  mix-blend-mode: screen;
+  translate: calc(var(--hx) * -110px) calc(var(--hy) * -60px);
+  animation: holoDriftB var(--holo-drift) ease-in-out infinite alternate; }
+@keyframes holoDriftA { from { transform: translate(-6%, -3%); } to { transform: translate(6%, 3%); } }
+@keyframes holoDriftB { from { transform: translate(-12%, -5%); } to { transform: translate(10%, 4%); } }
+.holo > * { position: relative; z-index: 1; }
+
+/* mientras el puntero está encima, la carta se inclina hacia él (máx. 4°), la deriva se para y manda el puntero; al
+   salir, vuelve a quedar plana */
+.holo:not(.holo--subtle) { transition: transform .45s var(--ease-out); }
+.holo.is-live { transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .12s linear; }
+.holo.is-live::before, .holo.is-live::after { animation-play-state: paused; }
+
+/* el escenario: el mismo material, contenido */
+.holo--subtle { --holo-wash: .62; --holo-bands: .3; --holo-band: 110px; --holo-drift: 40s; }
+.holo--subtle::before { -webkit-mask-image: linear-gradient(125deg, transparent 15%, #000 42%, #000 58%, transparent 85%);
+  mask-image: linear-gradient(125deg, transparent 15%, #000 42%, #000 58%, transparent 85%); }
+.holo--subtle::after { display: none; }
+
+html.reduceMotion .holo::before, html.reduceMotion .holo::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .holo::before, .holo::after { animation: none; } }

@@ -54,6 +54,7 @@ import { bindBack } from './ui/back.js';
 import { bindLogFilter } from './ui/hud.js';
 import { bakeGrain } from './ui/bake.js';
 import { bindBgDebug } from './ui/bg-debug.js';
+import { bindHolo } from './ui/holo.js';
 import { UMAMI_ID, flushQueue, track } from './ui/analytics.js';
 import { bindMyBall } from './ui/my-ball.js';
 
@@ -61,7 +62,7 @@ import { bindMyBall } from './ui/my-ball.js';
 // (el fondo de los menús ya no es la ilustración desenfocada sino un color liso con su trama de pelotas: styles/screens.css;
 // sceneFromCache y bakeScene se quedan en bake.js por si se vuelve a ella)
 bakeGrain();
-bindBgDebug(); // (el fondo de los menús guardado en el menú de depuración, …/#fondo o Alt+Mayús+B)
+bindBgDebug(); bindHolo(); // (el fondo de los menús guardado en el menú de depuración, …/#fondo o Alt+Mayús+B)
 performance.setResourceTimingBufferSize?.(1000); // (la lista de archivos cargados que se guardan para jugar sin conexión)
 // preferencias (velocidad, tema del campo, accesibilidad) antes de pintar nada
 loadPrefs();
