@@ -1,13 +1,21 @@
 /* Pantallas fuera de partida: ilustración aérea de fondo, menú editorial, Partida rápida y Modo Historia */
 
-/* ---- ilustración aérea de fondo: desenfocada y oscurecida ---- */
-#scene { position: fixed; inset: 0; z-index: 0; background: var(--grass-dark); display: none; overflow: hidden; }
-#menuScene { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); pointer-events: none;
+/* ---- fondo de los menús: un color neutro y liso (contrasta con el crema y con los colores de las tarjetas) y una trama
+   sutil de pelotas de golf que se desliza en diagonal sin parar (una capa que se mueve con transform: no repinta la
+   pantalla). La ilustración aérea desenfocada de antes (#menuScene, bake.js) se queda escondida ---- */
+:root { --menu-bg: #2B302E; }
+#scene { position: fixed; inset: 0; z-index: 0; background: var(--menu-bg); display: none; overflow: hidden; }
+#scene::before { content: ''; position: absolute; inset: -132px 0 0 -132px; pointer-events: none; will-change: transform;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='132' height='132'><g fill='%23F1F1DC' fill-opacity='.055'><circle cx='33' cy='33' r='15'/><circle cx='99' cy='99' r='15'/></g><g fill='%232B302E' fill-opacity='.5'><circle cx='27' cy='28' r='1.7'/><circle cx='34' cy='25' r='1.7'/><circle cx='40' cy='30' r='1.7'/><circle cx='29' cy='36' r='1.7'/><circle cx='37' cy='38' r='1.7'/><circle cx='93' cy='94' r='1.7'/><circle cx='100' cy='91' r='1.7'/><circle cx='106' cy='96' r='1.7'/><circle cx='95' cy='102' r='1.7'/><circle cx='103' cy='104' r='1.7'/></g></svg>"); background-size: 132px 132px;
+  animation: menuBalls 16s linear infinite; }
+@keyframes menuBalls { to { transform: translate(132px, 132px); } }
+html.reduceMotion #scene::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { #scene::before { animation: none; } }
+#menuScene { display: none; position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); pointer-events: none;
   filter: blur(18px) saturate(.9) brightness(.82); }
 body[data-screen="menu"] #scene, body[data-screen="story"] #scene, body[data-screen="pve"] #scene,
 body:not([data-screen]) #scene { display: block; }
-#scene::after { content: ''; position: absolute; inset: 0; background: rgba(20,40,20,.18); }
-body[data-screen="story"] #scene::after, body[data-screen="pve"] #scene::after { background: rgba(20,40,20,.34); }
+
 #menuScreen, #storyScreen, #pveScreen { position: relative; z-index: 1; }
 
 /* ---- menú principal: split editorial ---- */

@@ -426,7 +426,12 @@ const DECK_ART = {
     `<path d="M30 15 L40 36 H20 Z" fill="rgba(255,255,255,.7)" stroke="#6B8A94" stroke-width="1.4" stroke-linejoin="round"/><path d="M30 15 L40 36 L30 31 Z" fill="rgba(180,225,240,.6)"/>` +
     `<g class="dkTw" fill="#fff"><path d="M19 13 l1 2.6 2.6 1 -2.6 1 -1 2.6 -1 -2.6 -2.6 -1 2.6 -1z"/><path d="M41 44 l.7 1.8 1.8.7 -1.8.7 -.7 1.8 -.7 -1.8 -1.8 -.7 1.8 -.7z" opacity=".8"/></g>` + frame,
 };
-export const deckArt = dk => `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true">${(DECK_ART[dk.emblem === 'club' ? 'classic' : dk.emblem === 'drop' ? 'water' : dk.emblem] || DECK_ART.classic)()}</svg>`;
+// (cada dibujo, con sus ids propios: si se repetían, y la primera copia estaba en una pantalla oculta —Lo básico—, el
+// navegador dejaba de recortar las demás y las olas o el césped se salían de la carta)
+let artSeq = 0;
+export const deckArt = dk => { const n = ++artSeq;
+  return `<svg class="dkArt" viewBox="0 0 60 60" aria-hidden="true">${(DECK_ART[dk.emblem === 'club' ? 'classic' : dk.emblem === 'drop' ? 'water' : dk.emblem] || DECK_ART.classic)()
+    .replace(/(["#])dk-([a-z]+)-([a-z]+)/g, `$1dk-$2${n}-$3`)}</svg>`; };
 
 // Ultimate, aparte del resto: un separador pequeño y su tarjeta, el combinador. Un icono por baraja (tocar = activarla o
 // quitarla; siempre queda al menos una), el campo que sale, el botón de jugar y el historial de combinaciones

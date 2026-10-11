@@ -215,6 +215,10 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
 - **Multijugador local:** en Partida rápida, de 1 a 4 personas en el mismo dispositivo (con o sin bots).
   Antes de cada turno aparece "pasa el dispositivo"; las manos ajenas van boca abajo y quien quiera
   reaccionar fuera de turno pide el dispositivo con "Reaccionar".
+- **Fondo de los menús** (menú, Lo básico, Partida rápida y Modos): un color neutro y liso (`--menu-bg`, gris carbón
+  verdoso, que contrasta con el crema y con los colores de las tarjetas) con una trama sutil de pelotas de golf que se
+  desliza en diagonal sin parar (`#scene::before`, una capa que se mueve con `transform`: no repinta la pantalla; quieta
+  con movimiento reducido). La ilustración aérea desenfocada de antes (`#menuScene`, `bakeScene`) se queda escondida.
 - **Dirección de arte de Modos de juego:** la misma que el menú principal: colores planos, sin degradados, brillos,
   halos, cristal ni sombras en el texto; las texturas, rayas diagonales a dos tonos como el césped segado (cabeceras de
   los eventos, fondos de las barajas, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la

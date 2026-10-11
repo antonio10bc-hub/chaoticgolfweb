@@ -52,7 +52,9 @@ const ART = {
     `<circle cx="26" cy="22.3" r="1.4" fill="#242424"/><circle cx="31" cy="36.5" r="1.4" fill="#fff"/>` +
     `<g class="mdPencil"><path d="M44 16 l-13 17 -1 4.5 4-2.2 13-17z" fill="#FFD84A" stroke="#7A5230" stroke-width=".8" stroke-linejoin="round"/><path d="M44 16 l3 2.3" stroke="#E8733A" stroke-width="2.4"/><path d="M30 37.5 l1-4.5 3 2.3z" fill="#7A5230"/></g>` + frame,
 };
-export const modeArt = (kind, cls = 'mdArt') => `<svg class="${cls}" viewBox="0 0 60 60" aria-hidden="true">${ART[kind]()}</svg>`;
+let artSeq = 0; // (ids propios en cada dibujo: ver deckArt en screen-modes.js)
+export const modeArt = (kind, cls = 'mdArt') => { const n = ++artSeq;
+  return `<svg class="${cls}" viewBox="0 0 60 60" aria-hidden="true">${ART[kind]().replace(/(["#])md-([a-z]+)-([a-z]+)/g, `$1md-$2${n}-$3`)}</svg>`; };
 
 // cabecera de sección: icono, título, "4 de 18" y su barra (o, sin total, solo el número)
 export function sectionHead({ art, title, done = null, total = null, extra = '', sub = null }) {

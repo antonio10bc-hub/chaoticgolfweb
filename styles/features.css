@@ -590,7 +590,6 @@ body.menuIntro[data-screen="menu"]:not(.loading) .mActions > .mBtn.modes { anima
 /* ---------- pantalla de Modos ---------- */
 #modesScreen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 8vh 20px 60px; position: relative; z-index: 1; }
 body[data-screen="modes"] #scene { display: block; }
-body[data-screen="modes"] #scene::after { background: rgba(20,40,20,.34); }
 #modesGrid { display: flex; flex-direction: column; gap: 20px; width: min(920px, 94vw); }
 .mdSection { background-image: var(--grain); background-color: var(--cream); border-radius: 20px; padding: 18px 20px 20px; box-shadow: var(--mdShadow); }
 .mdSection > h3, .lvlSection h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; color: var(--ink-soft); }
