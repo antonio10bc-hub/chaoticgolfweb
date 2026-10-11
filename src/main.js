@@ -18,14 +18,15 @@ import { renderDailyCard } from './ui/screen-modes.js';
 import { app } from './ui/app.js';
 import { $ } from './ui/dom.js';
 import { t, applyStaticTexts, setLang, detectLang, saveLang, getLang } from './i18n/index.js';
-import { bindSave } from './ui/save.js';
+import { bindSave, loadSave } from './ui/save.js';
+import { resumeGame } from './ui/resume.js';
 import { loadArt } from './art.js';
 import { loadBasics } from './content/levels/index.js';
 import { bindBoard } from './ui/board.js';
 import { bindHands } from './ui/hands.js';
 import { bindCardTip } from './ui/card-tip.js';
 import { bindWin } from './ui/win.js';
-import { bindScreens, bindFabAutoHide, showScreen, newFreeGame, applyArtExtras, suspendGame } from './ui/screens.js';
+import { bindScreens, bindFabAutoHide, showScreen, newFreeGame, applyArtExtras, suspendGame, SCREEN_KEY } from './ui/screens.js';
 import { bindStory, openStory, userLevelAt, startLevel, warmBasics } from './ui/screen-story.js';
 import { bindPve, openPveSetup } from './ui/screen-pve.js';
 import { bindModes, openModes, startDaily, DAILY_HASHES, playSharedCombo } from './ui/screen-modes.js';
@@ -181,6 +182,25 @@ paintLangBtns();
 fxAmbientStart();
 
 
+// recargar la página vuelve a donde estabas (screens.js apunta cada pantalla en esta pestaña): se lee antes de que el
+// arranque pase por el menú. En partida, se continúa su guardado (se guarda al recargar); si no lo hay (partida libre,
+// prueba del creador), a la pantalla de la que venía
+const lastAt = (() => { try { return JSON.parse(sessionStorage.getItem(SCREEN_KEY)); } catch (e) { return null; } })();
+function restoreScreen(at) {
+  if (!at || at.s === 'menu') return;
+  const from = { editor: () => openEditor(), story: () => openModes('workshop'), puzzle: openStory, challenge: () => openModes('special'),
+    rush: () => openModes('special'), pve: () => openModes('quick') };
+  try {
+    switch (at.s) {
+      case 'story': openStory(); break;
+      case 'modes': openModes(); break;
+      case 'pve': openPveSetup(at.deck || undefined); break;
+      case 'editor': openEditor(); break;
+      case 'game': if (at.slot && loadSave(at.slot)) resumeGame(at.slot); else (from[at.slot] || from[at.mode])?.(); break;
+    }
+  } catch (e) { console.error('Volver a la pantalla', e); showScreen('menu'); }
+}
+
 // arranque: niveles de Lo básico + partida libre de fondo + arte
 // (la pantalla de carga tapa el menú hasta que están los niveles, el arte y la tipografía; con tope:
 // pase lo que pase, se quita)
@@ -208,6 +228,7 @@ fxAmbientStart();
     const applyArt = () => { clearPieces(); applyArtExtras(); ctl.render(); };
     if (late) art.then(() => { if (!app.animating) applyArt(); }); else applyArt();
   } catch (e) { console.error('Arranque', e); }
+  if (!linked && !location.hash) restoreScreen(lastAt); // (con un enlace, manda el enlace)
   // un mínimo breve para que no parpadee; luego se desvanece y el menú hace su entrada
   await new Promise(r => setTimeout(r, Math.max(0, 450 - (performance.now() - t0))));
   const ld = $('loadScreen');

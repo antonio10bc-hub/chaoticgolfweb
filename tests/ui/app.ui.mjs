@@ -20,11 +20,13 @@ let server, browser, page, errors = [];
 // se pulsa "Empezar" sola en cuanto aparece, salvo en el suyo (window.keepLineup)
 const autoLineup = () => setInterval(() => { if (!window.keepLineup) document.querySelector('#lineup.visible [data-lineup="go"]')?.click(); }, 60);
 
-// página limpia (sin nada guardado); `seed` rellena localStorage antes de arrancar
+// página limpia (sin nada guardado, y en el menú: sin la pantalla en la que se quedó la prueba anterior, que la recarga
+// recuerda); `seed` rellena localStorage antes de arrancar
 async function fresh(seed = {}) {
   await page.bringToFront();
+  await page.evaluate(() => sessionStorage.clear()).catch(() => {}); // (antes de cargar: que no vuelva a la pantalla de la prueba anterior)
   await page.goto(URL, { waitUntil: 'networkidle0' });
-  await page.evaluate(s => { localStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
+  await page.evaluate(s => { localStorage.clear(); sessionStorage.clear(); for (const [k, v] of Object.entries(s)) localStorage.setItem(k, JSON.stringify(v)); },
     { chaoticgolf_tutorial: { intro: true, orangeTip: true, cards: Object.fromEntries(['palo1', 'palo2', 'palo3', 'dedo', 'hoyo', 'oHoyo', 'oPalo1', 'no', 'bunker', 'portal'].map(k => [k, 1])) },
       chaoticgolf_intros: { daily: true, rush: true, rush2: true, rush3: true, challenge: true }, chaoticgolf_newDeckSeen: 'gambling', chaoticgolf_gift: 'open', chaoticgolf_crownsIntro: 1,
       chaoticgolf_vitrina: 1, ...seed }); // (TEMPORAL: sin los niveles vitrina en Tus niveles)
@@ -583,7 +585,7 @@ it('baraja nueva: se anuncia una vez a quien ya jugaba ("Jugar ahora" lleva a su
   await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')), 'solo una vez');
   // primera visita: nada (todo es nuevo), y queda apuntada
-  await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800);
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); }); await page.reload({ waitUntil: 'networkidle0' }); await sleep(1800); // (quien llega nuevo abre el juego en el menú)
   assert.ok(!await app(() => !!document.querySelector('#dialog[open] .newDeck')));
   assert.equal(await app(() => JSON.parse(localStorage.getItem('chaoticgolf_newDeckSeen'))), 'gambling');
 });

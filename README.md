@@ -230,6 +230,11 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   halos, cristal ni sombras en el texto; las texturas, rayas diagonales a dos tonos como el césped segado (cabeceras de
   los eventos, la ilustración de cada baraja, Ultimate); la corona, las medallas y las ilustraciones de baraja, dibujos planos con la
   sombra como un tono más oscuro. Las imágenes de compartir (coronas y medallas) siguen el mismo estilo.
+- **Recargar vuelve a donde estabas:** cada pantalla se apunta en la pestaña (`sessionStorage`, `screens.js`) y al recargar
+  el arranque vuelve a ella (`main.js · restoreScreen`): Modos con su pestaña, Lo básico, la configuración de la partida con
+  su baraja, el creador o la partida, que se continúa desde su guardado (se guarda al recargar); si no lo hay (partida libre,
+  prueba del creador), a la pantalla de la que venía. Al abrir el juego de nuevo (otra pestaña) o con un enlace, el menú o
+  el enlace, como siempre.
 - **Volver a la lista:** al salir de una partida a su lista (Eventos, El taller, Partidas rápidas o Lo básico), la
   pantalla se coloca a la altura de la tarjeta de lo que se jugaba —el desafío, la serie del contrarreloj, tu nivel de El
   taller, la baraja o el nivel de Lo básico— en lugar de arriba del todo (`anchorOfGame` en `screens.js`).

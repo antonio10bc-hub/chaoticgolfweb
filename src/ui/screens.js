@@ -94,6 +94,14 @@ function scrollToAnchor(s, sel) {
   }));
 }
 
+// recargar la página vuelve a la pantalla en la que estabas: se apunta en esta pestaña (sessionStorage: al abrir el juego
+// de nuevo, el menú), con la ranura de la partida o la baraja de la configuración (main.js · restoreScreen)
+export const SCREEN_KEY = 'chaoticgolf_screen';
+function rememberScreen(s) {
+  const at = { s, slot: s === 'game' ? slotOf() : null, mode: s === 'game' ? app.mode : null, deck: s === 'pve' ? app.pveCfg?.deck || null : null };
+  try { sessionStorage.setItem(SCREEN_KEY, JSON.stringify(at)); } catch (e) { /* sin storage */ }
+}
+
 export function showScreen(s) {
   document.body.classList.remove('fabHide'); // (cada pantalla empieza arriba, con los botones a la vista)
   const prev = app.screen;
@@ -132,6 +140,7 @@ export function showScreen(s) {
   if (s === 'menu' || s === 'modes') paintProfileDot(); // (el botón de tu pelota, en el menú y en Modos de juego)
   syncWakeLock();     // en partida, la pantalla no se apaga (móvil)
   historyScreen(s);   // botón / gesto de atrás del sistema
+  rememberScreen(s);  // (para volver aquí al recargar)
   if (!usingKeyboard) return; // con ratón no se mueve el foco (evita anillos de foco inesperados)
   const focusTarget = { menu: '.mBtn', story: '.lvlCard', pve: '#pvePlay', modes: '.modeCard button', editor: '#edTools button', game: '#hands .card[data-p]' }[s];
   requestAnimationFrame(() => document.querySelector(`#${s}Screen ${focusTarget}`)?.focus({ preventScroll: true }));
