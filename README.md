@@ -342,8 +342,9 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   cuenta atrás hasta los nuevos en tres casillas grandes (días, horas y minutos; el último día, horas, minutos y
   segundos), que saltan al cambiar, con la etiqueta encima alineada con la primera y los dos puntos quietos a media altura
   de las cifras. El botón de **compartir**, pequeño, arriba a la derecha: una imagen 1080×1350 con tus coronas, las 5 de
-  la semana y tu pelota con la que llevas puesta, en un diálogo de dos botones (compartir —la hoja del sistema o, en el
-  ordenador, copiar imagen y texto de una vez— y descargar). Debajo, 5 tarjetas detalladas: la ilustración de su baraja (o barajas), dificultad, nombre y regla, campo y PAR,
+  la semana y tu pelota con la que llevas puesta. Como el de las partidas, **copia de una vez la imagen y el texto con el
+  enlace** al portapapeles, sin diálogo (`copyImageAndText` en `share-play.js`; si no se puede la imagen, el texto), y el
+  botón dice «¡Copiado!» un par de segundos (una etiqueta sólida) antes de volver a ser el icono. Igual el del contrarreloj. Debajo, 5 tarjetas detalladas: la ilustración de su baraja (o barajas), dificultad, nombre y regla, campo y PAR,
   los rivales de la semana (los mismos para todos) y su dificultad, tus victorias y, a la derecha, su corona: en silueta
   con "Jugar" o, ganada, dorada y "Conseguida" (la tarjeta entera pasa a oro). Al pasar por encima, rojo claro. Al ganar, el final dice "+1 corona" y
   ofrece el siguiente desafío por ganar. Los 10 nuevos: Cochera (las salidas dentro de la vuelta del tren), Ola de calor

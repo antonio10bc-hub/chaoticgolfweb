@@ -326,10 +326,18 @@ it('desafíos de la semana: 5 tarjetas con los rivales de la semana; ganar uno d
   await click('#modesBtn'); await sleep(1400);
   assert.equal(await page.evaluate(i => document.querySelector(`.crCard[data-mode="ch:${i}"]`)?.classList.contains('won'), id), true, 'la tarjeta, ganada');
   assert.equal(await app(() => document.querySelector('.crTotal b').textContent.trim()), '1');
-  // compartir: la imagen con tus coronas
-  await click('[data-mode="crShare"]'); await sleep(900);
-  assert.ok(await app(() => document.querySelector('#dialog[open] .sharePreview')), 'la imagen para compartir');
-  await app(() => document.getElementById('dialog').close());
+  // compartir (coronas y contrarreloj), como el de las partidas: copia la imagen y el texto con el enlace y dice "¡Copiado!" un momento
+  await browser.defaultBrowserContext().overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  for (const [sel, re] of [['[data-mode="crShare"]', /1 coronas?/], ['[data-mode="rwShare"]', /contrarreloj/]]) {
+    await click(sel); await sleep(700);
+    const r = await page.evaluate(async sel => { const [it] = await navigator.clipboard.read(); return { types: it.types, text: await (await it.getType('text/plain')).text(),
+      btn: document.querySelector(sel).textContent, dlg: !!document.querySelector('#dialog[open]') }; }, sel);
+    assert.ok(r.types.includes('image/png') && r.types.includes('text/plain'), 'imagen y texto');
+    assert.match(r.text, re); assert.match(r.text, /^https?:\/\/|https?:\/\//, 'con el enlace');
+    assert.equal(r.btn, '¡Copiado!'); assert.equal(r.dlg, false, 'sin diálogo');
+    await sleep(2400);
+    assert.equal(await page.evaluate(sel => document.querySelector(sel).textContent, sel), '', 'vuelve a ser el icono');
+  }
 });
 
 it('desafíos de la semana: el aviso del cambio sale una vez, a quien ya jugaba, con las coronas regaladas', async () => {

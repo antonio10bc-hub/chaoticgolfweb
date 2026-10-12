@@ -12,8 +12,7 @@ import { equippedSkin } from './skins.js';
 import { myColor, skinName } from './my-ball.js';
 import { drawSkinBall } from './skin-canvas.js';
 import { loadProfile } from './profile.js';
-import { shareImageDialog } from './share-play.js';
-import { sfx } from '../audio/sfx.js';
+import { copyImageAndText } from './share-play.js';
 
 const icon = id => `<svg class="i" aria-hidden="true"><use href="#${id}"/></svg>`;
 const fmt = n => Number(n || 0).toLocaleString(getLang() === 'es' ? 'es-ES' : 'en-GB');
@@ -129,12 +128,12 @@ export async function buildRushImage() {
   c.textAlign = 'right'; c.font = '500 22px Outfit, sans-serif'; c.fillText((location.host || 'chaotic golf').replace(/^www\./, ''), W - 100, fy + 74);
   return new Promise(res => cv.toBlob(res, 'image/png'));
 }
-export async function shareRush() {
-  sfx('select');
+// copia la imagen y el texto con el enlace, como el de las partidas: el botón dice "¡Copiado!" un momento
+export function shareRush(btn) {
   const wb = loadRecords().rush?.weeks?.[weekKey()];
   const text = (wb?.medal ? t('rushw.shareText', { medal: t('rushw.' + wb.medal).toLowerCase(), n: fmt(wb.best) }) : t('rushw.shareTextNone')) +
     ' ' + location.origin + location.pathname;
-  shareImageDialog(await buildRushImage(), { text, what: 'medallas', name: 'chaotic-golf-contrarreloj.png', title: t('rushw.shareTitle'), alt: t('rushw.shareTitle'), simple: true });
+  return copyImageAndText(buildRushImage(), text, btn, { what: 'medallas', back: 2200 });
 }
 export const rushMedalLabel = m => t('rushw.' + m);
 export { GOAL as RUSH_GOAL };

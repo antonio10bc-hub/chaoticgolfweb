@@ -1883,6 +1883,11 @@ html.reduceMotion .dsBarV { animation: none; }
   --b-bg: rgba(255,244,214,.14); --b-fg: #FFF4D6; --b-line: rgba(255,244,214,.38); box-shadow: none; }
 .crShare:hover { background-color: rgba(255,244,214,.26); transform: scale(1.06); }
 .crShare .i { width: 15px; height: 15px; }
+/* (al copiar: "¡Copiado!" con un tic, un momento; crece hacia la izquierda) */
+.crShare.done, .crShare.done:hover { width: auto; padding: 0 12px; gap: 6px; display: flex; align-items: center; border-radius: 17px;
+  font-size: 13px; font-weight: 600; white-space: nowrap; transform: none; animation: crPop .2s ease-out;
+  --b-bg: #FFF4D6; --b-fg: #8E3A2F; --b-line: #FFF4D6; background-color: #FFF4D6; }
+.rwHead .crShare.done, .rwHead .crShare.done:hover { --b-bg: #F4F8FF; --b-fg: #233F6E; --b-line: #F4F8FF; background-color: #F4F8FF; }
 
 .crList { display: grid; gap: 8px; padding: 12px; }
 button.crCard { --b-bg: rgba(255,255,255,.42); --b-line: var(--cream-line); --gc: var(--mode-challenge);

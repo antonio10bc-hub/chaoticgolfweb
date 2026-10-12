@@ -18,7 +18,7 @@ import { equippedSkin } from './skins.js';
 import { myColor, skinName } from './my-ball.js';
 import { drawSkinBall } from './skin-canvas.js';
 import { loadProfile } from './profile.js';
-import { shareImageDialog } from './share-play.js';
+import { copyImageAndText } from './share-play.js';
 import { sfx } from '../audio/sfx.js';
 import { track } from './analytics.js';
 import { REDUCED } from '../fx/juice.js';
@@ -190,11 +190,11 @@ export async function buildCrownImage() {
   c.textAlign = 'right'; c.font = '500 22px Outfit, sans-serif'; c.fillText((location.host || 'chaotic golf').replace(/^www\./, ''), W - 100, fy + 74);
   return new Promise(res => cv.toBlob(res, 'image/png'));
 }
-export async function shareCrowns() {
-  sfx('select');
+// copia la imagen y el texto con el enlace, como el de las partidas: el botón dice "¡Copiado!" un momento
+export function shareCrowns(btn) {
   const R = loadRecords(), n = R.crowns?.n || 0;
   const text = t('crowns.shareText', { n }) + ' ' + location.origin + location.pathname;
-  shareImageDialog(await buildCrownImage(), { text, what: 'coronas', name: 'chaotic-golf-coronas.png', title: t('crowns.shareTitle'), alt: t('crowns.shareTitle'), simple: true });
+  return copyImageAndText(buildCrownImage(), text, btn, { what: 'coronas', back: 2200 });
 }
 
 /* ---------- el aviso del cambio (una vez) ---------- */

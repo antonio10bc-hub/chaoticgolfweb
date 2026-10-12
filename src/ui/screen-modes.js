@@ -654,8 +654,8 @@ export function bindModes() {
       case 'rush': startRush(false); break;
       case 'rushNew': startRush(true); break;
       case 'ch': startChallenge(arg); break;
-      case 'crShare': shareCrowns(); break;
-      case 'rwShare': shareRush(); break;
+      case 'crShare': shareCrowns(b); break;
+      case 'rwShare': shareRush(b); break;
       case 'deckCards': deckIntro(arg, { force: true, play: false }); break;
       case 'ultHist': openComboHistory({ deckArt, onPick: m => { setCombo(m); paintUlt(); } }); break;
       case 'editor': openEditor(); break;
