@@ -434,7 +434,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   contra un bloque (o la espalda de una esquina) rebota un par de veces y acaba en una casilla libre cercana al azar
   (`riverThrough`, `holeRiverThrough`). La partida tiene fondo de lago (el campo es una isla), la bola
   flota río abajo y hay chapuzón al caer al lago. El máximo de 5 ríos y 5 lagos y la regla de colocación cuentan solo los que ponen los jugadores: el agua que trae el nivel, el puzle o el desafío es parte del campo (`fixed`, lo marca `Game.designed` al montar la partida) y no gasta ese máximo. Reglas en el motor (`canPlaceTile`, `ballInWater`, `holeInWater`).
-- **Baraja de minigolf** (piezas de madera, `tiles/block|corner|tunnel|launcher.js`; campo 8 columnas más ancho):
+- **Baraja de minigolf** (piezas de madera, `tiles/block|corner|tunnel|launcher.js`):
   **Bloque** (rebota y vuelve por donde venía), **Esquina** (se gira al colocarla: por su cara inclinada desvía
   90°, por la espalda rebota), **Túnel** (sale por uno de sus 4 lados al azar, con animación de tensión),
   **Lanzadera** (quien pasa por encima vuela 3 casillas hacia su flecha; gira cada turno; la que ya ha lanzado en el
@@ -446,13 +446,14 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   confirmas con "Colocar" (o Intro). La lanzadera hace un salto con anticipación, sombra en el suelo, giro y
   aterrizaje con polvo.
 - **Ultimate Chaotic Golf**: las cartas de todas las barajas (`counts` las suma solas: una baraja nueva entra
-  sin tocar nada), un campo enorme (+12 columnas y +4 filas), par 7, palos de 10 y el **palo iridiscente** (no se para
+  sin tocar nada), palos de 10 y el **palo iridiscente** (no se para
   nunca: rebota en los bloques, gira en las esquinas y sigue hasta chocar con otra pelota, que hereda el impulso y
   hace lo mismo, o hasta caerse del tablero; tras saltar una lanzadera sigue avanzando hacia donde volaba; si entra
   en un bucle sin fin, se corta; deja una estela iridiscente). Fondo: el foil holográfico contenido (`.holo--subtle`, ver más abajo), que entra con un fundido de 400 ms desde el verde de los menús.
-- **Baraja del tren** (`src/engine/train.js`, cartas en `cards/tren.js`, vista en `src/ui/train-view.js`; +4 columnas y
-  +2 filas; sin búnkeres ni portales; con un palo 2 más): su **maqueta** pone las salidas abajo y el hoyo arriba, cada uno
-  en una columna al azar y sin columna de PAR, y entre medias un **circuito de vías** a lo ancho (una banda de 5-6 filas):
+- **Baraja del tren** (`src/engine/train.js`, cartas en `cards/tren.js`, vista en `src/ui/train-view.js`;
+  sin búnkeres ni portales; con un palo 2 más): su **maqueta** pone las salidas abajo y el hoyo arriba, cada uno
+  en una columna al azar y sin columna de PAR, y entre medias un **circuito de vías** a lo ancho (una banda de 5-6 filas; en el
+  pequeño, 5×5, de 3, con una sola fila de césped dentro y las 4 paradas repartidas a partes iguales: `evenStations`):
   para llegar hay que cruzarla (pelotas · vía · césped · vía · hoyo). El circuito, distinto en cada partida, es un
   contorno con tramos rectos largos y escalones suaves (nada de serpentear), en el sentido del reloj, con **4 paradas**
   más o menos a las 12, 3, 6 y 9; nunca pasa por las salidas ni por el hoyo y la locomotora empieza en una parada.
@@ -497,7 +498,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     al vagón, viaja y sal de la arena) y **Hoyo en marcha** (pon el hoyo en la vía y que el tren se lo lleve hasta la
     pelota; con una pista falsa).
 - **Baraja de las estaciones** (reglas en `src/engine/seasons.js`, cartas en `cards/estaciones.js`, piezas en
-  `tiles/seasons.js`, vista en `src/ui/seasons-view.js` y `styles/seasons.css`; +2 columnas; sin búnkeres ni portales; fuera de
+  `tiles/seasons.js`, vista en `src/ui/seasons-view.js` y `styles/seasons.css`; sin búnkeres ni portales; fuera de
   Ultimate: `noUltimate`). La partida empieza en una **estación al azar** (con un RNG aparte: el mazo sale igual) y la
   carta negra **Cambio de estación** ×4 pasa a la siguiente: primavera → verano → otoño → invierno → primavera. Las salidas
   y la casilla inicial del hoyo son seguras: ahí no se pone ni cae nada.
@@ -558,7 +559,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     y **Viaje en la nieve** (experto: ponte en el camino de la bola, que te recoja, y sube el hoyo hasta ella). Buscados con
     `npm run puzzles:search -- fire|fireBall|ice|iceFinger|snow|snowHole` (temas de estación: `season`, `snow`).
 - **Baraja del multiverso** (reglas en `src/engine/multiverse.js`, cartas en `cards/multiverso.js`, pieza en
-  `tiles/blackhole.js`, animaciones en `src/ui/multiverse-view.js` y `styles/multiverse.css`; +2 columnas; sin búnkeres ni
+  `tiles/blackhole.js`, animaciones en `src/ui/multiverse-view.js` y `styles/multiverse.css`; sin búnkeres ni
   portales; fuera de Ultimate: `noUltimate`). Mazo: Agujero negro ×1 (uno por partida: si ya hay uno en el tablero, su carta
   no se juega), Gravedad 2 ×2 (negra), Gravedad 1 ×1 (naranja) y Lluvia de meteoritos ×3; cada jugador empieza con una de ellas.
   - **Agujero negro** (negra, se pone en una casilla vacía y se queda): la pelota que **pasa o se para** en una casilla
@@ -622,7 +623,7 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
     estrellas, translúcida: se sigue viendo el color de quien juega) · el disco de Gargantua alrededor (por detrás arriba, por
     delante abajo) · aura violeta y tres copias translúcidas en órbita. También dibujada en la imagen de compartir.
 - **Baraja del casino** ( reglas en `src/engine/gambling.js`, cartas en `cards/gambling.js`, pieza en
-  `tiles/dice.js`, animaciones en `src/ui/gambling-view.js` y `styles/gambling.css`; +2 columnas; sin búnkeres ni portales;
+  `tiles/dice.js`, animaciones en `src/ui/gambling-view.js` y `styles/gambling.css`; sin búnkeres ni portales;
   también en Ultimate). Mazo: Dado ×2 (negra) y Ruleta ×2 (naranja); cada jugador empieza con una de ellas (si
   en el mazo ya no quedan, `dealOneOf` se la cambia a quien empezó con dos).
   - **Suelo ajedrezado**: rojo si x + y es par, negro si es impar (`cellColor`). Una casilla es **dorada** (`S.gamble.gold`):
@@ -702,9 +703,8 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   historial y cartas nuevas. Se combinan las **7** (también el casino: su suelo ajedrezado, sus monedas y la casilla dorada;
   fuera del agua y del agujero negro, que conservan su casilla), también la clásica (sin ella, ni
   búnkeres ni portales). La partida junta sus cartas y lo suyo (vías del tren, estaciones) y siempre trae el palo iridiscente
-  (el de 10, en campos de 13 columnas o más). El **campo crece con la combinación** (una baraja: su campo; las 6: 19×13) y,
-  cuanto más grande, **más largo el PAR** (las 6: PAR 7); la tarjeta y la configuración enseñan el campo (en Ultimate no se
-  elige tamaño). **Historial** (botón de la tarjeta): una fila por combinación jugada con su balance y la última vez; tocarla
+  (sin el de 10: cruzaría el campo de punta a punta). El campo es **siempre el grande, 11×9 PAR 5**, sea cual sea la
+  combinación (`comboSize`); la tarjeta y la configuración lo enseñan (en Ultimate no se elige tamaño). **Historial** (botón de la tarjeta): una fila por combinación jugada con su balance y la última vez; tocarla
   la reactiva y **Compartir** copia un enlace (`#ultimate=u1.<combinación>.<rivales>.<dificultad>.<semilla>`) con el mismo
   reparto: quien lo abre entra directo en esa misma partida (mismo campo, mazo y rivales), y la combinación entra en su
   historial como «recibida». El Ultimate fijo de antes (clásica, agua, minigolf y tren) sigue para el desafío Caos total y la
@@ -714,7 +714,12 @@ La ilustración aérea y los iconos de línea viven como `<symbol>` en el sprite
   las 6 juntas, ~16 rondas (como el Ultimate de antes).
 - **El cartel del turno** sale después de lo que pasa solo en el tablero al cambiar de turno (los dados que cambian de número,
   el tren, el viento, el hoyo que se mueve solo…): `turnCheck` espera a que acabe la animación.
-- **Tamaños de la partida rápida** (`PVE_SIZES`): pequeño 5×5 PAR 2, mediano 7×9 PAR 3 y grande 9×11 **PAR 5**.
+- **Tamaños de la partida rápida** (`PVE_SIZES`): pequeño 5×5 PAR 2, mediano 7×9 PAR 3 y grande 11×9 **PAR 5**, **los mismos
+  para todas las barajas** (`deckSize`; Ultimate, solo el grande). En el pequeño caben como mucho 5 jugadores (una pelota por
+  columna: `maxPlayers` en `screen-pve.js`). Duración simulada (`npm run sim:decks`, 3 jugadores, rondas de media): clásica
+  3,8 / 5,7 / 7,4; agua 15,7 / 8,6 / 10,1; minigolf 20,3 / 7,3 / 9,0; tren 7,4 / 10,6 / 12,0; estaciones 6,2 / 8,5 / 10,9;
+  multiverso 2,8 / 3,9 / 6,9; casino 6,4 / 7,7 / 10,6; Ultimate (las 7) 24. El agua y el minigolf en 5×5 y Ultimate dejan
+  partidas atascadas (≈6 %, 6 % y 3 %: las piezas cierran el paso al hoyo).
 - **La barra de ayuda** (encima de tu mano) tiene altura fija: elegir una carta (que enseña su miniatura), el JAQUE o
   cualquier aviso nunca cambian el tamaño ni el sitio del tablero; un aviso más alto crece hacia arriba, por encima.
 - **Regalo de early tester** (`src/ui/gift.js`): en el menú, un aviso pequeño con un regalo (se mece) hasta que se abre.
@@ -885,6 +890,7 @@ npm run sim:challenges -- pinball,prism 60      # desafíos: campo en ASCII + ro
 npm run sim:challenges -- ch 60 0               # todos los desafíos (warmup/mid/expert: un grupo · base: partidas normales)
 npm run sim:challenges -- vars 80 1 mis-variantes.mjs   # probar variantes de un campo (export default [{ id, board, layout, … }])
 npm run sim:rush -- 200 2                        # contrarreloj: tus turnos por hoyo con 2 cazadores, golpes recibidos, sin terminar
+npm run sim:decks -- --games 500 --players 3     # partida rápida: rondas y minutos de cada baraja en cada tamaño (y Ultimate)
 npm run basics:design                            # Lo básico: comprueba cada nivel y genera sus JSON (-- --check: solo comprobar)
 npm run basics:design -- hole-4 bunker-5 --check # solo esos niveles, con su tablero
 npm run basics:search -- swallow 4000 1          # candidatos para una lección (tabla LESSONS; en puzzle-candidates/)

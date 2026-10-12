@@ -38,14 +38,16 @@ export function openPveSetup(deck = app.pveCfg.deck || 'classic') {
   showScreen('pve');
 }
 
-// límites de la mesa: de 2 a 6 jugadores. "Contra la máquina": 1 persona y de 1 a 5 bots;
-// "Multijugador local": de 2 a 4 personas y, si se quiere, bots
+// límites de la mesa: de 2 a 6 jugadores (en el campo pequeño, 5: una pelota por columna). "Contra la máquina": 1 persona
+// y de 1 a 5 bots; "Multijugador local": de 2 a 4 personas y, si se quiere, bots
+const maxPlayers = cfg => Math.min(6, deckSize(deckById(cfg.deck), PVE_SIZES[cfg.size] || PVE_SIZES.m).cols);
 function clampPve(cfg) {
   if (cfg.kind !== 'local' && cfg.kind !== 'bots') cfg.kind = (cfg.humans || 1) > 1 ? 'local' : 'bots';
   if (deckById(cfg.deck).id !== cfg.deck || deckById(cfg.deck).locked) cfg.deck = 'classic';
   if (cfg.kind === 'bots') cfg.humans = 1;
   else cfg.humans = Math.min(4, Math.max(2, cfg.humans || 2));
-  cfg.opps = Math.max(cfg.humans > 1 ? 0 : 1, Math.min(6 - cfg.humans, cfg.opps ?? 2));
+  if (!PVE_SIZES[cfg.size]) cfg.size = 'm';
+  cfg.opps = Math.max(cfg.humans > 1 ? 0 : 1, Math.min(maxPlayers(cfg) - cfg.humans, cfg.opps ?? 2));
   if (!['easy', 'normal', 'hard'].includes(cfg.diff)) cfg.diff = 'normal';
   cfg.rivals = Array.isArray(cfg.rivals) ? cfg.rivals.slice(0, 5) : [];
 }
@@ -80,8 +82,8 @@ function buildPveSetup() {
   $$('#pveDiff .pveOpt').forEach(b => { const on = cfg.diff === b.dataset.diff; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
   $$('#pveOpps .pveOpt').forEach(b => {
     const n = +b.dataset.n;
-    // contra la máquina, al menos un bot; y nunca más de 6 en la mesa (sin huecos en la fila)
-    b.disabled = n + cfg.humans > 6;
+    // contra la máquina, al menos un bot; y nunca más de 6 en la mesa, ni más que columnas (sin huecos en la fila)
+    b.disabled = n + cfg.humans > maxPlayers(cfg);
     b.hidden = (n === 0 && !local) || b.disabled;
   });
   $('pveDiffRow').hidden = cfg.opps === 0;
@@ -144,7 +146,7 @@ export function applyOwnLook(S, seats, people) {
 // extra: { counts, rules } (desafíos) · rivals: ids de personajes (el resto, al azar)
 // seed: partida igual para todo el mundo (reto diario)
 export function createVsGame(cfg, { extra = {}, rivals = [], seed } = {}) {
-  const sz = deckSize(deckById(cfg.deck), PVE_SIZES[cfg.size] || PVE_SIZES.m); // (minigolf y Ultimate: campo más grande)
+  const sz = deckSize(deckById(cfg.deck), PVE_SIZES[cfg.size] || PVE_SIZES.m); // (Ultimate: siempre el grande)
   const prof = loadProfile();
   const people = cfg.humans > 1 ? prof.people.slice(0, cfg.humans) : [{ name: prof.name, color: cfg.color ?? prof.color }];
   // el motor recibe siempre el mismo color: el que elijas se aplica después (dressVsGame, solo aspecto). Si no, el
@@ -190,7 +192,7 @@ export function startPveMatch({ seed = null, recv = false } = {}) {
   clampPve(cfg);
   const dk = deckById(cfg.deck);
   let extra;
-  if (dk.ultimate) { // (Ultimate: la combinación de barajas activada; su campo crece con ella)
+  if (dk.ultimate) { // (Ultimate: la combinación de barajas activada, en el campo grande)
     if (!validCombo(cfg.combo)) cfg.combo = currentCombo();
     const c = comboCfg(cfg.combo);
     extra = { counts: c.counts, startWith: c.startWith, ...c.size, ...(c.train ? { train: true } : {}), ...(c.trainLayout ? { trainLayout: true } : {}), ...(c.seasons ? { seasons: true } : {}), ...(c.gambling ? { gambling: true } : {}) };

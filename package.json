@@ -14,6 +14,7 @@
     "test:ui": "node --test \"tests/ui/*.ui.mjs\"",
     "sim:challenges": "node tools/sim-challenges.mjs",
     "sim:rush": "node tools/sim-rush.mjs",
+    "sim:decks": "node tools/sim-decks.mjs",
     "basics:design": "node tools/basics-design.mjs",
     "basics:search": "node tools/basics-search.mjs",
     "puzzles:audit": "node tools/puzzle-audit.mjs",

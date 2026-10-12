@@ -346,7 +346,7 @@ export default {
     title: 'Quick game',
     sub: 'You against the bots. Seats are drawn at random and whoever sits right of the centre starts.',
     color: 'Your name and colour', size: 'Board size', opps: 'Opponents (bots)',
-    sizeS: 'Small · 5×5', sizeM: 'Medium · 7×9', sizeL: 'Large · 9×11',
+    sizeS: 'Small · 5×5', sizeM: 'Medium · 7×9', sizeL: 'Large · 11×9',
     sizeSName: 'Small', sizeMName: 'Medium', sizeLName: 'Large',
     play: 'Play', back: '← Back to game modes',
     pickColor: 'Play with this colour', colorAria: 'Colour {n}',

@@ -24,14 +24,16 @@ test('el mazo: las cartas de las barajas activadas; sin la clásica, ni búnkere
   assert.ok(comboCfg(comboMask(['train'])).trainLayout, 'el tren solo: su disposición');
 });
 
-test('el campo crece con la combinación y, cuanto más grande, más largo el PAR', () => {
-  assert.deepEqual(comboSize(comboMask(['minigolf'])), deckSize(deckById('minigolf'), PVE_SIZES.m), 'una baraja: su campo');
-  assert.deepEqual(comboSize(ALL_COMBO), { cols: 19, rows: 13, par: 7 }, 'todas: el campo enorme de siempre');
-  const sizes = [1, 2, 3, 4, 5, 6, 7].map(n => comboSize((1 << n) - 1));
-  for (let i = 1; i < sizes.length; i++) assert.ok(sizes[i].cols * sizes[i].rows >= sizes[i - 1].cols * sizes[i - 1].rows && sizes[i].par >= sizes[i - 1].par);
-  for (let m = 1; m <= ALL_COMBO; m++) { const s = comboSize(m); assert.ok(s.rows >= s.par + 3, 'el recorrido cabe'); }
-  assert.equal(comboCfg(comboMask(['classic'])).counts.palo10, 0, 'el palo de 10, solo en campos grandes');
-  assert.equal(PVE_SIZES.l.par, 5, 'el campo grande de la partida rápida: PAR 5');
+test('el campo es siempre el grande de la partida rápida (11×9, PAR 5), sea cual sea la combinación', () => {
+  for (let m = 1; m <= ALL_COMBO; m++) assert.deepEqual(comboSize(m), { cols: 11, rows: 9, par: 5 });
+  assert.deepEqual(deckSize(deckById('ultimate'), PVE_SIZES.s), PVE_SIZES.l, 'Ultimate: solo el grande');
+  assert.equal(comboCfg(ALL_COMBO).counts.palo10, 0, 'sin el palo de 10');
+});
+
+test('todas las barajas de la partida rápida juegan en los mismos tamaños: 5×5, 7×9 y 11×9', () => {
+  assert.deepEqual(PVE_SIZES, { s: { cols: 5, rows: 5, par: 2 }, m: { cols: 7, rows: 9, par: 3 }, l: { cols: 11, rows: 9, par: 5 } });
+  for (const id of ULT_DECKS) for (const k of ['s', 'm', 'l']) assert.deepEqual(deckSize(deckById(id), PVE_SIZES[k]), PVE_SIZES[k], id + ' ' + k);
+  for (const k of ['s', 'm', 'l']) assert.ok(PVE_SIZES[k].rows >= PVE_SIZES[k].par + 3, 'el recorrido cabe');
 });
 
 test('compartir: el código lleva la combinación, los rivales, la dificultad y la semilla', () => {
@@ -44,6 +46,14 @@ test('la misma combinación con la misma semilla es la misma partida (mazo, sali
   const c = comboCfg(ALL_COMBO), mk = seed => Game.pve({ players: 3, humanColor: PLAYER_COLORS[0], counts: c.counts, startWith: c.startWith, ...c.size, train: true, seasons: true, gambling: true }, { seed });
   const a = mk(777), b = mk(777);
   assert.deepEqual(a.S.deck, b.S.deck); assert.deepEqual(a.S.hands, b.S.hands); assert.deepEqual(a.S.train, b.S.train); assert.equal(a.S.season.now, b.S.season.now); assert.deepEqual(a.S.gamble, b.S.gamble);
+});
+
+test('el dedo resbala en el hielo hasta un agujero negro y la copia se esfuma: el dedo se acaba (no se queda sin pelota)', () => {
+  // (la partida de las 7 en la que pasaba: semilla 553; la IA, al probar jugadas, se encontraba un dedo sin pelota)
+  const c = comboCfg(ALL_COMBO), rand = mulberry32(553);
+  const g = Game.pve({ players: 3, humanColor: PLAYER_COLORS[0], counts: c.counts, startWith: c.startWith, ...c.size, train: true, seasons: true, gambling: true }, { seed: 553 });
+  g.S.human = -1; g.S.aiStyles = g.S.aiStyles.map(s => s || 'aggro');
+  assert.doesNotThrow(() => simulateGame(g, { rand }));
 });
 
 test('bots: las combinaciones terminan sin errores (copias, tren, estaciones y agua juntos)', () => {

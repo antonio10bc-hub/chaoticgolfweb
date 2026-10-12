@@ -40,7 +40,9 @@ function profile(rand, len, start, lo, hi, maxStep, runs = [3, 6]) {
 // fill (creador de niveles): estirado hasta casi los bordes y con más entrantes, para que la vía llene el campo
 function attempt(rand, C, R, band = null, fill = false) {
   const lo = band ? band[0] : 0, hi = band ? band[1] : R - 1;
-  if (hi - lo < 3) return null;
+  // (separación de los dos lados: dos filas de césped entre medias; en la maqueta del campo pequeño, 5×5, cabe una)
+  const g = band ? Math.min(3, hi - lo) : 3;
+  if (hi - lo < g || g < 2) return null;
   // casi siempre a lo ancho del campo (repartido por todo el escenario); a veces, algo más estrecho
   const mx = fill || rand() < .75 ? 1 : Math.max(1, Math.floor(C * .2));
   const x0 = randInt(rand, 0, mx), x1 = C - 1 - randInt(rand, 0, mx);
@@ -48,9 +50,9 @@ function attempt(rand, C, R, band = null, fill = false) {
   const n = x1 - x0 + 1, my = band || fill ? 1 : Math.max(1, Math.floor(R / 5));
   const maxStep = fill ? (rand() < .5 ? 2 : 1) : rand() < .2 ? 2 : 1; // (escalones suaves; alguna vez, uno más hondo)
   const runs = fill ? [2, 4] : [3, 6];
-  const top = profile(rand, n, lo + randInt(rand, 0, my), lo, hi - 3, maxStep, runs);
-  const bot = profile(rand, n, hi - randInt(rand, 0, my), lo + 3, hi, maxStep, runs);
-  for (let i = 0; i < n; i++) if (bot[i] - top[i] < 3) return null; // (los dos lados, con dos filas de césped entre medias como poco)
+  const top = profile(rand, n, lo + randInt(rand, 0, my), lo, hi - g, maxStep, runs);
+  const bot = profile(rand, n, hi - randInt(rand, 0, my), lo + g, hi, maxStep, runs);
+  for (let i = 0; i < n; i++) if (bot[i] - top[i] < g) return null; // (los dos lados, con dos filas de césped entre medias como poco)
   return outline(x0, top, bot);
 }
 
@@ -123,6 +125,14 @@ function stationsFor(path, rand) {
   return ord;
 }
 
+// las 4 paradas repartidas a partes iguales, desde la casilla de más arriba (y más al centro): para vueltas cortas
+function evenStations(path) {
+  const L = path.length, cx = path.reduce((s, p) => s + p[0], 0) / L;
+  let s0 = 0;
+  path.forEach(([x, y], i) => { const [bx, by] = path[s0]; if (y < by || (y === by && Math.abs(x - cx) < Math.abs(bx - cx))) s0 = i; });
+  return [0, 1, 2, 3].map(k => (s0 + Math.round(k * L / 4)) % L);
+}
+
 // circuito nuevo para un tablero C×R sin pasar por `avoid` ([[x, y], …]); null si no cabe.
 // band: [y0, y1] (la maqueta del tren) — el circuito va entre esas filas, a lo ancho
 // fill: (creador de niveles) entre 30 circuitos válidos, el que más vía pone (el que más rellena el campo)
@@ -140,7 +150,7 @@ export function makeCircuit(C, R, rand, avoid = [], { band = null, fill = false 
     if (flip) path = path.map(([x, y]) => [y, x]).reverse(); // (al girar se invierte el sentido: se recorre al revés)
     if (rand() < .5) path = path.map(([x, y]) => [C - 1 - x, y]).reverse(); // espejo
     if (path.length < 12 || !validPath(path, C, R) || path.some(([x, y]) => bad.has(key(x, y)))) continue;
-    const stations = stationsFor(path, rand);
+    const stations = stationsFor(path, rand) || (band && path.length < 16 ? evenStations(path) : null); // (la vuelta corta del 5×5: repartidas)
     if (stations) return { path, stations };
   }
   return null;

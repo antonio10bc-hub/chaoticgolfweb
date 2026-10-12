@@ -56,7 +56,7 @@ test('partida rápida del tren: circuito en Game.pve con su RNG aparte (el mazo 
 
 test('maqueta de la baraja del tren: salidas abajo y hoyo arriba (en columnas al azar) y la vuelta en medio, a lo ancho', () => {
   const dk = deckById('train'), counts = dk.counts(defaultCounts());
-  for (const sz of [{ cols: 5, rows: 5, par: 2 }, { cols: 7, rows: 9, par: 3 }, { cols: 9, rows: 11, par: 4 }]) for (let seed = 1; seed <= 40; seed++) {
+  for (const sz of [{ cols: 5, rows: 5, par: 2 }, { cols: 7, rows: 9, par: 3 }, { cols: 11, rows: 9, par: 5 }]) for (let seed = 1; seed <= 40; seed++) {
     const g = Game.pve({ players: 3, ...deckSize(dk, sz), counts, train: true, trainLayout: true, humanColor: '#f26d6d' }, { seed }), S = g.S, tr = S.train;
     assert.ok(tr, 'con tren');
     const ys = tr.path.map(p => p[1]), xs = tr.path.map(p => p[0]), by = S.balls[0].y;

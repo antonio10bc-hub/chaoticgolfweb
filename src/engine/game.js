@@ -1498,8 +1498,9 @@ export class Game {
   serpentSlide(ball, dirKey) {
     const pd = this.pending, n0 = this.events.length;
     this.moveBallRaw(ball, dirKey, 1);
-    const stop = this.events.slice(n0).some(e => e.p === 'b' + ball.player && ['fall', 'splash', 'burn', 'eaten', 'gust', 'sink', 'drift', 'launch', 'settle'].includes(e.t));
-    if (stop || ball.holed) return this.endSerpent({ checked: true });
+    const stop = this.events.slice(n0).some(e => e.p === 'b' + ball.player && ['fall', 'splash', 'burn', 'eaten', 'gust', 'sink', 'drift', 'launch', 'settle', 'absorb'].includes(e.t));
+    // (multiverso: un agujero negro se la ha tragado, o la copia se ha ido para siempre)
+    if (stop || ball.holed || !this.S.balls.includes(ball)) return this.endSerpent({ checked: true });
     return pd.stepsLeft > 0 ? true : this.endSerpent({ checked: true });
   }
 

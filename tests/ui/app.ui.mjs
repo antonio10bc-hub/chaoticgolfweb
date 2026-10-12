@@ -193,24 +193,24 @@ it('baraja del multiverso: el hoyo también se parte en el agujero negro y las c
   assert.equal(await app(() => { const g = window.chaoticGolf.app.game; g.cancel(); g.S.hands[g.S.human] = ['gravedad']; g.clickCard(g.S.human, 0); return g.selectableAt(4, 3); }), null);
 });
 
-it('Ultimate: se combinan las barajas tocando sus iconos, el campo crece con ellas y el historial comparte la misma partida', async () => {
+it('Ultimate: se combinan las barajas tocando sus iconos, el campo es siempre el grande y el historial comparte la misma partida', async () => {
   const ctx = browser.defaultBrowserContext();
   await ctx.overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
   await fresh({ chaoticgolf_deckIntros: { ultimate: true } });
   await click('#modesBtn'); await sleep(500);
   const size = () => app(() => document.querySelector('.ultSize').textContent);
   assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 7, 'de inicio, todas');
-  assert.equal(await size(), '19×13 · PAR 7');
+  assert.equal(await size(), '11×9 · PAR 5');
   for (const id of ['classic', 'minigolf', 'train', 'seasons', 'multiverse', 'gambling']) { await click(`.ultTog[data-ult="${id}"]`); await sleep(120); }
   assert.deepEqual(await app(() => [...document.querySelectorAll('.ultTog.on')].map(b => b.dataset.ult)), ['water']);
-  assert.equal(await size(), '7×9 · PAR 3', 'solo agua: su campo');
+  assert.equal(await size(), '11×9 · PAR 5', 'solo agua: el mismo campo');
   await click('.ultTog[data-ult="water"]'); await sleep(150);
   assert.equal(await app(() => document.querySelectorAll('.ultTog.on').length), 1, 'siempre queda al menos una');
   await click('.ultTog[data-ult="train"]'); await sleep(150);
   await click('[data-mode="quick:ultimate"]'); await sleep(400);
   await click('#pvePlay'); await sleep(900);
   const g1 = await app(() => { const S = window.chaoticGolf.app.game.S; return { cols: S.cols, rows: S.rows, par: S.par, train: !!S.train, river: S.deck.includes('river'), bunker: S.deck.includes('bunker'), seed: window.chaoticGolf.app.game.seed }; });
-  assert.deepEqual([g1.cols, g1.rows, g1.par, g1.train, g1.river, g1.bunker], [13, 11, 5, true, true, false], 'agua + tren');
+  assert.deepEqual([g1.cols, g1.rows, g1.par, g1.train, g1.river, g1.bunker], [11, 9, 5, true, true, false], 'agua + tren');
   // el historial: esa combinación, y su enlace abre la misma partida
   await click('#menuBtn'); await sleep(500);
   await click('[data-mode="ultHist"]'); await sleep(300);
@@ -221,7 +221,7 @@ it('Ultimate: se combinan las barajas tocando sus iconos, el campo crece con ell
   await click('#dialog[open] button[value="ok"]'); await sleep(200);
   await page.evaluate(() => localStorage.removeItem('chaoticgolf_save_pve'));
   await page.goto(link, { waitUntil: 'networkidle0' }); await sleep(1500);
-  assert.deepEqual(await app(() => { const { app } = window.chaoticGolf; return [app.screen, app.game.seed, app.game.S.cols]; }), ['game', g1.seed, 13], 'la misma partida');
+  assert.deepEqual(await app(() => { const { app } = window.chaoticGolf; return [app.screen, app.game.seed, app.game.S.cols]; }), ['game', g1.seed, 11], 'la misma partida');
 });
 
 it('logros: ganar un nivel a la primera desbloquea "Primera victoria" y "Hoyo en uno"', async () => {
@@ -749,7 +749,7 @@ it('baraja nueva: la primera vez presenta sus cartas con un tablero de ejemplo a
   assert.equal(await page.$('#dialog[open] .deckIntro'), null);
 });
 
-it('baraja de minigolf: campo 8 columnas más ancho, piezas de madera y presentación de 4 cartas', async () => {
+it('baraja de minigolf: el mismo campo que las demás, piezas de madera y presentación de 4 cartas', async () => {
   await fresh();
   await click('#modesBtn'); await sleep(400); await click('[data-mtab="quick"]'); await sleep(600);
   await app(() => { window.chaoticGolf.app.pveCfg.size = 'm'; });
@@ -759,7 +759,7 @@ it('baraja de minigolf: campo 8 columnas más ancho, piezas de madera y presenta
   await page.click('#dialog[open] button[value="ok"]'); await sleep(900);
   const r = await app(() => { const S = window.chaoticGolf.app.game.S, all = [...S.deck, ...S.hands.flat()];
     return { cols: S.cols, rows: S.rows, scene: document.getElementById('gameScreen').dataset.scene, wood: all.filter(k => ['block', 'corner', 'tunnel', 'launcher'].includes(k)).length }; });
-  assert.deepEqual(r, { cols: 15, rows: 9, scene: 'mini', wood: 13 });
+  assert.deepEqual(r, { cols: 7, rows: 9, scene: 'mini', wood: 13 });
 });
 
 it('Ultimate: reúne las cartas de todas las barajas', async () => {
@@ -768,7 +768,9 @@ it('Ultimate: reúne las cartas de todas las barajas', async () => {
   await click('[data-mode="quick:ultimate"]'); await confirmIfAsked(); await sleep(300);
   await click('#pvePlay'); await sleep(900);
   const kinds = await app(() => { const S = window.chaoticGolf.app.game.S; return [...new Set([...S.deck, ...S.hands.flat()])]; });
-  for (const k of ['bunker', 'portal', 'river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'palo10', 'paloIri']) assert.ok(kinds.includes(k), k);
+  for (const k of ['bunker', 'portal', 'river', 'lake', 'block', 'corner', 'tunnel', 'launcher', 'paloIri']) assert.ok(kinds.includes(k), k);
+  assert.ok(!kinds.includes('palo10'), 'sin el palo de 10 (el campo es de 11)');
+  assert.deepEqual(await app(() => { const S = window.chaoticGolf.app.game.S; return [S.cols, S.rows, S.par]; }), [11, 9, 5], 'siempre el grande');
 });
 
 it('Lo básico: terminar el turno sin embocar muestra "otra vez"', async () => {
@@ -1069,10 +1071,13 @@ it('táctil: cartas de efecto inmediato con dos toques, mantener pulsado explica
   await p.close();
 });
 
-it('táctil: con casillas pequeñas (Ultimate) la cámara se acerca al elegir destino y se aleja al acabar', async () => {
+it('táctil: con casillas pequeñas la cámara se acerca al elegir destino y se aleja al acabar', async () => {
   const p = await phonePage();
-  await phoneQuick(p, { opps: 3 }, 'ultimate');
-  assert.ok(await p.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-w')) < 30), 'Ultimate entero: casillas pequeñas');
+  // (la partida rápida ya no tiene campos tan grandes: el mediano, de 19×13 solo en esta partida)
+  await p.evaluate(async () => { const m = await import('/src/ui/screen-pve.js'); window.__m = { ...m.PVE_SIZES.m }; Object.assign(m.PVE_SIZES.m, { cols: 19, rows: 13, par: 7 }); });
+  await phoneQuick(p, { opps: 3 });
+  await p.evaluate(async () => { const m = await import('/src/ui/screen-pve.js'); Object.assign(m.PVE_SIZES.m, window.__m); });
+  assert.ok(await p.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-w')) < 30), 'campo enorme: casillas pequeñas');
   await p.evaluate(() => { const { app, ctl } = window.chaoticGolf, S = app.game.S; S.hands[S.human][0] = 'palo3'; ctl.render(); ctl.clickCard(S.human, 0); });
   await sleep(500);
   assert.match(await p.evaluate(() => document.getElementById('boardZoom').style.transform), /scale/, 'se acerca');

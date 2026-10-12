@@ -349,7 +349,7 @@ export default {
     title: 'Partida rápida',
     sub: 'Tú contra la máquina. Los asientos se sortean y empieza quien esté a la derecha del centro.',
     color: 'Tu nombre y tu color', size: 'Tamaño del tablero', opps: 'Contrincantes (máquina)',
-    sizeS: 'Pequeño · 5×5', sizeM: 'Mediano · 7×9', sizeL: 'Grande · 9×11',
+    sizeS: 'Pequeño · 5×5', sizeM: 'Mediano · 7×9', sizeL: 'Grande · 11×9',
     sizeSName: 'Pequeño', sizeMName: 'Mediano', sizeLName: 'Grande',
     play: 'Jugar', back: '← Volver a Modos de juego',
     pickColor: 'Jugar con este color', colorAria: 'Color {n}',
