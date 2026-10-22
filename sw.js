@@ -7,7 +7,7 @@
 // así la caché tiene el juego entero desde la primera visita y tras cada versión nueva
 // (esas cargas no pasan por aquí). Sin eso, un arranque con la red caída o lenta se
 // quedaba en la pantalla de carga: faltaban módulos en la caché.
-const CACHE = 'chaoticgolf-v150';
+const CACHE = 'chaoticgolf-v151';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'assets/icons/icon.svg', 'assets/icons/favicon.svg'];
 const NET_WAIT = 3000;
 
@@ -26,7 +26,7 @@ self.addEventListener('message', e => {
   if (e.data?.t !== 'warm' || !Array.isArray(e.data.urls)) return;
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(e.data.urls.map(u => {
     const url = new URL(u, self.registration.scope);
-    if (url.origin !== location.origin || url.pathname.startsWith('/_vercel/')) return null;
+    if (url.origin !== location.origin || url.pathname.startsWith('/_vercel/') || url.pathname.startsWith('/ingest')) return null;
     url.hash = '';
     return c.match(url.href).then(hit => hit || fetch(url.href).then(res => res.ok && c.put(url.href, res))).catch(() => {});
   }))));
@@ -41,7 +41,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
   // (analíticas y Speed Insights de Vercel, siempre a la red y sin guardar)
-  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/_vercel/')) return;
+  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/_vercel/') || url.pathname.startsWith('/ingest')) return;
   const cached = () => caches.match(req, { ignoreSearch: true })
     .then(r => r || (req.mode === 'navigate' ? caches.match('index.html') : undefined));
   const net = fetch(req).then(res => {

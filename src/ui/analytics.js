@@ -10,6 +10,10 @@
 // Solo en la web publicada (main.js carga el script fuera de localhost): en desarrollo y en los tests no se envía
 // nada. Nunca datos personales (ni nombres ni códigos de niveles). Si el script aún no ha cargado, los eventos
 // esperan en una cola; si no carga (sin red, bloqueador), se pierden sin más.
+// Los mismos eventos van también a PostHog (región EU, el proyecto compartido con los otros juegos: llevan
+// app=chaoticgolf), con nombres en inglés para cruzarlos con ellos (POSTHOG_NAMES), y solo allí:
+//   · card_played    cada carta que juega una persona (no los bots): carta, modo y si es una reacción al JAQUE
+//   · card_blocked   una carta que se intenta jugar y no se puede (¿qué reglas no se entienden?)
 import { app } from './app.js';
 import { isPhone } from './device.js';
 import { getLang } from '../i18n/index.js';
@@ -17,15 +21,51 @@ import { getLang } from '../i18n/index.js';
 export const UMAMI_ID = '4f7cca22-af83-4f80-8281-18d28a54259a';
 let queue = [];
 
+// --- PostHog ---
+const PH_KEY = 'phc_xnbbVrZbqhjzk6GfeLxopJHkhtxFFXAxM96symjc2snN'; // clave pública (va en la web por diseño)
+const PH_HOST = '/ingest'; // por la propia web (rewrite en vercel.json → PostHog EU): los bloqueadores no lo cortan
+const POSTHOG_NAMES = { partida: 'match_started', final: 'match_ended', abandona: 'match_quit', continua: 'match_resumed',
+  tutorial: 'tutorial_finished', ayuda: 'help_used', compartir: 'shared', creador: 'editor_used', baraja_nueva: 'new_deck_shown',
+  instalar: 'app_installed', coronas: 'crowns_notice', estadisticas: 'stats_opened', regalo: 'gift_claimed', perfil: 'profile_opened',
+  pelota: 'ball_skin' };
+// las claves comunes a todos los juegos, en inglés (el resto se queda como está)
+const POSTHOG_KEYS = { modo: 'mode', resultado: 'result', turnos: 'turns', segundos: 'seconds', app: 'install', interfaz: 'pointer', idioma: 'lang' };
+const POSTHOG_VALUES = { victoria: 'win', derrota: 'lose' };
+let ph = null;
+// main.js lo arranca junto a Umami, solo en la web publicada. El stub guarda las llamadas hasta que llega la librería
+export function startPostHog() {
+  if (ph) return;
+  const stub = [];
+  for (const m of ['capture', 'register']) stub[m] = (...args) => stub.push([m, ...args]);
+  stub.people = [];
+  stub._i = [[PH_KEY, { api_host: PH_HOST, ui_host: 'https://eu.posthog.com', autocapture: false, capture_pageview: true,
+    capture_pageleave: true, disable_session_recording: true, person_profiles: 'identified_only' }]];
+  window.posthog = ph = stub;
+  ph.register({ app: 'chaoticgolf' });
+  const sc = document.createElement('script');
+  sc.async = true; sc.crossOrigin = 'anonymous'; sc.src = PH_HOST + '/static/array.js';
+  document.head.append(sc);
+}
+function capture(name, data) {
+  if (!ph) return;
+  const lib = window.posthog || ph;
+  if (lib === ph && ph.length > 300) return; // (la librería no llega: la cola no crece sin límite)
+  const props = {};
+  for (const [k, v] of Object.entries(data)) props[POSTHOG_KEYS[k] || k] = POSTHOG_VALUES[v] || v;
+  try { lib.capture(POSTHOG_NAMES[name] || name, props); } catch (e) { /* nunca rompe el juego */ }
+}
+
 const clean = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
 // envía (o deja en cola): args son los de umami.track, un evento (nombre, datos) o una página (función)
 function send(...args) {
   if (window.umami?.track) { try { window.umami.track(...args); } catch (e) { /* nunca rompe el juego */ } }
   else if (queue && queue.length < 40) queue.push(args);
 }
-export function track(name, data = {}) {
+export function track(name, data = {}, { onlyPostHog = false } = {}) {
   if (typeof window === 'undefined') return; // (tests de node)
-  send(name, clean({ ...data, interfaz: isPhone() ? 'táctil' : 'ordenador', idioma: getLang() }));
+  const d = clean({ ...data, interfaz: isPhone() ? 'touch' : 'mouse', idioma: getLang() });
+  capture(name, d);
+  if (!onlyPostHog) send(name, { ...d, interfaz: isPhone() ? 'táctil' : 'ordenador' });
 }
 // cuando el script de Umami ha cargado: lo que estaba en cola
 export function flushQueue() {
@@ -42,6 +82,17 @@ export function trackScreen(screen) {
   const k = screen === 'game' ? currentKind() : null;
   const url = screen === 'game' ? '/partida/' + (SLUG[k === 'story' && ownLevel() ? 'own' : k] || 'otra') : PAGE[screen];
   if (url) send(props => ({ ...props, url, title: 'Chaotic Golf' }));
+  if (url) capture('screen_viewed', { screen: k ? 'game' : screen, path: url, ...(k ? modeData(k) : {}) });
+}
+
+// cada carta que juega una persona (controller.js), solo a PostHog: son muchas por partida
+export function trackCard(key, reaction) {
+  const k = currentKind();
+  if (k && k !== 'test') track('card_played', { card: key, modo: modeData(k).modo, reaction }, { onlyPostHog: true });
+}
+export function trackBlockedCard(key) {
+  const k = currentKind();
+  if (k && k !== 'test') track('card_blocked', { card: key, modo: modeData(k).modo }, { onlyPostHog: true });
 }
 
 // nombre legible de cada modo (las claves son las de records.js)

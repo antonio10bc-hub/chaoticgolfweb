@@ -41,6 +41,7 @@ import { previewCard, cardTargets } from './preview.js';
 import { autoZoom } from './board-zoom.js';
 import { seasonBefore, seasonPrep } from './seasons-view.js';
 import { gambleBefore, gamblePrep } from './gambling-view.js';
+import { trackCard, trackBlockedCard } from './analytics.js';
 import { ownerOf } from '../engine/game.js';
 
 /* ---------- estadísticas de partida (resumen post-partida, decorativo) ---------- */
@@ -152,7 +153,7 @@ function dispatch(fn) {
       case 'card': {
         sfx('card');
         app.lastActor = ev.p; actor = ev.p; cardKey = ev.key;
-        if (!isBot(ev.p)) stats.cardsUsed[ev.key] = (stats.cardsUsed[ev.key] || 0) + 1;
+        if (!isBot(ev.p)) { stats.cardsUsed[ev.key] = (stats.cardsUsed[ev.key] || 0) + 1; trackCard(ev.key, jaqueBefore); }
         // la carta vuela de la mano (o del asiento del bot, desvelándose) al centro y a descartes
         const mine = !isBot(ev.p);
         fxPlayCard(ev.p, ev.idx, ev.key, { fast: mine });
@@ -169,6 +170,7 @@ function dispatch(fn) {
         break;
       case 'badCard': { // carta no jugable: shake sutil + por qué
         fxBadCard(ev.p, ev.idx); sfx('bad');
+        if (!isBot(ev.p)) trackBlockedCard(g.S.hands[ev.p][ev.idx]);
         const why = blockedReason(g, ev.p, g.S.hands[ev.p][ev.idx]);
         if (why) hud.toast(why, 'warn');
         break;

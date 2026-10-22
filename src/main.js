@@ -56,7 +56,7 @@ import { bindLogFilter } from './ui/hud.js';
 import { bakeGrain } from './ui/bake.js';
 import { bindBgDebug } from './ui/bg-debug.js';
 import { bindHolo } from './ui/holo.js';
-import { UMAMI_ID, flushQueue, track } from './ui/analytics.js';
+import { UMAMI_ID, flushQueue, track, startPostHog } from './ui/analytics.js';
 import { bindMyBall } from './ui/my-ball.js';
 
 // texturas precocinadas (grano y fondo desenfocado de los menús): se pintan una vez y se usan como imagen
@@ -303,6 +303,7 @@ if (location.protocol === 'https:' && !/^(localhost|127\.|192\.168\.)/.test(loca
   Object.assign(um.dataset, { websiteId: UMAMI_ID, excludeSearch: 'true', excludeHash: 'true' });
   um.onload = flushQueue;
   document.head.append(um);
+  startPostHog(); // (los mismos eventos, también a PostHog: src/ui/analytics.js)
 }
 
 // app instalada (analíticas)

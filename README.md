@@ -27,6 +27,15 @@ Todos llevan `interfaz` (táctil / ordenador) e `idioma`. Partidas y finales sal
 (`src/ui/records.js`), el mismo sitio que las estadísticas del jugador; si Umami no ha cargado aún, esperan en una cola.
 Un evento nuevo: `track('nombre', { dato: valor })` (valores cortos y con pocas variantes, nunca datos personales).
 
+**También PostHog** (región EU, el proyecto compartido con los otros juegos; todos los eventos llevan `app: chaoticgolf`).
+`startPostHog()` arranca junto a Umami y `track()` manda cada evento a los dos, en PostHog con nombre en inglés
+(`match_started`, `match_ended`, `match_quit`, `match_resumed`, `tutorial_finished`, `help_used`, `shared`…, ver
+`POSTHOG_NAMES`) y las claves comunes también (`mode`, `result` win / lose, `turns`, `seconds`, `pointer`, `lang`,
+`install`). Cada pantalla es un `screen_viewed` (`screen`, `path`). Solo en PostHog, porque son muchos por partida:
+**card_played** (cada carta que juega una persona: `card`, `mode`, `reaction` si salva o roba un JAQUE) y
+**card_blocked** (una carta que se intenta jugar y no se puede). Sale por `/ingest` (rewrite en `vercel.json`) para
+esquivar los bloqueadores, y el service worker no lo toca.
+
 **TEMPORAL — niveles vitrina (vídeos de cada baraja):** `src/content/levels/vitrina.js` trae 8 niveles (uno por baraja y
 Ultimate) que en un solo tiro enseñan lo más vistoso, con todos sus elementos a la vista. Se guardan solos en Tus niveles
 al abrir el juego, una vez por dispositivo (`chaoticgolf_vitrina`; si se borran no vuelven, y `#vitrina` los vuelve a añadir). Solo para ellos: la semilla (el bote sale siempre igual), el viento ya soplando, el fondo de su
